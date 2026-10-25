@@ -230,6 +230,7 @@ button:focus-visible,.pick:focus-visible{outline:2px solid var(--gold);outline-o
 .tray{position:absolute;left:24%;right:24%;top:36%;height:30%;display:flex;align-items:center;justify-content:center;gap:4%;z-index:5;pointer-events:none}
 .tray .grp{display:flex;gap:6px;align-items:center;justify-content:center}
 .tray.pair{left:14%;right:14%;justify-content:space-between}
+.arena:not(.boss) .tray.pair{left:24%;right:24%;justify-content:center;gap:clamp(14px,5%,48px)} /* both Heroes' dice land in the middle (user 2026-10-25) */
 .die{--sz:clamp(42px,10vw,74px);width:var(--sz);height:var(--sz);position:relative;filter:drop-shadow(0 6px 6px rgba(0,0,0,.6)) drop-shadow(0 0 10px var(--glow,transparent))}
 .die.sm{--sz:clamp(32px,7vw,54px)}
 .die svg{width:100%;height:100%;display:block;overflow:visible}
