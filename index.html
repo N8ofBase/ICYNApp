@@ -3,6 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script src="auth.js" defer></script>
+<script src="stats.js" defer></script>
 <title>I Crit You Not!</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#141218">
@@ -47,7 +48,24 @@ button:focus-visible,.pick:focus-visible{outline:2px solid var(--gold);outline-o
 .acct{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;color:var(--muted)}.acct[hidden]{display:none}
 .acct .ghost{padding:5px 12px;font-size:.8rem}.acct b{color:var(--text);font-weight:700;max-width:12ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .setup-acct{display:flex;justify-content:flex-end;min-height:30px}
-@media (max-width:520px){.top .acct .su,.top .acct b{display:none}}
+.streak{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:800;letter-spacing:.04em;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.streak.up{background:rgba(224,184,98,.18);color:var(--gold);border:1px solid rgba(224,184,98,.45)}.streak.down{background:rgba(184,50,63,.2);color:#ff9aa4;border:1px solid rgba(184,50,63,.5)}
+.over .rec{display:flex;flex-wrap:wrap;gap:6px 10px;justify-content:center;align-items:center;font-size:.85rem;color:var(--muted);min-height:0}.over .rec:empty{display:none}
+.over .card.wide{max-width:520px;text-align:left;max-height:86vh;overflow:auto}
+.sp-tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.sp-tabs button{background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:.82rem;color:var(--muted)}
+.sp-tabs button[aria-selected="true"]{background:var(--gold);color:#1d1708;border-color:var(--gold);font-weight:800}.sp-tabs .x{margin-left:auto;border:0;font-size:1rem}
+.sp-body{display:flex;flex-direction:column;gap:10px}.sp-body h3{margin:4px 0 0;font-family:var(--f-title);color:var(--gold);font-size:1rem}
+.sp-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.sp-cell{background:var(--stone-2);border-radius:10px;padding:8px;text-align:center}
+.sp-cell b{display:block;font-family:var(--f-display);font-size:1.5rem;color:var(--text)}.sp-cell span{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sp-name{display:flex;gap:8px;align-items:end}.sp-name label{flex:1;display:flex;flex-direction:column;gap:3px;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sp-name input{font:inherit;font-size:.95rem;letter-spacing:0;text-transform:none;background:var(--stone-2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.sp-list,.sp-board{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.sp-list li,.sp-board li{display:flex;align-items:center;gap:8px;background:var(--stone-2);border-radius:8px;padding:6px 10px;font-size:.86rem}
+.sp-list small,.sp-board small{margin-left:auto;color:var(--muted)}.sp-list .r{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:.75rem;background:#333}
+.sp-list .win .r{background:#2f7a3d}.sp-list .loss .r{background:#8a2430}
+.sp-board .rk{width:26px;font-family:var(--f-display);color:var(--gold);text-align:center}.sp-board .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sp-board li.me{outline:1px solid var(--gold)}
+@media (max-width:520px){.top .acct .nm,.top .acct .streak{display:none}.sp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.top .acct .su,.top .acct b,.top .acct .nm,.top .acct [data-a="out"]{display:none}.top .acct:not(:has([data-a="out"])) [data-a="stats"]{display:none}}
 
 /* duel layout */
 .duel{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
@@ -140,10 +158,13 @@ button:focus-visible,.pick:focus-visible{outline:2px solid var(--gold);outline-o
 .fighter{position:absolute;bottom:6%;width:42%;top:3%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:4px;transition:filter .3s}
 .fighter[data-p="0"]{left:2%}.fighter[data-p="1"]{right:2%}
 .fighter.dim{filter:saturate(.55) brightness(.72)}
-.plate{width:100%;max-width:190px;background:rgba(12,10,15,.78);border:1px solid var(--line);border-radius:10px;padding:5px 8px 6px;cursor:pointer;text-align:left}
+.plate{width:100%;max-width:230px;background:rgba(12,10,15,.78);border:1px solid var(--line);border-radius:10px;padding:5px 8px 6px;cursor:pointer;text-align:left}
 .fighter.active .plate{border-color:var(--c);box-shadow:0 0 0 1px var(--c),0 0 18px color-mix(in srgb,var(--c) 60%,transparent)}
 .plate .nm{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-family:var(--f-title);font-weight:700;font-size:.95rem;line-height:1.1}
 .plate .nm span:last-child{font-family:var(--f-body);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.plate .sbs{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.sb{font-style:normal;font-size:.66rem;font-weight:800;line-height:1.35;padding:1px 7px;letter-spacing:.03em;white-space:pre;border-radius:6px;background:#120f16;color:var(--gold);border:1px solid #e0b862}
+.sb.main{background:#e0b862;color:#1d1708}.sb.up{border-color:#7ee08f;color:#9fe3ab}.sb.down{border-color:#ff6b6b;color:#ff9aa4}.sb.main.up{background:#9fe3ab;color:#0f2414}.sb.main.down{background:#ff9aa4;color:#2a0b10}
 .hp{height:8px;border-radius:4px;background:#000;margin-top:4px;overflow:hidden;position:relative}
 .hp i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--c),color-mix(in srgb,var(--c) 55%,#fff));transition:width .5s}
 .hpn{display:flex;justify-content:space-between;font-size:.74rem;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
@@ -408,7 +429,7 @@ button:focus-visible,.pick:focus-visible{outline:2px solid var(--gold);outline-o
   .act-d20{width:96px;top:3%}.act-d20 .d20b{width:44px;height:44px}.act-d20 .lbl{font-size:.7rem;padding:2px 6px}.act-d20 .who{display:none}
   .top{display:grid;grid-template-columns:1fr auto}.rounds{grid-column:1/-1;order:3;justify-content:space-between}.pip{width:26px;height:26px}
   .ring{--bs:28px;top:30%}.act-d20:disabled{display:none}.readout{font-size:.66rem;bottom:5px;padding:2px 7px;max-width:calc(100% - 84px)}.readout .k{display:none}.rb small{font-size:.5rem;bottom:-6px}
-  .plate{padding:4px 6px 5px}.plate .nm{font-size:.82rem}.plate .nm span:last-child{display:none}
+  .plate{padding:4px 6px 5px}.plate .nm{font-size:.82rem}.plate .sbs{gap:2px;margin-top:3px;flex-wrap:nowrap}.sb{font-size:.5rem;padding:0 2px;letter-spacing:0;border-radius:5px}.plate .nm span:last-child{display:none}
   .stats th{font-size:.6rem}.stats td{font-size:.9rem}.stats th.rowh{width:34px}
   .abil{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   .roster .pick span{font-size:.66rem}.pick img{height:calc(48px * var(--sc,1));margin-top:calc(48px * (1 - var(--sc,1)))}.pick .race{font-size:.54rem}
@@ -447,7 +468,7 @@ const HEROES = {
     stats:{def:10,power:0,energy:3,speed:1,charm:2},
     abilities:[{name:'Explosion',dice:2,stat:'power',icon:'explosion'},{name:'Soul Syphon',dice:1,stat:'energy',heal:1,icon:'syphon'},{name:'Mind-Spike',dice:1,stat:'speed',icon:'mindspike'},{name:'Psylance',dice:1,stat:'charm',icon:'psylance'}],
     dice:{name:'Aether Shard',a:'#66f2e8',b:'#6b3fa8',ink:'#ffffff',edge:'#e2c9ff',glow:'rgba(90,240,230,.75)',tex:'sparkle'}},
-  whisper:{name:'Whisper',wicon:'daggers',race:'Melkin',size:'Smallest of Talus',scale:0.56,lore:"A quick shadow who strikes first, slips away, and wears the rival down unseen.",main:'speed',face:'right',color:'#4a4a63',ink:'#fff',
+  whisper:{name:'Whisper',wicon:'daggers',race:'Melkin',size:'Smallest of Talus',scale:0.5,lore:"A quick shadow who strikes first, slips away, and wears the rival down unseen.",main:'speed',face:'right',color:'#4a4a63',ink:'#fff',
     blurb:'Stealth and shadow; strikes unseen.',
     stats:{def:11,power:2,energy:0,speed:3,charm:1},
     abilities:[{name:'Death-Strike',dice:1,stat:'power',icon:'skull'},{name:'Darkness',dice:1,stat:'energy',debuff:'power',icon:'moon'},{name:'Double-Strike',dice:2,stat:'speed',icon:'double'},{name:'Shadow-Strike',dice:1,stat:'charm',icon:'shadow'}],
@@ -580,10 +601,11 @@ function setHero(el,id){el.style.setProperty('--hero',SKIN[id].color);el.style.s
 
 function renderAcct(){const el=$('#acct');if(!el)return;const A=window.ICYNAuth;if(!A){el.hidden=true;return}
   const u=A.user&&A.user();el.hidden=false;
-  el.innerHTML=u?`<span>Signed in as</span> <b>${esc(u.name||u.email||'Player')}</b><button class="ghost" data-a="out">Sign out</button>`
-    :`<button class="ghost" data-a="in">Sign in</button><button class="ghost su" data-a="up">Create account</button>`;
-  el.querySelectorAll('button').forEach(b=>b.onclick=()=>({in:A.signIn,up:A.signUp,out:A.signOut})[b.dataset.a]())}
-addEventListener('load',()=>{if(window.ICYNAuth&&ICYNAuth.onChange)ICYNAuth.onChange(()=>renderAcct())});
+  const sb=window.ICYNStats?`<button class="ghost" data-a="stats">${u?'Stats':'Leaderboard'}</button>`:'';
+  el.innerHTML=u?`${S.me?streakBadge(S.me.currentStreak):''}<span class="nm">Signed in as</span> <b>${esc((S.me&&S.me.name)||u.name||u.email||'Player')}</b>${sb}<button class="ghost" data-a="out">Sign out</button>`
+    :`${sb}<button class="ghost" data-a="in">Sign in</button><button class="ghost su" data-a="up">Create account</button>`;
+  el.querySelectorAll('button').forEach(b=>b.onclick=()=>b.dataset.a==='stats'?statsPanel(u?'me':'wins'):({in:A.signIn,up:A.signUp,out:A.signOut})[b.dataset.a]())}
+addEventListener('load',()=>{if(window.ICYNAuth&&ICYNAuth.onChange)ICYNAuth.onChange(()=>{renderAcct();refreshMe()})});
 function renderSetup(){
   const app=$('#app');
   app.innerHTML=`<div class="setup"><div class="setup-acct"><span class="acct" id="acct" hidden></span></div>
@@ -708,14 +730,14 @@ function renderRounds(){const el=$('#rounds');if(!el)return;
   el.innerHTML='<span class="lbl">Round</span>'+Array.from({length:8},(_,i)=>`<span class="pip ${i+1<S.round?'done':i+1===S.round?'now':''}">${i+1}</span>`).join('');}
 function chipsFor(f){const c=[];
   if(f.broken)c.push(`<span class="chip bad">Weapon broken · R${f.brokenUntil}</span>`);
-  for(const s of STATS){const d=f[s]-f.start[s];if(d)c.push(`<span class="chip ${d>0?'good':'bad'}">${SN[s].slice(0,3)} ${d>0?'+':''}${d}</span>`)}
   if(f.weaponDice>1)c.push(`<span class="chip good">${f.weaponDice}D6 weapon</span>`);
   return c.join('');}
-function renderFighters(){S.F.forEach((f,p)=>{const el=$(`.fighter[data-p="${p}"]`);if(!el)return;
+function renderFighters(){S.F.forEach((f,p)=>{f.peakMax=Math.max(f.peakMax||0,f.maxLife);const el=$(`.fighter[data-p="${p}"]`);if(!el)return;
   el.classList.toggle('active',S.active===p);el.classList.toggle('dim',S.active!==null&&S.active!==p);
   const tag=isCPU(p)?'CPU':(S.mode==='cpu'?'You':'P'+(p+1));
-  el.querySelector('.plate').innerHTML=`<div class="nm"><span>${f.h.name}</span><span>${tag}</span></div><div class="hp"><i style="width:${Math.max(0,Math.min(100,f.life/f.maxLife*100))}%"></i></div>
-   <div class="hpn"><span><b>${f.life}</b> / ${f.maxLife}</span><span>DEF ${f.def}</span></div><div class="chips">${chipsFor(f)}</div>`;});renderRings();}
+  const sb=['power','energy','speed','charm','def'].map(k=>{const d=f[k]-f.start[k];return `<i class="sb ${d>0?'up':d<0?'down':''}${k===f.h.main?' main':''}" title="${cap(k)} ${f[k]}">${k==='def'?'DEF':cap(k)[0]}: ${f[k]}</i>`}).join('');
+  el.querySelector('.plate').innerHTML=`<div class="nm"><span>${f.h.name}</span><span>${tag}</span></div><div class="sbs">${sb}</div><div class="hp"><i style="width:${Math.max(0,Math.min(100,f.life/f.maxLife*100))}%"></i></div>
+   <div class="hpn"><span><b>${f.life}</b> / ${f.maxLife}</span></div><div class="chips">${chipsFor(f)}</div>`;});renderRings();}
 const SHORT={life:'Life',maxLife:'Max Life',def:'Def',power:'Power',energy:'Energy',speed:'Speed',charm:'Charm'};
 function statTableHTML(f,cls='',compact=false){const cols=['life','maxLife',...STATS];const dc=k=>{const d=f[k]-f.start[k];return d>0?'up':d<0?'down':''};
   return `<table class="stats ${cls}"><tr><th class="rowh"></th>${cols.map(k=>`<th>${k===f.h.main?'<span class="ribbon">MAIN</span>':''}${SHORT[k]}</th>`).join('')}</tr>
@@ -1022,10 +1044,56 @@ function showEnd(w){
   const who=S.mode==='cpu'?(w===0?'You win!':'The Computer wins'):`Player ${w+1} wins!`;
   const o=document.createElement('div');o.className='over';setHero(o,f.skin);
   o.innerHTML=`<div class="card"><img src="${IMG[f.id]}" alt=""><h2>${f.h.name} Victorious</h2><p><b style="color:var(--text)">${who}</b> ${ko?'Knocked out in round '+Math.min(8,S.lastRound||8)+'.':'After 8 rounds.'}</p>
-    <p>${f.h.name} ${f.life} Life · ${l.h.name} ${l.life} Life</p><div class="row"><button class="act" id="rematch">Rematch</button><button class="ghost" id="newd">New duel</button></div></div>`;
+    <p>${f.h.name} ${f.life} Life · ${l.h.name} ${l.life} Life</p><div class="rec" id="endrec"></div><div class="row"><button class="act" id="rematch">Rematch</button><button class="ghost" id="newd">New duel</button></div></div>`;
   document.body.append(o);
   o.querySelector('#rematch').onclick=()=>{o.remove();startDuel()};
   o.querySelector('#newd').onclick=()=>{o.remove();S.token++;renderSetup()};
+  recordResult(w,ko,o.querySelector('#endrec'));
+}
+// ---------- Saves, streaks, leaderboard (live site only: auth.js + stats.js) ----------
+const statsOn=()=>!!(window.ICYNStats&&window.ICYNAuth);
+const signedIn=()=>!!(window.ICYNAuth&&ICYNAuth.user&&ICYNAuth.user());
+function streakText(n){return !n?'':n>0?`${n} win streak`:`${-n} loss streak`}
+function streakBadge(n){return n?`<span class="streak ${n>0?'up':'down'}">${n>0?'🔥':'💀'} ${streakText(n)}</span>`:''}
+async function recordResult(w,ko,el){
+  if(!el||!statsOn())return;
+  if(!signedIn()){el.innerHTML=`<span>Sign in to save your record and climb the leaderboard.</span><button class="ghost" id="rec-in">Sign in</button>`;el.querySelector('#rec-in').onclick=()=>ICYNAuth.signIn();return}
+  const p1=S.F[0],p2=S.F[1];
+  const m={result:w===0?'win':'loss',mode:S.mode==='cpu'?'cpu':'pnp',hero:p1.h.name,opponentHero:p2.h.name,rounds:Math.max(1,Math.min(8,S.round||8)),ko:!!ko,startingLife:S.life,maxLife:Math.max(p1.peakMax||0,p1.maxLife)};
+  el.innerHTML='<span>Saving result…</span>';
+  const r=await ICYNStats.recordMatch(m);
+  if(!r||!r.stats){el.innerHTML=m.mode==='cpu'?'<span>Couldn’t save this result. Check your connection.</span>':'<span>Saved to your history (Pass &amp; Play isn’t ranked).</span>';return}
+  S.me=r.stats;renderAcct();const st=r.stats;
+  el.innerHTML=m.mode==='cpu'?`${streakBadge(st.currentStreak)}<span>Record ${st.wins}–${st.losses}${st.draws?'–'+st.draws:''} · Best streak ${st.bestWinStreak}</span>`:'<span>Saved to your history (Pass &amp; Play isn’t ranked).</span>';
+}
+async function refreshMe(){if(!statsOn()||!signedIn()){S.me=null;return}const r=await ICYNStats.me();S.me=r&&r.stats||null;renderAcct()}
+function statsPanel(tab){
+  document.querySelector('.over.sp')?.remove();
+  const o=document.createElement('div');o.className='over sp';o.innerHTML=`<div class="card wide" role="dialog" aria-modal="true" aria-label="Stats and leaderboard">
+    <div class="sp-tabs" role="tablist"><button data-t="me" role="tab">My Stats</button><button data-t="wins" role="tab">Most Wins</button><button data-t="streak" role="tab">Best Win Streak</button><button class="x" aria-label="Close">✕</button></div>
+    <div class="sp-body" id="spbody"><p>Loading…</p></div></div>`;
+  document.body.append(o);
+  const close=()=>o.remove();o.querySelector('.x').onclick=close;o.onclick=e=>{if(e.target===o)close()};
+  const show=async t=>{o.querySelectorAll('.sp-tabs [data-t]').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===t));const b=o.querySelector('#spbody');b.innerHTML='<p>Loading…</p>';
+    if(t==='me'){
+      if(!signedIn()){b.innerHTML='<p>Sign in to track your wins, KOs and streaks.</p><div class="row"><button class="act" id="sp-in">Sign in</button><button class="ghost" id="sp-up">Create account</button></div>';b.querySelector('#sp-in').onclick=()=>ICYNAuth.signIn();b.querySelector('#sp-up').onclick=()=>ICYNAuth.signUp();return}
+      const [me,h]=await Promise.all([ICYNStats.me(),ICYNStats.history()]);if(!o.isConnected)return;
+      const st=me&&me.stats;if(!st){b.innerHTML='<p>Couldn’t load your stats. Check your connection.</p>';return}
+      S.me=st;renderAcct();
+      const cell=(k,v)=>`<div class="sp-cell"><b>${v}</b><span>${k}</span></div>`;
+      const ms=(h&&h.matches)||[];
+      b.innerHTML=`<div class="sp-name"><label>Leaderboard name <input id="sp-nm" maxlength="24" value="${esc(st.name||'')}"></label><button class="ghost" id="sp-save">Save</button></div>
+        ${st.currentStreak?`<div>${streakBadge(st.currentStreak)}</div>`:''}
+        <div class="sp-grid">${cell('Wins',st.wins)}${cell('Losses',st.losses)}${cell('Draws',st.draws||0)}${cell('KOs',st.kos)}${cell('Best win streak',st.bestWinStreak)}${cell('Worst loss streak',st.worstLossStreak)}${cell('Quickest win',st.fastestWin?'Round '+st.fastestWin:'—')}${cell('Quickest loss',st.fastestLoss?'Round '+st.fastestLoss:'—')}${cell('Highest Max Life',st.highestMaxLife||'—')}</div>
+        <p>Favorite Hero: <b>${esc(st.favoriteHero||'—')}</b> · ${st.played} ranked duels vs Computer</p>
+        <h3>Recent duels</h3>${ms.length?`<ol class="sp-list">${ms.map(m=>`<li class="${m.result}"><span class="r">${m.result==='win'?'W':m.result==='loss'?'L':'D'}</span><span>${esc(m.hero)} vs ${esc(m.opponentHero)}</span><small>${m.mode==='pnp'?'Pass & Play':(m.ko?'KO R'+m.rounds:'8 rounds')}</small></li>`).join('')}</ol>`:'<p>No duels yet. Go win one!</p>'}`;
+      b.querySelector('#sp-save').onclick=async()=>{const n=b.querySelector('#sp-nm').value.trim();if(!n)return;const r=await ICYNStats.setProfile({name:n});b.querySelector('#sp-save').textContent=r?'Saved':'Try again'};
+    }else{
+      const r=await ICYNStats.leaderboard(t);if(!o.isConnected)return;const ps=(r&&r.players)||[];
+      const me=ICYNAuth.user&&ICYNAuth.user();
+      b.innerHTML=ps.length?`<ol class="sp-board">${ps.map(x=>`<li class="${me&&(x.id===me.id||x.name===(S.me&&S.me.name))?'me':''}"><span class="rk">${x.rank}</span><span class="nm">${esc(x.name||'Player')}</span><b>${t==='wins'?x.wins+' wins':x.bestWinStreak+' in a row'}</b><small>${x.wins}–${x.losses}</small></li>`).join('')}</ol>`:'<p>No ranked duels yet. Be the first!</p>';
+    }};
+  o.querySelectorAll('.sp-tabs [data-t]').forEach(b=>b.onclick=()=>show(b.dataset.t));show(tab||'me');
 }
 function startDuel(){
   S.token++;const t=S.token;
