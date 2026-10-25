@@ -11,5 +11,10 @@ frontend:
       - auth.js
       - stats.js
       - online.js
+      - manifest.json
+      - sw.js
+      - icon-192.png
+      - icon-512.png
+      - icon-maskable-512.png
   cache:
     paths: []
