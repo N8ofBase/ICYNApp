@@ -1176,7 +1176,7 @@ function scrollPick(p,kind,t){
       hint.innerHTML=`Rolled <b>${v}</b>`;
       await sleep(REDUCED?150:750);
       const rv=document.createElement('div');rv.className='reveal';
-      rv.innerHTML=`<div class="rv-r">Round ${Math.min(8,Math.max(1,S.round))}</div><div class="rv-n">${v}</div><div class="rv-k">${kind==='cal'?'Calamity':'Enhancement'}</div><div class="rv-t">${sel.querySelector('span').textContent}</div>`;
+      rv.innerHTML=`<div class="rv-r">Round ${Math.min(8,Math.max(1,S.round))}</div><div class="rv-k">${kind==='cal'?'Calamity':'Enhancement'}</div><div class="rv-n">${v}</div><div class="rv-t">${sel.querySelector('span').textContent}</div>`;
       ov.querySelector('.scroll').append(rv);
       await sleep(REDUCED?250:2000);
       ov.classList.add('closing');await sleep(REDUCED?50:450);ov.remove();res(v);
