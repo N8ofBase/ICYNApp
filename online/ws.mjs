@@ -98,8 +98,10 @@ function finish(game, result) {
 }
 async function recordResults(game) {
   const result = game.finished;
+  // An early forfeit (before round 3) is history only, so two accounts can't farm wins.
+  const mode = result.forfeit && result.rounds < 3 ? 'online-unranked' : 'online';
   await Promise.all(game.players.map((userId, i) => recordMatch(userId, { nickname: game.names[i] }, {
-    result: result.winner === i ? 'win' : 'loss', mode: 'online', hero: HEROES[game.setup.heroes[i]].name,
+    result: result.winner === i ? 'win' : 'loss', mode, forfeit: !!result.forfeit, hero: HEROES[game.setup.heroes[i]].name,
     opponentHero: HEROES[game.setup.heroes[1 - i]].name, rounds: result.rounds || 8, ko: !!result.ko,
     startingLife: game.setup.life, maxLife: result.peakMax ? result.peakMax[i] : undefined,
   }).catch((e) => console.error('record', e))));
@@ -184,7 +186,7 @@ export async function handler(event) {
       game.forfeit = { by: you, at: new Date().toISOString() };
       game.status = 'done';
       const r = replay(game.seed, game.setup, game.inputs);
-      finish(game, { winner: 1 - you, ko: false, rounds: Math.max(1, ...r.events.map((e) => e.round || 0)), peakMax: null });
+      finish(game, { winner: 1 - you, ko: false, forfeit: true, rounds: Math.max(1, ...r.events.map((e) => e.round || 0)), peakMax: null });
     } else {
       return fail('Unknown action');
     }

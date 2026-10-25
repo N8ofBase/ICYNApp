@@ -3,7 +3,7 @@
 // act(kind, choice), nudge(), forfeit(), onState(fn), onError(fn), close().
 // Hero ids: brawler, champion, maverick, soulseer, whisper.
 (function () {
-  const WS = '__ICYN_WS_URL__'; // e.g. wss://abc123.execute-api.us-east-1.amazonaws.com/prod
+  const WS = 'wss://xv92tk4nd2.execute-api.us-east-1.amazonaws.com/prod';
   const GAME_KEY = 'icyn.online.game';
   let sock = null, opening = null, game = null, events = [];
   const stateFns = [], errorFns = [];
