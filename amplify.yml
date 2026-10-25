@@ -10,5 +10,6 @@ frontend:
       - index.html
       - auth.js
       - stats.js
+      - online.js
   cache:
     paths: []
