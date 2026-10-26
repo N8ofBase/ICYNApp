@@ -678,8 +678,8 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
   left:calc(var(--reg) * var(--l));bottom:calc(var(--u) * var(--b));top:auto;height:calc(var(--u) * var(--h));width:calc(var(--u) * var(--h) * .62)}
 .arena.boss .fighter.hero .tag{position:absolute;z-index:3;left:50%;translate:-50% 0;bottom:calc(var(--scale,1) * 100% + 2px);width:max(80px,calc(var(--u) * 21));max-width:none}
 .arena.boss .fighter.hero .figwrap{height:100%;flex:none}
-.arena.boss .fighter.hero{--rh:max(150px,calc(var(--u) * 34))}
-.arena.boss .fighter.hero .ring{top:auto;bottom:calc(var(--u) * -1);left:calc(var(--u) * -5);right:auto;height:var(--rh);--bs:max(30px,calc(var(--u) * 6.6))}
+.arena.boss .fighter.hero{--rh:clamp(130px,calc(var(--u) * var(--h) * var(--scale,1) * 1.1 + 30px),calc(var(--u) * 34))}
+.arena.boss .fighter.hero .ring{top:auto;bottom:max(calc(var(--u) * -1),calc(62px - var(--u) * var(--b)));left:calc(var(--u) * -5);right:auto;height:var(--rh);--bs:max(24px,min(calc(var(--u) * 6.6),calc(var(--rh) / 4.4)))}
 .duel.full .arena.boss .fighter.hero.active .tag{bottom:max(calc(var(--scale,1) * 100% + 2px),calc(var(--rh) - var(--u) + 6px))}
 .arena.boss .fighter.hero .rb{left:calc(var(--k) * -6px);right:auto;transform:translateX(calc((1 - var(--k)) * 14px))}
 .arena.boss .fighter.hero .rb small{left:50%;right:auto;translate:-50% 0}
@@ -693,6 +693,7 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
 @media (max-width:640px){.arena.boss .tray,.arena.boss .tray.pair{left:50%;right:3%;top:24%;height:12%;gap:4px}}
 .duel.full .bossbar{display:none}
 .arena.boss .readout{z-index:12}
+.arena.boss .fighter.hero.active{z-index:11!important}
 .arena.boss .fighter.hero.ring-r .tag{left:0;translate:0 0}
 .duel.full .fighter.hero .tag b{font-size:clamp(.72rem,1.9cqh,1rem)}.duel.full .fighter.hero .tag .hp{height:clamp(5px,.9cqh,8px)}
 .duel.full .fighter.starvos .plate{max-width:clamp(250px,46cqh,380px)}
@@ -1572,7 +1573,7 @@ const bossDown = () => S.boss.life<=0;
 const heroesDown = () => !standing().length;
 // front row first, then the back row
 // l: share of the open ground left of Starvos; b and h: arena-height units (shrink on narrow arenas)
-const DEPTH={brawler:{l:.89,b:11,h:32,z:9,flip:true},maverick:{l:.31,b:21,h:34,z:8},champion:{l:.7,b:31,h:30,z:7},soulseer:{l:.46,b:45,h:27,z:6},whisper:{l:.85,b:51,h:24,z:4}};
+const DEPTH={brawler:{l:.89,b:5,h:32,z:9,flip:true},maverick:{l:.31,b:21,h:34,z:8},champion:{l:.7,b:31,h:30,z:7},soulseer:{l:.46,b:45,h:27,z:6},whisper:{l:.85,b:51,h:24,z:4}};
 
 function gameRow(){return `<div class="mode game" role="group" aria-label="Game"><button id="g-duel" aria-pressed="${S.mode!=='boss'}">Duel</button><button id="g-boss" aria-pressed="${S.mode==='boss'}">Starvos Catastrophe</button></div>`}
 function wireGameRow(){$('#g-duel').onclick=()=>{if(S.mode==='boss'){S.mode=S.duelMode||'cpu';renderSetup()}};$('#g-boss').onclick=()=>{if(S.mode!=='boss'){S.duelMode=S.mode;S.mode='boss';renderSetup()}}}
