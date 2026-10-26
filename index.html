@@ -678,10 +678,10 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
   left:calc(var(--reg) * var(--l));bottom:calc(var(--u) * var(--b));top:auto;height:calc(var(--u) * var(--h));width:calc(var(--u) * var(--h) * .62)}
 .arena.boss .fighter.hero .tag{position:absolute;z-index:3;left:50%;translate:-50% 0;bottom:calc(var(--scale,1) * 100% + 2px);width:max(80px,calc(var(--u) * 21));max-width:none}
 .arena.boss .fighter.hero .figwrap{height:100%;flex:none}
-.arena.boss .fighter.hero{--rh:clamp(130px,calc(var(--u) * var(--h) * var(--scale,1) * 1.1 + 30px),calc(var(--u) * 34))}
-.arena.boss .fighter.hero .ring{top:auto;bottom:max(calc(var(--u) * -1),calc(62px - var(--u) * var(--b)));left:calc(var(--u) * -5);right:auto;height:var(--rh);--bs:max(24px,min(calc(var(--u) * 6.6),calc(var(--rh) / 4.4)))}
-.duel.full .arena.boss .fighter.hero.active .tag{bottom:max(calc(var(--scale,1) * 100% + 2px),calc(var(--rh) - var(--u) + 6px))}
-.arena.boss .fighter.hero .rb{left:calc(var(--k) * -6px);right:auto;transform:translateX(calc((1 - var(--k)) * 14px))}
+.arena.boss .fighter.hero{--rh:clamp(180px,calc(var(--u) * var(--h) * var(--scale,1) * 1.15 + 80px),calc(var(--u) * 46));--rb:max(calc(62px - var(--u) * var(--b)),calc(var(--u) * var(--h) * var(--scale,1) / 2 - var(--rh) / 2))}
+.arena.boss .fighter.hero .ring{top:auto;bottom:var(--rb);left:calc(var(--u) * -5);right:auto;height:var(--rh);--bs:max(30px,min(calc(var(--u) * 6.8),calc(var(--rh) / 5.2)))}
+.duel.full .arena.boss .fighter.hero.active .tag{bottom:max(calc(var(--scale,1) * 100% + 2px),calc(var(--rb) + var(--rh) + 4px))}
+.arena.boss .fighter.hero .rb{left:calc(var(--k) * -22px);right:auto;transform:translateX(calc((1 - var(--k)) * 22px))}
 .arena.boss .fighter.hero .rb small{left:50%;right:auto;translate:-50% 0}
 .duel.full .arena.boss .fighter.hero .ring{left:calc(var(--u) * -6)}
 .duel.boss:not(.full) .fighter.hero .ring{display:none}
@@ -693,6 +693,11 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
 @media (max-width:640px){.arena.boss .tray,.arena.boss .tray.pair{left:50%;right:3%;top:24%;height:12%;gap:4px}}
 .duel.full .bossbar{display:none}
 .arena.boss .readout{z-index:12}
+.fighter.hero .hdice{position:absolute;z-index:0;left:50%;bottom:calc(var(--scale,1) * 70%);translate:-118% 0;display:flex;gap:4px;pointer-events:none}
+.fighter.hero .hdice .grp{display:flex;gap:4px}
+.fighter.hero .hdice .die{--sz:max(30px,calc(var(--u) * 7.5))}
+.fighter.hero .figwrap{z-index:1}
+.arena.boss .fighter.hero.dim{filter:none}.arena.boss .fighter.hero.dim .figwrap{filter:saturate(.55) brightness(.72)}
 .arena.boss .fighter.hero.active{z-index:11!important}
 /* Starvos' lava glow comes from the right, so each Hero casts a soft shadow to the left */
 .arena.boss .fighter.hero .figwrap::after{content:"";position:absolute;z-index:-1;bottom:calc(var(--scale,1) * 19%);left:50%;width:calc(var(--scale,1) * 120%);height:calc(var(--scale,1) * 11%);translate:-80% 50%;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.78),rgba(0,0,0,.4) 55%,transparent);filter:blur(2px);transform:skewX(-35deg);pointer-events:none}
@@ -1131,7 +1136,7 @@ function anim(p,cls){const el=$(`.fighter[data-p="${p}"]`);if(!el)return;el.clas
 function ask(p,label,t,kind){
   if(S.mode==='online')return netAsk(p,label,t,kind);
   const btn=$('#act');setHero(btn,S.F[p].skin);
-  const who=isCPU(p)?'Computer · '+S.F[p].h.name:(S.mode==='cpu'||S.mode==='boss'?'Your '+S.F[p].h.name:'Player '+(p+1)+' · '+S.F[p].h.name);
+  const who=S.mode==='boss'?(kind==='both'?'Heroes':S.F[p].h.name):isCPU(p)?'Computer · '+S.F[p].h.name:(S.mode==='cpu'?'Your '+S.F[p].h.name:'Player '+(p+1)+' · '+S.F[p].h.name);
   setAct(p,who,label,!isCPU(p));if(kind==='both')$('#act').dataset.p='both';
   if(isCPU(p)){return sleep(REDUCED?250:750).then(()=>chk(t))}
   btn.disabled=false;S.asking={p,kind};renderRings();
@@ -1158,21 +1163,24 @@ function chooseAbility(p,t){
   if(isCPU(p)){setAct(p,'Computer · '+f.h.name,'Choosing an Ability…',false);
     let best=-1,bi=0;f.abilities.forEach((a,i)=>{if(a.cd)return;let v=a.dice*3.5+f[a.stat]+(a.debuff?2.5:0)+(a.heal?Math.min(healAmt(f,a),f.maxLife-f.life):0)+Math.random();if(v>best){best=v;bi=i}});
     return sleep(REDUCED?250:800).then(()=>{chk(t);return bi});}
-  setAct(p,S.mode==='cpu'||S.mode==='boss'?'Your '+f.h.name:'Player '+(p+1)+' · '+f.h.name,'Choose an Ability',false);readout(`${f.h.name} · Ability`,(matchMedia('(hover:hover)').matches?'Click a glowing Ability beside your Hero.':'Tap a glowing Ability, then Use.'));
+  setAct(p,S.mode==='boss'?f.h.name:S.mode==='cpu'?'Your '+f.h.name:'Player '+(p+1)+' · '+f.h.name,'Choose an Ability',false);readout(`${f.h.name} · Ability`,(matchMedia('(hover:hover)').matches?'Click a glowing Ability beside your Hero.':'Tap a glowing Ability, then Use.'));
   S.view=p;S.choosing=true;renderSheet();
   return new Promise(res=>{S._pickResolve=res}).then(i=>{chk(t);renderSheet();return i});
 }
 
 // ---------- Dice rolling ----------
 // groups: [{p, sides:[20|6,...], forced?:[values]}]; returns arrays of values per group
+// Starvos mode: a Hero's dice land right behind that Hero and stay until the Hero rolls again
+function heroDice(p){if(S.mode!=='boss'||typeof p!=='number')return null;const f=$(`.fighter.hero[data-p="${p}"]`);if(!f)return null;
+  let h=f.querySelector('.hdice');if(!h){h=document.createElement('div');h.className='hdice';f.prepend(h)}h.innerHTML='';return h}
 async function rollGroups(groups,t){
-  const tray=$('#tray');tray.innerHTML='';tray.className='tray'+(groups.length>1?' pair':'');
+  const tray=$('#tray');tray.innerHTML='';tray.className='tray'+(groups.filter(g=>!(S.mode==='boss'&&typeof g.p==='number')).length>1?' pair':'');
   const many=groups.reduce((n,g)=>n+g.sides.length,0)>2;
   const res=groups.map(g=>g.sides.map((s,i)=>g.forced?.[i]??rnd(s)));
   const els=[];
   groups.forEach((g,gi)=>{const wrap=document.createElement('div');wrap.className='grp';
     g.sides.forEach((s,i)=>{const el=dieEl(g.skin||S.F[g.p].skin,s,rnd(s),(many?'sm ':'')+'rolling'+((S.mode==='boss'?g.p==='boss':g.p===1)?' from1':''));
-      el.style.setProperty('--t',(REDUCED?50:800+i*120)+'ms');wrap.append(el);els.push({el,g,s,v:res[gi][i]})});tray.append(wrap)});
+      el.style.setProperty('--t',(REDUCED?50:800+i*120)+'ms');wrap.append(el);els.push({el,g,s,v:res[gi][i]})});(heroDice(g.p)||tray).append(wrap)});
   const dur=REDUCED?60:800+(Math.max(...groups.map(g=>g.sides.length))-1)*120;
   const start=performance.now();
   await new Promise(r=>{const tick=()=>{const done=performance.now()-start>=dur;
@@ -1253,8 +1261,8 @@ function scrollPick(p,kind,t){
     if(isCPU(p)){btn.disabled=true;setTimeout(go,REDUCED?200:800)}else{btn.onclick=go;btn.focus({preventScroll:true});if(S.mode==='online')netArrived(t).then(go,()=>{})}
   }).then(v=>{chk(t);return v});
 }
-function trayDie(p,v){const tray=$('#tray');if(!tray)return;tray.innerHTML='';tray.className='tray';const g=document.createElement('div');g.className='grp';
-  g.append(dieEl(S.F[p].skin,20,v,v===20?'crit':v===1?'fumble':''));tray.append(g)}
+function trayDie(p,v){const tray=$('#tray');if(!tray)return;const g=document.createElement('div');g.className='grp';
+  g.append(dieEl(S.F[p].skin,20,v,v===20?'crit':v===1?'fumble':''));const h=heroDice(p);if(h){h.append(g);return}tray.innerHTML='';tray.className='tray';tray.append(g)}
 async function tableRoll(p,kind,t,record){
   const f=S.F[p];
   // The rival's (computer's) Calamity and Enhancement rolls happen out of sight; only the result is announced
