@@ -1053,7 +1053,7 @@ function log(html,p,cls=''){const li=document.createElement('li');if(cls)li.clas
   if(p!==undefined&&p!==null){li.style.setProperty('--c',p==='boss'?SKIN.starvos.color:S.F[p].color);li.innerHTML=`<i></i><span>${html}</span>`}else li.innerHTML=`<span>${html}</span>`;
   const ol=$('#log');if(ol){ol.prepend(li)}}
 function banner(text,cls=''){const b=$('#banner');if(!b)return;b.className='banner '+cls;b.innerHTML=`<span>${text}</span>`;}
-function notice(p,kind,head,body){const el=$(`.fighter[data-p="${p}"] .figwrap`);if(!el)return;el.querySelector('.notice')?.remove();
+function notice(p,kind,head,body){body=String(body??'').replace(/ \(Main\)/g,'');const el=$(`.fighter[data-p="${p}"] .figwrap`);if(!el)return;el.querySelector('.notice')?.remove();
   const n=document.createElement('div');n.className='notice '+kind;n.innerHTML=`<b>${head}</b><span>${body}</span>`;el.append(n);setTimeout(()=>n.remove(),REDUCED?400:3200)}
 function floatText(p,text,cls){const el=$(`.fighter[data-p="${p}"] .figwrap`);if(!el)return;const f=document.createElement('div');f.className='float '+cls;f.textContent=text;
   f.style.top=(30+Math.random()*20)+'%';el.append(f);setTimeout(()=>f.remove(),1500)}
@@ -1177,7 +1177,7 @@ function scrollPick(p,kind,t){
       hint.innerHTML=`Rolled <b>${v}</b>`;
       await sleep(REDUCED?150:750);
       const rv=document.createElement('div');rv.className='reveal';
-      rv.innerHTML=`<div class="rv-r">Round ${Math.min(8,Math.max(1,S.round))}</div><div class="rv-k">${kind==='cal'?'Calamity':'Enhancement'}</div><div class="rv-n">${v}</div><div class="rv-t">${sel.querySelector('span').textContent}</div>`;
+      rv.innerHTML=`<div class="rv-r">Round ${Math.min(8,Math.max(1,S.round))}</div><div class="rv-k">${kind==='cal'?'Calamity':'Enhancement'}</div><div class="rv-n">${v}</div><div class="rv-t">${sel.querySelector('span').textContent.replace(/ \(Main\)/g,'')}</div>`;
       ov.querySelector('.scroll').append(rv);
       await sleep(REDUCED?250:2000);
       ov.classList.add('closing');await sleep(REDUCED?50:450);ov.remove();res(v);
