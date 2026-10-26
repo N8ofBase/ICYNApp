@@ -674,13 +674,13 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
 @keyframes flick{50%{transform:scaleY(.82) translateX(-2%)}}
 /* full-screen arena for the boss: same frame as duels, Hero rings instead of the action bar */
 .arena.boss{container-type:size}
-.arena.boss .fighter.hero{--reg:calc(100cqw - min(97cqh,calc(100cqw * .5 / .865)) * .865);--u:min(1cqh,calc(var(--reg) / 60));
+.arena.boss .fighter.hero,.arena.boss .hdslot{--reg:calc(100cqw - min(97cqh,calc(100cqw * .5 / .865)) * .865);--u:min(1cqh,calc(var(--reg) / 60));
   left:calc(var(--reg) * var(--l));bottom:calc(var(--u) * var(--b));top:auto;height:calc(var(--u) * var(--h));width:calc(var(--u) * var(--h) * .62)}
-.arena.boss .fighter.hero .tag{position:absolute;z-index:3;left:50%;translate:-50% 0;bottom:calc(var(--scale,1) * 100% + 2px);width:max(80px,calc(var(--u) * 21));max-width:none}
+.arena.boss .fighter.hero .tag{position:absolute;z-index:3;left:50%;translate:-50% 0;bottom:calc(var(--scale,1) * var(--tg,1) * 100% + 2px);width:max(80px,calc(var(--u) * 21));max-width:none}
 .arena.boss .fighter.hero .figwrap{height:100%;flex:none}
 .arena.boss .fighter.hero{--rh:clamp(180px,calc(var(--u) * var(--h) * var(--scale,1) * 1.15 + 80px),calc(var(--u) * 46));--rb:max(calc(62px - var(--u) * var(--b)),calc(var(--u) * var(--h) * var(--scale,1) / 2 - var(--rh) / 2))}
 .arena.boss .fighter.hero .ring{top:auto;bottom:var(--rb);left:calc(var(--u) * -5);right:auto;height:var(--rh);--bs:max(30px,min(calc(var(--u) * 6.8),calc(var(--rh) / 5.2)))}
-.duel.full .arena.boss .fighter.hero.active .tag{bottom:max(calc(var(--scale,1) * 100% + 2px),calc(var(--rb) + var(--rh) + 4px))}
+.duel.full .arena.boss .fighter.hero.active .tag{bottom:max(calc(var(--scale,1) * var(--tg,1) * 100% + 2px),calc(var(--rb) + var(--rh) + 4px))}
 .arena.boss .fighter.hero .rb{left:calc(var(--k) * -22px);right:auto;transform:translateX(calc((1 - var(--k)) * 22px))}
 .arena.boss .fighter.hero .rb small{left:50%;right:auto;translate:-50% 0}
 .duel.full .arena.boss .fighter.hero .ring{left:calc(var(--u) * -6)}
@@ -693,9 +693,11 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
 @media (max-width:640px){.arena.boss .tray,.arena.boss .tray.pair{left:50%;right:3%;top:24%;height:12%;gap:4px}}
 .duel.full .bossbar{display:none}
 .arena.boss .readout{z-index:12}
-.fighter.hero .hdice{position:absolute;z-index:0;left:50%;bottom:calc(var(--scale,1) * 70%);translate:-118% 0;display:flex;gap:4px;pointer-events:none}
-.fighter.hero .hdice .grp{display:flex;gap:4px}
-.fighter.hero .hdice .die{--sz:max(30px,calc(var(--u) * 7.5))}
+.rb.off{opacity:.38;filter:grayscale(1) brightness(.8)}.rb.off .rbn{opacity:.6}
+.arena.boss .hdslot{position:absolute;z-index:10;pointer-events:none}
+.hdslot .hdice,.fighter.hero .hdice{position:absolute;z-index:0;left:50%;bottom:calc(var(--scale,1) * 42%);translate:-115% 0;display:flex;gap:4px;pointer-events:none}
+.hdslot .hdice .grp,.fighter.hero .hdice .grp{display:flex;gap:4px}
+.hdslot .hdice .die,.fighter.hero .hdice .die{--sz:max(30px,calc(var(--u) * 7.5))}
 .fighter.hero .figwrap{z-index:1}
 .arena.boss .fighter.hero.dim{filter:none}.arena.boss .fighter.hero.dim .figwrap{filter:saturate(.55) brightness(.72)}
 .arena.boss .fighter.hero.active{z-index:11!important}
@@ -1034,7 +1036,8 @@ function renderRings(){if(S.mode==='boss')return renderBossBar();S.F.forEach((f,
 function fillRing(p,mine){const f=S.F[p],el=$(`.ring[data-p="${p}"]`);if(!el)return;
   const wPick=mine&&S.asking&&S.asking.p===p&&S.asking.kind==='weapon';
   const btn=(k,ic,cls,pick)=>`<button class="rb ${cls} ${pick?'pickable':''}" data-k="${k}" style="--i:${k==='w'?2:k<2?k:k+1}" aria-label="${k==='w'?'Weapon Strike':esc(f.abilities[k].name)}">${icon(ic)}<small>${k==='w'?f.weaponDice:f.abilities[k].dice}D6</small><svg class="rbn" viewBox="-60 -60 120 120" aria-hidden="true"><path id="arc${p}${k}" d="M -44 6 A 44 44 0 0 1 44 6" fill="none"/><text><textPath href="#arc${p}${k}" startOffset="50%" text-anchor="middle">${k==='w'?'Weapon Strike':esc(f.abilities[k].name)}</textPath></text></svg></button>`;
-  el.innerHTML=btn('w',f.h.wicon,'wpn'+(f.broken?' broken':''),wPick)+f.abilities.map((a,i)=>btn(i,a.icon,a.cd?'cd':'',mine&&S.choosing&&!a.cd)).join('');
+  const boss=S.mode==='boss'&&mine,choose=mine&&S.choosing;
+  el.innerHTML=btn('w',f.h.wicon,'wpn'+(f.broken?' broken':'')+(boss&&choose?' off':''),wPick)+f.abilities.map((a,i)=>btn(i,a.icon,(a.cd?'cd':'')+(boss&&wPick?' off':''),choose&&!a.cd)).join('');
   el.querySelectorAll('.rb').forEach(b=>wireRb(b,p,f));}
 function wireRb(b,p,f){const k=b.dataset.k==='w'?'w':+b.dataset.k;
     const use=()=>{hideTip();
@@ -1172,7 +1175,7 @@ function chooseAbility(p,t){
 // groups: [{p, sides:[20|6,...], forced?:[values]}]; returns arrays of values per group
 // Starvos mode: a Hero's dice land right behind that Hero and stay until the Hero rolls again
 function heroDice(p){if(S.mode!=='boss'||typeof p!=='number')return null;const f=$(`.fighter.hero[data-p="${p}"]`);if(!f)return null;
-  let h=f.querySelector('.hdice');if(!h){h=document.createElement('div');h.className='hdice';f.prepend(h)}h.innerHTML='';return h}
+  const slot=$(`.hdslot[data-p="${p}"]`)||f;let h=slot.querySelector('.hdice');if(!h){h=document.createElement('div');h.className='hdice';slot.prepend(h)}h.innerHTML='';return h}
 async function rollGroups(groups,t){
   const tray=$('#tray');tray.innerHTML='';tray.className='tray'+(groups.filter(g=>!(S.mode==='boss'&&typeof g.p==='number')).length>1?' pair':'');
   const many=groups.reduce((n,g)=>n+g.sides.length,0)>2;
@@ -1230,10 +1233,11 @@ async function applyEffects(p,list,t){
 function scrollPick(p,kind,t){
   const f=S.F[p],T=kind==='cal'?tables().CAL:tables().ENH,title=kind==='cal'?'Calamities':'Enhancements';
   const who=S.mode==='online'?(p===NET.you?'You':esc(rivalName())):isCPU(p)?'Computer':(S.mode==='cpu'||S.mode==='boss'?'You':'Player '+(p+1));
-  setAct(p,who+' · '+f.h.name,isCPU(p)?'Rolling the scroll…':'Roll on the scroll',false);
+  const whoName=S.mode==='boss'?f.h.name:who+' · '+f.h.name;
+  setAct(p,whoName,isCPU(p)?'Rolling the scroll…':'Roll on the scroll',false);
   const ov=document.createElement('div');ov.className='scroll-ov';setHero(ov,f.skin);
   ov.innerHTML=`<div class="scroll ${kind}" role="dialog" aria-modal="true" aria-label="${title} table"><div class="rod"></div><div class="paper">
-    <div class="sc-head"><div class="k">${who} · ${f.h.name}</div><h2>${title}</h2></div>
+    <div class="sc-head"><div class="k">${whoName}</div><h2>${title}</h2></div>
     <ol class="faces">${Array.from({length:20},(_,i)=>{const n=i+1,l=T[n];return `<li data-n="${n}"><b>${n}</b><span>${l.length?l.map(e=>effText(e,f)).join('; '):(kind==='cal'?'No Calamity':'No Enhancement')}</span></li>`}).join('')}</ol>
     <div class="sc-foot"><button class="sc-die" aria-label="Roll the D20"></button><span class="sc-hint">${isCPU(p)?esc(rivalName())+' rolls…':'Tap the D20 to roll'}</span></div></div><div class="rod"></div></div>`;
   document.body.append(ov);
@@ -1585,7 +1589,7 @@ const bossDown = () => S.boss.life<=0;
 const heroesDown = () => !standing().length;
 // front row first, then the back row
 // l: share of the open ground left of Starvos; b and h: arena-height units (shrink on narrow arenas)
-const DEPTH={brawler:{l:.89,b:5,h:32,z:9,flip:true},maverick:{l:.33,b:13,h:38,z:8},champion:{l:.7,b:31,h:30,z:7},soulseer:{l:.46,b:45,h:27,z:6},whisper:{l:.85,b:51,h:24,z:4}};
+const DEPTH={brawler:{l:.765,b:5,h:32,z:9,flip:true},maverick:{l:.205,b:13,h:38,z:8,tag:.8},champion:{l:.575,b:31,h:30,z:7},soulseer:{l:.335,b:45,h:27,z:6},whisper:{l:.725,b:51,h:24,z:4}};
 
 function gameRow(){return `<div class="mode game" role="group" aria-label="Game"><button id="g-duel" aria-pressed="${S.mode!=='boss'}">Duel</button><button id="g-boss" aria-pressed="${S.mode==='boss'}">Starvos Catastrophe</button></div>`}
 function wireGameRow(){$('#g-duel').onclick=()=>{if(S.mode==='boss'){S.mode=S.duelMode||'cpu';renderSetup()}};$('#g-boss').onclick=()=>{if(S.mode!=='boss'){S.duelMode=S.mode;S.mode='boss';renderSetup()}}}
@@ -1650,7 +1654,7 @@ function renderBossShell(){
    <div class="duel boss"><div class="stagecol">
      <div class="arena boss" id="arena" style="background-image:url(${IMG.starvosBg})">${scorchedSVG()}<div class="doom"></div><div class="embers" aria-hidden="true">${Array.from({length:14},(_,i)=>`<i style="--x:${(i*37)%100}%;--d:${(i*0.83)%6}s;--s:${0.6+(i%4)*0.25}"></i>`).join('')}</div>
        <div class="fighter starvos" data-p="boss"><button class="plate" data-p="boss" aria-label="Show Starvos"></button><div class="figwrap"><span class="svbox"><img class="fig" src="${IMG.starvos}" alt="Starvos"><span class="breath" aria-hidden="true"></span></span></div></div>
-       ${S.F.map((f,p)=>{const d=DEPTH[f.id];return `<div class="fighter hero${d.side?' ring-r':''}" data-p="${p}" style="--l:${d.l};--b:${d.b};--h:${d.h};z-index:${d.z}"><button class="tag" data-p="${p}" aria-label="Show ${f.h.name}"></button><div class="figwrap"><img class="fig" src="${IMG[f.id]}" alt="${f.h.name}"></div><div class="ring" data-p="${p}"></div></div>`}).join('')}
+       ${S.F.map((f,p)=>{const d=DEPTH[f.id];return `<div class="hdslot" data-p="${p}" style="--l:${d.l};--b:${d.b};--h:${d.h};--scale:${f.h.scale}"></div><div class="fighter hero${d.side?' ring-r':''}" data-p="${p}" style="--l:${d.l};--b:${d.b};--h:${d.h};--tg:${d.tag||1};z-index:${d.z}"><button class="tag" data-p="${p}" aria-label="Show ${f.h.name}"></button><div class="figwrap"><img class="fig" src="${IMG[f.id]}" alt="${f.h.name}"></div><div class="ring" data-p="${p}"></div></div>`}).join('')}
        <div class="tray" id="tray"></div><button class="act-d20" id="act" hidden></button><div class="readout" id="readout"><span class="v">The sky darkens…</span></div><div class="banner" id="banner"></div></div>
      <div class="bossbar" id="bossbar"></div>
      <div class="log"><h3><button class="lg-tog" id="logtog" aria-expanded="false"><span>Chronicle</span><small>Last 3 · Show all ▾</small></button><span class="lg-ttl">Chronicle</span></h3><ol id="log"></ol></div>
