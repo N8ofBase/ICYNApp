@@ -1572,7 +1572,7 @@ const bossDown = () => S.boss.life<=0;
 const heroesDown = () => !standing().length;
 // front row first, then the back row
 // l: share of the open ground left of Starvos; b and h: arena-height units (shrink on narrow arenas)
-const DEPTH={whisper:{l:.8,b:15,h:36,z:9},champion:{l:.7,b:31,h:30,z:7},soulseer:{l:.46,b:45,h:27,z:6},brawler:{l:.85,b:51,h:24,z:4},maverick:{l:.1,b:51,h:24,z:4,side:'r'}};
+const DEPTH={brawler:{l:.81,b:15,h:32,z:9,flip:true},maverick:{l:.31,b:21,h:34,z:8},champion:{l:.7,b:31,h:30,z:7},soulseer:{l:.46,b:45,h:27,z:6},whisper:{l:.85,b:51,h:24,z:4}};
 
 function gameRow(){return `<div class="mode game" role="group" aria-label="Game"><button id="g-duel" aria-pressed="${S.mode!=='boss'}">Duel</button><button id="g-boss" aria-pressed="${S.mode==='boss'}">Starvos Catastrophe</button></div>`}
 function wireGameRow(){$('#g-duel').onclick=()=>{if(S.mode==='boss'){S.mode=S.duelMode||'cpu';renderSetup()}};$('#g-boss').onclick=()=>{if(S.mode!=='boss'){S.duelMode=S.mode;S.mode='boss';renderSetup()}}}
@@ -1653,7 +1653,7 @@ function renderBossShell(){
   $('#tolayout').onclick=()=>setLayout(fullView()?'classic':'arena');
   $('#tables').onclick=()=>openSheets();$('#chron').onclick=()=>openSheets(undefined,'log');$('#sheetsx').onclick=closeSheets;$('.sidecol').onclick=e=>{if(e.target.classList.contains('sidecol'))closeSheets()};
   applyLayout();
-  S.F.forEach((f,p)=>{const el=$(`.fighter[data-p="${p}"]`);el.style.setProperty('--c',f.color);el.style.setProperty('--scale',f.h.scale);el.style.setProperty('--sx',f.h.face==='left'?-1:1)});
+  S.F.forEach((f,p)=>{const el=$(`.fighter[data-p="${p}"]`);el.style.setProperty('--c',f.color);el.style.setProperty('--scale',f.h.scale);el.style.setProperty('--sx',(f.h.face==='left'?-1:1)*(DEPTH[f.id].flip?-1:1))});
   renderAll();
 }
 function renderBossFighters(){
