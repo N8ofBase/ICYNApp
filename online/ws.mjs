@@ -18,6 +18,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand, DeleteCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { ApiGatewayManagementApiClient, PostToConnectionCommand } from '@aws-sdk/client-apigatewaymanagementapi';
 import { replay, accepts, HEROES } from './engine.mjs';
+import { replayBoss, acceptsBoss, waitingOn } from './boss.mjs';
 import { recordMatch } from './record.mjs';
 
 const db = DynamoDBDocumentClient.from(new DynamoDBClient({}));
@@ -28,6 +29,9 @@ const CLIENT = process.env.CLIENT_ID || '32atvvme5lvlrfpaqhcj7v5vai';
 const ISSUER = `https://cognito-idp.us-east-1.amazonaws.com/${POOL}`;
 const NUDGE_MS = 45000;
 const DAY = 86400;
+const BOSS_SEATS = 5;
+const isBoss = (game) => game.setup.mode === 'boss';
+const run = (game) => (isBoss(game) ? replayBoss : replay)(game.seed, game.setup, game.inputs);
 
 // ---------- Cognito ID token check (RS256 against the pool's JWKS) ----------
 let jwks = null;
@@ -61,7 +65,18 @@ async function send(api, connectionId, msg) {
 }
 
 function stateFor(game, you, since = 0) {
-  const r = game.status === 'waiting' ? { events: [], pending: null, result: null } : replay(game.seed, game.setup, game.inputs);
+  const r = game.status === 'waiting' ? { events: [], pending: null, result: null } : run(game);
+  if (isBoss(game)) {
+    const from = Math.max(0, Math.min(since, r.events.length));
+    return {
+      type: 'state', mode: 'boss', gameId: game.gameId, code: game.code, status: game.status, you, host: 0,
+      players: game.players.map((u, i) => ({ name: game.names[i] || null, heroes: game.setup.heroes.filter((h, k) => game.setup.owners[k] === i) })),
+      heroes: game.setup.heroes, owners: game.setup.owners,
+      since: from, events: r.events.slice(from), eventCount: r.events.length,
+      pending: r.pending, waiting: waitingOn(r.pending, game.setup.owners), away: game.left || [], pendingSince: game.pendingSince || null,
+      result: game.forfeit ? { outcome: 'abandoned', forfeit: true } : r.result,
+    };
+  }
   const from = Math.max(0, Math.min(since, r.events.length));
   return {
     type: 'state', gameId: game.gameId, code: game.code, status: game.status, you,
@@ -83,10 +98,11 @@ async function saveGame(game, prevVersion) {
 
 // Apply one input (or an auto-play) and record results when the duel ends.
 async function advance(game, p, input) {
-  const before = replay(game.seed, game.setup, game.inputs);
-  if (!accepts(before.pending, p, input)) return 'Not your move';
-  game.inputs = [...game.inputs, { kind: input.kind, p, ...(input.kind === 'ability' ? { choice: input.choice } : {}) }];
-  const after = replay(game.seed, game.setup, game.inputs);
+  const before = run(game);
+  const boss = isBoss(game);
+  if (!(boss ? acceptsBoss(before.pending, p, input, game.setup.owners) : accepts(before.pending, p, input))) return 'Not your move';
+  game.inputs = [...game.inputs, { kind: input.kind, [boss ? 'by' : 'p']: p, ...(input.kind === 'ability' ? { choice: input.choice } : {}) }];
+  const after = run(game);
   game.pendingSince = Date.now();
   if (after.result) finish(game, after.result);
   return null;
@@ -98,6 +114,7 @@ function finish(game, result) {
 }
 async function recordResults(game) {
   const result = game.finished;
+  if (isBoss(game)) return recordBoss(game, result);
   // An early forfeit (before round 3) is history only, so two accounts can't farm wins.
   const mode = result.forfeit && result.rounds < 3 ? 'online-unranked' : 'online';
   await Promise.all(game.players.map((userId, i) => recordMatch(userId, { nickname: game.names[i] }, {
@@ -106,6 +123,29 @@ async function recordResults(game) {
     startingLife: game.setup.life, maxLife: result.peakMax ? result.peakMax[i] : undefined,
   }).catch((e) => console.error('record', e))));
 }
+
+// Starvos battles count toward each player's Starvos stats (player.sv), not the duel rankings.
+// A battle abandoned before round 3 is not recorded.
+async function recordBoss(game, result) {
+  if (result.forfeit && result.rounds < 3) return;
+  const names = game.setup.heroes.map((id) => HEROES[id].name);
+  const heroDamage = Object.fromEntries(names.map((n, k) => [n, (result.dealt || [])[k] || 0]));
+  await Promise.all(game.players.map((userId, i) => recordMatch(userId, { nickname: game.names[i] }, {
+    mode: 'starvos', online: true, result: result.outcome === 'win' ? 'win' : 'loss', outcome: result.outcome, rounds: result.rounds || 8,
+    heroes: names, mine: names.filter((n, k) => game.setup.owners[k] === i), survivors: result.survivors || 0, players: game.players.length,
+    damage: game.setup.owners.reduce((a, o, k) => a + (o === i ? heroDamage[names[k]] : 0), 0), bossLife: result.bossLife, heroDamage,
+  }).catch((e) => console.error('record', e))));
+}
+// Seats whose connection has dropped: their prompts autoplay at once.
+async function dropped(game, seats) {
+  const out = [];
+  for (const s of seats) {
+    const c = game.conns[s] && (await db.send(new GetCommand({ TableName: CONNS, Key: { connectionId: game.conns[s] } }))).Item;
+    if (!c) out.push(s);
+  }
+  return out;
+}
+const autoInput = (pending) => ({ kind: pending.kind, choice: pending.kind === 'ability' ? pending.options[0] : undefined });
 
 export async function handler(event) {
   const { routeKey, connectionId } = event.requestContext;
@@ -128,6 +168,20 @@ export async function handler(event) {
   try { msg = JSON.parse(event.body || '{}'); } catch (e) { await send(api, connectionId, { type: 'error', error: 'Bad JSON' }); return { statusCode: 400 }; }
   const fail = async (error) => { await send(api, connectionId, { type: 'error', error, action: msg.action }); return { statusCode: 200 }; };
 
+  if (msg.action === 'create' && msg.mode === 'boss') {
+    const heroes = [...new Set([].concat(msg.heroes || msg.hero || []))].filter((h) => HEROES[h]);
+    const game = {
+      gameId: crypto.randomUUID(), code: newCode(), status: 'waiting', seed: crypto.randomBytes(16).toString('hex'),
+      setup: { mode: 'boss', heroes, owners: heroes.map(() => 0) }, players: [conn.userId], names: [conn.name],
+      conns: [connectionId], inputs: [], version: 0, createdAt: new Date().toISOString(),
+      ttl: Math.floor(Date.now() / 1000) + DAY,
+    };
+    await db.send(new PutCommand({ TableName: GAMES, Item: game }));
+    await db.send(new UpdateCommand({ TableName: CONNS, Key: { connectionId }, UpdateExpression: 'SET gameId = :g', ExpressionAttributeValues: { ':g': game.gameId } }));
+    await send(api, connectionId, { type: 'created', mode: 'boss', gameId: game.gameId, code: game.code });
+    await send(api, connectionId, stateFor(game, 0));
+    return { statusCode: 200 };
+  }
   if (msg.action === 'create') {
     if (!HEROES[msg.hero] || ![50, 100].includes(Number(msg.life))) return fail('Pick a Hero and a starting Life of 50 or 100');
     const game = {
@@ -146,7 +200,7 @@ export async function handler(event) {
   for (let attempt = 0; attempt < 2; attempt++) {
     let game;
     if (msg.action === 'join') {
-      if (!HEROES[msg.hero]) return fail('Pick a Hero');
+      if (!HEROES[msg.hero] && !msg.mode) return fail('Pick a Hero');
       const q = await db.send(new QueryCommand({ TableName: GAMES, IndexName: 'byCode', KeyConditionExpression: 'code = :c', ExpressionAttributeValues: { ':c': String(msg.code || '').toUpperCase() } }));
       game = q.Items && q.Items[0] && (await db.send(new GetCommand({ TableName: GAMES, Key: { gameId: q.Items[0].gameId } }))).Item;
       if (!game) return fail('No duel with that code');
@@ -157,7 +211,46 @@ export async function handler(event) {
     const prev = game.version;
     let you = game.players.indexOf(conn.userId);
 
-    if (msg.action === 'join') {
+    const boss = isBoss(game);
+    if (!boss && msg.action === 'join' && !HEROES[msg.hero]) return fail('Pick a Hero');
+    if (boss && msg.action === 'join') {
+      if (you === -1) {
+        if (game.status !== 'waiting') return fail('That battle has already begun');
+        if (game.players.length >= BOSS_SEATS) return fail('That battle is full');
+        you = game.players.length;
+        game.players.push(conn.userId); game.names.push(conn.name); game.conns.push(null);
+      }
+      game.conns[you] = connectionId;
+    } else if (boss && (msg.action === 'claim' || msg.action === 'release')) {
+      if (you === -1) return fail('You are not in this battle');
+      if (game.status !== 'waiting') return fail('The battle has already begun');
+      const h = String(msg.hero || ''), k = game.setup.heroes.indexOf(h);
+      if (!HEROES[h]) return fail('Pick a Hero');
+      if (msg.action === 'claim') {
+        if (k >= 0) return fail(game.setup.owners[k] === you ? 'You already lead that Hero' : `${game.names[game.setup.owners[k]]} already leads that Hero`);
+        game.setup.heroes.push(h); game.setup.owners.push(you);
+      } else {
+        if (k < 0 || game.setup.owners[k] !== you) return fail('That Hero is not yours');
+        game.setup.heroes.splice(k, 1); game.setup.owners.splice(k, 1);
+      }
+    } else if (boss && msg.action === 'leave' && game.status === 'waiting') {
+      if (you === -1) return fail('You are not in this battle');
+      if (you === 0) { game.status = 'done'; game.forfeit = { by: 0, at: new Date().toISOString() }; game.finished = { outcome: 'abandoned', forfeit: true, rounds: 0 }; }
+      else {
+        // later seats shift down one
+        game.players.splice(you, 1); game.names.splice(you, 1); game.conns.splice(you, 1);
+        const keep = game.setup.owners.map((o) => o !== you);
+        game.setup.heroes = game.setup.heroes.filter((h, k) => keep[k]);
+        game.setup.owners = game.setup.owners.filter((o, k) => keep[k]).map((o) => (o > you ? o - 1 : o));
+      }
+    } else if (boss && msg.action === 'start') {
+      if (you !== 0) return fail('Only the host can begin the battle');
+      if (game.status !== 'waiting') return fail('The battle has already begun');
+      if (game.players.length < 2) return fail('Wait for at least one friend to join');
+      const idle = game.players.map((u, i) => i).filter((i) => !game.setup.owners.includes(i));
+      if (idle.length) return fail(`${idle.map((i) => game.names[i]).join(', ')} must lead a Hero first`);
+      game.status = 'active'; game.pendingSince = Date.now();
+    } else if (msg.action === 'join') {
       if (you === 0 && game.status === 'waiting') return fail('Share the code with a friend; you cannot join your own duel');
       if (you === -1) {
         if (game.status !== 'waiting') return fail('That duel has already started');
@@ -170,11 +263,32 @@ export async function handler(event) {
       return fail('You are not in this duel');
     } else if (msg.action === 'resume') {
       game.conns[you] = connectionId;
+      if (game.left) game.left = game.left.filter((s) => s !== you);
     } else if (game.status !== 'active') {
       return fail('This duel is not in play');
     } else if (msg.action === 'act') {
       const err = await advance(game, you, { kind: msg.kind, choice: msg.choice });
       if (err) return fail(err);
+    } else if (boss && msg.action === 'nudge') {
+      const { pending } = run(game);
+      if (!pending) return fail('Nothing is waiting');
+      const late = waitingOn(pending, game.setup.owners).filter((s) => s !== you);
+      if (!late.length) return fail('It is your move');
+      const gone = [...new Set([...(game.left || []).filter((s) => late.includes(s)), ...(await dropped(game, late))])];
+      const seats = Date.now() - (game.pendingSince || 0) >= NUDGE_MS ? late : gone;
+      if (!seats.length) return fail('Give your allies a little longer');
+      // group prompts take one press per seat; a solo prompt plays once
+      for (const s of seats) { const cur = run(game).pending; if (!cur || !waitingOn(cur, game.setup.owners).includes(s)) break; await advance(game, s, autoInput(cur)); }
+    } else if (boss && msg.action === 'forfeit') {
+      // Leaving mid-battle: your Heroes fight on autopilot; the host may abandon the whole battle.
+      if (you !== 0 || !msg.all) {
+        game.left = [...new Set([...(game.left || []), you])];
+      } else {
+        game.forfeit = { by: you, at: new Date().toISOString() };
+        game.status = 'done';
+        const r = run(game);
+        finish(game, { outcome: 'abandoned', forfeit: true, rounds: Math.max(1, ...r.events.map((e) => e.round || 0)) });
+      }
     } else if (msg.action === 'nudge') {
       if (Date.now() - (game.pendingSince || 0) < NUDGE_MS) return fail('Give your rival a little longer');
       const { pending } = replay(game.seed, game.setup, game.inputs);

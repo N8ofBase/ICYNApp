@@ -23,3 +23,13 @@
 - Tables: `icyn-games` (gameId, GSI `byCode` on `code`, TTL `ttl`) and `icyn-connections` (connectionId, TTL `ttl`).
 - WebSocket API: route selection `$request.body.action`, routes `$connect`, `$disconnect`, `create`, `join`, `resume`, `act`, `nudge`, `forfeit`. The ID token is passed as `?token=` on connect.
 - `record.mjs` exports `recordMatch(userId, claims, match)`, the same ranked-stats logic as the HTTP API with mode `online` counted as ranked.
+
+## Starvos co-op (`boss.mjs`)
+
+`create {mode:'boss', hero?}` opens a lobby (seat 0 = host). Friends `join {mode:'boss', code}`, then `claim {hero}` / `release {hero}`; `leave` quits the lobby (the host leaving closes it). The host sends `start` once 2 to 5 players are in and each leads at least one Hero. Setup is `{mode:'boss', heroes, owners}`; Starvos has 80 Life per Hero.
+
+Prompts: `scroll`, `attack`, `ability` belong to Hero `p` (its owner answers). Group prompts `fear`, `speed`, `dodge`, `enh` carry `ps` (Heroes rolling) and `wait` (seats still to press); each seat sends one `act` and the dice roll after the last. State adds `mode:'boss'`, `heroes`, `owners`, `waiting` (seats the game waits on) and `away` (seats that left mid-battle).
+
+`nudge` autoplays seats that have dropped or left at once, and anyone after 45 s. `forfeit` mid-battle hands your Heroes to autopilot; the host's `forfeit {all:true}` abandons the battle. Results go to `recordMatch` with mode `starvos` (Starvos profile stats); battles abandoned before round 3 are not recorded.
+
+Events: `start`, `round`, `fearWave {ps}`, `fear {ps, rolls, tot, afraid}`, `fearDamage {ps, dice, dmg}`, `strike {a}`, `dodge {ps, rolls, caught}`, `strikeHit {a, ps, dice, bonus, dmg}`, `speed {ps, nat, tot}`, `order {order, lost}`, `turn`, `attack`, `damage`, `table`, `randomAbility`, `allCooldown`, `repaired`, `fallen {p}`, `end {outcome: win|fallen|annihilate, rounds, bossLife, bossLeft, survivors, life, dealt}`. `F` is `{heroes, boss}`.
