@@ -133,7 +133,8 @@ async function recordBoss(game, result) {
   await Promise.all(game.players.map((userId, i) => recordMatch(userId, { nickname: game.names[i] }, {
     mode: 'starvos', online: true, result: result.outcome === 'win' ? 'win' : 'loss', outcome: result.outcome, rounds: result.rounds || 8,
     heroes: names, mine: names.filter((n, k) => game.setup.owners[k] === i), survivors: result.survivors || 0, players: game.players.length,
-    damage: game.setup.owners.reduce((a, o, k) => a + (o === i ? heroDamage[names[k]] : 0), 0), bossLife: result.bossLife, heroDamage,
+    damage: (result.bossLife || 0) - (result.bossLeft || 0), myDamage: game.setup.owners.reduce((a, o, k) => a + (o === i ? heroDamage[names[k]] : 0), 0),
+    bossLife: result.bossLife, heroDamage,
   }).catch((e) => console.error('record', e))));
 }
 // Seats whose connection has dropped: their prompts autoplay at once.
