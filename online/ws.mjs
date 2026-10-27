@@ -130,12 +130,16 @@ async function recordBoss(game, result) {
   if (result.forfeit && result.rounds < 3) return;
   const names = game.setup.heroes.map((id) => HEROES[id].name);
   const heroDamage = Object.fromEntries(names.map((n, k) => [n, (result.dealt || [])[k] || 0]));
-  await Promise.all(game.players.map((userId, i) => recordMatch(userId, { nickname: game.names[i] }, {
-    mode: 'starvos', online: true, result: result.outcome === 'win' ? 'win' : 'loss', outcome: result.outcome, rounds: result.rounds || 8,
-    heroes: names, mine: names.filter((n, k) => game.setup.owners[k] === i), survivors: result.survivors || 0, players: game.players.length,
-    damage: (result.bossLife || 0) - (result.bossLeft || 0), myDamage: game.setup.owners.reduce((a, o, k) => a + (o === i ? heroDamage[names[k]] : 0), 0),
-    bossLife: result.bossLife, heroDamage,
-  }).catch((e) => console.error('record', e))));
+  // Each profile's Hero stats credit only the Heroes that player led (heroes, heroDamage); damage is the whole party's.
+  await Promise.all(game.players.map((userId, i) => {
+    const mine = names.filter((n, k) => game.setup.owners[k] === i);
+    return recordMatch(userId, { nickname: game.names[i] }, {
+      mode: 'starvos', online: true, result: result.outcome === 'win' ? 'win' : 'loss', outcome: result.outcome, rounds: result.rounds || 8,
+      heroes: mine, party: names, survivors: result.survivors || 0, players: game.players.length,
+      damage: (result.bossLife || 0) - (result.bossLeft || 0), bossLife: result.bossLife,
+      heroDamage: Object.fromEntries(mine.map((n) => [n, heroDamage[n]])),
+    }).catch((e) => console.error('record', e));
+  }));
 }
 // Seats whose connection has dropped: their prompts autoplay at once.
 async function dropped(game, seats) {
