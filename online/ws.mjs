@@ -135,7 +135,8 @@ async function recordBoss(game, result) {
     const mine = names.filter((n, k) => game.setup.owners[k] === i);
     return recordMatch(userId, { nickname: game.names[i] }, {
       mode: 'starvos', online: true, result: result.outcome === 'win' ? 'win' : 'loss', outcome: result.outcome, rounds: result.rounds || 8,
-      heroes: mine, party: names, survivors: result.survivors || 0, players: game.players.length,
+      heroes: mine, party: names, players: game.players.length,
+      survivors: game.setup.owners.filter((o, k) => o === i && (result.life || [])[k] > 0).length,
       damage: (result.bossLife || 0) - (result.bossLeft || 0), bossLife: result.bossLife,
       heroDamage: Object.fromEntries(mine.map((n) => [n, heroDamage[n]])),
     }).catch((e) => console.error('record', e));
