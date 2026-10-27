@@ -1589,7 +1589,7 @@ const bossDown = () => S.boss.life<=0;
 const heroesDown = () => !standing().length;
 // front row first, then the back row
 // l: share of the open ground left of Starvos; b and h: arena-height units (shrink on narrow arenas)
-const DEPTH={brawler:{l:.765,b:5,h:32,z:9,flip:true},maverick:{l:.205,b:13,h:38,z:8,tag:.7},champion:{l:.575,b:31,h:30,z:7},soulseer:{l:.335,b:45,h:27,z:6},whisper:{l:.725,b:41,h:27,z:5,tx:11}};
+const DEPTH={brawler:{l:.765,b:5,h:32,z:9,flip:true},maverick:{l:.205,b:13,h:38,z:8,tag:.7},champion:{l:.575,b:31,h:30,z:7},soulseer:{l:.335,b:45,h:27,z:6},whisper:{l:.85,b:48,h:24,z:5}};
 
 function gameRow(){return `<div class="mode game" role="group" aria-label="Game"><button id="g-duel" aria-pressed="${S.mode!=='boss'}">Duel</button><button id="g-boss" aria-pressed="${S.mode==='boss'}">Starvos Catastrophe</button></div>`}
 function wireGameRow(){$('#g-duel').onclick=()=>{if(S.mode==='boss'){S.mode=S.duelMode||'cpu';renderSetup()}};$('#g-boss').onclick=()=>{if(S.mode!=='boss'){S.duelMode=S.mode;S.mode='boss';renderSetup()}}}
