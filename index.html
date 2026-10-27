@@ -691,6 +691,9 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
 /* dice land over the open ground, clear of the dragon */
 .arena.boss .tray,.arena.boss .tray.pair{left:17%;right:54%;top:3%;height:17%;justify-content:center;gap:clamp(6px,2%,22px)}
 @media (max-width:640px){.arena.boss .tray,.arena.boss .tray.pair{left:50%;right:3%;top:24%;height:12%;gap:4px}}
+/* Starvos' own dice tumble out in front of it */
+.arena.boss .tray.sv{left:auto;right:3%;width:min(46%,560px);top:22%;height:auto;flex-wrap:wrap;gap:6px 14px;justify-content:center}
+.arena.boss .tray.sv .grp{gap:3px}
 .duel.full .bossbar{display:none}
 .arena.boss .readout{z-index:12}
 .rb.off{opacity:.38;filter:grayscale(1) brightness(.8)}.rb.off .rbn{opacity:.6}
@@ -787,7 +790,7 @@ const ALT = {
 };
 const SKIN = {};
 for(const id of ORDER){SKIN[id]={color:HEROES[id].color,ink:HEROES[id].ink,dice:HEROES[id].dice};SKIN[id+'_alt']=ALT[id]}
-SKIN.starvos={color:'#8f2f17',ink:'#fff',dice:{name:'Dragonfire',a:'#ffa24a',b:'#3a0b06',ink:'#fff3d0',edge:'#ffcf7a',glow:'rgba(255,110,40,.7)',tex:'studs'}};
+SKIN.starvos={color:'#8f2f17',ink:'#fff',dice:{name:'Death Dragon',a:'#3b1510',b:'#060203',ink:'#ffc061',edge:'#ff5a1a',glow:'rgba(255,60,20,.85)',tex:'lava'}};
 const skinFor = (picks,p) => p===1&&picks[0]===picks[1] ? picks[1]+'_alt' : picks[p];
 const healAmt = (f,a) => a.heal ? Math.round(a.heal*3.5) : 0; // average of the heal dice, for CPU choice
 const STATS = ['def','power','energy','speed','charm'];
@@ -826,6 +829,7 @@ function buildDefs(){
   s+=`<pattern id="t-grain" width="40" height="8" patternUnits="userSpaceOnUse"><path d="M0 4 Q10 1 20 4 T40 4" fill="none" stroke="rgba(30,20,5,.3)" stroke-width="1"/></pattern>`;
   s+=`<pattern id="t-sparkle" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="5" cy="6" r=".9" fill="#fff" opacity=".9"/><circle cx="17" cy="14" r=".6" fill="#fff" opacity=".7"/><circle cx="11" cy="20" r="1.1" fill="#d9c4ff" opacity=".8"/></pattern>`;
   s+=`<radialGradient id="t-smoke" cx=".3" cy=".3" r=".8"><stop offset="0" stop-color="#b8b9d6" stop-opacity=".35"/><stop offset=".5" stop-color="#b8b9d6" stop-opacity=".05"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>`;
+  s+=`<pattern id="t-lava" width="46" height="46" patternUnits="userSpaceOnUse"><g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8 L12 14 L10 24 L20 30 L18 42 M12 14 L24 10 L32 18 L44 14 M32 18 L30 28 L40 36 M20 30 L30 28" stroke="#ff4a12" stroke-width="2.6" opacity=".45"/><path d="M2 8 L12 14 L10 24 L20 30 L18 42 M12 14 L24 10 L32 18 L44 14 M32 18 L30 28 L40 36 M20 30 L30 28" stroke="#ffb347" stroke-width=".9"/></g></pattern>`;
   document.getElementById('dicedefs').innerHTML=s;
 }
 const HEX='50,3 91,26.5 91,73.5 50,97 9,73.5 9,26.5';
@@ -1177,7 +1181,7 @@ function chooseAbility(p,t){
 function heroDice(p){if(S.mode!=='boss'||typeof p!=='number')return null;const f=$(`.fighter.hero[data-p="${p}"]`);if(!f)return null;
   const slot=$(`.hdslot[data-p="${p}"]`)||f;let h=slot.querySelector('.hdice');if(!h){h=document.createElement('div');h.className='hdice';slot.prepend(h)}h.innerHTML='';return h}
 async function rollGroups(groups,t){
-  const tray=$('#tray');tray.innerHTML='';tray.className='tray'+(groups.filter(g=>!(S.mode==='boss'&&typeof g.p==='number')).length>1?' pair':'');
+  const tray=$('#tray');tray.innerHTML='';tray.className='tray'+(groups.filter(g=>!(S.mode==='boss'&&typeof g.p==='number')).length>1?' pair':'')+(groups.every(g=>g.p==='boss')?' sv':'');
   const many=groups.reduce((n,g)=>n+g.sides.length,0)>2;
   const res=groups.map(g=>g.sides.map((s,i)=>g.forced?.[i]??rnd(s)));
   const els=[];
@@ -1766,8 +1770,7 @@ async function starvosStrike(t){
   readout(`Starvos · ${a.name}`,`${svEffect(a)} (${B[a.stat]})`);log(`<b>Starvos</b> uses <b>${a.name}</b>: ${svEffect(a).toLowerCase()} (${B[a.stat]})`,'boss');
   await sleep(REDUCED?100:1100);chk(t);
   const targets=a.all?standing():[await randomTarget(t)];
-  await ask(targets[0],`Roll ${a.name} damage`,t,'both');
-  const res=await rollGroups(targets.map(p=>({p,sides:Array(a.dice).fill(a.sides)})),t);
+  const res=await rollGroups(targets.map(()=>({p:'boss',skin:'starvos',sides:Array(a.dice).fill(a.sides)})),t);
   const parts=targets.map((p,i)=>{const d=res[i].reduce((x,y)=>x+y,0)+B[a.stat];heroHurt(p,d);return `${S.F[p].h.name} −${d}`});
   readout(`Starvos · ${a.name}`,parts.join(' · '));log(`${a.name} hits: ${parts.join(', ')}`,'boss');
   renderAll();await sleep(REDUCED?100:1000);chk(t);
