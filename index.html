@@ -695,15 +695,16 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
 .arena.boss .tray.sv{left:auto;right:3%;width:min(46%,560px);top:22%;height:auto;flex-wrap:wrap;gap:6px 14px;justify-content:center}
 .arena.boss .tray.sv .grp{gap:3px}
 .duel.full .bossbar{display:none}
-.arena.boss .readout{z-index:12}
+.arena.boss .readout{z-index:15}
 .rb.off{opacity:.38;filter:grayscale(1) brightness(.8)}.rb.off .rbn{opacity:.6}
-.arena.boss .hdslot{position:absolute;z-index:10;pointer-events:none}
-.hdslot .hdice,.fighter.hero .hdice{position:absolute;z-index:0;left:50%;bottom:calc(var(--scale,1) * 42%);translate:-115% 0;display:flex;gap:4px;pointer-events:none}
+.arena.boss .hdslot{position:absolute;z-index:12;pointer-events:none}.arena.boss .hdslot.hcur{z-index:14}
+.hdslot .hdice,.fighter.hero .hdice{position:absolute;z-index:0;left:58%;bottom:calc(var(--scale,1) * 3%);translate:0 0;display:flex;gap:4px;pointer-events:none}
+.hdslot .hdice .die{--fx:-110px}
 .hdslot .hdice .grp,.fighter.hero .hdice .grp{display:flex;gap:4px}
 .hdslot .hdice .die,.fighter.hero .hdice .die{--sz:max(30px,calc(var(--u) * 7.5))}
 .fighter.hero .figwrap{z-index:1}
 .arena.boss .fighter.hero.dim{filter:none}.arena.boss .fighter.hero.dim .figwrap{filter:grayscale(.9) brightness(.62)}.arena.boss .fighter.hero.dim .tag{opacity:.7}
-.arena.boss .fighter.hero.active{z-index:11!important}
+.arena.boss .fighter.hero.active{z-index:13!important}
 /* Starvos' lava glow comes from the right, so each Hero casts a soft shadow to the left */
 .arena.boss .fighter.hero .figwrap::after{content:"";position:absolute;z-index:-1;bottom:calc(var(--scale,1) * 19%);left:50%;width:calc(var(--scale,1) * 120%);height:calc(var(--scale,1) * 11%);translate:-80% 50%;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.78),rgba(0,0,0,.4) 55%,transparent);filter:blur(2px);transform:skewX(-35deg);pointer-events:none}
 .arena.boss .fighter.hero .fig{filter:drop-shadow(-5px 4px 5px rgba(0,0,0,.55)) drop-shadow(3px 0 6px rgba(255,90,30,.18))}
@@ -1682,7 +1683,7 @@ function renderBossFighters(){
   S.F.forEach((f,p)=>{f.peakMax=Math.max(f.peakMax||0,f.maxLife);const el=$(`.fighter[data-p="${p}"]`);if(!el)return;
     el.classList.toggle('active',S.active===p);el.classList.toggle('dim',typeof S.active==='number'&&S.active!==p);
     el.classList.toggle('fallen',f.life<=0);el.classList.toggle('afraid',!!f.afraid&&f.life>0);
-    $(`.hdslot[data-p="${p}"]`)?.classList.toggle('nodice',f.life<=0||!!f.afraid||(typeof S.active==='number'&&S.active!==p));
+    $(`.hdslot[data-p="${p}"]`)?.classList.toggle('nodice',f.life<=0||!!f.afraid||(typeof S.active==='number'&&S.active!==p));$(`.hdslot[data-p="${p}"]`)?.classList.toggle('hcur',S.active===p);
     el.querySelector('.tag').innerHTML=`<b><span>${f.h.name}</span><span>${f.life<=0?'Fallen':f.afraid?'Afraid':f.life}</span></b><div class="hp"><i style="width:${Math.max(0,Math.min(100,f.life/f.maxLife*100))}%"></i></div>`});
   $('#tray')?.classList.toggle('herot',typeof S.active==='number');
   const B=S.boss,el=$('.fighter[data-p="boss"]');if(!el)return;
