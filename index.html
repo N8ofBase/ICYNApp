@@ -676,7 +676,7 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
 .arena.boss{container-type:size}
 .arena.boss .fighter.hero,.arena.boss .hdslot{--reg:calc(100cqw - min(97cqh,calc(100cqw * .5 / .865)) * .865);--u:min(1cqh,calc(var(--reg) / 60));
   left:calc(var(--reg) * var(--l));bottom:calc(var(--u) * var(--b));top:auto;height:calc(var(--u) * var(--h));width:calc(var(--u) * var(--h) * .62)}
-.arena.boss .fighter.hero .tag{position:absolute;z-index:3;left:50%;translate:-50% 0;bottom:calc(var(--scale,1) * var(--tg,1) * 100% + 2px);width:max(80px,calc(var(--u) * 21));max-width:none}
+.arena.boss .fighter.hero .tag{position:absolute;z-index:3;left:50%;translate:calc(-50% + var(--u) * var(--tx,0)) 0;bottom:calc(var(--scale,1) * var(--tg,1) * 100% + 2px);width:max(80px,calc(var(--u) * 21));max-width:none}
 .arena.boss .fighter.hero .figwrap{height:100%;flex:none}
 .arena.boss .fighter.hero{--rh:clamp(180px,calc(var(--u) * var(--h) * var(--scale,1) * 1.15 + 80px),calc(var(--u) * 46));--rb:max(calc(62px - var(--u) * var(--b)),calc(var(--u) * var(--h) * var(--scale,1) / 2 - var(--rh) / 2))}
 .arena.boss .fighter.hero .ring{top:auto;bottom:var(--rb);left:calc(var(--u) * -5);right:auto;height:var(--rh);--bs:max(30px,min(calc(var(--u) * 6.8),calc(var(--rh) / 5.2)))}
@@ -699,7 +699,7 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
 .hdslot .hdice .grp,.fighter.hero .hdice .grp{display:flex;gap:4px}
 .hdslot .hdice .die,.fighter.hero .hdice .die{--sz:max(30px,calc(var(--u) * 7.5))}
 .fighter.hero .figwrap{z-index:1}
-.arena.boss .fighter.hero.dim{filter:none}.arena.boss .fighter.hero.dim .figwrap{filter:saturate(.55) brightness(.72)}
+.arena.boss .fighter.hero.dim{filter:none}.arena.boss .fighter.hero.dim .figwrap{filter:grayscale(.9) brightness(.62)}.arena.boss .fighter.hero.dim .tag{opacity:.7}
 .arena.boss .fighter.hero.active{z-index:11!important}
 /* Starvos' lava glow comes from the right, so each Hero casts a soft shadow to the left */
 .arena.boss .fighter.hero .figwrap::after{content:"";position:absolute;z-index:-1;bottom:calc(var(--scale,1) * 19%);left:50%;width:calc(var(--scale,1) * 120%);height:calc(var(--scale,1) * 11%);translate:-80% 50%;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.78),rgba(0,0,0,.4) 55%,transparent);filter:blur(2px);transform:skewX(-35deg);pointer-events:none}
@@ -1589,7 +1589,7 @@ const bossDown = () => S.boss.life<=0;
 const heroesDown = () => !standing().length;
 // front row first, then the back row
 // l: share of the open ground left of Starvos; b and h: arena-height units (shrink on narrow arenas)
-const DEPTH={brawler:{l:.765,b:5,h:32,z:9,flip:true},maverick:{l:.205,b:13,h:38,z:8,tag:.8},champion:{l:.575,b:31,h:30,z:7},soulseer:{l:.335,b:45,h:27,z:6},whisper:{l:.725,b:51,h:24,z:4}};
+const DEPTH={brawler:{l:.765,b:5,h:32,z:9,flip:true},maverick:{l:.205,b:13,h:38,z:8,tag:.7},champion:{l:.575,b:31,h:30,z:7},soulseer:{l:.335,b:45,h:27,z:6},whisper:{l:.725,b:41,h:27,z:5,tx:11}};
 
 function gameRow(){return `<div class="mode game" role="group" aria-label="Game"><button id="g-duel" aria-pressed="${S.mode!=='boss'}">Duel</button><button id="g-boss" aria-pressed="${S.mode==='boss'}">Starvos Catastrophe</button></div>`}
 function wireGameRow(){$('#g-duel').onclick=()=>{if(S.mode==='boss'){S.mode=S.duelMode||'cpu';renderSetup()}};$('#g-boss').onclick=()=>{if(S.mode!=='boss'){S.duelMode=S.mode;S.mode='boss';renderSetup()}}}
@@ -1654,7 +1654,7 @@ function renderBossShell(){
    <div class="duel boss"><div class="stagecol">
      <div class="arena boss" id="arena" style="background-image:url(${IMG.starvosBg})">${scorchedSVG()}<div class="doom"></div><div class="embers" aria-hidden="true">${Array.from({length:14},(_,i)=>`<i style="--x:${(i*37)%100}%;--d:${(i*0.83)%6}s;--s:${0.6+(i%4)*0.25}"></i>`).join('')}</div>
        <div class="fighter starvos" data-p="boss"><button class="plate" data-p="boss" aria-label="Show Starvos"></button><div class="figwrap"><span class="svbox"><img class="fig" src="${IMG.starvos}" alt="Starvos"><span class="breath" aria-hidden="true"></span></span></div></div>
-       ${S.F.map((f,p)=>{const d=DEPTH[f.id];return `<div class="hdslot" data-p="${p}" style="--l:${d.l};--b:${d.b};--h:${d.h};--scale:${f.h.scale}"></div><div class="fighter hero${d.side?' ring-r':''}" data-p="${p}" style="--l:${d.l};--b:${d.b};--h:${d.h};--tg:${d.tag||1};z-index:${d.z}"><button class="tag" data-p="${p}" aria-label="Show ${f.h.name}"></button><div class="figwrap"><img class="fig" src="${IMG[f.id]}" alt="${f.h.name}"></div><div class="ring" data-p="${p}"></div></div>`}).join('')}
+       ${S.F.map((f,p)=>{const d=DEPTH[f.id];return `<div class="hdslot" data-p="${p}" style="--l:${d.l};--b:${d.b};--h:${d.h};--scale:${f.h.scale}"></div><div class="fighter hero${d.side?' ring-r':''}" data-p="${p}" style="--l:${d.l};--b:${d.b};--h:${d.h};--tg:${d.tag||1};--tx:${d.tx||0};z-index:${d.z}"><button class="tag" data-p="${p}" aria-label="Show ${f.h.name}"></button><div class="figwrap"><img class="fig" src="${IMG[f.id]}" alt="${f.h.name}"></div><div class="ring" data-p="${p}"></div></div>`}).join('')}
        <div class="tray" id="tray"></div><button class="act-d20" id="act" hidden></button><div class="readout" id="readout"><span class="v">The sky darkens…</span></div><div class="banner" id="banner"></div></div>
      <div class="bossbar" id="bossbar"></div>
      <div class="log"><h3><button class="lg-tog" id="logtog" aria-expanded="false"><span>Chronicle</span><small>Last 3 · Show all ▾</small></button><span class="lg-ttl">Chronicle</span></h3><ol id="log"></ol></div>
