@@ -230,6 +230,12 @@ button:focus-visible,.pick:focus-visible{outline:2px solid var(--gold);outline-o
 .tray{position:absolute;left:24%;right:24%;top:36%;height:30%;display:flex;align-items:center;justify-content:center;gap:4%;z-index:5;pointer-events:none}
 .tray .grp{display:flex;gap:6px;align-items:center;justify-content:center}
 .tray.pair{left:14%;right:14%;justify-content:space-between}
+/* duel dice at each Hero's feet, on the side facing the rival, above the Heroes and under the icons */
+.arena:not(.boss) .fighter .hdice{position:absolute;z-index:6;bottom:2%;display:flex;gap:4px;pointer-events:none}
+.arena:not(.boss) .fighter[data-p="0"] .hdice{left:72%}.arena:not(.boss) .fighter[data-p="1"] .hdice{right:72%;flex-direction:row-reverse}
+.arena:not(.boss) .fighter .hdice .grp{display:flex;gap:4px}
+.arena:not(.boss) .fighter .hdice .die{--sz:clamp(32px,10cqh,72px);--fx:-110px}.arena:not(.boss) .fighter .hdice .die.from1{--fx:110px}
+.arena:not(.boss) .fighter .hdice .die.sm{--sz:clamp(26px,7cqh,52px)}
 .arena:not(.boss) .tray.pair{left:24%;right:24%;justify-content:center;gap:clamp(14px,5%,48px)} /* both Heroes' dice land in the middle (user 2026-10-25) */
 .die{--sz:clamp(42px,10vw,74px);width:var(--sz);height:var(--sz);position:relative;filter:drop-shadow(0 6px 6px rgba(0,0,0,.6)) drop-shadow(0 0 10px var(--glow,transparent))}
 .die.sm{--sz:clamp(32px,7vw,54px)}
@@ -633,6 +639,13 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
 .duel.full.pop-log .sidecol .log ol{max-height:none}.duel.full .sidecol .log h3{display:none}.duel.full .sidecol .log ol{margin-top:0}
 /* ability icons hug their Hero */
 .duel.full .fighter[data-p="0"] .ring{left:9%}.duel.full .fighter[data-p="1"] .ring{right:9%}
+/* desktop: a deeper crescent with more room between icons (user 2026-10-27) */
+@media (min-height:521px){
+  .duel.full:not(.boss) .ring{top:22%;bottom:0}
+  .duel.full:not(.boss) .fighter[data-p="0"] .ring{left:4%}.duel.full:not(.boss) .fighter[data-p="1"] .ring{right:4%}
+  .duel.full:not(.boss) .fighter[data-p="0"] .rb{left:calc(var(--k) * -2.4cqh);transform:translateX(calc((1 - var(--k)) * 6.5cqh))}
+  .duel.full:not(.boss) .fighter[data-p="1"] .rb{right:calc(var(--k) * -2.4cqh);transform:translateX(calc((1 - var(--k)) * -6.5cqh))}
+}
 @media (orientation:landscape) and (max-height:520px){
   .duel.full .fighter[data-p="0"] .ring{left:14%}.duel.full .fighter[data-p="1"] .ring{right:14%}
   .duel.full .rb .rbn{width:215%;height:215%}.duel.full .rbn text{font-size:18.5px;stroke-width:5px;letter-spacing:0}
@@ -1049,11 +1062,12 @@ function ringTip(p,k){const f=S.F[p],h=f.h,r=S.mode==='boss'?S.boss:S.F[1-p];
     return `<b>Weapon Strike</b><span class="tp-d">${f.weaponDice}D6 + ${f.broken?'0':cap(h.main)+' ('+b+')'} damage</span><span>To hit: D20 + ${f.broken?'0':cap(h.main)} vs ${S.mode==='boss'?'Starvos':'rival'} Defense ${r.def}</span>${f.broken?`<span class="tp-bad">Broken through R${f.brokenUntil}</span>`:''}`}
   const a=f.abilities[k];
   return `<b>${a.name}</b> <em class="${a.cd?'tp-bad':'tp-ok'}">${a.cd?'Cooldown':'Ready'}</em><span class="tp-d">${a.dice}D6 + ${cap(a.stat)} (${f[a.stat]>=0?'+':''}${f[a.stat]}) damage</span>${a.debuff?`<span>${S.mode==='boss'?'Starvos':'Rival'} ${cap(a.debuff)} −1</span>`:''}${a.heal?`<span>You heal ${a.heal}D6 Life</span>`:''}<span>Auto-hits, then goes on cooldown</span>`}
-function renderRings(){if(S.mode==='boss')return renderBossBar();S.F.forEach((f,p)=>fillRing(p,!isCPU(p)&&S.active===p))}
+// as in Starvos, only the Hero on turn shows its action icons (user 2026-10-27)
+function renderRings(){if(S.mode==='boss')return renderBossBar();S.F.forEach((f,p)=>{if(S.active===p&&f.life>0)fillRing(p,!isCPU(p));else{const r=$(`.ring[data-p="${p}"]`);if(r)r.innerHTML=''}})}
 function fillRing(p,mine){const f=S.F[p],el=$(`.ring[data-p="${p}"]`);if(!el)return;
   const wPick=mine&&S.asking&&S.asking.p===p&&S.asking.kind==='weapon';
   const btn=(k,ic,cls,pick)=>`<button class="rb ${cls} ${pick?'pickable':''}" data-k="${k}" style="--i:${k==='w'?2:k<2?k:k+1}" aria-label="${k==='w'?'Weapon Strike':esc(f.abilities[k].name)}">${icon(ic)}<small>${k==='w'?f.weaponDice:f.abilities[k].dice}D6</small><svg class="rbn" viewBox="-60 -60 120 120" aria-hidden="true"><path id="arc${p}${k}" d="M -44 6 A 44 44 0 0 1 44 6" fill="none"/><text><textPath href="#arc${p}${k}" startOffset="50%" text-anchor="middle">${k==='w'?'Weapon Strike':esc(f.abilities[k].name)}</textPath></text></svg></button>`;
-  const boss=S.mode==='boss'&&mine,choose=mine&&S.choosing;
+  const boss=mine,choose=mine&&S.choosing; // grey out the actions that can't be used right now (as in Starvos)
   el.innerHTML=btn('w',f.h.wicon,'wpn'+(f.broken?' broken':'')+(boss&&choose?' off':''),wPick)+f.abilities.map((a,i)=>btn(i,a.icon,(a.cd?'cd':'')+(boss&&wPick?' off':''),choose&&!a.cd)).join('');
   el.querySelectorAll('.rb').forEach(b=>wireRb(b,p,f));}
 function wireRb(b,p,f){const k=b.dataset.k==='w'?'w':+b.dataset.k;
@@ -1091,7 +1105,8 @@ function renderFighters(){if(S.mode==='boss')return renderBossFighters();S.F.for
   const tag=S.mode==='online'?esc((NET.players[p]||{}).name||(p===NET.you?'You':'Rival')):isCPU(p)?'CPU':(S.mode==='cpu'?'You':'P'+(p+1));
   const sb=['power','energy','speed','charm','def'].map(k=>{const d=f[k]-f.start[k];return `<i class="sb ${d>0?'up':d<0?'down':''}${k===f.h.main?' main':''}" title="${cap(k)} ${f[k]}">${k==='def'?'DEF':cap(k)[0]}: ${f[k]}</i>`}).join('');
   el.querySelector('.plate').innerHTML=`<div class="nm"><span>${f.h.name}</span><span${S.mode==='online'?` class="pn${p===NET.you?' me':''}"`:''}>${tag}</span></div><div class="sbs">${sb}</div><div class="hp"><i style="width:${Math.max(0,Math.min(100,f.life/f.maxLife*100))}%"></i></div>
-   <div class="hpn"><span><b>${f.life}</b> / ${f.maxLife}</span></div><div class="chips">${chipsFor(f)}</div>`;});renderRings();}
+   <div class="hpn"><span><b>${f.life}</b> / ${f.maxLife}</span></div><div class="chips">${chipsFor(f)}</div>`;
+  if(f.life<=0||(typeof S.active==='number'&&S.active!==p))el.querySelector('.hdice')?.remove();});renderRings();}
 const SHORT={life:'Life',maxLife:'Max Life',def:'Def',power:'Power',energy:'Energy',speed:'Speed',charm:'Charm'};
 function statTableHTML(f,cls='',compact=false){const cols=['life','maxLife',...STATS];const dc=k=>{const d=f[k]-f.start[k];return d>0?'up':d<0?'down':''};
   return `<table class="stats ${cls}"><tr><th class="rowh"></th>${cols.map(k=>`<th>${k===f.h.main?'<span class="ribbon">MAIN</span>':''}${SHORT[k]}</th>`).join('')}</tr>
@@ -1194,7 +1209,8 @@ function chooseAbility(p,t){
 // Starvos' dice land over the Hero they hit
 function svDice(p){if(S.mode!=='boss'||typeof p!=='number')return null;const slot=$(`.hdslot[data-p="${p}"]`);if(!slot)return null;
   const h=document.createElement('div');h.className='svdice';slot.append(h);return h}
-function heroDice(p){if(S.mode!=='boss'||typeof p!=='number')return null;const f=$(`.fighter.hero[data-p="${p}"]`);if(!f)return null;
+// Duels: each Hero's dice land at their feet, rolling toward the rival, and stay until that Hero's turn ends (user 2026-10-27)
+function heroDice(p){if(typeof p!=='number')return null;const f=$(S.mode==='boss'?`.fighter.hero[data-p="${p}"]`:`.arena .fighter[data-p="${p}"]`);if(!f)return null;
   const slot=$(`.hdslot[data-p="${p}"]`)||f;let h=slot.querySelector('.hdice');if(!h){h=document.createElement('div');h.className='hdice';slot.prepend(h)}h.innerHTML='';return h}
 async function rollGroups(groups,t){
   if(S.mode==='boss')document.querySelectorAll('.svdice').forEach(e=>e.remove());
@@ -1461,6 +1477,27 @@ async function recordResult(w,ko,el){
   S.me=r.stats;renderAcct();const st=r.stats;
   el.innerHTML=m.mode==='cpu'?`${streakBadge(st.currentStreak)}<span>Record ${st.wins}–${st.losses}${st.draws?'–'+st.draws:''} · Best streak ${st.bestWinStreak}</span>`:'<span>Saved to your history (Pass &amp; Play isn’t ranked).</span>';
 }
+// Starvos battles keep their own record (never the duel leaderboard). result: win | fallen | annihilate
+async function recordBoss(result,el){
+  if(!el||!statsOn())return;
+  if(!signedIn()){el.innerHTML=`<span>Sign in to keep a record of your battles with Starvos.</span><button class="ghost" id="rec-in">Sign in</button>`;el.querySelector('#rec-in').onclick=()=>ICYNAuth.signIn();return}
+  const B=S.boss,hd={};S.F.forEach(f=>{if(f.dealt)hd[f.h.name]=Math.min(999,f.dealt)});
+  const m={mode:'starvos',result:result==='win'?'win':'loss',outcome:result,rounds:Math.max(1,Math.min(8,S.lastRound||8)),heroes:S.F.map(f=>f.h.name),survivors:standing().length,damage:B.maxLife-B.life,bossLife:B.maxLife,heroDamage:hd};
+  el.innerHTML='<span>Saving battle…</span>';
+  const r=await ICYNStats.recordMatch(m);const v=r&&r.stats&&r.stats.starvos;
+  if(!v){el.innerHTML='<span>Couldn’t save this battle. Check your connection.</span>';return}
+  S.me=r.stats;renderAcct();
+  el.innerHTML=`${v.currentStreak>1?`<span class="streak up">🔥 ${v.currentStreak} planets saved in a row</span>`:''}<span>Starvos record ${v.wins}–${v.losses} · ${v.damage} damage dealt in all</span><button class="ghost" id="rec-st">Starvos stats</button>`;
+  el.querySelector('#rec-st').onclick=()=>statsPanel('starvos');
+}
+function starvosStatsHTML(v){if(!v)return '';
+  const cell=(k,x)=>`<div class="sp-cell"><b>${x}</b><span>${k}</span></div>`;
+  if(!v.played)return '<h3>Starvos Catastrophe</h3><p>No battles yet. Starvos awaits. Every battle you finish while signed in is saved here.</p>';
+  const heroes=ORDER.map(id=>HEROES[id].name).filter(n=>v.heroCounts[n]).map(n=>`<li><span>${esc(n)}</span><small>${v.heroCounts[n]} battle${v.heroCounts[n]>1?'s':''} · ${v.heroWins[n]||0} saved · ${v.heroDamage[n]||0} damage</small></li>`).join('');
+  return `<h3>Starvos Catastrophe</h3>${v.currentStreak>1?`<div><span class="streak up">🔥 ${v.currentStreak} planets saved in a row</span></div>`:''}
+    <div class="sp-grid">${cell('Planets saved',v.wins)}${cell('Planets lost',v.losses)}${cell('Flawless wins',v.flawless)}${cell('Quickest win',v.fastestWin?'Round '+v.fastestWin:'—')}${cell('Rounds survived',v.roundsSurvived)}${cell('Best win streak',v.bestWinStreak)}${cell('Damage dealt',v.damage)}${cell('Best battle',v.bestDamage)}${cell('Heroes fallen',v.heroesLost)}</div>
+    <p>${v.played} battle${v.played>1?'s':''} · All Heroes fell ${v.fallen} time${v.fallen===1?'':'s'} · Annihilated ${v.annihilated} time${v.annihilated===1?'':'s'}${v.bestHit?` · Mightiest Hero in one battle: <b>${esc(v.bestHit.hero)}</b> (${v.bestHit.value})`:''}</p>
+    <ol class="sp-list">${heroes}</ol>`}
 async function refreshMe(){if(!statsOn()||!signedIn()){S.me=null;return}const r=await ICYNStats.me();S.me=r&&r.stats||null;renderAcct()}
 // ---------- Installable app (live site only: manifest.json + sw.js) ----------
 let installEvt=null;
@@ -1492,24 +1529,30 @@ function privacyPanel(){
 function statsPanel(tab){
   document.querySelector('.over.sp')?.remove();
   const o=document.createElement('div');o.className='over sp';o.innerHTML=`<div class="card wide" role="dialog" aria-modal="true" aria-label="Stats and leaderboard">
-    <div class="sp-tabs" role="tablist"><button data-t="me" role="tab">My Stats</button><button data-t="wins" role="tab">Most Wins</button><button data-t="streak" role="tab">Best Win Streak</button><button class="x" aria-label="Close">✕</button></div>
+    <div class="sp-tabs" role="tablist"><button data-t="me" role="tab">My Stats</button><button data-t="starvos" role="tab">Starvos</button><button data-t="wins" role="tab">Most Wins</button><button data-t="streak" role="tab">Best Win Streak</button><button class="x" aria-label="Close">✕</button></div>
     <div class="sp-body" id="spbody"><p>Loading…</p></div></div>`;
   document.body.append(o);
   const close=()=>o.remove();o.querySelector('.x').onclick=close;o.onclick=e=>{if(e.target===o)close()};
   const show=async t=>{o.querySelectorAll('.sp-tabs [data-t]').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===t));const b=o.querySelector('#spbody');b.innerHTML='<p>Loading…</p>';
-    if(t==='me'){
+    if(t==='starvos'){
+      if(!signedIn()){b.innerHTML='<p>Sign in to keep a record of your battles with Starvos.</p><div class="row"><button class="act" id="sp-in">Sign in</button><button class="ghost" id="sp-up">Create account</button></div>';b.querySelector('#sp-in').onclick=()=>ICYNAuth.signIn();b.querySelector('#sp-up').onclick=()=>ICYNAuth.signUp();return}
+      const [me,h]=await Promise.all([ICYNStats.me(),ICYNStats.history()]);if(!o.isConnected)return;
+      const v=me&&me.stats&&me.stats.starvos;if(!v){b.innerHTML='<p>Couldn’t load your Starvos stats. Check your connection.</p>';return}
+      const ms=((h&&h.matches)||[]).filter(m=>m.mode==='starvos');
+      b.innerHTML=starvosStatsHTML(v)+(v.played?`<h3>Recent battles</h3><ol class="sp-list">${ms.map(m=>`<li class="${m.result}"><span class="r">${m.result==='win'?'W':'L'}</span><span>${(m.heroes||[]).length===5?'All 5 Heroes':esc((m.heroes||[]).join(', '))}</span><small>${m.outcome==='win'?'Saved in R'+m.rounds:m.outcome==='fallen'?'Fell in R'+m.rounds:'Annihilated'} · ${m.damage} dmg</small></li>`).join('')}</ol>`:'');
+    }else if(t==='me'){
       if(!signedIn()){b.innerHTML='<p>Sign in to track your wins, KOs and streaks.</p><div class="row"><button class="act" id="sp-in">Sign in</button><button class="ghost" id="sp-up">Create account</button></div>';b.querySelector('#sp-in').onclick=()=>ICYNAuth.signIn();b.querySelector('#sp-up').onclick=()=>ICYNAuth.signUp();return}
       const [me,h]=await Promise.all([ICYNStats.me(),ICYNStats.history()]);if(!o.isConnected)return;
       const st=me&&me.stats;if(!st){b.innerHTML='<p>Couldn’t load your stats. Check your connection.</p>';return}
       S.me=st;renderAcct();
       const cell=(k,v)=>`<div class="sp-cell"><b>${v}</b><span>${k}</span></div>`;
-      const ms=(h&&h.matches)||[];
+      let ms=(h&&h.matches)||[];
       b.innerHTML=`<div class="sp-name"><label>Leaderboard name <input id="sp-nm" maxlength="24" value="${esc(st.name||'')}"></label><button class="ghost" id="sp-save">Save</button></div>
         <label class="sp-news"><input type="checkbox" id="sp-news" ${me.prefs&&me.prefs.newsOptIn?'checked':''}><span>Email me I Crit You Not! news, like new Heroes and events. Turn it off anytime.</span><small id="sp-news-st"></small></label>
         ${st.currentStreak?`<div>${streakBadge(st.currentStreak)}</div>`:''}
         <div class="sp-grid">${cell('Wins',st.wins)}${cell('Losses',st.losses)}${cell('Draws',st.draws||0)}${cell('KOs',st.kos)}${cell('Best win streak',st.bestWinStreak)}${cell('Worst loss streak',st.worstLossStreak)}${cell('Quickest win',st.fastestWin?'Round '+st.fastestWin:'—')}${cell('Quickest loss',st.fastestLoss?'Round '+st.fastestLoss:'—')}${cell('Highest Max Life',st.highestMaxLife||'—')}</div>
         <p>Favorite Hero: <b>${esc(st.favoriteHero||'—')}</b> · ${st.played} ranked duels vs Computer</p>
-        <h3>Recent duels</h3>${ms.length?`<ol class="sp-list">${ms.map(m=>`<li class="${m.result}"><span class="r">${m.result==='win'?'W':m.result==='loss'?'L':'D'}</span><span>${esc(m.hero)} vs ${esc(m.opponentHero)}</span><small>${m.mode==='pnp'?'Pass & Play':(m.ko?'KO R'+m.rounds:'8 rounds')}</small></li>`).join('')}</ol>`:'<p>No duels yet. Go win one!</p>'}`;
+        <h3>Recent duels</h3>${(ms=ms.filter(m=>m.mode!=='starvos')).length?`<ol class="sp-list">${ms.map(m=>`<li class="${m.result}"><span class="r">${m.result==='win'?'W':m.result==='loss'?'L':'D'}</span><span>${esc(m.hero)} vs ${esc(m.opponentHero)}</span><small>${m.mode==='pnp'?'Pass & Play':(m.ko?'KO R'+m.rounds:'8 rounds')}</small></li>`).join('')}</ol>`:'<p>No duels yet. Go win one!</p>'}`;
       b.querySelector('#sp-news').onchange=async e=>{const on=e.target.checked,m=b.querySelector('#sp-news-st');m.textContent='Saving…';
         const cur=await ICYNStats.me();const prefs={...((cur&&cur.prefs)||me.prefs||{}),newsOptIn:on,newsOptInAt:new Date().toISOString()};const r=await ICYNStats.setProfile({prefs});if(r)me.prefs=prefs;m.textContent=r?(on?'You’re on the list':'You won’t get news emails'):'Couldn’t save. Try again';if(!r)e.target.checked=!on};
       b.insertAdjacentHTML('beforeend','<p class="sp-priv"><button class="linkish" data-priv>Privacy</button></p>');b.querySelector('[data-priv]').onclick=privacyPanel;
@@ -1743,7 +1786,7 @@ function starvosRoundRow(){return `<tbody style="--c:${SKIN.starvos.color}"><tr>
   return `<td class="sv-atk ${i+1===S.round?'now':''}" style="--ac:${a.col}" title="${esc(a.name+': '+svEffect(a))}">${a.short}</td>`}).join('')}</tr></tbody>`}
 
 // ---------- Boss mode flow ----------
-function bossHit(n){const B=S.boss;B.life=Math.max(0,B.life-n);floatText('boss','−'+n,'dmg');anim('boss','hit');renderAll()}
+function bossHit(n,p){const B=S.boss;if(S.F[p])S.F[p].dealt=(S.F[p].dealt||0)+n;B.life=Math.max(0,B.life-n);floatText('boss','−'+n,'dmg');anim('boss','hit');renderAll()}
 function heroHurt(p,n){const f=S.F[p];damage(p,n);if(f.life<=0){log(`<b>${f.h.name}</b> has fallen!`,p,'cal');floatText(p,'Fallen','stat')}}
 async function fearWave(t){
   S.active=null;renderAll();banner('Fear Wave','cal');anim('boss','lunge');
@@ -1831,7 +1874,7 @@ async function bossWeapon(p,label,t){
   if(max){dmg=f.weaponDice*6+bonus;await roll(p,Array(f.weaponDice).fill(6),t,Array(f.weaponDice).fill(6))}
   else{const vs=await roll(p,Array(f.weaponDice).fill(6),t);dmg=vs.reduce((a,b)=>a+b,0)+bonus}
   readout(`${f.h.name} · Weapon damage`,`${f.weaponDice}D6 + ${bonus} = <em>${dmg}</em>${max?' (MAX)':''}`);
-  bossHit(dmg);log(`<b>${f.h.name}</b> attacks Starvos: ${rollTxt}, hits for <b>${dmg}</b>${max?' (max damage)':''}`,p);
+  bossHit(dmg,p);log(`<b>${f.h.name}</b> attacks Starvos: ${rollTxt}, hits for <b>${dmg}</b>${max?' (max damage)':''}`,p);
   await sleep(REDUCED?100:700);chk(t);return 'ok';
 }
 async function bossAbility(p,i,t){
@@ -1840,7 +1883,7 @@ async function bossAbility(p,i,t){
   const vs=await roll(p,Array(a.dice).fill(6),t);
   const dmg=Math.max(0,vs.reduce((x,y)=>x+y,0)+f[a.stat]);
   readout(`${f.h.name} · ${a.name}`,`${a.dice}D6 + ${cap(a.stat)} ${f[a.stat]} = <em>${dmg}</em>${a.debuff?` · Starvos ${cap(a.debuff)} −1`:''}`);
-  bossHit(dmg);
+  bossHit(dmg,p);
   const extra=[];
   if(a.debuff&&B[a.debuff]>0){B[a.debuff]--;floatText('boss',`${SN[a.debuff]} −1`,'stat');extra.push(`Starvos ${cap(a.debuff)} −1`)}
   if(a.heal){let r=0;for(let k=0;k<a.heal;k++)r+=rnd(6);const g=heal(p,r);extra.push(`heals ${g} (rolled ${r})`)}
@@ -1900,9 +1943,10 @@ function showBossEnd(result){
     <p><b style="color:var(--text)">${win?'Victory!':'Defeat'}</b> ${win?`Starvos falls in round ${S.lastRound}.`:result==='fallen'?`Every Hero fell in round ${S.lastRound}.`:'Starvos survived 8 rounds and unleashed Annihilate.'}</p>
     <p>${win?`${up.length} of ${S.F.length} Hero${S.F.length>1?'es':''} still standing`:`Starvos had ${S.boss.life} of ${S.boss.maxLife} Life left`}</p>
     <div class="sv-party">${S.F.map(f=>`<span class="${f.life>0?'':'down'}" style="--c:${f.color}"><img src="${IMG[f.id]}" alt="">${f.h.name}<b>${f.life>0?f.life:'Fallen'}</b></span>`).join('')}</div>
-    <div class="row"><button class="act" id="rematch">Face Starvos again</button><button class="ghost" id="newd">New game</button></div></div>`;
+    <div class="rec" id="endrec"></div><div class="row"><button class="act" id="rematch">Face Starvos again</button><button class="ghost" id="newd">New game</button></div></div>`;
   document.body.append(o);
   o.querySelector('#rematch').onclick=()=>{o.remove();startCatastrophe()};
+  recordBoss(result,o.querySelector('#endrec'));
   o.querySelector('#newd').onclick=()=>{o.remove();S.token++;S.screen='setup';renderSetup()};
 }
 function startCatastrophe(){
