@@ -1,5 +1,6 @@
 // Saves, streaks and leaderboards for I Crit You Not! (needs auth.js loaded first).
-// Exposes window.ICYNStats: recordMatch(m), me(), setProfile(p), history(), leaderboard(by).
+// Exposes window.ICYNStats: recordMatch(m), me(), setProfile(p), history(), leaderboard(by),
+// feedback(f), feedbackList(status), feedbackSet(id, status).
 // Every call resolves to null instead of throwing when the player is offline
 // or signed out, so guest play never breaks.
 (function () {
@@ -9,9 +10,9 @@
     try {
       const headers = { 'Content-Type': 'application/json' };
       if (needsAuth) {
-        const token = window.ICYNAuth && (await window.ICYNAuth.idToken());
-        if (!token) return null;
-        headers.Authorization = 'Bearer ' + token;
+        const token = window.ICYNAuth && window.ICYNAuth.user && window.ICYNAuth.user() && (await window.ICYNAuth.idToken());
+        if (token) headers.Authorization = 'Bearer ' + token;
+        else if (needsAuth !== 'optional') return null;
       }
       const res = await fetch(API + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
       if (!res.ok) return null;
@@ -29,5 +30,10 @@
     setProfile: (p) => call('PUT', '/me', p, true),
     history: () => call('GET', '/matches', null, true),
     leaderboard: (by) => call('GET', '/leaderboard?by=' + (by === 'streak' ? 'streak' : 'wins'), null, false),
+    // Beta feedback: anyone can send (signed-in players are named); only the developers group can list or update it.
+    // f = { kind: 'bug'|'idea'|'other', message, contact?, context?, hp? }
+    feedback: (f) => call('POST', '/feedback', f, 'optional'),
+    feedbackList: (status) => call('GET', '/feedback?status=' + (status === 'all' ? 'all' : 'new') + '&limit=50', null, true),
+    feedbackSet: (id, status) => call('PATCH', '/feedback/' + encodeURIComponent(id), { status }, true),
   };
 })();
