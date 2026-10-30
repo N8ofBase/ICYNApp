@@ -1327,11 +1327,12 @@ const roll=(p,sides,t,forced)=>rollGroups([{p,sides,forced}],t).then(r=>r[0]);
 
 // ---------- Effects ----------
 function changeStat(p,k,d){const f=S.F[p];f[k]=Math.max(0,f[k]+d);floatText(p,`${SN[k]} ${d>0?'+':''}${d}`,'stat')}
-function heal(p,n){const f=S.F[p];const before=f.life;f.life=Math.min(f.maxLife,f.life+n);const g=f.life-before;if(g>0)SFX.play('heal');if(g>0)floatText(p,'+'+g,'heal');return g}
+function heal(p,n){const f=S.F[p];const before=f.life;f.life=Math.min(f.maxLife,f.life+n);const g=f.life-before;if(g>0&&!S.quietEnh)SFX.play('heal');if(g>0)floatText(p,'+'+g,'heal');return g}
 function damage(p,n){SFX.play('hit',{n});const f=S.F[p];f.life=Math.max(0,f.life-n);floatText(p,'−'+n,'dmg');anim(p,'hit');renderFighters();renderSheet()}
 // Random Ability is chosen in the background (the tabletop D6-reroll is only needed with physical dice)
 async function randomAbility(p,t){
   const i=NETON()?(await netNext('randomAbility',t)).i:rnd(4)-1,a=S.F[p].abilities[i];
+  if(S.quietEnh)return i; // end-of-round Enhancements show everything together
   floatText(p,a.name,'stat');readout(`${S.F[p].h.name} · Random Ability`,`<em>${a.name}</em>`);
   await sleep(REDUCED?50:500);chk(t);
   return i;
@@ -2073,14 +2074,16 @@ async function bossEnhancements(ps,t){
   await ask(ps[0],'Roll Enhancements',t,'both','enh');
   const te=[];if(S.net)for(const p of ps)te.push(await netNext('table',t));
   const res=await rollGroups(ps.map((p,i)=>({p,sides:[20],forced:te[i]&&[te[i].v]})),t);
-  const rows=[];
-  for(const [i,p] of ps.entries()){const f=S.F[p],v=res[i][0],list=tables().ENH[v];
-    f.table[S.round-1].enh=v;S.active=p;renderAll();if(list.length)SFX.play('enh');
-    readout(`${f.h.name} · Enhancement`,`<em>${v}</em> · ${list.length?list.map(e=>effText(e,f)).join('; '):'No Enhancement'}`);
+  // All Heroes' Enhancements land at once: one sound, every notice together, then the scroll (user 2026-10-30)
+  const rows=[];let any=false;S.quietEnh=true;
+  try{for(const [i,p] of ps.entries()){const f=S.F[p],v=res[i][0],list=tables().ENH[v];
+    f.table[S.round-1].enh=v;if(list.length)any=true;
     const notes=await applyEffects(p,list,t),r=notes.length?notes.join(', '):'no Enhancement';if(te[i])netSnap(te[i].F);
-    log(`<b>${f.h.name}</b> Enhancement ${v}: ${r}`,p);notice(p,'enh',`Enhancement ${v}`,r);rows.push({p,v,r});
-    await sleep(REDUCED?100:list.length?1100:500);chk(t)}
-  S.active=null;renderAll();
+    log(`<b>${f.h.name}</b> Enhancement ${v}: ${r}`,p);rows.push({p,v,r})}}finally{S.quietEnh=false}
+  S.active=null;renderAll();if(any)SFX.play('enh');
+  readout(`End of Round ${S.round}`,'Team Enhancements');
+  for(const {p,v,r} of rows)notice(p,'enh',`Enhancement ${v}`,r);
+  await sleep(REDUCED?100:1400);chk(t);
   await teamEnhancements(rows,t);
 }
 // One scroll shows every Hero's end-of-round Enhancement together (user 2026-10-30)
