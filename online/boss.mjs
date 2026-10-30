@@ -192,11 +192,11 @@ export function* catastrophe(setup, rnd, ev) {
     const debuff = a.debuff && B[a.debuff] > 0 ? a.debuff : null;
     if (debuff) B[debuff]--;
     let healDice = null, healed = 0;
+    // Soul Syphon mends the whole party: one roll heals every standing Hero
     if (a.heal) {
       healDice = Array.from({ length: a.heal }, () => rnd(6));
-      const before = f.life;
-      f.life = Math.min(f.maxLife, f.life + healDice.reduce((x, y) => x + y, 0));
-      healed = f.life - before;
+      const r = healDice.reduce((x, y) => x + y, 0);
+      for (const g of F) if (g.life > 0) { const before = g.life; g.life = Math.min(g.maxLife, g.life + r); healed += g.life - before; }
     }
     emit({ t: 'damage', p, source: 'ability', i, dice, bonus: f[a.stat], dmg, debuff, healDice, healed, F: snap() });
   }
