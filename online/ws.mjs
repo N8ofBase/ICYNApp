@@ -101,7 +101,8 @@ async function advance(game, p, input) {
   const before = run(game);
   const boss = isBoss(game);
   if (!(boss ? acceptsBoss(before.pending, p, input, game.setup.owners) : accepts(before.pending, p, input))) return 'Not your move';
-  game.inputs = [...game.inputs, { kind: input.kind, [boss ? 'by' : 'p']: p, ...(input.kind === 'ability' ? { choice: input.choice } : {}) }];
+  game.inputs = [...game.inputs, { kind: input.kind, [boss ? 'by' : 'p']: p, ...(input.kind === 'ability' ? { choice: input.choice } : {}),
+    ...(boss && input.kind === 'ability' && Number.isInteger(input.target) ? { target: input.target } : {}) }];
   const after = run(game);
   game.pendingSince = Date.now();
   if (after.result) finish(game, after.result);
@@ -178,7 +179,7 @@ export async function handler(event) {
     const heroes = [...new Set([].concat(msg.heroes || msg.hero || []))].filter((h) => HEROES[h]);
     const game = {
       gameId: crypto.randomUUID(), code: newCode(), status: 'waiting', seed: crypto.randomBytes(16).toString('hex'),
-      setup: { mode: 'boss', heroes, owners: heroes.map(() => 0) }, players: [conn.userId], names: [conn.name],
+      setup: { mode: 'boss', v: 2, heroes, owners: heroes.map(() => 0) }, players: [conn.userId], names: [conn.name],
       conns: [connectionId], inputs: [], version: 0, createdAt: new Date().toISOString(),
       ttl: Math.floor(Date.now() / 1000) + DAY,
     };
@@ -273,7 +274,7 @@ export async function handler(event) {
     } else if (game.status !== 'active') {
       return fail('This duel is not in play');
     } else if (msg.action === 'act') {
-      const err = await advance(game, you, { kind: msg.kind, choice: msg.choice });
+      const err = await advance(game, you, { kind: msg.kind, choice: msg.choice, target: msg.target });
       if (err) return fail(err);
     } else if (boss && msg.action === 'nudge') {
       const { pending } = run(game);

@@ -179,26 +179,38 @@ export function* catastrophe(setup, rnd, ev) {
   function* ability(p) {
     const f = F[p];
     let i;
+    let input;
     for (;;) {
-      const input = yield { kind: 'ability', p, options: f.abilities.map((a, k) => (a.cd ? null : k)).filter((k) => k !== null) };
+      input = yield { kind: 'ability', p, options: f.abilities.map((a, k) => (a.cd ? null : k)).filter((k) => k !== null) };
       i = input && Number.isInteger(input.choice) ? input.choice : -1;
       if (f.abilities[i] && !f.abilities[i].cd) break;
     }
     const a = f.abilities[i];
     a.cd = true;
     const dice = Array.from({ length: a.dice }, () => rnd(6));
-    const dmg = Math.max(0, dice.reduce((x, y) => x + y, 0) + f[a.stat]);
+    let dmg = Math.max(0, dice.reduce((x, y) => x + y, 0) + f[a.stat]);
+    // Rules v2 (N8, 2026-10-30): Radiant Strike may heal one standing Hero instead (its own roll, dice + Energy);
+    // Soul Syphon heals every standing Hero 1D6 each.
+    const v2 = (setup.v || 1) >= 2;
+    const tg = input && Number.isInteger(input.target) ? input.target : null;
+    let mend = null;
+    if (v2 && a.name === 'Radiant Strike' && tg !== null && F[tg] && F[tg].life > 0) {
+      const b = F[tg].life; F[tg].life = Math.min(F[tg].maxLife, F[tg].life + dmg);
+      mend = { p: tg, amount: dmg, healed: F[tg].life - b }; dmg = 0;
+    }
     bossHit(p, dmg);
     const debuff = a.debuff && B[a.debuff] > 0 ? a.debuff : null;
     if (debuff) B[debuff]--;
-    let healDice = null, healed = 0;
-    if (a.heal) {
+    let healDice = null, healed = 0, healAll = null;
+    if (a.heal && v2) {
+      healAll = standing().map((q) => { const d = rnd(6), b = F[q].life; F[q].life = Math.min(F[q].maxLife, F[q].life + d); return { p: q, d, healed: F[q].life - b }; });
+    } else if (a.heal) {
       healDice = Array.from({ length: a.heal }, () => rnd(6));
       const before = f.life;
       f.life = Math.min(f.maxLife, f.life + healDice.reduce((x, y) => x + y, 0));
       healed = f.life - before;
     }
-    emit({ t: 'damage', p, source: 'ability', i, dice, bonus: f[a.stat], dmg, debuff, healDice, healed, F: snap() });
+    emit({ t: 'damage', p, source: 'ability', i, dice, bonus: f[a.stat], dmg, debuff, healDice, healed, healAll, mend, F: snap() });
   }
 
   function* turn(p) {
@@ -260,6 +272,6 @@ export function waitingOn(pending, owners) {
 export function acceptsBoss(pending, by, input, owners) {
   if (!pending || !input || input.kind !== pending.kind) return false;
   if (!waitingOn(pending, owners).includes(by)) return false;
-  if (pending.kind === 'ability') return pending.options.includes(input.choice);
+  if (pending.kind === 'ability') return pending.options.includes(input.choice) && (input.target == null || Number.isInteger(input.target));
   return true;
 }

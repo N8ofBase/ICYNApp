@@ -46,7 +46,7 @@
     resume,
     // A duel left open in this browser, to offer "Rejoin your duel".
     savedGame() { try { return localStorage.getItem(GAME_KEY); } catch (e) { return null; } },
-    act: (kind, choice) => send({ action: 'act', gameId: game && game.gameId, kind, choice }),
+    act: (kind, choice, target) => send({ action: 'act', gameId: game && game.gameId, kind, choice, ...(target == null ? {} : { target }) }),
     nudge: () => send({ action: 'nudge', gameId: game && game.gameId }),
     forfeit: (all) => send({ action: 'forfeit', gameId: game && game.gameId, all: !!all }),
     createBoss: (hero) => send({ action: 'create', mode: 'boss', hero }),
