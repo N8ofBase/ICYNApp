@@ -2347,7 +2347,7 @@ const SFX=(()=>{
     stopCur();if(!w||!w.n||!st.on||st.mvol<=0||document.hidden)return;
     const t=track(w.n);if(t.bad)return;
     t.el.loop=w.loop;try{t.el.currentTime=0}catch(e){}if(t.g)t.g.gain.value=0;
-    t.el.onended=()=>{if(want===w&&w.then)music(w.then)};
+    t.el.onended=()=>{if(want!==w)return;if(w.then)music(w.then);else{want=null;if(cur===t)cur=null}};
     t.el.play().then(()=>fade(t,1,.8)).catch(()=>{});cur=t;
   }
   // music(name or [alternatives], {loop, then}); asking again for what is already playing (or about to return) changes nothing
