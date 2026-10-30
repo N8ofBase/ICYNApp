@@ -340,14 +340,14 @@ button:focus-visible,.pick:focus-visible{outline:2px solid var(--gold);outline-o
 .stats.mini td{font-size:.9rem;padding:2px 0}.stats.mini tr.start td{font-size:.74rem}.stats.mini th{font-size:.62rem;padding:3px 1px}
 
 /* calamity & enhancement scroll */
-.scroll-ov{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:rgba(8,6,10,.62);
+.scroll-ov{position:fixed;inset:0;z-index:40;display:grid;place-items:center;grid-template-rows:minmax(0,1fr);overflow:hidden;background:rgba(8,6,10,.62);
   padding-block:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));animation:fadein .25s}
 @keyframes fadein{from{opacity:0}}
 .scroll{width:min(600px,100%);max-height:100%;display:flex;flex-direction:column;filter:drop-shadow(0 18px 30px rgba(0,0,0,.6));animation:unroll .55s cubic-bezier(.2,.8,.2,1) both}
 .rod{flex:none;height:18px;border-radius:9px;margin:0 -8px;position:relative;z-index:1;background:linear-gradient(#a06a35,#6a4019 55%,#3d240c);box-shadow:0 3px 5px rgba(0,0,0,.45)}
 .rod::before,.rod::after{content:"";position:absolute;top:-3px;width:14px;height:24px;border-radius:5px;background:linear-gradient(#e7c27a,#9a7330)}
 .rod::before{left:-8px}.rod::after{right:-8px}
-.paper{flex:1;min-height:0;overflow:auto;background:radial-gradient(120% 80% at 50% 50%,var(--parch) 55%,#e2cc9c 100%);color:var(--ink);padding:10px 16px 0;box-shadow:inset 0 10px 14px -10px rgba(60,30,0,.5),inset 0 -10px 14px -10px rgba(60,30,0,.5)}
+.paper{flex:1;min-height:0;overflow:hidden auto;scrollbar-width:none;background:radial-gradient(120% 80% at 50% 50%,var(--parch) 55%,#e2cc9c 100%);color:var(--ink);padding:10px 16px 0;box-shadow:inset 0 10px 14px -10px rgba(60,30,0,.5),inset 0 -10px 14px -10px rgba(60,30,0,.5)}
 @keyframes unroll{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
 .scroll-ov.closing{animation:fadein .45s reverse forwards}
 .scroll-ov.closing .scroll{animation:rollup .45s forwards}
@@ -364,7 +364,9 @@ button:focus-visible,.pick:focus-visible{outline:2px solid var(--gold);outline-o
 .faces li.flick{background:color-mix(in srgb,var(--hero) 28%,transparent)}
 .faces li.picked{background:var(--hero);color:var(--hero-ink);transform:scale(1.04);box-shadow:0 0 0 2px var(--gold),0 6px 14px rgba(0,0,0,.3);animation:picked 1s ease-out}
 .faces li.picked b{color:inherit}
-@keyframes picked{0%{transform:scale(1.25)}100%{transform:scale(1.04)}}
+@keyframes picked{0%{transform:scale(1.1)}100%{transform:scale(1.04)}}
+/* no stray scroll bar while the D20 tumbles or a row pops (user 2026-10-30); the table still scrolls by touch or wheel */
+.paper::-webkit-scrollbar{display:none}
 .sc-foot{position:sticky;bottom:0;display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 0 12px;background:linear-gradient(transparent,var(--parch) 28%)}
 .sc-die{background:none;border:0;padding:4px;border-radius:50%}
 .sc-die .die{--sz:76px}
@@ -1305,7 +1307,7 @@ async function rollGroups(groups,t){
   if(S.mode==='boss')document.querySelectorAll('.svdice').forEach(e=>e.remove());
   const tray=$('#tray');tray.innerHTML='';tray.className='tray'+(groups.filter(g=>!(S.mode==='boss'&&typeof g.p==='number')).length>1?' pair':'')+(groups.every(g=>g.p==='boss')?' sv':'');
   const many=groups.reduce((n,g)=>n+g.sides.length,0)>2;
-  const res=groups.map(g=>g.sides.map((s,i)=>g.forced?.[i]??rnd(s)));SFX.play('dice',{n:groups.reduce((n,g)=>n+g.sides.length,0),d20:groups.some(g=>g.sides.includes(20))});
+  const res=groups.map(g=>g.sides.map((s,i)=>g.forced?.[i]??rnd(s)));if(groups.filter(g=>typeof g.p==='number').length>1)SFX.play('dice',{n:groups.reduce((n,g)=>n+g.sides.length,0),d20:groups.some(g=>g.sides.includes(20))}); // dice sound only when the Heroes roll together
   const els=[];
   groups.forEach((g,gi)=>{const wrap=document.createElement('div');wrap.className='grp';
     g.sides.forEach((s,i)=>{const el=dieEl(g.skin||S.F[g.p].skin,s,rnd(s),(many?'sm ':'')+'rolling'+((S.mode==='boss'?g.p==='boss':g.p===1)?' from1':''));
@@ -1373,7 +1375,7 @@ function scrollPick(p,kind,t){
   return new Promise(res=>{
     let rolled=false;
     const go=async()=>{
-      if(rolled)return;rolled=true;btn.disabled=true;hint.textContent='Rolling…';SFX.play('dice',{n:1,d20:1});
+      if(rolled)return;rolled=true;btn.disabled=true;hint.textContent='Rolling…';
       let v;if(NETON()){if(!netFresh())netAct('scroll');NET.lastTable=await netNext('table',t);v=NET.lastTable.v}else v=rnd(20);
       de.style.setProperty('--fx','0px');de.style.setProperty('--t',(REDUCED?50:1100)+'ms');de.classList.add('rolling');
       const dur=REDUCED?60:1100,st=performance.now();
@@ -2353,7 +2355,7 @@ const SFX=(()=>{
   const CUES={
     dice:({n=1,d20})=>{if(!S1('dice-roll',{rate:rr(.74,.82),vol:n>2?.9:.75}))return Y.dice(n);S1('dice-clack',{at:.04,rate:rr(.58,.66)});S1('dice-clack',{at:.3,rate:rr(.55,.62),vol:.75});S1('hit-light',{at:.5,rate:.72,vol:.4});if(d20)S1('thud-heavy',{at:.55,rate:.75,vol:.75})},
     clack:()=>S1('dice-clack')||Y.click(0,.35),
-    crit:()=>{S1('chime')||Y.chime();S1('crowd-cheer',{at:.15})||Y.crowd('cheer',.15)},
+    crit:()=>S1('chime')||Y.chime(),
     fumble:()=>{S1('thud')||Y.thud();S1('oof',{at:.12})||Y.oof(.12)},
     hit:({n=6})=>n>=15?((S1('hit-heavy')&&S1('thud-heavy',{at:.03,vol:.8}))||Y.hit(.8)):(S1('hit-light')||Y.hit(.45)),
     slash:()=>S1('sword-slash')||Y.slash(),
@@ -2385,18 +2387,20 @@ const SFX=(()=>{
     stopCur();if(!w||!w.n||!st.on||st.mvol<=0||document.hidden)return;
     const t=track(w.n);if(t.bad)return;
     t.el.loop=w.loop;try{t.el.currentTime=0}catch(e){}if(t.g)t.g.gain.value=0;
-    t.el.onended=()=>{if(want!==w)return;if(w.then)music(w.then);else{want=null;if(cur===t)cur=null}};
+    t.el.onended=()=>{if(want!==w)return;if(w.onend)return w.onend();if(w.then)music(w.then);else{want=null;if(cur===t)cur=null}};
     t.el.play().then(()=>fade(t,1,.8)).catch(()=>{});cur=t;
   }
   // music(name or [alternatives], {loop, then}); asking again for what is already playing (or about to return) changes nothing
   // battle playlists: a different random track every 2 rounds (Starvos turns to its enraged track below half Life)
   const PL={battle:['battle-1','battle-2','battle-3','battle-4'],starvos:['starvos-a','starvos-e']};
-  function round(kind,r){if(kind==='starvos')return music(r<3?'starvos-a':'starvos-e'); // Starvos: A for rounds 1-2, then E
+  // play a list in order, each track `rep` times through (Starvos: A, A, E, E, A, A, ...) until something else is asked for
+  function seq(key,list,rep){let i=0,c=0;const go=()=>{const n=list[i];if(++c>=rep){c=0;i=(i+1)%list.length}want=null;music(n,{loop:false,seq:key,onend:go})};go()}
+  function round(kind,r){if(kind==='starvos'){if(!(want&&want.seq==='starvos'))seq('starvos',['starvos-a','starvos-e'],2);return}
     if((r>1&&r%2===0)||(REDUCED&&!REDUCED_PREF&&want&&PL[kind].includes(want.n)))return;const l=PL[kind].filter(n=>!want||n!==want.n);music(l.length?l[Math.floor(Math.random()*l.length)]:PL[kind][0])}
   function music(n,o={}){
     const list=Array.isArray(n)?n:[n];
     if(want&&(list.includes(want.n)||(want.then&&list.includes(want.then)&&cur&&cur.n===want.n)))return;
-    want={n:list[Math.floor(Math.random()*list.length)],loop:o.loop!==false,then:o.then||null};apply();
+    want={n:list[Math.floor(Math.random()*list.length)],loop:o.loop!==false,then:o.then||null,seq:o.seq||null,onend:o.onend||null};apply();
   }
   document.addEventListener('visibilitychange',()=>{if(document.hidden){if(cur)cur.el.pause()}else if(cur&&st.on&&st.mvol>0)cur.el.play().catch(()=>{});else apply()});
   function set(p){Object.assign(st,p);save();if(out){out.gain.setTargetAtTime(st.on?st.vol:0,ctx.currentTime,.02);mOut.gain.setTargetAtTime(st.on?st.mvol:0,ctx.currentTime,.05)}
