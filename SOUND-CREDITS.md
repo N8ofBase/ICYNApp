@@ -21,7 +21,6 @@ Every sound and track in the game is released under Creative Commons 0 (CC0 1.0,
 | darkness | darkness-b.mp3 | 3s | Spectral Ghost Whisper Breeze Whoosh | brktkrgll | https://freesound.org/people/brktkrgll/sounds/856169/ | CC0 1.0 |  |
 | death-strike | death-strike.mp3 | 1.3s | Hit Impact Sword 3 | CogFireStudios | https://freesound.org/people/CogFireStudios/sounds/547042/ | CC0 1.0 |
 | dice-clack | dice-clack.mp3 | 0.96s | D6 - Single - 3.wav | ksigloch | https://freesound.org/people/ksigloch/sounds/596042/ | CC0 1.0 |
-| dice-roll | dice-roll.mp3 | 1.11s | Dice Rolling on Table | Flem0527 | https://freesound.org/people/Flem0527/sounds/629982/ | CC0 1.0 |
 | double-strike | double-strike.mp3 | 1.35s | sword slash.wav | ethanchase7744 | https://freesound.org/people/ethanchase7744/sounds/441666/ | CC0 1.0 |
 | dragon-death | dragon-death-a.mp3 | 3.5s | Dragons Dying Breath | MickBoere | https://freesound.org/people/MickBoere/sounds/276577/ | CC0 1.0 | trimmed from 5.9s source (start 0s, fade-out) |
 | dragon-roar | dragon-roar-a.mp3 | 2.47s | DRAGON_ROAR.wav | JoelAudio | https://freesound.org/people/JoelAudio/sounds/85568/ | CC0 1.0 |  |
@@ -60,3 +59,6 @@ Every sound and track in the game is released under Creative Commons 0 (CC0 1.0,
 | thud-heavy | thud-heavy-a.mp3 | 1.57s | Body fall_01.wav | deleted_user_2104797 | https://freesound.org/people/deleted_user_2104797/sounds/346695/ | CC0 1.0 |  |
 | whoosh-miss | whoosh-miss-a.mp3 | 0.8s | Whoosh #1 | Kinoton | https://freesound.org/people/Kinoton/sounds/427823/ | CC0 1.0 |  |
 | wing-flap | wing-flap-a.mp3 | 2.36s | Dragon Flap | VishwaJai | https://opengameart.org/content/dragon-flap-0 | CC0 | volume raised 6 dB |
+| d20 | d20-roll-a.mp3 | 2s | D20 - Single - 1.wav | ksigloch | https://freesound.org/people/ksigloch/sounds/596049/ | CC0 1.0 | leading silence trimmed (0.4s); cut to 2s from 2.07s with 0.3s fade-out | D20 thrown into a pleather dice tray (ksigloch Dice Set D4-D100) |
+| d20-group | d20-pair-d.mp3 | 0.73s | Two-D20_Table4.mp3 | rj13 | https://freesound.org/people/rj13/sounds/580411/ | CC0 1.0 | leading silence trimmed (0.15s); volume raised 17 dB | bonus: two D20s on a table, shorter take |
+| d6 | d6-roll-a.mp3 | 1.43s | D6 - Single - 1.wav | ksigloch | https://freesound.org/people/ksigloch/sounds/596044/ | CC0 1.0 | leading silence trimmed (0.6s); volume raised 7 dB | D6 thrown into a dice tray (ksigloch set) |
