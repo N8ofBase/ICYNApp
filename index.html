@@ -705,7 +705,7 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
 .arena.boss{container-type:size}
 .arena.boss .fighter.hero,.arena.boss .hdslot{--reg:calc(100cqw - min(97cqh,calc(100cqw * .5 / .865)) * .865);--u:min(1cqh,calc(var(--reg) / 60));
   left:calc(var(--reg) * var(--l));bottom:calc(var(--u) * var(--b));top:auto;height:calc(var(--u) * var(--h));width:calc(var(--u) * var(--h) * .62)}
-.arena.boss .fighter.hero .tag{position:absolute;z-index:3;left:50%;translate:calc(-50% + var(--u) * var(--tx,0)) 0;bottom:calc(var(--scale,1) * var(--tg,1) * 100% + 2px);width:max(80px,calc(var(--u) * 21));max-width:none}
+.arena.boss .fighter.hero .tag{position:absolute;z-index:3;left:50%;translate:calc(-50% + var(--u) * var(--tx,0)) 0;bottom:calc(var(--scale,1) * var(--tg,1) * 100% + 2px);width:max(124px,calc(var(--u) * 28));max-width:none}
 .arena.boss .fighter.hero .figwrap{height:100%;flex:none}
 .arena.boss .fighter.hero{--rh:clamp(180px,calc(var(--u) * var(--h) * var(--scale,1) * 1.15 + 80px),calc(var(--u) * 46));--rb:max(calc(62px - var(--u) * var(--b)),calc(var(--u) * var(--h) * var(--scale,1) / 2 - var(--rh) / 2))}
 .arena.boss .fighter.hero .ring{top:auto;bottom:var(--rb);left:calc(var(--u) * -5);right:auto;height:var(--rh);--bs:max(30px,min(calc(var(--u) * 6.8),calc(var(--rh) / 5.2)))}
@@ -730,7 +730,7 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
 .hdslot .hdice,.fighter.hero .hdice{position:absolute;z-index:0;left:58%;bottom:calc(var(--scale,1) * 3%);translate:0 0;display:flex;gap:4px;pointer-events:none}
 .hdslot .hdice .die{--fx:-110px}
 .hdslot .hdice .grp,.fighter.hero .hdice .grp{display:flex;gap:4px}
-.hdslot .hdice .die,.fighter.hero .hdice .die{--sz:max(30px,calc(var(--u) * 7.5))}
+.hdslot .hdice .die,.fighter.hero .hdice .die{--sz:max(48px,calc(var(--u) * 15))}
 .fighter.hero .figwrap{z-index:1}
 .arena.boss .fighter.hero.dim{filter:none}.arena.boss .fighter.hero.dim .figwrap{filter:grayscale(.9) brightness(.62)}.arena.boss .fighter.hero.dim .tag{opacity:.7}
 .arena.boss .fighter.hero.active{z-index:13!important}
@@ -742,8 +742,8 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
 .duel.full .fighter.hero .tag b{font-size:clamp(.72rem,1.9cqh,1rem)}.duel.full .fighter.hero .tag .hp{height:clamp(5px,.9cqh,8px)}
 .duel.full .fighter.starvos .plate{max-width:clamp(250px,46cqh,380px)}
 .fighter.starvos .plate{position:relative;z-index:3}
-.hdslot .svdice{position:absolute;left:50%;bottom:calc(var(--scale,1) * 34%);translate:-50% 0;display:flex;flex-wrap:wrap;justify-content:center;gap:4px;width:max-content;max-width:calc(var(--u) * 30);pointer-events:none;filter:drop-shadow(0 0 10px rgba(255,70,20,.55))}
-.hdslot .svdice .grp{display:flex;gap:3px}.hdslot .svdice .die{--sz:max(30px,calc(var(--u) * 7.5));--fx:160px}
+.hdslot .svdice{position:absolute;left:50%;bottom:calc(var(--scale,1) * 34%);translate:-50% 0;display:flex;flex-wrap:wrap;justify-content:center;gap:4px;width:max-content;max-width:calc(var(--u) * 50);pointer-events:none;filter:drop-shadow(0 0 10px rgba(255,70,20,.55))}
+.hdslot .svdice .grp{display:flex;gap:3px}.hdslot .svdice .die{--sz:max(48px,calc(var(--u) * 15));--fx:160px}
 /* Hero stat pills on the boss arena tags */
 .fighter.hero .tag .sbs{display:flex;gap:2px;margin-top:3px;justify-content:space-between;flex-wrap:nowrap}
 .fighter.hero .tag .sb{font-size:clamp(.5rem,1.45cqh,.74rem);padding:0 3px;letter-spacing:0;border-radius:4px;line-height:1.3}
@@ -765,6 +765,19 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
 .roster .pick.taken{opacity:.55}
 .arena.boss .fighter.hero .tag small.ally{display:block;font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .arena.boss .fighter.hero .tag small.ally.me{color:var(--gold)}
+/* a fallen Hero's name plate is hidden (the sheet stays under Tables) */
+.arena.boss .fighter.hero.fallen .tag{display:none}
+/* end-of-round summary: every Hero's Enhancement on one scroll */
+.enh-sum{list-style:none;margin:0;padding:0 0 4px;display:grid;gap:6px}
+.enh-sum li{display:grid;grid-template-columns:52px auto minmax(0,1fr);gap:2px 10px;align-items:center;padding:6px 10px;border-radius:8px;background:rgba(90,60,20,.07);border-left:5px solid var(--c)}
+.enh-sum img{width:52px;height:60px;object-fit:contain;grid-row:span 2}
+.enh-sum b{font-family:var(--f-title);font-size:1.05rem;grid-column:2/-1}
+.enh-sum .n{font-family:var(--f-display);font-style:normal;font-size:1.6rem;line-height:1;min-width:1.4em;text-align:center;color:#2f6b3a}
+.enh-sum .n.n20{color:#b8860b}.enh-sum .n.n1{color:var(--ink-2)}
+.enh-sum span{font-size:.88rem;line-height:1.25}
+.enh-foot .act{width:auto;padding:8px 26px;font-size:1.05rem}
+@media (min-width:640px){.enh-sum{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}}
+@media (max-height:520px){.enh-sum{gap:4px}.enh-sum li{padding:3px 8px;grid-template-columns:40px auto minmax(0,1fr)}.enh-sum img{width:40px;height:44px}.enh-sum b{font-size:.9rem}.enh-sum .n{font-size:1.25rem}.enh-sum span{font-size:.78rem}}
 .sv-allies{color:var(--muted);font-size:.85rem}
 </style>
 
@@ -2020,13 +2033,29 @@ async function bossEnhancements(ps,t){
   await ask(ps[0],'Roll Enhancements',t,'both','enh');
   const te=[];if(S.net)for(const p of ps)te.push(await netNext('table',t));
   const res=await rollGroups(ps.map((p,i)=>({p,sides:[20],forced:te[i]&&[te[i].v]})),t);
+  const sum=[];
   for(const [i,p] of ps.entries()){const f=S.F[p],v=res[i][0],list=tables().ENH[v];
     f.table[S.round-1].enh=v;S.active=p;renderAll();
     readout(`${f.h.name} · Enhancement`,`<em>${v}</em> · ${list.length?list.map(e=>effText(e,f)).join('; '):'No Enhancement'}`);
     const notes=await applyEffects(p,list,t),r=notes.length?notes.join(', '):'no Enhancement';if(te[i])netSnap(te[i].F);
-    log(`<b>${f.h.name}</b> Enhancement ${v}: ${r}`,p);notice(p,'enh',`Enhancement ${v}`,r);
+    log(`<b>${f.h.name}</b> Enhancement ${v}: ${r}`,p);notice(p,'enh',`Enhancement ${v}`,r);sum.push({p,v,r});
     await sleep(REDUCED?100:list.length?1100:500);chk(t)}
   S.active=null;renderAll();
+  if(!REDUCED&&sum.length>1)await enhSummary(sum,t);
+}
+// One scroll with every Hero's Enhancement so the team's gains are seen together; Continue (or a tap outside) rolls it up, and it closes on its own after a while
+function enhSummary(sum,t){
+  const ov=document.createElement('div');ov.className='scroll-ov';setHero(ov,S.F[sum[0].p].skin);
+  ov.innerHTML=`<div class="scroll enh" role="dialog" aria-modal="true" aria-label="Round ${S.round} Enhancements"><div class="rod"></div><div class="paper">
+    <div class="sc-head"><div class="k">End of Round ${S.round}</div><h2>Team Enhancements</h2></div>
+    <ul class="enh-sum">${sum.map(({p,v,r})=>{const f=S.F[p];return `<li style="--c:${f.color}"><img src="${SEL[f.id]}" alt=""><b>${f.h.name}</b><em class="n${v===20?' n20':v===1?' n1':''}">${v}</em><span>${esc(String(r).replace(/ \(Main\)/g,''))}</span></li>`}).join('')}</ul>
+    <div class="sc-foot enh-foot"><button class="act" type="button">Continue</button></div></div><div class="rod"></div></div>`;
+  document.body.append(ov);
+  const btn=ov.querySelector('.act');
+  return new Promise(res=>{let done=false;
+    const close=async()=>{if(done)return;done=true;ov.classList.add('closing');await sleep(450);ov.remove();res()};
+    btn.onclick=close;ov.onclick=e=>{if(e.target===ov)close()};btn.focus({preventScroll:true});
+    setTimeout(close,6000+sum.length*1500)}).then(()=>chk(t));
 }
 async function catastrophe(t){
   for(S.round=1;S.round<=8;S.round++){
