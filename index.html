@@ -777,14 +777,14 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
 .scroll.team .sc-foot{display:flex;justify-content:center;padding:8px 0 12px}
 @media (max-width:560px),(max-height:520px){.team-enh li{grid-template-columns:34px minmax(0,5.5em) 1.8em minmax(0,1fr);gap:6px;padding:2px 6px}.team-enh img{width:34px;height:34px}.team-enh .n{font-size:.85rem}.team-enh .r{font-size:.74rem}}
 /* Radiant Strike choice */
-.rs-card{width:min(470px,calc(100% - 32px));background:var(--stone);border:1px solid var(--line);border-top:4px solid var(--hero,var(--gold));border-radius:14px;padding:14px 16px;box-shadow:0 18px 30px rgba(0,0,0,.6);display:grid;gap:10px;color:var(--text)}
+.rs-card{width:min(640px,calc(100% - 32px));background:var(--stone);border:1px solid var(--line);border-top:4px solid var(--hero,var(--gold));border-radius:14px;padding:14px 16px;box-shadow:0 18px 30px rgba(0,0,0,.6);display:grid;gap:10px;color:var(--text)}
 .rs-card h3{margin:0;font-family:var(--f-display);font-size:1.4rem}.rs-card p{margin:0;color:var(--muted);font-size:.9rem}
-.rs-heroes{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
-.rs-heroes .rs-h{flex:0 0 132px}
-@media (max-width:420px){.rs-heroes .rs-h{flex-basis:calc(50% - 4px)}}
-.rs-h{display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;padding:6px 8px;border-radius:10px;border:1px solid var(--line);border-left:4px solid var(--c);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer;font:inherit}
+/* the Heroes share one evenly spaced row; on narrow screens they wrap into centered rows of equal boxes */
+.rs-heroes{display:grid;grid-template-columns:repeat(var(--n,5),minmax(0,1fr));gap:10px;justify-content:center}
+@media (max-width:560px){.rs-heroes{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}.rs-heroes .rs-h{flex:0 0 calc((100% - 16px) / 3)}}
+.rs-h{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;padding:8px 6px;border-radius:10px;border:1px solid var(--line);border-top:4px solid var(--c);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer;font:inherit}
 .rs-h:hover,.rs-h:focus-visible{background:rgba(255,255,255,.1)}
-.rs-h img{width:36px;height:40px;object-fit:contain;flex:none}.rs-h .rs-t{display:flex;flex-direction:column;align-items:center;line-height:1.2}
+.rs-h img{width:44px;height:52px;object-fit:contain;flex:none}.rs-h .rs-t{display:flex;flex-direction:column;align-items:center;line-height:1.2}
 .rs-h em{font-style:normal;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}.rs-h .rs-t span{font-weight:700;font-size:.9rem;white-space:nowrap}.rs-h small{color:var(--muted);font-size:.75rem}
 </style>
 
@@ -2187,7 +2187,7 @@ function radiantPick(p){const f=S.F[p],a=f.abilities.find(x=>x.name==='Radiant S
   const ov=document.createElement('div');ov.className='scroll-ov rs-ov';setHero(ov,f.skin);
   ov.innerHTML=`<div class="rs-card" role="dialog" aria-modal="true" aria-label="Radiant Strike"><h3>Radiant Strike</h3><p>Roll ${a.dice}D6 + Energy (${f.energy}). Strike Starvos, or heal one Hero.</p>
     <button class="act" data-t="-1">Strike Starvos</button>
-    <div class="rs-heroes">${standing().map(q=>{const g=S.F[q];return `<button class="rs-h" data-t="${q}" style="--c:${g.color}"><img src="${IMG[g.id]}" alt=""><span class="rs-t"><em>Heal</em><span>${g.h.name}</span><small>${g.life} / ${g.maxLife}</small></span></button>`}).join('')}</div></div>`;
+    <div class="rs-heroes" style="--n:${standing().length}">${standing().map(q=>{const g=S.F[q];return `<button class="rs-h" data-t="${q}" style="--c:${g.color}"><img src="${IMG[g.id]}" alt=""><span class="rs-t"><em>Heal</em><span>${g.h.name}</span><small>${g.life} / ${g.maxLife}</small></span></button>`}).join('')}</div></div>`;
   document.body.append(ov);ov.querySelector('[data-t="-1"]').focus({preventScroll:true});
   return new Promise(res=>ov.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ov.remove();const v=+b.dataset.t;res(v<0?null:v)}))}
 function startCatastrophe(){S.net=false;S.v2=true;
