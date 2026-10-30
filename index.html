@@ -1777,8 +1777,9 @@ S.party = ORDER.slice();
 const bossLife = () => S.party.length*STARVOS.lifePerHero;
 const svAbility = r => STARVOS.abilities[STARVOS.rounds[r-1]];
 const svEffect = (a,x=0) => `${a.all?'All Heroes take':'A random Hero takes'} ${a.dice+x}D${a.sides} + ${cap(a.stat)}${x?' (Enraged)':''}`;
-// Rules v3 (N8 2026-10-30): below half its Life Starvos is Enraged, and its attacks roll one extra die
-const enraged = () => !!(S.v3&&S.boss&&S.boss.life>0&&S.boss.life<=S.boss.maxLife/2);
+// Rules v3 (N8 2026-10-30): once Starvos is below half its Life, it becomes Enraged at the start of the next round, and its attacks roll one extra die
+const enraged = () => !!(S.v3&&S.boss&&S.boss.life>0&&S.boss.life<S.boss.maxLife/2);
+function checkEnrage(){const B=S.boss;if(!enraged()||B.enraged)return;B.enraged=true;SFX.music('starvos-enraged');SFX.play('roar');banner('Starvos is Enraged!','cal');floatText('boss','Enraged','stat');log('<b>Starvos</b> is below half its Life and becomes <b>Enraged</b>: its attacks now roll one extra die!','boss','cal')}
 const standing = () => S.F.map((f,p)=>p).filter(p=>S.F[p].life>0);
 const bossDown = () => S.boss.life<=0;
 const heroesDown = () => !standing().length;
@@ -1832,7 +1833,7 @@ function renderBossSetup(){
      <p class="herald">“Hear me, Heroes! Starvos the Death Dragon has come to devour our world. Bring it down within eight rounds, or watch the planet burn!”</p>
      <ol>
      <li><b>“Hold fast against the fear!”</b> Every round begins with Starvos’ Fear Wave. Each Hero rolls a D20 plus Charm. Roll 5 or less and terror takes hold: 1D6 damage, no turn this round, and no Enhancement at its end.</li>
-     <li><b>“Brace yourselves, it strikes!”</b> Next, Starvos unleashes the round’s Ability, and it never misses. Claw Strike and Bite catch a single Hero: everyone rolls a plain D20, and the lowest roll takes the blow. Fire Blast and Devastate engulf you all, and each Hero rolls their own damage. Wound it below half its Life and Starvos becomes <b>Enraged</b>: every attack rolls one extra die!</li>
+     <li><b>“Brace yourselves, it strikes!”</b> Next, Starvos unleashes the round’s Ability, and it never misses. Claw Strike and Bite catch a single Hero: everyone rolls a plain D20, and the lowest roll takes the blow. Fire Blast and Devastate engulf you all, and each Hero rolls their own damage. Wound it below half its Life and Starvos becomes <b>Enraged</b> at the start of the next round: from then on, every attack rolls one extra die!</li>
      <li><b>“To arms!”</b> The Heroes still standing roll a D20 plus Speed. Fastest strikes first.</li>
      <li><b>“Strike the beast!”</b> On your turn, roll the D20 plus your Main stat against Starvos’ Defense of 13. Match it and you still land the blow, for the brave win every tie! Then unleash one Ability. Out of Abilities? Swing again!</li>
      <li><b>“Mend your wounds!”</b> The Soul Seer’s Soul Syphon strikes Starvos and heals every standing Hero 1D6. The Champion may turn Radiant Strike into a blessing: roll it as usual and give the whole total to one standing Hero as Life, instead of striking Starvos.</li>
@@ -1929,7 +1930,6 @@ function starvosRoundRow(){return `<tbody style="--c:${SKIN.starvos.color}"><tr>
 
 // ---------- Boss mode flow ----------
 function bossHit(n,p){SFX.play('hit',{n});const B=S.boss;if(S.F[p])S.F[p].dealt=(S.F[p].dealt||0)+n;B.life=Math.max(0,B.life-n);floatText('boss','−'+n,'dmg');anim('boss','hit');
-  if(enraged()&&!B.enraged){B.enraged=true;SFX.music('starvos-enraged');SFX.play('roar');banner('Starvos is Enraged!','cal');floatText('boss','Enraged','stat');log('<b>Starvos</b> falls below half its Life and becomes <b>Enraged</b>: its attacks now roll one extra die!','boss','cal')}
   renderAll()}
 function heroHurt(p,n){const f=S.F[p];damage(p,n);if(f.life<=0){log(`<b>${f.h.name}</b> has fallen!`,p,'cal');floatText(p,'Fallen','stat')}}
 async function fearWave(t){
@@ -1976,7 +1976,7 @@ async function starvosStrike(t){
   const a=svAbility(S.round),B=S.boss;
   S.active='boss';S.view='boss';renderAll();banner(a.name,'cal');anim('boss','lunge');SFX.play('ability',{name:a.name});
   if(a.all){const ar=$('#arena');ar.classList.remove('breathing');void ar.offsetWidth;ar.classList.add('breathing');setTimeout(()=>ar.classList.remove('breathing'),1800)}
-  const x=enraged()?1:0;
+  const x=S.boss.enraged?1:0;
   readout(`Starvos · ${a.name}`,`${svEffect(a,x)} (${B[a.stat]})`);log(`<b>Starvos</b> uses <b>${a.name}</b>: ${svEffect(a,x).toLowerCase()} (${B[a.stat]})`,'boss');
   await sleep(REDUCED?100:1100);chk(t);
   const targets=a.all?standing():[await randomTarget(t)];
@@ -2096,8 +2096,8 @@ function teamEnhancements(rows,t){
 async function catastrophe(t){
   SFX.play('roar');SFX.play('wings');
   for(S.round=1;S.round<=8;S.round++){
-    if(!S.boss.enraged)SFX.round('starvos',S.round);
     const li=document.createElement('li');li.className='rnd';li.textContent=`Round ${S.round}`;$('#log').prepend(li);
+    checkEnrage();if(!S.boss.enraged)SFX.round('starvos',S.round);
     S.F.forEach(f=>f.afraid=false);renderAll();
     await fearWave(t);if(heroesDown())break;
     await starvosStrike(t);if(heroesDown())break;
