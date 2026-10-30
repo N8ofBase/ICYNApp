@@ -234,8 +234,9 @@ button:focus-visible,.pick:focus-visible{outline:2px solid var(--gold);outline-o
 .arena:not(.boss) .fighter .hdice{position:absolute;z-index:6;bottom:2%;display:flex;gap:4px;pointer-events:none}
 .arena:not(.boss) .fighter[data-p="0"] .hdice{left:72%}.arena:not(.boss) .fighter[data-p="1"] .hdice{right:72%;flex-direction:row-reverse}
 .arena:not(.boss) .fighter .hdice .grp{display:flex;gap:4px}
-.arena:not(.boss) .fighter .hdice .die{--sz:clamp(32px,10cqh,72px);--fx:-110px}.arena:not(.boss) .fighter .hdice .die.from1{--fx:110px}
-.arena:not(.boss) .fighter .hdice .die.sm{--sz:clamp(26px,7cqh,52px)}
+.arena:not(.boss) .fighter .hdice .die{--sz:clamp(48px,17cqh,132px);--fx:-110px} /* bigger, like Starvos (user 2026-10-30) */.arena:not(.boss) .fighter .hdice .die.from1{--fx:110px}
+.arena:not(.boss) .fighter .hdice .die.sm{--sz:clamp(40px,12cqh,96px)}
+.duel:not(.full) .arena:not(.boss) .fighter .hdice .die{--sz:clamp(40px,12vw,60px)}.duel:not(.full) .arena:not(.boss) .fighter .hdice .die.sm{--sz:clamp(32px,9vw,46px)} /* stacked phone arena is short */
 .arena:not(.boss) .tray.pair{left:24%;right:24%;justify-content:center;gap:clamp(14px,5%,48px)} /* both Heroes' dice land in the middle (user 2026-10-25) */
 .die{--sz:clamp(42px,10vw,74px);width:var(--sz);height:var(--sz);position:relative;filter:drop-shadow(0 6px 6px rgba(0,0,0,.6)) drop-shadow(0 0 10px var(--glow,transparent))}
 .die.sm{--sz:clamp(32px,7vw,54px)}
