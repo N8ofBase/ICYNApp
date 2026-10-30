@@ -12,7 +12,7 @@ export const HEROES = {
   brawler: { name: 'Brawler', main: 'power', stats: { def: 10, power: 3, energy: 1, speed: 2, charm: 0 },
     abilities: [{ name: 'Crush', dice: 1, stat: 'power' }, { name: 'Energy Blocker', dice: 1, stat: 'energy', debuff: 'energy' }, { name: 'Flurry Fist', dice: 2, stat: 'speed' }, { name: 'Sweep', dice: 1, stat: 'charm', debuff: 'speed' }] },
   champion: { name: 'Champion', main: 'power', stats: { def: 13, power: 3, energy: 2, speed: 0, charm: 1 },
-    abilities: [{ name: 'Overpower', dice: 1, stat: 'power' }, { name: 'Radiant Strike', dice: 1, stat: 'energy' }, { name: 'Shield Slam', dice: 1, stat: 'speed' }, { name: 'Concuss', dice: 1, stat: 'charm', debuff: 'charm' }] },
+    abilities: [{ name: 'Overpower', dice: 1, stat: 'power' }, { name: 'Radiant Strike', dice: 1, stat: 'energy', mend: true }, { name: 'Shield Slam', dice: 1, stat: 'speed' }, { name: 'Concuss', dice: 1, stat: 'charm', debuff: 'charm' }] },
   maverick: { name: 'Maverick', main: 'charm', stats: { def: 11, power: 1, energy: 0, speed: 2, charm: 3 },
     abilities: [{ name: 'Pierce', dice: 1, stat: 'power', debuff: 'power' }, { name: 'Soul Shot', dice: 1, stat: 'energy' }, { name: 'Multi Shot', dice: 2, stat: 'speed' }, { name: 'Bola', dice: 1, stat: 'charm', debuff: 'speed' }] },
   soulseer: { name: 'Soul Seer', main: 'energy', stats: { def: 10, power: 0, energy: 3, speed: 1, charm: 2 },

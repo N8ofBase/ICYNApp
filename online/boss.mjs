@@ -21,6 +21,7 @@ export const STARVOS = { lifePerHero: 80, heroLife: 50, fear: 5, rounds: 8,
   order: ['claw', 'fire', 'bite', 'dev', 'fire', 'claw', 'bite', 'dev'] };
 const STATS = ['def', 'power', 'energy', 'speed', 'charm'];
 const GROUP = ['fear', 'speed', 'dodge', 'enh'];
+export const MEND = 10; // ability choice MEND + h: Radiant Strike heals Hero h
 
 function makeHero(id, p, owner) {
   const h = HEROES[id];
@@ -176,17 +177,28 @@ export function* catastrophe(setup, rnd, ev) {
     return 'ok';
   }
 
+  // Radiant Strike (mend) can heal one standing Hero instead of striking: choice MEND + Hero index.
   function* ability(p) {
     const f = F[p];
-    let i;
+    let i, mend = null;
     for (;;) {
-      const input = yield { kind: 'ability', p, options: f.abilities.map((a, k) => (a.cd ? null : k)).filter((k) => k !== null) };
-      i = input && Number.isInteger(input.choice) ? input.choice : -1;
+      const options = f.abilities.map((a, k) => (a.cd ? null : k)).filter((k) => k !== null);
+      if (f.abilities.some((a) => a.mend && !a.cd)) options.push(...standing().map((q) => MEND + q));
+      const input = yield { kind: 'ability', p, options };
+      const c = input && Number.isInteger(input.choice) && options.includes(input.choice) ? input.choice : -1;
+      if (c >= MEND) { mend = c - MEND; i = f.abilities.findIndex((a) => a.mend); break; }
+      i = c;
       if (f.abilities[i] && !f.abilities[i].cd) break;
     }
     const a = f.abilities[i];
     a.cd = true;
     const dice = Array.from({ length: a.dice }, () => rnd(6));
+    if (mend !== null) {
+      const g = F[mend], n = Math.max(0, dice.reduce((x, y) => x + y, 0) + f[a.stat]), before = g.life;
+      g.life = Math.min(g.maxLife, g.life + n);
+      emit({ t: 'damage', p, source: 'ability', i, dice, bonus: f[a.stat], dmg: 0, mend, heal: n, healed: g.life - before, F: snap() });
+      return;
+    }
     const dmg = Math.max(0, dice.reduce((x, y) => x + y, 0) + f[a.stat]);
     bossHit(p, dmg);
     const debuff = a.debuff && B[a.debuff] > 0 ? a.debuff : null;
