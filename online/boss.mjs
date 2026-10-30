@@ -42,7 +42,7 @@ export function* catastrophe(setup, rnd, ev) {
   const F = setup.heroes.map((id, p) => makeHero(id, p, setup.owners[p]));
   const L = F.length * STARVOS.lifePerHero;
   const B = { life: L, maxLife: L, ...STARVOS.stats };
-  // Rules v3 (N8, 2026-10-30): Defense 13, and below half Life Starvos is Enraged (its attacks roll one extra die)
+  // Rules v3 (N8, 2026-10-30): Defense 13; once below half Life, Starvos is Enraged from the start of the next round (its attacks roll one extra die)
   const v3 = (setup.v || 1) >= 3;
   if (v3) B.def = 13;
   const S = { round: 0 };
@@ -135,7 +135,7 @@ export function* catastrophe(setup, rnd, ev) {
     emit({ t: 'strike', a: key });
     const targets = a.all ? standing() : [yield* randomTarget()];
     const bonus = B[a.stat];
-    const extra = v3 && B.life <= B.maxLife / 2 ? 1 : 0;
+    const extra = v3 && B.life < B.maxLife / 2 ? 1 : 0;
     const dice = targets.map(() => Array.from({ length: a.dice + extra }, () => rnd(a.sides)));
     const dmg = dice.map((d) => d.reduce((x, y) => x + y, 0) + bonus);
     targets.forEach((p, i) => hurt(p, dmg[i]));
