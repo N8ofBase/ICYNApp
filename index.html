@@ -1795,7 +1795,7 @@ const svEffect = (a,x=0) => `${a.all?'All Heroes take':'A random Hero takes'} ${
 // Rules v3 (N8 2026-10-30): once Starvos is below half its Life, it becomes Enraged at the start of the next round, and its attacks roll one extra die
 const enraged = () => !!(S.v3&&S.boss&&S.boss.life>0&&S.boss.life<S.boss.maxLife/2);
 // Enraged: a big red title slams into the middle of the arena for 2 seconds (user 2026-10-30)
-async function checkEnrage(t){const B=S.boss;if(!enraged()||B.enraged)return;B.enraged=true;SFX.music('starvos-enraged');SFX.play('roar');renderAll();
+async function checkEnrage(t){const B=S.boss;if(!enraged()||B.enraged)return;B.enraged=true;SFX.enrage();SFX.play('roar');renderAll();
   const catchUp=REDUCED&&!REDUCED_PREF,ar=$('#arena');if(ar&&!catchUp){const o=document.createElement('div');o.className='enrage-title';o.innerHTML='<span>Enraged!</span>';document.body.append(o);setTimeout(()=>o.remove(),2000);ar.classList.remove('enr-shake');void ar.offsetWidth;ar.classList.add('enr-shake');setTimeout(()=>ar.classList.remove('enr-shake'),1300)}
   floatText('boss','Enraged','stat');log('<b>Starvos</b> is below half its Life and becomes <b>Enraged</b>: its attacks now roll one extra die!','boss','cal');
   await sleep(catchUp?50:2000);chk(t)}
@@ -2437,7 +2437,9 @@ const SFX=(()=>{
   addEventListener('pointerdown',e=>{if(!pop.hidden&&!pop.contains(e.target)&&e.target!==btn&&!btn.contains(e.target))pop.hidden=true});
   addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button');if(b&&!b.closest('.sfx-pop,.sfx-btn')&&!b.matches('.act-d20,.sc-die,.no-tap'))play('tap')},true);
   paint();document.body.append(btn,pop);
-  return {play,music,round,set,get state(){return {...st}}};
+  // Enraged: the metal track first, then back and forth with Project Mass until the fight ends
+  const enrage=()=>seq('enraged',['enraged-2','starvos-enraged'],1);
+  return {play,music,round,enrage,set,get state(){return {...st}}};
 })();
 
 buildDefs();renderSetup();
