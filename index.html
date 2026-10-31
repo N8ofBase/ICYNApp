@@ -692,6 +692,15 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
   background:radial-gradient(ellipse at 100% 25%,#fff3c0 0%,#ffb040 12%,#ff5a14 30%,rgba(190,30,10,.75) 55%,rgba(60,10,5,0) 75%);
   clip-path:polygon(100% 16%,100% 34%,0 100%,0 0);filter:blur(2px)}
 .arena.breathing .breath{animation:breath 1.6s ease-out}
+/* Fear Wave: black fog rolls off Starvos and across the battlefield (user 2026-10-31) */
+.fearfog{position:absolute;inset:-10% 0;z-index:15;pointer-events:none;overflow:hidden}
+.fearfog i{position:absolute;top:0;bottom:0;left:0;width:180%;filter:blur(18px);animation:fogroll 3.4s cubic-bezier(.35,.1,.5,1) forwards;
+  background:radial-gradient(ellipse 22% 38% at 12% 55%,rgba(0,0,0,.92),transparent 70%),radial-gradient(ellipse 18% 30% at 26% 30%,rgba(8,4,10,.85),transparent 70%),
+    radial-gradient(ellipse 24% 34% at 38% 72%,rgba(0,0,0,.9),transparent 70%),radial-gradient(ellipse 20% 40% at 52% 45%,rgba(12,6,14,.88),transparent 70%),
+    radial-gradient(ellipse 26% 32% at 66% 68%,rgba(0,0,0,.85),transparent 70%),radial-gradient(ellipse 18% 36% at 80% 35%,rgba(6,2,8,.8),transparent 70%),
+    radial-gradient(ellipse 30% 45% at 90% 60%,rgba(0,0,0,.7),transparent 72%)}
+.fearfog i+i{animation-duration:3.8s;animation-delay:.25s;opacity:.7;transform:scaleY(-1);filter:blur(26px)}
+@keyframes fogroll{0%{translate:70% 0;opacity:0}15%{opacity:1}75%{opacity:1}100%{translate:-95% 0;opacity:0}}
 @keyframes breath{0%{opacity:0;transform:scaleX(.1)}20%{opacity:1;transform:scaleX(1)}75%{opacity:.9}100%{opacity:0;transform:scaleX(1.05)}}
 .arena.breathing .fighter.hero .fig{filter:drop-shadow(0 10px 8px rgba(0,0,0,.55)) brightness(1.5) sepia(.6) saturate(3) hue-rotate(-20deg)}
 .arena.boss{background-color:#2a0b0b;background-size:cover;background-position:50% 30%}
@@ -711,7 +720,8 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
 .arena.boss .fighter.hero .tag{position:absolute;z-index:3;left:50%;translate:calc(-50% + var(--u) * var(--tx,0)) 0;bottom:calc(var(--scale,1) * var(--tg,1) * 100% + 2px);width:max(104px,calc(var(--u) * 27));max-width:none}
 .arena.boss .fighter.hero.fallen .tag{display:none}
 .arena.boss .fighter.hero .figwrap{height:100%;flex:none}
-.arena.boss .fighter.hero{--rh:clamp(180px,calc(var(--u) * var(--h) * var(--scale,1) * 1.15 + 80px),calc(var(--u) * 46));--rb:max(calc(62px - var(--u) * var(--b)),calc(var(--u) * var(--h) * var(--scale,1) / 2 - var(--rh) / 2))}
+/* every Hero's ability ring is sized like Maverick's (h 38 x scale .935), whatever the Hero's size (user 2026-10-31) */
+.arena.boss .fighter.hero{--rh:clamp(180px,calc(var(--u) * 35.5 * 1.15 + 80px),calc(var(--u) * 46));--rb:max(calc(62px - var(--u) * var(--b)),min(calc(var(--u) * var(--h) * var(--scale,1) / 2 - var(--rh) / 2),calc(var(--u) * var(--h) * var(--scale,1) * var(--tg,1) + 30px - var(--rh))))} /* small Heroes: the ring hangs lower so the name tag needn't jump far up */
 .arena.boss .fighter.hero .ring{top:auto;bottom:var(--rb);left:calc(var(--u) * -5);right:auto;height:var(--rh);--bs:max(30px,min(calc(var(--u) * 6.8),calc(var(--rh) / 5.2)))}
 .duel.full .arena.boss .fighter.hero.active .tag{bottom:max(calc(var(--scale,1) * var(--tg,1) * 100% + 2px),calc(var(--rb) + var(--rh) + 4px))}
 .arena.boss .fighter.hero .rb{left:calc(var(--k) * -22px);right:auto;transform:translateX(calc((1 - var(--k)) * 22px))}
@@ -1953,6 +1963,7 @@ function bossHit(n,p){SFX.play('hit',{n});const B=S.boss;if(S.F[p])S.F[p].dealt=
 function heroHurt(p,n){const f=S.F[p];damage(p,n);if(f.life<=0){log(`<b>${f.h.name}</b> has fallen!`,p,'cal');floatText(p,'Fallen','stat')}}
 async function fearWave(t){
   S.active=null;renderAll();banner('Fear Wave','cal');anim('boss','lunge');SFX.play('roar',{alt:1});
+  {const ar=$('#arena');if(ar&&!(REDUCED&&!REDUCED_PREF)){ar.querySelector('.fearfog')?.remove();const fg=document.createElement('div');fg.className='fearfog';fg.innerHTML='<i></i><i></i>';ar.append(fg);setTimeout(()=>fg.remove(),4300)}}
   readout('Starvos · Fear Wave',`Each Hero rolls D20 + Charm. ${STARVOS.fear} or less: 1D6 damage and the round is lost.`);
   log('<b>Starvos</b> unleashes a <b>Fear Wave</b>','boss');
   await sleep(REDUCED?100:900);chk(t);
