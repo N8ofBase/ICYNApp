@@ -2412,9 +2412,9 @@ const SFX=(()=>{
   // music(name or [alternatives], {loop, then}); asking again for what is already playing (or about to return) changes nothing
   // battle playlists: a different random track every 2 rounds (Starvos turns to its enraged track below half Life)
   const PL={battle:['battle-1','battle-2','battle-3','battle-4'],starvos:['starvos-a','starvos-e']};
-  // play a list in order, each track `rep` times through (Starvos: A, A, E, E, A, A, ...) until something else is asked for
+  // play a list in order, each track `rep` times through (Starvos: A, E, J, A, E, J, ...) until something else is asked for
   function seq(key,list,rep){let i=0,c=0;const go=()=>{const n=list[i];if(++c>=rep){c=0;i=(i+1)%list.length}want=null;music(n,{loop:false,seq:key,onend:go})};go()}
-  function round(kind,r){if(kind==='starvos'){if(!(want&&want.seq==='starvos'))seq('starvos',['starvos-a','starvos-e'],2);return}
+  function round(kind,r){if(kind==='starvos'){if(!(want&&want.seq==='starvos'))seq('starvos',['starvos-a','starvos-e','starvos-j'],1);return}
     if((r>1&&r%2===0)||(REDUCED&&!REDUCED_PREF&&want&&PL[kind].includes(want.n)))return;const l=PL[kind].filter(n=>!want||n!==want.n);music(l.length?l[Math.floor(Math.random()*l.length)]:PL[kind][0])}
   function music(n,o={}){
     const list=Array.isArray(n)?n:[n];
