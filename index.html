@@ -721,9 +721,9 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
 .arena.boss .fighter.hero.fallen .tag{display:none}
 .arena.boss .fighter.hero .figwrap{height:100%;flex:none}
 /* every Hero's ability ring is sized like Maverick's (h 38 x scale .935), whatever the Hero's size (user 2026-10-31) */
-.arena.boss .fighter.hero{--rh:clamp(180px,calc(var(--u) * 35.5 * 1.15 + 80px),calc(var(--u) * 46));--rb:max(calc(62px - var(--u) * var(--b)),min(calc(var(--u) * var(--h) * var(--scale,1) / 2 - var(--rh) / 2),calc(var(--u) * var(--h) * var(--scale,1) * var(--tg,1) + 30px - var(--rh))))} /* small Heroes: the ring hangs lower so the name tag needn't jump far up */
+.arena.boss .fighter.hero{--rh:clamp(180px,calc(var(--u) * 35.5 * 1.15 + 80px),calc(var(--u) * 46));--rb:max(calc(62px - var(--u) * var(--b)),calc(var(--u) * var(--h) * var(--scale,1) / 2 - var(--rh) / 2))}
 .arena.boss .fighter.hero .ring{top:auto;bottom:var(--rb);left:calc(var(--u) * -5);right:auto;height:var(--rh);--bs:max(30px,min(calc(var(--u) * 6.8),calc(var(--rh) / 5.2)))}
-.duel.full .arena.boss .fighter.hero.active .tag{bottom:max(calc(var(--scale,1) * var(--tg,1) * 100% + 2px),calc(var(--rb) + var(--rh) + 4px))}
+/* the acting Hero's name tag stays put; its ability ring sits in front of it so every icon can be clicked (user 2026-10-31) */
 .arena.boss .fighter.hero .rb{left:calc(var(--k) * -22px);right:auto;transform:translateX(calc((1 - var(--k)) * 22px))}
 .arena.boss .fighter.hero .rb small{left:50%;right:auto;translate:-50% 0}
 .duel.full .arena.boss .fighter.hero .ring{left:calc(var(--u) * -6)}
