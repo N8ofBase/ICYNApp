@@ -975,6 +975,8 @@ const ABORT={};
 const rnd=n=>1+Math.floor(Math.random()*n);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const REDUCED_PREF = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// How to Play starts open; once a player closes it, it stays closed while they change Heroes or modes (user 2026-10-31)
+document.addEventListener('toggle',e=>{if(e.target.matches&&e.target.matches('details.how'))S.howShut=!e.target.open},true);
 let REDUCED = REDUCED_PREF; // also forced on while catching up on an online duel after a reload
 // "isCPU" means: this Hero is not controlled on this screen (the Computer, or the rival in an online duel)
 const isCPU = p => (S.mode==='cpu' && p===1) || (S.mode==='online' && p!==NET.you) || (S.mode==='boss' && S.net && typeof p==='number' && NET.owners[p]!==NET.you);
@@ -1042,7 +1044,7 @@ function renderSetup(){SFX.music('menu');
      <div class="roster">${ORDER.map(id=>`<button class="pick" data-p="${p}" data-id="${id}" style="--c:${HEROES[id].color}" aria-pressed="${S.picks[p]===id}"><img src="${SEL[id]}" alt="" style="--sc:${HEROES[id].scale}"><span>${HEROES[id].name}</span><small class="race">${HEROES[id].race}</small></button>`).join('')}</div>
      <div class="chosen" id="chosen${p}"></div></div>${p===0&&S.mode!=='online'?'<div class="vs">vs</div>':''}`).join('')}</div>
    ${S.mode==='online'?'<div class="netbox" id="netbox"></div>':'<button class="act begin" id="begin"><span class="who">Enter the arena</span>Begin Duel</button>'}
-   <details class="how"><summary>How to play</summary><div class="lore">
+   <details class="how"${S.howShut?'':' open'}><summary>How to play</summary><div class="lore">
      <p class="herald">“Welcome, challenger, to the <b>I Crit You Not!</b> arena! Eight rounds stand between you and glory. Fell your rival and the crowd is yours. Survive all eight, and the Hero with the most Life is crowned <b>Crit King or Queen</b>!”</p>
      <ol>
      <li><b>“Ready… GO!”</b> At the start of every round, both Heroes race for the first move: a D20 plus Speed. Fastest strikes first.</li>
@@ -1858,7 +1860,7 @@ function renderBossSetup(){
      <div class="roster">${ORDER.map(id=>`<button class="pick" data-id="${id}" style="--c:${HEROES[id].color}" aria-pressed="${S.party.includes(id)}"><img src="${SEL[id]}" alt="" style="--sc:${HEROES[id].scale}"><span>${HEROES[id].name}</span><small class="race">${HEROES[id].race}</small></button>`).join('')}</div>
      <p class="party-note">Tap a Hero to add or remove them. Every Hero starts with ${STARVOS.heroLife} Life, and Starvos gains ${STARVOS.lifePerHero} Life for each Hero.</p></div>
    <button class="act begin" id="begin"><span class="who">${n} Hero${n>1?'es':''} · ${STARVOS.heroLife} Life each</span>Face Starvos</button>`}
-   <details class="how"><summary>How to play</summary><div class="lore">
+   <details class="how"${S.howShut?'':' open'}><summary>How to play</summary><div class="lore">
      <p class="herald">“Hear me, Heroes! Starvos the Death Dragon has come to devour our world. Bring it down within eight rounds, or watch the planet burn!”</p>
      <ol>
      <li><b>“Hold fast against the fear!”</b> Every round begins with Starvos’ Fear Wave. Each Hero rolls a D20 plus Charm. Roll 5 or less and terror takes hold: 1D6 damage, no turn this round, and no Enhancement at its end.</li>
