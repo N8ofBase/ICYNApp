@@ -553,6 +553,7 @@ button:focus-visible,.pick:focus-visible{outline:2px solid var(--gold);outline-o
 .fighter.hero.fallen .fig{filter:grayscale(.7) brightness(.6);opacity:.8} /* the fallen pose art shows the fall (user art 2026-10-27) */
 .fighter.hero.fallen .tag b span:last-child{color:#ff9aa4}
 .fighter.hero .notice{top:-10%}
+.arena.boss>.notice.ntop{z-index:20;pointer-events:none} /* Starvos mode: notices on the top layer (user 2026-11-04) */
 @media (max-width:560px){.fighter.hero .tag{padding:1px 3px 2px}.fighter.hero .tag b{font-size:.56rem}.fighter.starvos .plate{max-width:150px;padding:4px 6px}.fighter.starvos .plate .sbs .sb{font-size:.56rem;padding:0 4px}.fighter.starvos .plate .hpn span:last-child{display:none}}
 .arena.annihilate::after{content:"";position:absolute;inset:0;z-index:9;pointer-events:none;background:radial-gradient(circle at 70% 40%,#fff 0%,#ffcf7a 25%,rgba(255,80,20,.85) 55%,rgba(40,0,0,.95) 100%);animation:annihilate 2.6s ease-in forwards}
 @keyframes annihilate{0%{opacity:0;transform:scale(.2)}30%{opacity:1}100%{opacity:1;transform:scale(1.6)}}
@@ -1274,7 +1275,14 @@ function log(html,p,cls=''){const li=document.createElement('li');if(cls)li.clas
   const ol=$('#log');if(ol){ol.prepend(li)}}
 function banner(text,cls=''){const b=$('#banner');if(!b)return;b.className='banner '+cls;b.innerHTML=`<span>${text}</span>`;}
 function notice(p,kind,head,body){body=String(body??'').replace(/ \(Main\)/g,'');const el=$(`.fighter[data-p="${p}"] .figwrap`);if(!el)return;el.querySelector('.notice')?.remove();
-  const n=document.createElement('div');n.className='notice '+kind;n.innerHTML=`<b>${head}</b><span>${body}</span>`;el.append(n);setTimeout(()=>n.remove(),REDUCED?400:3200)}
+  const n=document.createElement('div');n.className='notice '+kind;n.innerHTML=`<b>${head}</b><span>${body}</span>`;
+  // Starvos mode: notices go in the arena's top layer, above every Hero, dice and the dragon (user 2026-11-04)
+  const ar=S.mode==='boss'&&el.closest('.arena.boss');
+  if(ar){ar.querySelector(`.notice.ntop[data-p="${p}"]`)?.remove();n.classList.add("ntop");n.style.setProperty("--c",getComputedStyle(el).getPropertyValue("--c"));n.dataset.p=p;ar.append(n);
+    const a=ar.getBoundingClientRect(),w=el.getBoundingClientRect(),hw=n.offsetWidth/2;
+    n.style.left=Math.max(hw+4,Math.min(a.width-hw-4,w.left+w.width/2-a.left))+'px';n.style.top=Math.max(4,w.top-a.top-w.height*.1)+'px'}
+  else el.append(n);
+  setTimeout(()=>n.remove(),REDUCED?400:3200)}
 function floatText(p,text,cls){const el=$(`.fighter[data-p="${p}"] .figwrap`);if(!el)return;const f=document.createElement('div');f.className='float '+cls;f.textContent=text;
   f.style.top=(30+Math.random()*20)+'%';el.append(f);setTimeout(()=>f.remove(),1500)}
 function anim(p,cls){const el=$(`.fighter[data-p="${p}"]`);if(!el)return;el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);setTimeout(()=>el.classList.remove(cls),500)}
