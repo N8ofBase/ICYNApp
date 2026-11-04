@@ -1,10 +1,10 @@
-# Adds the $5 Full Arena unlock to the game page (works on src.html or the built index.html).
+# Adds the $5 Crit Pass unlock to the game page (works on src.html or the built index.html).
 # Free: Vs Computer + Pass & Play duels. Unlock: Online duels, Starvos Catastrophe, Print & Play files.
 # Usage: python3 tools/unlock_patch.py <file.html> [more.html ...]
 import sys
 
 CSS = r"""
-/* $5 Full Arena unlock (2026-11-04) */
+/* $5 Crit Pass unlock (2026-11-04) */
 .lock{display:inline-block;margin-left:6px;font-size:.66rem;font-weight:800;letter-spacing:.03em;padding:1px 6px;border-radius:999px;background:rgba(224,184,98,.16);color:var(--gold);border:1px solid rgba(224,184,98,.5);vertical-align:1px}
 .mode button[aria-pressed="true"] .lock{background:rgba(0,0,0,.18);color:var(--ink);border-color:rgba(0,0,0,.35)}
 .unlock{max-width:440px;margin:18px auto 0;display:grid;gap:10px;text-align:center;padding:16px;border:1px solid rgba(224,184,98,.45);border-radius:14px;background:linear-gradient(rgba(224,184,98,.08),rgba(224,184,98,.02))}
@@ -21,7 +21,7 @@ CSS = r"""
 """
 
 JS = r"""
-// ---------- $5 Full Arena unlock (user 2026-11-04) ----------
+// ---------- $5 Crit Pass unlock (user 2026-11-04) ----------
 // Free: Vs Computer and Pass & Play. Unlock (one time, tied to the account): Online duels,
 // the Starvos Catastrophe, and the Print & Play files. The server checks it too (online games, file links).
 // Without the live site's account scripts (the claude.ai preview) everything stays open.
@@ -30,23 +30,23 @@ const UNLOCK_KEY='icyn.unlock';
 function hasArena(){if(!PAYWALL()||S.unlocked)return true;const u=signedIn()&&ICYNAuth.user();try{return !!u&&localStorage.getItem(UNLOCK_KEY)===u.id}catch(e){return false}}
 function setUnlocked(on){S.unlocked=!!on;const u=signedIn()&&ICYNAuth.user();try{if(on&&u)localStorage.setItem(UNLOCK_KEY,u.id);else if(!on)localStorage.removeItem(UNLOCK_KEY)}catch(e){}}
 const lockTag=()=>hasArena()?'':' <span class="lock">$5</span>';
-const UL_WHY={online:'Duel your friends online',starvos:'Face the Starvos Catastrophe',pnp:'Print & Play files',any:'Unlock the Full Arena'};
+const UL_WHY={online:'Duel your friends online',starvos:'Face the Starvos Catastrophe',pnp:'Print & Play files',any:'Get the Crit Pass'};
 function unlockCard(why){const s=signedIn();
   return `<div class="unlock"><p class="ul-k">${esc(UL_WHY[why]||UL_WHY.any)}</p>
-    <p>One <b>$5</b> unlock opens the Full Arena for good:</p>
+    <p>The <b>Crit Pass</b> is a one-time <b>$5</b> unlock, yours for good:</p>
     <ul class="ul-perks"><li><b>Online duels</b> with friends on any device</li><li><b>The Starvos Catastrophe</b>, alone or with up to 4 friends</li><li><b>Print &amp; Play</b> rulebook and Hero sheets (PDF)</li></ul>
     <p><small>Vs Computer and Pass &amp; Play stay free forever.</small></p>
-    ${s?`<div class="row"><button class="act" data-ul="buy">Unlock for $5</button></div><small>Secure checkout by Square. The unlock stays with your account on every device.</small>`
-      :`<p>First, sign in so the unlock stays with you on every device.</p><div class="row"><button class="act" data-ul="up">Create account</button><button class="ghost" data-ul="in">Sign in</button></div>`}</div>`}
+    ${s?`<div class="row"><button class="act" data-ul="buy">Get the Crit Pass · $5</button></div><small>Secure checkout by Square. The Crit Pass stays with your account on every device.</small>`
+      :`<p>First, sign in so the Crit Pass stays with you on every device.</p><div class="row"><button class="act" data-ul="up">Create account</button><button class="ghost" data-ul="in">Sign in</button></div>`}</div>`}
 function wireUnlock(root){root.querySelectorAll('[data-ul]').forEach(b=>b.onclick=()=>{const a=b.dataset.ul;if(a==='in')ICYNAuth.signIn();else if(a==='up')ICYNAuth.signUp();else buyArena(b)})}
 async function buyArena(b){b.disabled=true;const t=b.textContent;b.textContent='Opening checkout…';
   const r=await ICYNStats.checkout();if(r&&r.url){location.assign(r.url);return}
-  if(r&&r.unlocked){setUnlocked(true);document.querySelector('.over.ul')?.remove();toast('Your Full Arena is already unlocked.');if(S.screen==='setup')renderSetup();return}
+  if(r&&r.unlocked){setUnlocked(true);document.querySelector('.over.ul')?.remove();toast('You already have the Crit Pass.');if(S.screen==='setup')renderSetup();return}
   b.disabled=false;b.textContent=t;toast('Checkout could not open. Please try again in a moment.')}
 function arenaPanel(title,body){document.querySelector('.over.ul')?.remove();
   const o=document.createElement('div');o.className='over sp ul';o.innerHTML=`<div class="card wide" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="sp-tabs"><b class="pv-t">${esc(title)}</b><button class="x" aria-label="Close">✕</button></div><div class="sp-body">${body}</div></div>`;
   o.querySelector('.x').onclick=()=>o.remove();o.onclick=e=>{if(e.target===o)o.remove()};document.body.append(o);return o}
-function unlockPanel(why){const o=arenaPanel('Full Arena',unlockCard(why));wireUnlock(o)}
+function unlockPanel(why){const o=arenaPanel('Crit Pass',unlockCard(why));wireUnlock(o)}
 async function pnpPanel(){if(!hasArena())return unlockPanel('pnp');
   const o=arenaPanel('Print & Play','<p>Fetching your files…</p>'),b=o.querySelector('.sp-body');
   const r=await ICYNStats.pnpFiles();if(!o.isConnected)return;
@@ -58,7 +58,7 @@ async function unlockReturn(){const q=new URLSearchParams(location.search),st=q.
   if(st!=='done'){toast('Checkout cancelled. Nothing was charged.');return}
   try{await ICYNAuth.ready}catch(e){}
   for(let i=0;i<8;i++){const r=await ICYNStats.confirmCheckout();
-    if(r&&r.unlocked){setUnlocked(true);refreshMe();if(S.screen==='setup')renderSetup();const o=arenaPanel('Full Arena unlocked','<p class="herald">“Hear ye! A new Hero of the Full Arena walks among us!”</p><p>Online duels, the Starvos Catastrophe and the Print &amp; Play files are yours. Thank you for supporting I Crit You Not!</p><div class="row"><button class="act" id="ul-pnp">Get the Print &amp; Play files</button></div>');o.querySelector('#ul-pnp').onclick=()=>pnpPanel();return}
+    if(r&&r.unlocked){setUnlocked(true);refreshMe();if(S.screen==='setup')renderSetup();const o=arenaPanel('Crit Pass unlocked','<p class="herald">“Hear ye! A new Crit Pass holder walks among us!”</p><p>Online duels, the Starvos Catastrophe and the Print &amp; Play files are yours. Thank you for supporting I Crit You Not!</p><div class="row"><button class="act" id="ul-pnp">Get the Print &amp; Play files</button></div>');o.querySelector('#ul-pnp').onclick=()=>pnpPanel();return}
     await new Promise(z=>setTimeout(z,2500))}
   toast('Payment is still on its way. Reload in a minute; if the unlock is missing, send us feedback.')}
 addEventListener('load',()=>{unlockReturn()});

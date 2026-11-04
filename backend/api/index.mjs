@@ -1,4 +1,4 @@
-// I Crit You Not! player API: stats, streaks, leaderboards, match history, prefs, and the $5 Full Arena unlock (unlock.mjs).
+// I Crit You Not! player API: stats, streaks, leaderboards, match history, prefs, and the $5 Crit Pass unlock (unlock.mjs).
 // HTTP API (payload v2). Authorized routes carry Cognito ID-token claims.
 // Stats logic lives in record.mjs, shared with the online-duel WebSocket Lambda.
 import { QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';

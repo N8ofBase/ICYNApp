@@ -30,11 +30,11 @@ const ISSUER = `https://cognito-idp.us-east-1.amazonaws.com/${POOL}`;
 const NUDGE_MS = 45000;
 const DAY = 86400;
 const BOSS_SEATS = 5;
-// Online play is part of the $5 Full Arena unlock (stored as `unlock` on the icyn-players item;
+// Online play is part of the $5 Crit Pass unlock (stored as `unlock` on the icyn-players item;
 // the developers group always has it). FREE_JOIN=true lets anyone join a game an unlocked player hosts.
 const PLAYERS = process.env.PLAYERS_TABLE || 'icyn-players';
 const FREE_JOIN = process.env.FREE_JOIN === 'true';
-const NEED_UNLOCK = 'Online play is part of the Full Arena unlock. Unlock it on the setup screen.';
+const NEED_UNLOCK = 'Online play needs the Crit Pass. Get it on the setup screen.';
 const isDev = (c) => { const g = c?.['cognito:groups']; return (Array.isArray(g) ? g : String(g || '').split(/[\s,\[\]]+/)).includes('developers'); };
 async function unlocked(conn) {
   if (conn.dev) return true;

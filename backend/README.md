@@ -28,7 +28,7 @@ Compress-Archive -Path index.mjs -DestinationPath ../feedback.zip -Force
 aws lambda update-function-code --function-name icyn-feedback --zip-file fileb://../feedback.zip --profile prismcortex --region us-east-1
 ```
 
-## $5 Full Arena unlock (2026-11-04)
+## $5 Crit Pass unlock (2026-11-04)
 
 Free: Vs Computer and Pass & Play. The unlock (one time, $5, tied to the Cognito account) opens Online duels,
 the Starvos Catastrophe and the Print & Play PDFs. Developers group members always have it. Payments: the owner's Square account.

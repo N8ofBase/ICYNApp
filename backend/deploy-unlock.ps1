@@ -1,4 +1,4 @@
-# Deploys the $5 Full Arena unlock backend. Run from the backend folder on Skynet:
+# Deploys the $5 Crit Pass unlock backend. Run from the backend folder on Skynet:
 #   cd C:\Users\n8gr8\Documents\ICYN\backend-unlock
 #   aws sso login --profile prismcortex
 #   .\deploy-unlock.ps1 -Step 1   (then 2, 3, 4 in order; each step is safe to re-run)

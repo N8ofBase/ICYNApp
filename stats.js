@@ -35,7 +35,7 @@
     feedback: (f) => call('POST', '/feedback', f, 'optional'),
     feedbackList: (status) => call('GET', '/feedback?status=' + (status === 'all' ? 'all' : 'new') + '&limit=50', null, true),
     feedbackSet: (id, status) => call('PATCH', '/feedback/' + encodeURIComponent(id), { status }, true),
-    // $5 Full Arena unlock (Online, Starvos, Print & Play). me() also returns {unlocked}.
+    // $5 Crit Pass unlock (Online, Starvos, Print & Play). me() also returns {unlocked}.
     checkout: () => call('POST', '/checkout', {}, true),             // -> {url} for Square checkout, or {unlocked:true}
     confirmCheckout: () => call('POST', '/checkout/confirm', {}, true), // -> {unlocked}; checks the player's last Square order
     pnpFiles: () => call('GET', '/pnp', null, true),                 // -> {files:[{name, url}]}

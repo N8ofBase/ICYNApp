@@ -1,4 +1,4 @@
-// The $5 Full Arena unlock: Online duels, Starvos Catastrophe and the Print & Play files.
+// The $5 Crit Pass unlock: Online duels, Starvos Catastrophe and the Print & Play files.
 // Free forever: Vs Computer and Pass & Play duels.
 //
 // Payment runs through Square (the owner's existing account) with an online payment link.
@@ -116,14 +116,14 @@ export async function checkout(userId, claims, player, event) {
       reference_id: userId.slice(0, 40),
       metadata: { userId, product: 'full-arena' },
       line_items: [{
-        name: 'I Crit You Not! Full Arena', quantity: '1',
+        name: 'I Crit You Not! Crit Pass', quantity: '1',
         note: 'One-time unlock: Online duels, the Starvos Catastrophe, and the Print & Play rulebook and sheets.',
         base_price_money: { amount: PRICE_CENTS, currency: 'USD' },
       }],
     },
     checkout_options: { redirect_url: `${base}/?unlock=done`, ask_for_shipping_address: false },
     pre_populated_data: claims.email ? { buyer_email: claims.email } : undefined,
-    payment_note: `ICYN Full Arena for ${userId}`,
+    payment_note: `ICYN Crit Pass for ${userId}`,
   });
   const link = r.payment_link;
   // Remember the order so /checkout/confirm can check it when the player comes back.
