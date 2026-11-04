@@ -30,6 +30,17 @@ const ISSUER = `https://cognito-idp.us-east-1.amazonaws.com/${POOL}`;
 const NUDGE_MS = 45000;
 const DAY = 86400;
 const BOSS_SEATS = 5;
+// Online play is part of the $5 Full Arena unlock (stored as `unlock` on the icyn-players item;
+// the developers group always has it). FREE_JOIN=true lets anyone join a game an unlocked player hosts.
+const PLAYERS = process.env.PLAYERS_TABLE || 'icyn-players';
+const FREE_JOIN = process.env.FREE_JOIN === 'true';
+const NEED_UNLOCK = 'Online play is part of the Full Arena unlock. Unlock it on the setup screen.';
+const isDev = (c) => { const g = c?.['cognito:groups']; return (Array.isArray(g) ? g : String(g || '').split(/[\s,\[\]]+/)).includes('developers'); };
+async function unlocked(conn) {
+  if (conn.dev) return true;
+  const p = (await db.send(new GetCommand({ TableName: PLAYERS, Key: { userId: conn.userId }, ProjectionExpression: '#u', ExpressionAttributeNames: { '#u': 'unlock' } }))).Item;
+  return !!(p && p.unlock);
+}
 const isBoss = (game) => game.setup.mode === 'boss';
 const run = (game) => (isBoss(game) ? replayBoss : replay)(game.seed, game.setup, game.inputs);
 
@@ -161,7 +172,7 @@ export async function handler(event) {
   if (routeKey === '$connect') {
     const claims = await verifyIdToken(event.queryStringParameters?.token).catch(() => null);
     if (!claims) return { statusCode: 401 };
-    await db.send(new PutCommand({ TableName: CONNS, Item: { connectionId, userId: claims.sub, name: nameOf(claims), ttl: Math.floor(Date.now() / 1000) + DAY } }));
+    await db.send(new PutCommand({ TableName: CONNS, Item: { connectionId, userId: claims.sub, name: nameOf(claims), dev: isDev(claims), ttl: Math.floor(Date.now() / 1000) + DAY } }));
     return { statusCode: 200 };
   }
   if (routeKey === '$disconnect') {
@@ -175,6 +186,7 @@ export async function handler(event) {
   try { msg = JSON.parse(event.body || '{}'); } catch (e) { await send(api, connectionId, { type: 'error', error: 'Bad JSON' }); return { statusCode: 400 }; }
   const fail = async (error) => { await send(api, connectionId, { type: 'error', error, action: msg.action }); return { statusCode: 200 }; };
 
+  if (msg.action === 'create' && !(await unlocked(conn))) return fail(NEED_UNLOCK);
   if (msg.action === 'create' && msg.mode === 'boss') {
     const heroes = [...new Set([].concat(msg.heroes || msg.hero || []))].filter((h) => HEROES[h]);
     const game = {
@@ -219,6 +231,7 @@ export async function handler(event) {
     let you = game.players.indexOf(conn.userId);
 
     const boss = isBoss(game);
+    if (msg.action === 'join' && you === -1 && !FREE_JOIN && !(await unlocked(conn))) return fail(NEED_UNLOCK);
     if (!boss && msg.action === 'join' && !HEROES[msg.hero]) return fail('Pick a Hero');
     if (boss && msg.action === 'join') {
       if (you === -1) {

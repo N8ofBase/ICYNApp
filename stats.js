@@ -1,6 +1,6 @@
 // Saves, streaks and leaderboards for I Crit You Not! (needs auth.js loaded first).
 // Exposes window.ICYNStats: recordMatch(m), me(), setProfile(p), history(), leaderboard(by),
-// feedback(f), feedbackList(status), feedbackSet(id, status).
+// feedback(f), feedbackList(status), feedbackSet(id, status), checkout(), confirmCheckout(id), pnpFiles().
 // Every call resolves to null instead of throwing when the player is offline
 // or signed out, so guest play never breaks.
 (function () {
@@ -35,5 +35,9 @@
     feedback: (f) => call('POST', '/feedback', f, 'optional'),
     feedbackList: (status) => call('GET', '/feedback?status=' + (status === 'all' ? 'all' : 'new') + '&limit=50', null, true),
     feedbackSet: (id, status) => call('PATCH', '/feedback/' + encodeURIComponent(id), { status }, true),
+    // $5 Full Arena unlock (Online, Starvos, Print & Play). me() also returns {unlocked}.
+    checkout: () => call('POST', '/checkout', {}, true),             // -> {url} for Stripe Checkout, or {unlocked:true}
+    confirmCheckout: (sessionId) => call('POST', '/checkout/confirm', { sessionId }, true), // -> {unlocked}
+    pnpFiles: () => call('GET', '/pnp', null, true),                 // -> {files:[{name, url}]}
   };
 })();

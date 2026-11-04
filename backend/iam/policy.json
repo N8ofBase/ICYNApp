@@ -1,5 +1,38 @@
-{"Version":"2012-10-17","Statement":[
-{"Effect":"Allow","Action":["dynamodb:GetItem","dynamodb:PutItem","dynamodb:UpdateItem","dynamodb:Query","dynamodb:ConditionCheckItem"],
- "Resource":["arn:aws:dynamodb:us-east-1:376998045836:table/icyn-players","arn:aws:dynamodb:us-east-1:376998045836:table/icyn-players/index/*","arn:aws:dynamodb:us-east-1:376998045836:table/icyn-matches"]},
-{"Effect":"Allow","Action":"logs:CreateLogGroup","Resource":"arn:aws:logs:us-east-1:376998045836:*"},
-{"Effect":"Allow","Action":["logs:CreateLogStream","logs:PutLogEvents"],"Resource":"arn:aws:logs:us-east-1:376998045836:log-group:/aws/lambda/icyn-api:*"}]}
+{
+ "Version": "2012-10-17",
+ "Statement": [
+  {
+   "Effect": "Allow",
+   "Action": [
+    "dynamodb:GetItem",
+    "dynamodb:PutItem",
+    "dynamodb:UpdateItem",
+    "dynamodb:Query",
+    "dynamodb:ConditionCheckItem"
+   ],
+   "Resource": [
+    "arn:aws:dynamodb:us-east-1:376998045836:table/icyn-players",
+    "arn:aws:dynamodb:us-east-1:376998045836:table/icyn-players/index/*",
+    "arn:aws:dynamodb:us-east-1:376998045836:table/icyn-matches"
+   ]
+  },
+  {
+   "Effect": "Allow",
+   "Action": "logs:CreateLogGroup",
+   "Resource": "arn:aws:logs:us-east-1:376998045836:*"
+  },
+  {
+   "Effect": "Allow",
+   "Action": [
+    "logs:CreateLogStream",
+    "logs:PutLogEvents"
+   ],
+   "Resource": "arn:aws:logs:us-east-1:376998045836:log-group:/aws/lambda/icyn-api:*"
+  },
+  {
+   "Effect": "Allow",
+   "Action": "s3:GetObject",
+   "Resource": "arn:aws:s3:::icyn-premium-files/print-and-play/*"
+  }
+ ]
+}

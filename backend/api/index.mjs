@@ -1,8 +1,9 @@
-// I Crit You Not! player API: stats, streaks, leaderboards, match history, prefs.
+// I Crit You Not! player API: stats, streaks, leaderboards, match history, prefs, and the $5 Full Arena unlock (unlock.mjs).
 // HTTP API (payload v2). Authorized routes carry Cognito ID-token claims.
 // Stats logic lives in record.mjs, shared with the online-duel WebSocket Lambda.
 import { QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { db, PLAYERS, MATCHES, RecordError, cleanName, defaultName, stats, loadPlayer, recordMatch } from './record.mjs';
+import { hasUnlock, checkout, confirm, webhook, pnp } from './unlock.mjs';
 
 const json = (statusCode, body) => ({ statusCode, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
 const bad = (msg) => json(400, { error: msg });
@@ -29,7 +30,7 @@ async function leaderboard(event) {
 
 async function getMe(userId, claims) {
   const p = await loadPlayer(userId, claims);
-  return json(200, { stats: stats(p), prefs: p.prefs || {} });
+  return json(200, { stats: stats(p), prefs: p.prefs || {}, unlocked: hasUnlock(p, claims) });
 }
 
 async function putMe(userId, claims, body) {
@@ -54,7 +55,7 @@ async function putMe(userId, claims, body) {
     TableName: PLAYERS, Key: { userId }, UpdateExpression: 'SET ' + sets.join(', '),
     ExpressionAttributeNames: names, ExpressionAttributeValues: vals, ReturnValues: 'ALL_NEW',
   }));
-  return json(200, { stats: stats(r.Attributes), prefs: r.Attributes.prefs || {} });
+  return json(200, { stats: stats(r.Attributes), prefs: r.Attributes.prefs || {}, unlocked: hasUnlock(r.Attributes, claims) });
 }
 
 const HERO_NAMES = ['Brawler', 'Champion', 'Maverick', 'Soul Seer', 'Whisper'];
@@ -118,6 +119,7 @@ export const handler = async (event) => {
   try {
     const route = event.routeKey;
     if (route === 'GET /leaderboard') return await leaderboard(event);
+    if (route === 'POST /stripe/webhook') return await webhook(event);
 
     const claims = event.requestContext?.authorizer?.jwt?.claims;
     if (!claims?.sub) return json(401, { error: 'sign in required' });
@@ -125,11 +127,14 @@ export const handler = async (event) => {
 
     if (route === 'GET /me') return await getMe(userId, claims);
     if (route === 'GET /matches') return await getMatches(userId);
+    if (route === 'GET /pnp') return pnp(claims, await loadPlayer(userId, claims));
+    if (route === 'POST /checkout') return await checkout(userId, claims, await loadPlayer(userId, claims), event);
 
     const body = parseBody(event);
     if (body === null || typeof body !== 'object' || Array.isArray(body)) return bad('body must be a JSON object');
     if (route === 'PUT /me') return await putMe(userId, claims, body);
     if (route === 'POST /matches') return await postMatch(userId, claims, body);
+    if (route === 'POST /checkout/confirm') return await confirm(userId, claims, await loadPlayer(userId, claims), body);
     return json(404, { error: 'not found' });
   } catch (e) {
     console.error(e);

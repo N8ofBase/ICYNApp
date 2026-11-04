@@ -27,3 +27,20 @@ cd backend/feedback
 Compress-Archive -Path index.mjs -DestinationPath ../feedback.zip -Force
 aws lambda update-function-code --function-name icyn-feedback --zip-file fileb://../feedback.zip --profile prismcortex --region us-east-1
 ```
+
+## $5 Full Arena unlock (2026-11-04)
+
+Free: Vs Computer and Pass & Play. The unlock (one time, $5, tied to the Cognito account) opens Online duels,
+the Starvos Catastrophe and the Print & Play PDFs. Developers group members always have it.
+
+- `api/unlock.mjs` (in icyn-api): `POST /checkout` (JWT) makes a Stripe Checkout session; `POST /checkout/confirm` (JWT)
+  asks Stripe about a returning session and grants at once; `POST /stripe/webhook` (public, signature checked) grants on
+  `checkout.session.completed`; `GET /pnp` (JWT, unlocked only) returns 15-minute S3 links. `GET /me` and `PUT /me` add `unlocked`.
+- Stored on the `icyn-players` item as `unlock: {at, via, session, amount, currency, paymentIntent}`.
+  To refund: refund in Stripe, then remove `unlock` from that player's item.
+  To gift an unlock (box codes, testers): set `unlock: {at, via: 'gift'}` on their item, or use a 100% off Stripe promotion code.
+- `ws/ws.mjs`: `create` and joining a new game need the unlock. Env `FREE_JOIN=true` lets anyone join a game an unlocked player hosts.
+- Lambda env: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, optional `STRIPE_PRICE_ID`, `PNP_BUCKET` (default icyn-premium-files).
+- Stripe webhook endpoint: `https://r9s8gd8duk.execute-api.us-east-1.amazonaws.com/stripe/webhook`, events
+  `checkout.session.completed` and `checkout.session.async_payment_succeeded`.
+- Deploy: `deploy-unlock.ps1 -Step 1..4`. Rollback: previous zips `function-starvos.zip` (icyn-api) and `ws-v3.zip` (icyn-ws).
