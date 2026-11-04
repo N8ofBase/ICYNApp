@@ -119,7 +119,7 @@ export const handler = async (event) => {
   try {
     const route = event.routeKey;
     if (route === 'GET /leaderboard') return await leaderboard(event);
-    if (route === 'POST /stripe/webhook') return await webhook(event);
+    if (route === 'POST /square/webhook') return await webhook(event);
 
     const claims = event.requestContext?.authorizer?.jwt?.claims;
     if (!claims?.sub) return json(401, { error: 'sign in required' });

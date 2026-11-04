@@ -36,7 +36,7 @@ function unlockCard(why){const s=signedIn();
     <p>One <b>$5</b> unlock opens the Full Arena for good:</p>
     <ul class="ul-perks"><li><b>Online duels</b> with friends on any device</li><li><b>The Starvos Catastrophe</b>, alone or with up to 4 friends</li><li><b>Print &amp; Play</b> rulebook and Hero sheets (PDF)</li></ul>
     <p><small>Vs Computer and Pass &amp; Play stay free forever.</small></p>
-    ${s?`<div class="row"><button class="act" data-ul="buy">Unlock for $5</button></div><small>Secure checkout by Stripe. The unlock stays with your account on every device.</small>`
+    ${s?`<div class="row"><button class="act" data-ul="buy">Unlock for $5</button></div><small>Secure checkout by Square. The unlock stays with your account on every device.</small>`
       :`<p>First, sign in so the unlock stays with you on every device.</p><div class="row"><button class="act" data-ul="up">Create account</button><button class="ghost" data-ul="in">Sign in</button></div>`}</div>`}
 function wireUnlock(root){root.querySelectorAll('[data-ul]').forEach(b=>b.onclick=()=>{const a=b.dataset.ul;if(a==='in')ICYNAuth.signIn();else if(a==='up')ICYNAuth.signUp();else buyArena(b)})}
 async function buyArena(b){b.disabled=true;const t=b.textContent;b.textContent='Opening checkout…';
@@ -52,12 +52,12 @@ async function pnpPanel(){if(!hasArena())return unlockPanel('pnp');
   const r=await ICYNStats.pnpFiles();if(!o.isConnected)return;
   if(!r||!r.files){b.innerHTML='<p>The files could not be fetched. Please try again in a moment.</p>';return}
   b.innerHTML=`<p>Print these at home and play I Crit You Not! at the table with a D20 and a few D6. Links last 15 minutes; come back here anytime for fresh ones.</p><div class="pnp-files">${r.files.map(f=>`<a class="act" href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.name)} (PDF)</a>`).join('')}</div>`}
-// Back from Stripe Checkout: ?unlock=done&session_id=... or ?unlock=cancel
+// Back from Square checkout: ?unlock=done (Square may add orderId/transactionId; the server looks up the player's own order)
 async function unlockReturn(){const q=new URLSearchParams(location.search),st=q.get('unlock');if(!st||!PAYWALL())return;
-  const sid=q.get('session_id');q.delete('unlock');q.delete('session_id');history.replaceState(null,'',location.pathname+(q.toString()?'?'+q:'')+location.hash);
+  for(const k of ['unlock','orderId','transactionId','checkoutId','referenceId'])q.delete(k);history.replaceState(null,'',location.pathname+(q.toString()?'?'+q:'')+location.hash);
   if(st!=='done'){toast('Checkout cancelled. Nothing was charged.');return}
   try{await ICYNAuth.ready}catch(e){}
-  for(let i=0;i<8;i++){const r=sid?await ICYNStats.confirmCheckout(sid):await ICYNStats.me();
+  for(let i=0;i<8;i++){const r=await ICYNStats.confirmCheckout();
     if(r&&r.unlocked){setUnlocked(true);refreshMe();if(S.screen==='setup')renderSetup();const o=arenaPanel('Full Arena unlocked','<p class="herald">“Hear ye! A new Hero of the Full Arena walks among us!”</p><p>Online duels, the Starvos Catastrophe and the Print &amp; Play files are yours. Thank you for supporting I Crit You Not!</p><div class="row"><button class="act" id="ul-pnp">Get the Print &amp; Play files</button></div>');o.querySelector('#ul-pnp').onclick=()=>pnpPanel();return}
     await new Promise(z=>setTimeout(z,2500))}
   toast('Payment is still on its way. Reload in a minute; if the unlock is missing, send us feedback.')}

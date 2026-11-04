@@ -4,7 +4,7 @@
 #   .\deploy-unlock.ps1 -Step 1   (then 2, 3, 4 in order; each step is safe to re-run)
 #
 # Step 1  S3: private bucket icyn-premium-files + the two Print & Play PDFs
-# Step 2  icyn-api: S3 read permission, new code, Stripe keys, new routes
+# Step 2  icyn-api: S3 read permission, new code, Square keys, new routes
 # Step 3  icyn-ws: new code (online play needs the unlock). Run this only when the new index.html goes live.
 # Step 4  check: lists the routes and env var names (never prints the keys)
 param([Parameter(Mandatory)][int]$Step)
@@ -28,12 +28,14 @@ if ($Step -eq 2) {
   aws lambda update-function-code --function-name icyn-api --zip-file "fileb://$Here\api-unlock.zip" @P | Out-Null
   aws lambda wait function-updated --function-name icyn-api @P
 
-  # Stripe keys go straight into the Lambda; they are never saved in a file.
-  $sk = Read-Host 'Stripe secret key (sk_test_... or sk_live_...)'
-  $wh = Read-Host 'Stripe webhook signing secret (whsec_...)'
+  # Square keys go straight into the Lambda; they are never saved in a file.
+  $envName = Read-Host 'Square environment: sandbox (testing) or production (real money)'
+  $tok = Read-Host 'Square access token for that environment'
+  $sig = Read-Host 'Square webhook signature key (from the webhook subscription)'
   $cur = aws lambda get-function-configuration --function-name icyn-api --query 'Environment.Variables' --output json @P | ConvertFrom-Json
   $vars = @{}; if ($cur) { $cur.PSObject.Properties | ForEach-Object { $vars[$_.Name] = $_.Value } }
-  $vars['STRIPE_SECRET_KEY'] = $sk; $vars['STRIPE_WEBHOOK_SECRET'] = $wh; $vars['PNP_BUCKET'] = $Bucket
+  $vars['SQUARE_ENV'] = $envName.Trim(); $vars['SQUARE_ACCESS_TOKEN'] = $tok.Trim(); $vars['SQUARE_WEBHOOK_SIGNATURE_KEY'] = $sig.Trim()
+  $vars['SQUARE_WEBHOOK_URL'] = 'https://r9s8gd8duk.execute-api.us-east-1.amazonaws.com/square/webhook'; $vars['PNP_BUCKET'] = $Bucket
   $envFile = New-TemporaryFile
   @{ Variables = $vars } | ConvertTo-Json -Compress | Set-Content -Path $envFile -Encoding ascii
   aws lambda update-function-configuration --function-name icyn-api --environment "file://$envFile" @P | Out-Null
@@ -47,10 +49,10 @@ if ($Step -eq 2) {
       aws apigatewayv2 create-route --api-id $ApiId --route-key $rk --target $me.Target --authorization-type JWT --authorizer-id $me.AuthorizerId @P | Out-Null
     }
   }
-  if ($have -notcontains 'POST /stripe/webhook') {
-    aws apigatewayv2 create-route --api-id $ApiId --route-key 'POST /stripe/webhook' --target $me.Target @P | Out-Null
+  if ($have -notcontains 'POST /square/webhook') {
+    aws apigatewayv2 create-route --api-id $ApiId --route-key 'POST /square/webhook' --target $me.Target @P | Out-Null
   }
-  Write-Host 'Step 2 done. Stripe webhook URL: https://r9s8gd8duk.execute-api.us-east-1.amazonaws.com/stripe/webhook'
+  Write-Host 'Step 2 done. Square webhook URL: https://r9s8gd8duk.execute-api.us-east-1.amazonaws.com/square/webhook'
 }
 
 if ($Step -eq 3) {

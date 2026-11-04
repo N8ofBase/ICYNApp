@@ -1,26 +1,27 @@
 // The $5 Full Arena unlock: Online duels, Starvos Catastrophe and the Print & Play files.
 // Free forever: Vs Computer and Pass & Play duels.
 //
-// Payment runs through Stripe Checkout (no Stripe SDK; plain HTTPS + HMAC).
-// The unlock is stored on the player's icyn-players item as `unlock` and tied to
-// their Cognito account (sub), so it follows them to every device.
+// Payment runs through Square (the owner's existing account) with an online payment link.
+// Plain HTTPS + HMAC, no Square SDK. The unlock is stored on the player's icyn-players item as
+// `unlock` and tied to their Cognito account (sub), so it follows them to every device.
 //
 // Lambda environment:
-//   STRIPE_SECRET_KEY      sk_live_... (or sk_test_... while testing)
-//   STRIPE_WEBHOOK_SECRET  whsec_... from the Stripe webhook endpoint
-//   STRIPE_PRICE_ID        optional price_...; without it the session uses an inline $5.00 USD price
-//   PNP_BUCKET             private S3 bucket holding the Print & Play PDFs (default icyn-premium-files)
+//   SQUARE_ACCESS_TOKEN           access token from the Square Developer Dashboard (sandbox or production)
+//   SQUARE_ENV                    'sandbox' while testing, 'production' to take real money (default production)
+//   SQUARE_LOCATION_ID            optional; without it the first active location is used
+//   SQUARE_WEBHOOK_SIGNATURE_KEY  signature key of the webhook subscription
+//   SQUARE_WEBHOOK_URL            the exact notification URL of that subscription (part of the signature)
+//   PNP_BUCKET                    private S3 bucket holding the Print & Play PDFs (default icyn-premium-files)
 //
 // Routes (added to the icyn-api HTTP API):
-//   POST /checkout           (JWT)    -> {url} to Stripe Checkout, or {unlocked:true} if already owned
-//   POST /checkout/confirm   (JWT)    {sessionId} -> {unlocked}; grants at once if Stripe says paid (webhook backup)
-//   POST /stripe/webhook     (public) Stripe events, signature checked
+//   POST /checkout           (JWT)    -> {url} to Square checkout, or {unlocked:true} if already owned
+//   POST /checkout/confirm   (JWT)    -> {unlocked}; checks the player's last checkout with Square (webhook backup)
+//   POST /square/webhook     (public) Square payment events, signature checked
 //   GET  /pnp                (JWT)    -> {files:[{name, url}]} short-lived download links, unlocked players only
 import crypto from 'node:crypto';
 import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { db, PLAYERS, defaultName } from './record.mjs';
 
-const STRIPE = 'https://api.stripe.com/v1';
 const SITE = 'https://icyn.prismcortex.net';
 const ORIGINS = new Set([SITE, 'http://localhost:8080', 'https://main.d3sn70u0fdzdgl.amplifyapp.com']);
 const PRICE_CENTS = 500;
@@ -40,27 +41,29 @@ export function isDeveloper(claims) {
 }
 export const hasUnlock = (player, claims) => !!(player && player.unlock) || isDeveloper(claims);
 
-// ---------- Stripe REST ----------
-function form(obj, prefix = '', out = new URLSearchParams()) {
-  for (const [k, v] of Object.entries(obj)) {
-    if (v === undefined || v === null) continue;
-    const key = prefix ? `${prefix}[${k}]` : k;
-    if (typeof v === 'object') form(v, key, out);
-    else out.append(key, String(v));
-  }
-  return out;
-}
-async function stripe(method, path, body) {
-  const key = process.env.STRIPE_SECRET_KEY;
-  if (!key) throw new Error('STRIPE_SECRET_KEY is not set');
-  const res = await fetch(STRIPE + path, {
+// ---------- Square REST ----------
+const SQ_VERSION = process.env.SQUARE_VERSION || '2024-10-17';
+const sqBase = () => (process.env.SQUARE_ENV === 'sandbox' ? 'https://connect.squareupsandbox.com' : 'https://connect.squareup.com');
+async function square(method, path, body) {
+  const key = process.env.SQUARE_ACCESS_TOKEN;
+  if (!key) throw new Error('SQUARE_ACCESS_TOKEN is not set');
+  const res = await fetch(sqBase() + path, {
     method,
-    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body ? form(body).toString() : undefined,
+    headers: { Authorization: `Bearer ${key}`, 'Square-Version': SQ_VERSION, 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined,
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(`Stripe ${res.status}: ${data?.error?.message || 'error'}`);
+  if (!res.ok) throw new Error(`Square ${res.status}: ${data?.errors?.[0]?.detail || 'error'}`);
   return data;
+}
+let locationId = process.env.SQUARE_LOCATION_ID || null;
+async function location() {
+  if (locationId) return locationId;
+  const r = await square('GET', '/v2/locations');
+  const loc = (r.locations || []).find((l) => l.status === 'ACTIVE' && (l.capabilities || []).includes('CREDIT_CARD_PROCESSING'))
+    || (r.locations || []).find((l) => l.status === 'ACTIVE');
+  if (!loc) throw new Error('No active Square location');
+  return (locationId = loc.id);
 }
 
 // Make sure a full player record exists (same seeds as PUT /me) so stats code never sees a half item.
@@ -70,97 +73,94 @@ function seedParts(name) {
   for (const k of SEED_COUNTERS) sets.push(`${k} = if_not_exists(${k}, :zero)`);
   return { sets, names: { '#n': 'name' }, vals: { ':dn': name, ':zero': 0, ':empty': {} } };
 }
-
-async function grant(userId, session) {
-  const { sets, names, vals } = seedParts('Adventurer');
-  sets.push('#u = if_not_exists(#u, :u)');
-  names['#u'] = 'unlock';
-  vals[':u'] = {
-    at: new Date().toISOString(), via: 'stripe', session: session.id,
-    amount: session.amount_total ?? null, currency: session.currency || null,
-    paymentIntent: typeof session.payment_intent === 'string' ? session.payment_intent : null,
-  };
+async function update(userId, sets, names, vals) {
   await db.send(new UpdateCommand({
     TableName: PLAYERS, Key: { userId }, UpdateExpression: 'SET ' + sets.join(', '),
     ExpressionAttributeNames: names, ExpressionAttributeValues: vals,
   }));
 }
 
-const paid = (s) => s && s.status === 'complete' && (s.payment_status === 'paid' || s.payment_status === 'no_payment_required');
+async function grant(userId, orderId, payment) {
+  const { sets, names, vals } = seedParts('Adventurer');
+  sets.push('#u = if_not_exists(#u, :u)');
+  names['#u'] = 'unlock';
+  vals[':u'] = {
+    at: new Date().toISOString(), via: 'square', env: process.env.SQUARE_ENV === 'sandbox' ? 'sandbox' : 'production',
+    order: orderId, payment: payment.id, amount: payment.amount_money?.amount ?? null, currency: payment.amount_money?.currency || null,
+  };
+  await update(userId, sets, names, vals);
+}
+
+// An order is paid when one of its tenders is a COMPLETED payment. Returns {userId, payment} or null.
+async function paidOrder(orderId) {
+  const { order } = await square('GET', '/v2/orders/' + encodeURIComponent(orderId));
+  const userId = order?.metadata?.userId;
+  if (!userId || order?.metadata?.product !== 'full-arena') return null;
+  for (const t of order.tenders || []) {
+    const { payment } = await square('GET', '/v2/payments/' + encodeURIComponent(t.payment_id || t.id));
+    if (payment && payment.status === 'COMPLETED') return { userId, payment };
+  }
+  return null;
+}
 
 // ---------- Routes ----------
 export async function checkout(userId, claims, player, event) {
   if (hasUnlock(player, claims)) return json(200, { unlocked: true });
   const origin = event.headers?.origin;
   const base = ORIGINS.has(origin) ? origin : SITE;
-  const { sets, names, vals } = seedParts(defaultName(claims));
-  await db.send(new UpdateCommand({
-    TableName: PLAYERS, Key: { userId }, UpdateExpression: 'SET ' + sets.join(', '),
-    ExpressionAttributeNames: names, ExpressionAttributeValues: vals,
-  }));
-  const line = process.env.STRIPE_PRICE_ID
-    ? { price: process.env.STRIPE_PRICE_ID, quantity: 1 }
-    : {
-      quantity: 1,
-      price_data: {
-        currency: 'usd', unit_amount: PRICE_CENTS,
-        product_data: {
-          name: 'I Crit You Not! Full Arena',
-          description: 'One-time unlock: Online duels, the Starvos Catastrophe, and the Print & Play rulebook and sheets.',
-        },
-      },
-    };
-  const s = await stripe('POST', '/checkout/sessions', {
-    mode: 'payment',
-    line_items: { 0: line },
-    client_reference_id: userId,
-    metadata: { userId, product: 'full-arena' },
-    payment_intent_data: { metadata: { userId, product: 'full-arena' } },
-    customer_email: claims.email || undefined,
-    allow_promotion_codes: 'true',
-    success_url: `${base}/?unlock=done&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${base}/?unlock=cancel`,
+  const loc = await location();
+  const r = await square('POST', '/v2/online-checkout/payment-links', {
+    idempotency_key: crypto.randomUUID(),
+    order: {
+      location_id: loc,
+      reference_id: userId.slice(0, 40),
+      metadata: { userId, product: 'full-arena' },
+      line_items: [{
+        name: 'I Crit You Not! Full Arena', quantity: '1',
+        note: 'One-time unlock: Online duels, the Starvos Catastrophe, and the Print & Play rulebook and sheets.',
+        base_price_money: { amount: PRICE_CENTS, currency: 'USD' },
+      }],
+    },
+    checkout_options: { redirect_url: `${base}/?unlock=done`, ask_for_shipping_address: false },
+    pre_populated_data: claims.email ? { buyer_email: claims.email } : undefined,
+    payment_note: `ICYN Full Arena for ${userId}`,
   });
-  return json(200, { url: s.url });
+  const link = r.payment_link;
+  // Remember the order so /checkout/confirm can check it when the player comes back.
+  const { sets, names, vals } = seedParts(defaultName(claims));
+  sets.push('unlockOrder = :o'); vals[':o'] = link.order_id;
+  await update(userId, sets, names, vals);
+  return json(200, { url: link.url });
 }
 
-// The browser lands back with ?session_id=...; ask Stripe directly so the unlock shows at once
-// even if the webhook is slow or missing.
-export async function confirm(userId, claims, player, body) {
+// The browser lands back on ?unlock=done; ask Square about this player's last checkout so the
+// unlock shows at once even if the webhook is slow or missing.
+export async function confirm(userId, claims, player) {
   if (hasUnlock(player, claims)) return json(200, { unlocked: true });
-  const id = String(body.sessionId || '');
-  if (!/^cs_[A-Za-z0-9_]{10,200}$/.test(id)) return json(400, { error: 'sessionId required' });
-  const s = await stripe('GET', '/checkout/sessions/' + encodeURIComponent(id));
-  if (s.client_reference_id !== userId) return json(403, { error: 'that checkout belongs to another account' });
-  if (!paid(s)) return json(200, { unlocked: false, status: s.status, payment: s.payment_status });
-  await grant(userId, s);
+  if (!player?.unlockOrder) return json(200, { unlocked: false });
+  const paid = await paidOrder(player.unlockOrder);
+  if (!paid || paid.userId !== userId) return json(200, { unlocked: false });
+  await grant(userId, player.unlockOrder, paid.payment);
   return json(200, { unlocked: true });
 }
 
-// Stripe-Signature: t=<unix>,v1=<hex hmac of "t.rawBody">
-export function verifyStripe(raw, header, secret, now = Date.now()) {
-  if (!secret || !header) return false;
-  const parts = String(header).split(',').map((p) => p.split('='));
-  const t = Number((parts.find(([k]) => k === 't') || [])[1]);
-  const sigs = parts.filter(([k]) => k === 'v1').map(([, v]) => v);
-  if (!t || !sigs.length || Math.abs(now / 1000 - t) > 300) return false;
-  const want = crypto.createHmac('sha256', secret).update(`${t}.${raw}`).digest();
-  return sigs.some((s) => {
-    const got = Buffer.from(s, 'hex');
-    return got.length === want.length && crypto.timingSafeEqual(got, want);
-  });
+// x-square-hmacsha256-signature = base64(HMAC-SHA256(signatureKey, notificationUrl + rawBody))
+export function verifySquare(raw, header, key, url) {
+  if (!key || !header || !url) return false;
+  const want = crypto.createHmac('sha256', key).update(url + raw).digest();
+  const got = Buffer.from(String(header), 'base64');
+  return got.length === want.length && crypto.timingSafeEqual(got, want);
 }
 
 export async function webhook(event) {
   const raw = event.isBase64Encoded ? Buffer.from(event.body || '', 'base64').toString('utf8') : event.body || '';
-  const sig = event.headers?.['stripe-signature'];
-  if (!verifyStripe(raw, sig, process.env.STRIPE_WEBHOOK_SECRET)) return json(400, { error: 'bad signature' });
+  const sig = event.headers?.['x-square-hmacsha256-signature'];
+  if (!verifySquare(raw, sig, process.env.SQUARE_WEBHOOK_SIGNATURE_KEY, process.env.SQUARE_WEBHOOK_URL)) return json(403, { error: 'bad signature' });
   const evt = JSON.parse(raw);
-  if (['checkout.session.completed', 'checkout.session.async_payment_succeeded'].includes(evt.type)) {
-    const s = evt.data.object;
-    const userId = s.client_reference_id || s.metadata?.userId;
-    if (userId && paid(s)) await grant(userId, s);
-    else console.log('checkout not granted', s.id, s.payment_status);
+  const payment = evt?.data?.object?.payment;
+  if (['payment.created', 'payment.updated'].includes(evt.type) && payment?.status === 'COMPLETED' && payment.order_id) {
+    const paid = await paidOrder(payment.order_id);
+    if (paid) await grant(paid.userId, payment.order_id, paid.payment);
   }
   return json(200, { received: true });
 }
