@@ -10,7 +10,7 @@
 //   {action:'act', gameId, kind, choice?}    {type:'state', ...} to both players
 //   {action:'nudge', gameId}                 auto-plays a prompt left waiting > 45 s
 //   {action:'forfeit', gameId}               {type:'state', ...} with result
-//                                            {type:'error', error}
+//                                            {type:'error', error, code?}  code 'pass' = needs a Crit Pass
 // state = {type, gameId, code, status, you, players:[{name, hero}], since,
 //          events (from index `since`), eventCount, pending, result}
 import crypto from 'node:crypto';
@@ -30,6 +30,14 @@ const ISSUER = `https://cognito-idp.us-east-1.amazonaws.com/${POOL}`;
 const NUDGE_MS = 45000;
 const DAY = 86400;
 const BOSS_SEATS = 5;
+// Crit Pass: set PASSES_TABLE to require a pass to host (create) an online game.
+// Joining a friend's game stays free. Unset, everyone can host (the old behavior).
+const PASSES = process.env.PASSES_TABLE || '';
+async function hasPass(userId) {
+  if (!PASSES) return true;
+  const it = (await db.send(new GetCommand({ TableName: PASSES, Key: { userId } }))).Item;
+  return !!(it && it.active !== false);
+}
 const isBoss = (game) => game.setup.mode === 'boss';
 const run = (game) => (isBoss(game) ? replayBoss : replay)(game.seed, game.setup, game.inputs);
 
@@ -174,6 +182,8 @@ export async function handler(event) {
   let msg;
   try { msg = JSON.parse(event.body || '{}'); } catch (e) { await send(api, connectionId, { type: 'error', error: 'Bad JSON' }); return { statusCode: 400 }; }
   const fail = async (error) => { await send(api, connectionId, { type: 'error', error, action: msg.action }); return { statusCode: 200 }; };
+  const needPass = async () => { await send(api, connectionId, { type: 'error', code: 'pass', error: 'Hosting an online game needs a Crit Pass. Joining a friend\u2019s game is free.', action: msg.action }); return { statusCode: 200 }; };
+  if (msg.action === 'create' && !(await hasPass(conn.userId))) return needPass();
 
   if (msg.action === 'create' && msg.mode === 'boss') {
     const heroes = [...new Set([].concat(msg.heroes || msg.hero || []))].filter((h) => HEROES[h]);
