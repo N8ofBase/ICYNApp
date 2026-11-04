@@ -1,0 +1,8 @@
+{"Version":"2012-10-17","Statement":[
+{"Effect":"Allow","Action":["dynamodb:GetItem","dynamodb:PutItem","dynamodb:UpdateItem","dynamodb:DeleteItem","dynamodb:Query"],
+ "Resource":["arn:aws:dynamodb:us-east-1:376998045836:table/icyn-games","arn:aws:dynamodb:us-east-1:376998045836:table/icyn-games/index/byCode","arn:aws:dynamodb:us-east-1:376998045836:table/icyn-connections"]},
+{"Effect":"Allow","Action":["dynamodb:GetItem","dynamodb:PutItem","dynamodb:ConditionCheckItem"],
+ "Resource":["arn:aws:dynamodb:us-east-1:376998045836:table/icyn-players","arn:aws:dynamodb:us-east-1:376998045836:table/icyn-matches"]},
+{"Effect":"Allow","Action":"execute-api:ManageConnections","Resource":"arn:aws:execute-api:us-east-1:376998045836:xv92tk4nd2/prod/POST/@connections/*"},
+{"Effect":"Allow","Action":"logs:CreateLogGroup","Resource":"arn:aws:logs:us-east-1:376998045836:*"},
+{"Effect":"Allow","Action":["logs:CreateLogStream","logs:PutLogEvents"],"Resource":"arn:aws:logs:us-east-1:376998045836:log-group:/aws/lambda/icyn-ws:*"}]}
