@@ -11,6 +11,7 @@ frontend:
       - auth.js
       - stats.js
       - online.js
+      - pass.js
       - manifest.json
       - sw.js
       - icon-192.png
