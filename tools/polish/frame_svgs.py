@@ -22,4 +22,17 @@ def flip(svg, sx, sy, w=64, h=64):
     return svg[:svg.index('>') + 1] + f'<g transform="translate({w if sx < 0 else 0} {h if sy < 0 else 0}) scale({sx} {sy})">' + inner + '</g></svg>'
 cs = [uri(flip(corner, sx, sy)) for sx, sy in ((1, 1), (-1, 1), (1, -1), (-1, -1))]
 ct = uri(center); cb = uri(flip(center, 1, -1, 96, 20))
+knob = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 40"><defs>
+<linearGradient id="w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22100a"/><stop offset=".22" stop-color="#6e3f1a"/><stop offset=".4" stop-color="#c98d50"/><stop offset=".52" stop-color="#93592a"/><stop offset=".8" stop-color="#3f2210"/><stop offset="1" stop-color="#180a04"/></linearGradient>
+<linearGradient id="b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a3e0e"/><stop offset=".3" stop-color="#f6dc8e"/><stop offset=".5" stop-color="#c99b3a"/><stop offset="1" stop-color="#46300a"/></linearGradient></defs><g>
+<rect x="47" y="14" width="13" height="12" fill="url(#w)"/>
+<rect x="43" y="9.5" width="5" height="21" rx="1.5" fill="url(#b)"/>
+<ellipse cx="36" cy="20" rx="7.5" ry="13" fill="url(#w)"/>
+<path d="M32 9.5q-2 10.5 0 21M40 9.5q2 10.5 0 21" fill="none" stroke="#1e0d05" stroke-width=".9" opacity=".7"/>
+<rect x="27" y="12" width="3.5" height="16" rx="1.2" fill="url(#b)"/>
+<rect x="21.5" y="15" width="6" height="10" fill="url(#w)"/>
+<ellipse cx="13.5" cy="20" rx="9.5" ry="10.5" fill="url(#w)"/>
+<ellipse cx="13.5" cy="15.5" rx="5.5" ry="2.2" fill="#fff" opacity=".2"/>
+<circle cx="3.6" cy="20" r="3.6" fill="url(#b)"/></g></svg>'''
+print('--sc-knob-l:' + uri(knob) + ';--sc-knob-r:' + uri(flip(knob, -1, 1, 60, 40)) + ';')
 print('--sc-corners:' + ','.join(cs) + ',' + ct + ',' + cb + ';')
