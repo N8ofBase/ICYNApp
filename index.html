@@ -1062,7 +1062,7 @@ function dieEl(id,sides,v,cls=''){const el=document.createElement('div');el.clas
   el.innerHTML=sides===20?d20svg(id,v):d6svg(id,v);return el}
 
 // ---------- State ----------
-const S = {screen:'setup', mode:'cpu', life:100, picks:['brawler','soulseer'], F:[], round:0, active:null, view:0, token:0, choosing:false, log:[]};
+const S = {screen:'setup', mode:'cpu', life:100, noCal:(()=>{try{return localStorage.getItem('icyn.nocal')==='1'}catch(e){return false}})(), picks:['brawler','soulseer'], F:[], round:0, active:null, view:0, token:0, choosing:false, log:[]};
 const ABORT={};
 const rnd=n=>1+Math.floor(Math.random()*n);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -1215,6 +1215,7 @@ function renderSetup(){SFX.music('menu');
      <button id="m-cpu" aria-pressed="${S.mode==='cpu'}">Vs Computer</button><button id="m-pvp" aria-pressed="${S.mode==='pvp'}">Pass &amp; Play</button>${window.ICYNOnline?`<button id="m-net" aria-pressed="${S.mode==='online'}">Online</button>`:''}</div>
    <div class="opts">
      <div class="opt"><span>Starting Life</span><div class="mode" role="group" aria-label="Starting Life"><button id="l-50" aria-pressed="${S.life===50}">50 · Quick Game</button><button id="l-100" aria-pressed="${S.life===100}">100 · Standard</button></div></div>
+     ${S.mode==='online'?'':`<div class="opt"><span>Calamities</span><div class="mode" role="group" aria-label="Calamities"><button id="c-on" aria-pressed="${!S.noCal}">Every Turn</button><button id="c-off" aria-pressed="${S.noCal}">No Calamities</button></div></div>`}
    </div>
    <div class="pickers${S.mode==='online'?' solo':''}">${(S.mode==='online'?[0]:[0,1]).map(p=>`<div class="side" data-side="${p}"><h3>${S.mode==='online'?'Your Hero':p===0?'Player 1':(S.mode==='cpu'?'Computer':'Player 2')}<span>${S.mode==='online'?'Corner set by the duel':p===0?'Left corner':'Right corner'}</span></h3>
      <div class="roster">${ORDER.map(id=>`<button class="pick" data-p="${p}" data-id="${id}" style="--c:${HEROES[id].color}" aria-pressed="${S.picks[p]===id}"><img src="${SEL[id]}" alt="" style="--sc:${HEROES[id].scale}"><span>${HEROES[id].name}</span><small class="race">${HEROES[id].race}</small></button>`).join('')}</div>
@@ -1224,7 +1225,7 @@ function renderSetup(){SFX.music('menu');
      <p class="herald">“Welcome, challenger, to the <b>I Crit You Not!</b> arena! Eight rounds stand between you and glory. Fell your rival and the crowd is yours. Survive all eight, and the Hero with the most Life is crowned <b>Crit King or Queen</b>!”</p>
      <ol>
      <li><b>“Ready… GO!”</b> At the start of every round, both Heroes race for the first move: a D20 plus Speed. Fastest strikes first.</li>
-     <li><b>“Face the arena’s curse!”</b> No Hero enters these sands unchallenged. Before each turn, the arena lays a Calamity upon you. Read the scroll and endure it.</li>
+     <li><b>“Face the arena’s curse!”</b> ${noCal()?'Today the arena shows mercy: no Calamity before your turn. Only a natural 1 calls one down upon you.':'No Hero enters these sands unchallenged. Before each turn, the arena lays a Calamity upon you. Read the scroll and endure it.'}</li>
      <li><b>“Draw your weapon!”</b> Roll the D20 plus your Main stat. Top your rival’s Defense and your strike lands for 1D6 plus your Main stat.</li>
      <li><b>“Show us your power!”</b> Unleash one of your Abilities. They never miss! But once used, an Ability needs an Enhancement to return. Out of Abilities? Swing again!</li>
      <li><b>“Catch your breath, warriors!”</b> When the round ends, the Heroes rest, and the arena gifts each a random Enhancement. After round eight, no rest: only the final count!</li>
@@ -1240,6 +1241,8 @@ function renderSetup(){SFX.music('menu');
     t.innerHTML=`<b>${h.race} ${h.name}</b><div>${h.lore}</div><div>Main: ${cap(h.main)} · Dice: ${esc(SKIN[sk].dice.name)}${sk.endsWith('_alt')?' (mirror match)':''}</div>`;c.append(t);}
   app.querySelectorAll('.pick').forEach(b=>b.onclick=()=>{S.picks[+b.dataset.p]=b.dataset.id;renderSetup()});
   $('#l-50').onclick=()=>{S.life=50;renderSetup()};$('#l-100').onclick=()=>{S.life=100;renderSetup()};
+  const setCal=v=>{S.noCal=v;try{localStorage.setItem('icyn.nocal',v?'1':'0')}catch(e){}renderSetup()};
+  if($('#c-on')){$('#c-on').onclick=()=>setCal(false);$('#c-off').onclick=()=>setCal(true)}
 
   $('#m-cpu').onclick=()=>{S.mode='cpu';renderSetup()};$('#m-pvp').onclick=()=>{S.mode='pvp';renderSetup()};
   if($('#m-net'))$('#m-net').onclick=()=>{S.mode='online';renderSetup()};
@@ -1313,7 +1316,7 @@ function renderDuelShell(){
    </div>
    <div class="sidecol" aria-label="Hero sheets"><div class="sc-bar"><b>Tables</b><button class="ghost" id="tolayout"></button><button class="x" id="sheetsx" aria-label="Close">✕</button></div><div class="sheets" id="sheets"></div></div></div>`;
   $('#logtog').onclick=()=>{const l=$('.log');const x=l.classList.toggle('expanded');$('#logtog').setAttribute('aria-expanded',x);$('#logtog small').textContent=x?'Show less ▴':'Last 3 · Show all ▾'};
-  $('#modelbl').textContent=(S.mode==='online'?'Online vs '+rivalName():S.mode==='cpu'?'Vs Computer':'Pass & Play')+' · '+(S.life===50?'Quick Game':'Standard')+' · '+S.life+' Life';
+  $('#modelbl').textContent=(S.mode==='online'?'Online vs '+rivalName():S.mode==='cpu'?'Vs Computer':'Pass & Play')+' · '+(S.life===50?'Quick Game':'Standard')+' · '+S.life+' Life'+(noCal()?' · No Calamities':'');
   renderAcct();
   $('#newduel').onclick=()=>{if(S.mode==='online'&&NET.game&&NET.game.status==='active'){if(confirm('Forfeit this duel? Your rival takes the win.'))try{ICYNOnline.forfeit()}catch(e){};return}
     S.token++;document.querySelectorAll('.scroll-ov').forEach(o=>o.remove());S.screen='setup';renderSetup()};
@@ -1723,11 +1726,13 @@ async function useAbility(p,i,t){
   renderAll();await sleep(REDUCED?100:800);chk(t);
 }
 const over=()=>S.F.some(f=>f.life<=0);
+// No Calamities (N8 2026-11-06): skip the Calamity before each turn; natural 1s still bring one. Online duels follow the server's rules.
+const noCal=()=>!!S.noCal&&S.mode!=='online'&&S.mode!=='boss';
 async function takeTurn(p,t){
   const f=S.F[p];setActive(p);banner('');
-  readout(`${f.h.name}'s turn`,'Roll for a Calamity to begin.');
+  readout(`${f.h.name}'s turn`,noCal()?'Draw your weapon.':'Roll for a Calamity to begin.');
   await sleep(REDUCED?100:600);chk(t);
-  await tableRoll(p,'cal',t,true);if(over())return;
+  if(!noCal()){await tableRoll(p,'cal',t,true);if(over())return}
   const res=await weaponAttack(p,'Weapon Attack',t);if(res==='end'||over())return;
   if(f.abilities.some(a=>!a.cd)){const i=await chooseAbility(p,t);await useAbility(p,i,t)}
   else{log(`All of ${f.h.name}'s Abilities are on cooldown: second Weapon Attack`,p);await weaponAttack(p,'Second Weapon Attack',t)}
