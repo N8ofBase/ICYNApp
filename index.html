@@ -458,6 +458,7 @@ button:focus-visible,.pick:focus-visible{outline:2px solid var(--gold);outline-o
 .opts{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 24px}
 .opt{display:flex;flex-direction:column;align-items:center;gap:4px}
 .opt>span{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.opt-note{font-size:.78rem;color:var(--muted)}
 .opt .mode button{padding:6px 12px;font-size:.85rem}
 .pickers{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
 @media (min-width:820px){.pickers{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center}}
@@ -1062,7 +1063,8 @@ function dieEl(id,sides,v,cls=''){const el=document.createElement('div');el.clas
   el.innerHTML=sides===20?d20svg(id,v):d6svg(id,v);return el}
 
 // ---------- State ----------
-const S = {screen:'setup', mode:'cpu', life:100, noCal:(()=>{try{return localStorage.getItem('icyn.nocal')==='1'}catch(e){return false}})(), picks:['brawler','soulseer'], F:[], round:0, active:null, view:0, token:0, choosing:false, log:[]};
+const EASY0=(()=>{try{return localStorage.getItem('icyn.easy')==='1'}catch(e){return false}})();
+const S = {screen:'setup', mode:'cpu', life:EASY0?50:100, noCal:EASY0, picks:['brawler','soulseer'], F:[], round:0, active:null, view:0, token:0, choosing:false, log:[]};
 const ABORT={};
 const rnd=n=>1+Math.floor(Math.random()*n);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -1214,8 +1216,7 @@ function renderSetup(){SFX.music('menu');
    <div class="mode" role="group" aria-label="Opponent">
      <button id="m-cpu" aria-pressed="${S.mode==='cpu'}">Vs Computer</button><button id="m-pvp" aria-pressed="${S.mode==='pvp'}">Pass &amp; Play</button>${window.ICYNOnline?`<button id="m-net" aria-pressed="${S.mode==='online'}">Online</button>`:''}</div>
    <div class="opts">
-     <div class="opt"><span>Starting Life</span><div class="mode" role="group" aria-label="Starting Life"><button id="l-50" aria-pressed="${S.life===50}">50 · Quick Game</button><button id="l-100" aria-pressed="${S.life===100}">100 · Standard</button></div></div>
-     ${S.mode==='online'?'':`<div class="opt"><span>Calamities</span><div class="mode" role="group" aria-label="Calamities"><button id="c-on" aria-pressed="${!S.noCal}">Every Turn</button><button id="c-off" aria-pressed="${S.noCal}">No Calamities</button></div></div>`}
+     ${S.mode==='online'?`<div class="opt"><span>Starting Life</span><div class="mode" role="group" aria-label="Starting Life"><button id="l-50" aria-pressed="${S.life===50}">50 · Quick Game</button><button id="l-100" aria-pressed="${S.life===100}">100 · Standard</button></div></div>`:`<div class="opt"><span>Game Mode</span><div class="mode" role="group" aria-label="Game Mode"><button id="g-easy" aria-pressed="${!!S.noCal}">Easy</button><button id="g-std" aria-pressed="${!S.noCal}">Standard</button></div><small class="opt-note">${S.noCal?'50 Life · Calamities only on a natural 1':'100 Life · a Calamity before every turn'}</small></div>`}
    </div>
    <div class="pickers${S.mode==='online'?' solo':''}">${(S.mode==='online'?[0]:[0,1]).map(p=>`<div class="side" data-side="${p}"><h3>${S.mode==='online'?'Your Hero':p===0?'Player 1':(S.mode==='cpu'?'Computer':'Player 2')}<span>${S.mode==='online'?'Corner set by the duel':p===0?'Left corner':'Right corner'}</span></h3>
      <div class="roster">${ORDER.map(id=>`<button class="pick" data-p="${p}" data-id="${id}" style="--c:${HEROES[id].color}" aria-pressed="${S.picks[p]===id}"><img src="${SEL[id]}" alt="" style="--sc:${HEROES[id].scale}"><span>${HEROES[id].name}</span><small class="race">${HEROES[id].race}</small></button>`).join('')}</div>
@@ -1240,9 +1241,9 @@ function renderSetup(){SFX.music('menu');
     c.append(dieEl(sk,20,20));const t=document.createElement('div');t.className='t';
     t.innerHTML=`<b>${h.race} ${h.name}</b><div>${h.lore}</div><div>Main: ${cap(h.main)} · Dice: ${esc(SKIN[sk].dice.name)}${sk.endsWith('_alt')?' (mirror match)':''}</div>`;c.append(t);}
   app.querySelectorAll('.pick').forEach(b=>b.onclick=()=>{S.picks[+b.dataset.p]=b.dataset.id;renderSetup()});
-  $('#l-50').onclick=()=>{S.life=50;renderSetup()};$('#l-100').onclick=()=>{S.life=100;renderSetup()};
-  const setCal=v=>{S.noCal=v;try{localStorage.setItem('icyn.nocal',v?'1':'0')}catch(e){}renderSetup()};
-  if($('#c-on')){$('#c-on').onclick=()=>setCal(false);$('#c-off').onclick=()=>setCal(true)}
+  if($('#l-50')){$('#l-50').onclick=()=>{S.life=50;renderSetup()};$('#l-100').onclick=()=>{S.life=100;renderSetup()}}
+  const setEasy=v=>{S.noCal=v;S.life=v?50:100;try{localStorage.setItem('icyn.easy',v?'1':'0')}catch(e){}renderSetup()};
+  if($('#g-easy')){$('#g-easy').onclick=()=>setEasy(true);$('#g-std').onclick=()=>setEasy(false)}
 
   $('#m-cpu').onclick=()=>{S.mode='cpu';renderSetup()};$('#m-pvp').onclick=()=>{S.mode='pvp';renderSetup()};
   if($('#m-net'))$('#m-net').onclick=()=>{S.mode='online';renderSetup()};
@@ -1316,7 +1317,7 @@ function renderDuelShell(){
    </div>
    <div class="sidecol" aria-label="Hero sheets"><div class="sc-bar"><b>Tables</b><button class="ghost" id="tolayout"></button><button class="x" id="sheetsx" aria-label="Close">✕</button></div><div class="sheets" id="sheets"></div></div></div>`;
   $('#logtog').onclick=()=>{const l=$('.log');const x=l.classList.toggle('expanded');$('#logtog').setAttribute('aria-expanded',x);$('#logtog small').textContent=x?'Show less ▴':'Last 3 · Show all ▾'};
-  $('#modelbl').textContent=(S.mode==='online'?'Online vs '+rivalName():S.mode==='cpu'?'Vs Computer':'Pass & Play')+' · '+(S.life===50?'Quick Game':'Standard')+' · '+S.life+' Life'+(noCal()?' · No Calamities':'');
+  $('#modelbl').textContent=(S.mode==='online'?'Online vs '+rivalName():S.mode==='cpu'?'Vs Computer':'Pass & Play')+' · '+(noCal()?'Easy':S.mode==='online'?(S.life===50?'Quick Game':'Standard'):'Standard')+' · '+S.life+' Life'+(noCal()?' · No Calamities':'');
   renderAcct();
   $('#newduel').onclick=()=>{if(S.mode==='online'&&NET.game&&NET.game.status==='active'){if(confirm('Forfeit this duel? Your rival takes the win.'))try{ICYNOnline.forfeit()}catch(e){};return}
     S.token++;document.querySelectorAll('.scroll-ov').forEach(o=>o.remove());S.screen='setup';renderSetup()};
