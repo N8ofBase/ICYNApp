@@ -19,7 +19,7 @@ REPS = [
  ("""<span class="who">${esc(HEROES[S.picks[0]].name)} · ${S.life} Life</span>Create online duel</button>""",
   """<span class="who">${esc(HEROES[S.picks[0]].name)} · ${S.noCal?'Easy':'Standard'}</span>Create online duel</button>"""),
  # tagline (N8 2026-11-06)
- ("step into the ring, and pray the dice love you.", "step into the ring, and may the D20 favor you."),
+ ("Choose two Heroes, step into the ring, and pray the dice love you.", "Choose two Heroes and step into the ring."),
  ("<small>The duel’s creator sets the Starting Life.</small>", "<small>The duel’s creator sets the Game Mode.</small>"),
  ("el.querySelector('#nb-create').onclick=()=>netCall(()=>O.create(S.picks[0],S.life));",
   "el.querySelector('#nb-create').onclick=()=>netCall(()=>O.create(S.picks[0],S.noCal?50:100,!!S.noCal));"),
