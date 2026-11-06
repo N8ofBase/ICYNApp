@@ -1,3 +1,4 @@
+param([Parameter(Mandatory)][int]$Step)
 # Deploys the $5 Crit Pass unlock backend. Run from the backend folder on Skynet:
 #   cd C:\Users\n8gr8\Documents\ICYN\backend-unlock
 #   aws sso login --profile prismcortex
@@ -7,7 +8,6 @@
 # Step 2  icyn-api: S3 read permission, new code, Square keys, new routes
 # Step 3  icyn-ws: new code (online play needs the unlock). Run this only when the new index.html goes live.
 # Step 4  check: lists the routes and env var names (never prints the keys)
-param([Parameter(Mandatory)][int]$Step)
 $ErrorActionPreference = 'Stop'
 $P = @('--profile', 'prismcortex', '--region', 'us-east-1')
 $Bucket = 'icyn-premium-files'
