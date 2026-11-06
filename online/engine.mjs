@@ -57,7 +57,7 @@ export function snapshot(F) {
     weaponDice: f.weaponDice, broken: f.broken, brokenUntil: f.brokenUntil, abilities: f.abilities.map((a) => ({ dice: a.dice, cd: a.cd })) }));
 }
 
-// setup = {heroes: [id0, id1], life: 50|100}. Events are plain objects the client animates in order.
+// setup = {heroes: [id0, id1], life: 50|100, easy?: true} (Easy = 50 Life, Calamities only on natural 1s). Events are plain objects the client animates in order.
 export function* duel(setup, rnd, ev) {
   const F = [makeFighter(setup.heroes[0], setup.life, 0), makeFighter(setup.heroes[1], setup.life, 1)];
   const S = { round: 0, F };
@@ -153,8 +153,11 @@ export function* duel(setup, rnd, ev) {
   function* takeTurn(p) {
     const f = F[p];
     emit({ t: 'turn', p });
-    yield* tableRoll(p, 'cal');
-    if (over()) return;
+    // Easy mode (setup.easy, N8 2026-11-06): no Calamity before each turn; natural 1s still bring one.
+    if (!setup.easy) {
+      yield* tableRoll(p, 'cal');
+      if (over()) return;
+    }
     const res = yield* weaponAttack(p, false);
     if (res === 'end' || over()) return;
     if (f.abilities.some((a) => !a.cd)) {

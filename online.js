@@ -1,5 +1,5 @@
 // Online duels for I Crit You Not! (needs auth.js; the server referees every roll).
-// window.ICYNOnline: connect(), create(hero, life), join(code, hero), resume(gameId),
+// window.ICYNOnline: connect(), create(hero, life, easy), join(code, hero), resume(gameId),
 // act(kind, choice), nudge(), forfeit(), onState(fn), onError(fn), close().
 // Starvos co-op: createBoss(), joinBoss(code), claim(hero), release(hero), start(), leave(), forfeit(all).
 // Hero ids: brawler, champion, maverick, soulseer, whisper.
@@ -41,7 +41,7 @@
 
   window.ICYNOnline = {
     connect,
-    create: (hero, life) => send({ action: 'create', hero, life }),
+    create: (hero, life, easy) => send({ action: 'create', hero, life, ...(easy ? { easy: true } : {}) }),
     join: (code, hero) => send({ action: 'join', code: String(code).trim().toUpperCase(), hero }),
     resume,
     // A duel left open in this browser, to offer "Rejoin your duel".

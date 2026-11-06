@@ -4,7 +4,7 @@
 // browser can fake a roll.
 //
 // Client -> server                         Server -> client
-//   {action:'create', hero, life}            {type:'created', gameId, code}
+//   {action:'create', hero, life, easy?}     {type:'created', gameId, code}   (easy: 50 Life, no Calamity before each turn)
 //   {action:'join', code, hero}              {type:'state', ...} to both players
 //   {action:'resume', gameId, since}         {type:'state', ...}
 //   {action:'act', gameId, kind, choice?}    {type:'state', ...} to both players
@@ -122,6 +122,7 @@ async function recordResults(game) {
     result: result.winner === i ? 'win' : 'loss', mode, forfeit: !!result.forfeit, hero: HEROES[game.setup.heroes[i]].name,
     opponentHero: HEROES[game.setup.heroes[1 - i]].name, rounds: result.rounds || 8, ko: !!result.ko,
     startingLife: game.setup.life, maxLife: result.peakMax ? result.peakMax[i] : undefined,
+    gameMode: game.setup.easy ? 'easy' : 'standard',
   }).catch((e) => console.error('record', e))));
 }
 
@@ -191,9 +192,10 @@ export async function handler(event) {
   }
   if (msg.action === 'create') {
     if (!HEROES[msg.hero] || ![50, 100].includes(Number(msg.life))) return fail('Pick a Hero and a starting Life of 50 or 100');
+    const easy = msg.easy === true;
     const game = {
       gameId: crypto.randomUUID(), code: newCode(), status: 'waiting', seed: crypto.randomBytes(16).toString('hex'),
-      setup: { heroes: [msg.hero, null], life: Number(msg.life) }, players: [conn.userId, null], names: [conn.name, null],
+      setup: easy ? { heroes: [msg.hero, null], life: 50, easy: true } : { heroes: [msg.hero, null], life: Number(msg.life) }, players: [conn.userId, null], names: [conn.name, null],
       conns: [connectionId, null], inputs: [], version: 0, createdAt: new Date().toISOString(),
       ttl: Math.floor(Date.now() / 1000) + DAY,
     };
