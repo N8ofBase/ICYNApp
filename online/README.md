@@ -1,7 +1,7 @@
 # Online duels (server-refereed)
 
 - `engine.mjs` is the headless rules engine. It mirrors the game page's rules and is driven by prompts and inputs. `replay(seed, setup, inputs)` re-runs a duel, so a game is stored as just `{seed, setup, inputs}`. The seed never leaves the server, so nobody can predict a roll.
-- `ws.mjs` is the WebSocket Lambda: create/join by code, act, resume, nudge (auto-plays a prompt left waiting more than 45 s), forfeit. Finished duels count as ranked `online` results.
+- `ws.mjs` is the WebSocket Lambda: create (`easy: true` = Easy mode: 50 Life, no Calamity before each turn, only on natural 1s)/join by code, act, resume, nudge (auto-plays a prompt left waiting more than 45 s), forfeit. Finished duels count as ranked `online` results.
 - `../online.js` is the browser client (`window.ICYNOnline`).
 
 ## Prompts (state.pending)
