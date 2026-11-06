@@ -43,7 +43,9 @@
     // Beta feedback: anyone can send (signed-in players are named); only the developers group can list or update it.
     // f = { kind: 'bug'|'idea'|'other', message, contact?, context?, hp? }
     feedback: (f) => call('POST', '/feedback', f, 'optional'),
-    feedbackList: (status) => call('GET', '/feedback?status=' + (status === 'all' ? 'all' : 'new') + '&limit=50', null, true),
+    // The server answers with a plain list; the game reads {items}.
+    feedbackList: (status) => call('GET', '/feedback?status=' + (status === 'all' ? 'all' : 'new') + '&limit=50', null, true)
+      .then((r) => (Array.isArray(r) ? { items: r } : r)),
     feedbackSet: (id, status) => call('PATCH', '/feedback/' + encodeURIComponent(id), { status }, true),
     // $5 Crit Pass unlock (Online, Starvos, Print & Play). me() also returns {unlocked}.
     checkout: (gift) => call('POST', '/checkout', { gift: !!gift }, true), // -> {url} for Square checkout, or {unlocked:true}; gift=true buys a code for someone else
