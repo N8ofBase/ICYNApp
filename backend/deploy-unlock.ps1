@@ -51,7 +51,7 @@ if ($Step -eq 2) {
   # Reuse the integration and JWT authorizer the existing GET /me route uses.
   $me = aws apigatewayv2 get-routes --api-id $ApiId --query "Items[?RouteKey=='GET /me'] | [0]" --output json @P | ConvertFrom-Json
   $have = aws apigatewayv2 get-routes --api-id $ApiId --query 'Items[].RouteKey' --output json @P | ConvertFrom-Json
-  foreach ($rk in 'POST /checkout', 'POST /checkout/confirm', 'GET /pnp', 'GET /gifts', 'POST /gift/redeem') {
+  foreach ($rk in 'POST /checkout', 'POST /checkout/confirm', 'GET /pnp', 'GET /gifts', 'POST /gift/redeem', 'POST /gifts/promo') {
     if ($have -notcontains $rk) {
       aws apigatewayv2 create-route --api-id $ApiId --route-key $rk --target $me.Target --authorization-type JWT --authorizer-id $me.AuthorizerId @P | Out-Null
     }

@@ -49,6 +49,7 @@
     checkout: (gift) => call('POST', '/checkout', { gift: !!gift }, true), // -> {url} for Square checkout, or {unlocked:true}; gift=true buys a code for someone else
     gifts: () => call('GET', '/gifts', null, true),                  // -> {gifts:[{code, createdAt, redeemed}]}
     redeemGift: (code) => callErr('POST', '/gift/redeem', { code }),  // -> {unlocked:true} or {error}
+    promoCodes: (count, note) => callErr('POST', '/gifts/promo', { count, note }), // owner only -> {codes, note} or {error}
     confirmCheckout: () => call('POST', '/checkout/confirm', {}, true), // -> {unlocked}; checks the player's last Square order
     pnpFiles: () => call('GET', '/pnp', null, true),                 // -> {files:[{name, url}]}
   };

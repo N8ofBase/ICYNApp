@@ -21,6 +21,7 @@
 //   POST /checkout {gift:true}        buys a gift: a one-use code (CRIT-XXXX-XXXX) for someone else
 //   GET  /gifts              (JWT)    -> {gifts:[{code, createdAt, redeemed}]} codes this player bought
 //   POST /gift/redeem        (JWT)    {code} -> {unlocked:true}; one use per code
+//   POST /gifts/promo        (JWT, developers) {count 1-50, note?, via?} -> {codes} free promo codes for the owner to hand out
 // Gift codes live in the icyn-gifts table (key `code`). Box codes and giveaways are the same items
 // with via:'box' or via:'giveaway' and no order.
 import crypto from 'node:crypto';
@@ -186,12 +187,44 @@ export async function confirm(userId, claims, player) {
 }
 
 export async function gifts(player) {
-  const codes = (player?.gifts || []).slice(-100);
+  const codes = (player?.gifts || []).slice(-500);
   if (!codes.length) return json(200, { gifts: [] });
-  const r = await db.send(new BatchGetCommand({ RequestItems: { [GIFTS]: { Keys: codes.map((code) => ({ code })) } } }));
-  const byCode = new Map((r.Responses?.[GIFTS] || []).map((g) => [g.code, g]));
+  const byCode = new Map();
+  for (let i = 0; i < codes.length; i += 100) {
+    let keys = codes.slice(i, i + 100).map((code) => ({ code }));
+    for (let tries = 0; keys.length && tries < 4; tries++) {
+      const r = await db.send(new BatchGetCommand({ RequestItems: { [GIFTS]: { Keys: keys } } }));
+      for (const g of r.Responses?.[GIFTS] || []) byCode.set(g.code, g);
+      keys = r.UnprocessedKeys?.[GIFTS]?.Keys || [];
+    }
+  }
   return json(200, { gifts: codes.map((code) => byCode.get(code)).filter(Boolean).reverse()
-    .map((g) => ({ code: g.code, createdAt: g.createdAt, redeemed: !!g.redeemedBy })) });
+    .map((g) => ({ code: g.code, createdAt: g.createdAt, redeemed: !!g.redeemedBy, via: g.via || 'square', note: g.note || null })) });
+}
+
+// Owner promo codes: free one-use codes for giveaways, events and game boxes (developers group only).
+export async function promo(userId, claims, body) {
+  if (!isDeveloper(claims)) return json(403, { error: 'owner only' });
+  const count = Number(body.count);
+  if (!Number.isInteger(count) || count < 1 || count > 50) return json(400, { error: 'Make 1 to 50 codes at a time.' });
+  const note = String(body.note || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 60) || null;
+  const via = ['promo', 'box', 'giveaway'].includes(body.via) ? body.via : 'promo';
+  const made = [], at = new Date().toISOString();
+  while (made.length < count) {
+    const code = randomCode();
+    try {
+      await db.send(new PutCommand({ TableName: GIFTS, ConditionExpression: 'attribute_not_exists(code)', Item: { code, buyer: userId, via, note, createdAt: at } }));
+      made.push(code);
+    } catch (e) {
+      if (e.name !== 'ConditionalCheckFailedException') throw e; // collision: try another code
+    }
+  }
+  await db.send(new UpdateCommand({
+    TableName: PLAYERS, Key: { userId },
+    UpdateExpression: 'SET gifts = list_append(if_not_exists(gifts, :e), :c)',
+    ExpressionAttributeValues: { ':e': [], ':c': made },
+  }));
+  return json(200, { codes: made, note, via });
 }
 
 export async function redeem(userId, claims, player, body) {

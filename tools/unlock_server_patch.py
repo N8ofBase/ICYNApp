@@ -12,12 +12,12 @@ def sub(s, pat, rep, path, flags=0):
 def api(path):
     s = open(path, encoding='utf-8').read()
     if "from './unlock.mjs'" in s:  # an older Crit Pass build: take it out, then add the current one
-        keep = [l for l in s.split('\n') if not ("from './unlock.mjs'" in l or re.search(r"route === '(POST /square/webhook|GET /pnp|GET /gifts|POST /checkout|POST /checkout/confirm|POST /gift/redeem)'", l))]
-        s = re.sub(r", unlocked: hasUnlock\([^)]*\)(, passVia: p\.unlock\?\.via \|\| null)?", '', '\n'.join(keep))
-    s = sub(s, r"(import \{[^}]*\} from './record\.mjs';\n)", r"\1import { hasUnlock, checkout, confirm, webhook, pnp, gifts, redeem } from './unlock.mjs';\n", path)
+        keep = [l for l in s.split('\n') if not ("from './unlock.mjs'" in l or re.search(r"route === '(POST /square/webhook|GET /pnp|GET /gifts|POST /checkout|POST /checkout/confirm|POST /gift/redeem|POST /gifts/promo)'", l))]
+        s = re.sub(r", unlocked: hasUnlock\([^)]*\)(, passVia: p\.unlock\?\.via \|\| null)?(, owner: isDeveloper\(claims\))?", '', '\n'.join(keep))
+    s = sub(s, r"(import \{[^}]*\} from './record\.mjs';\n)", r"\1import { hasUnlock, isDeveloper, checkout, confirm, webhook, pnp, gifts, redeem, promo } from './unlock.mjs';\n", path)
     # GET /me and PUT /me also say whether the player holds the Crit Pass
     s = sub(s, r"(async function getMe\(userId, claims\) \{\n  const p = await loadPlayer\(userId, claims\);\n  return json\(200, \{ stats: stats\(p\), prefs: p\.prefs \|\| \{\})( \}\);)",
-            r"\1, unlocked: hasUnlock(p, claims), passVia: p.unlock?.via || null\2", path)
+            r"\1, unlocked: hasUnlock(p, claims), passVia: p.unlock?.via || null, owner: isDeveloper(claims)\2", path)
     s = sub(s, r"(return json\(200, \{ stats: stats\(r\.Attributes\), prefs: r\.Attributes\.prefs \|\| \{\})( \}\);)",
             r"\1, unlocked: hasUnlock(r.Attributes, claims)\2", path)
     s = sub(s, r"(    if \(route === 'GET /leaderboard'\) return await leaderboard\(event\);\n)",
@@ -28,7 +28,8 @@ def api(path):
     s = sub(s, r"(    if \(route === 'POST /matches'\) return await postMatch\([^\n]*\n)",
             r"\1    if (route === 'POST /checkout') return await checkout(userId, claims, await loadPlayer(userId, claims), event, body);\n"
             r"    if (route === 'POST /checkout/confirm') return await confirm(userId, claims, await loadPlayer(userId, claims));\n"
-            r"    if (route === 'POST /gift/redeem') return await redeem(userId, claims, await loadPlayer(userId, claims), body);\n", path)
+            r"    if (route === 'POST /gift/redeem') return await redeem(userId, claims, await loadPlayer(userId, claims), body);\n"
+            r"    if (route === 'POST /gifts/promo') return await promo(userId, claims, body);\n", path)
     open(path, 'w', encoding='utf-8').write(s); print(path, 'patched')
 
 WS_HELPERS = """// Online play is part of the $5 Crit Pass unlock (stored as `unlock` on the icyn-players item;

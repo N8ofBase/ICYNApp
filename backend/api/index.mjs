@@ -3,7 +3,7 @@
 // Stats logic lives in record.mjs, shared with the online-duel WebSocket Lambda.
 import { QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { db, PLAYERS, MATCHES, RecordError, cleanName, defaultName, stats, loadPlayer, recordMatch } from './record.mjs';
-import { hasUnlock, checkout, confirm, webhook, pnp, gifts, redeem } from './unlock.mjs';
+import { hasUnlock, isDeveloper, checkout, confirm, webhook, pnp, gifts, redeem, promo } from './unlock.mjs';
 
 const json = (statusCode, body) => ({ statusCode, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
 const bad = (msg) => json(400, { error: msg });
@@ -30,7 +30,7 @@ async function leaderboard(event) {
 
 async function getMe(userId, claims) {
   const p = await loadPlayer(userId, claims);
-  return json(200, { stats: stats(p), prefs: p.prefs || {}, unlocked: hasUnlock(p, claims), passVia: p.unlock?.via || null });
+  return json(200, { stats: stats(p), prefs: p.prefs || {}, unlocked: hasUnlock(p, claims), passVia: p.unlock?.via || null, owner: isDeveloper(claims) });
 }
 
 async function putMe(userId, claims, body) {
@@ -137,6 +137,7 @@ export const handler = async (event) => {
     if (route === 'POST /checkout') return await checkout(userId, claims, await loadPlayer(userId, claims), event, body);
     if (route === 'POST /checkout/confirm') return await confirm(userId, claims, await loadPlayer(userId, claims));
     if (route === 'POST /gift/redeem') return await redeem(userId, claims, await loadPlayer(userId, claims), body);
+    if (route === 'POST /gifts/promo') return await promo(userId, claims, body);
     return json(404, { error: 'not found' });
   } catch (e) {
     console.error(e);
