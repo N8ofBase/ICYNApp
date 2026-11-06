@@ -42,6 +42,7 @@ export function stats(p) {
     name: p.name, wins: p.wins, losses: p.losses, draws: p.draws, played: p.played, kos: p.kos,
     currentStreak: p.currentStreak, bestWinStreak: p.bestWinStreak, worstLossStreak: p.worstLossStreak,
     favoriteHero: favoriteHero(p.heroCounts),
+    modes: p.modes || {},
     fastestWin: p.fastestWin ?? null, fastestLoss: p.fastestLoss ?? null, highestMaxLife: p.highestMaxLife || 0,
     starvos: starvosStats(p.sv),
   };
@@ -119,6 +120,7 @@ export async function recordMatch(userId, claims, input) {
     userId, playedAt: new Date(now).toISOString(), result: input.result, mode: input.mode, hero,
     opponentHero: String(input.opponentHero).trim().slice(0, 40), rounds: input.rounds, ko: !forfeit && !!input.ko,
     startingLife: input.startingLife, ranked, maxLife: cleanMaxLife(input.maxLife), forfeit,
+    gameMode: input.gameMode === 'easy' ? 'easy' : 'standard',
   };
 
   // Online results come from the server referee, so only browser-reported cpu games are rate limited.
@@ -133,6 +135,9 @@ export async function recordMatch(userId, claims, input) {
     if (input.mode === 'cpu') next.lastRankedAt = now;
     next.lb = 'ALL';
     next.heroCounts[hero] = (next.heroCounts[hero] || 0) + 1;
+    const gm = { wins: 0, losses: 0, draws: 0, ...((p.modes || {})[match.gameMode] || {}) };
+    gm[input.result === 'win' ? 'wins' : input.result === 'loss' ? 'losses' : 'draws'] += 1;
+    next.modes = { ...(p.modes || {}), [match.gameMode]: gm };
     if (match.maxLife) next.highestMaxLife = Math.max(p.highestMaxLife || 0, match.maxLife);
     if (input.result === 'win') {
       next.wins += 1;

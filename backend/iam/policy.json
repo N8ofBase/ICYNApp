@@ -33,6 +33,16 @@
    "Effect": "Allow",
    "Action": "s3:GetObject",
    "Resource": "arn:aws:s3:::icyn-premium-files/print-and-play/*"
+  },
+  {
+   "Effect": "Allow",
+   "Action": [
+    "dynamodb:GetItem",
+    "dynamodb:PutItem",
+    "dynamodb:UpdateItem",
+    "dynamodb:BatchGetItem"
+   ],
+   "Resource": "arn:aws:dynamodb:us-east-1:376998045836:table/icyn-gifts"
   }
  ]
 }

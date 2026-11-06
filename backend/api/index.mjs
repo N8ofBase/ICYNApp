@@ -1,9 +1,9 @@
-// I Crit You Not! player API: stats, streaks, leaderboards, match history, prefs, and the $5 Crit Pass unlock (unlock.mjs).
+// I Crit You Not! player API: stats, streaks, leaderboards, match history, prefs, and the $5 Full Arena unlock (unlock.mjs).
 // HTTP API (payload v2). Authorized routes carry Cognito ID-token claims.
 // Stats logic lives in record.mjs, shared with the online-duel WebSocket Lambda.
 import { QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { db, PLAYERS, MATCHES, RecordError, cleanName, defaultName, stats, loadPlayer, recordMatch } from './record.mjs';
-import { hasUnlock, checkout, confirm, webhook, pnp } from './unlock.mjs';
+import { hasUnlock, checkout, confirm, webhook, pnp, gifts, redeem } from './unlock.mjs';
 
 const json = (statusCode, body) => ({ statusCode, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
 const bad = (msg) => json(400, { error: msg });
@@ -22,7 +22,7 @@ async function leaderboard(event) {
     ScanIndexForward: false, Limit: 100,
   }));
   return json(200, (r.Items || []).map((p, i) => ({
-    rank: i + 1, name: p.name, wins: p.wins, losses: p.losses, draws: p.draws,
+    rank: i + 1, name: p.name, avatar: typeof p.prefs?.avatar === 'string' && /^(h|i):[a-z0-9-]{1,20}$/.test(p.prefs.avatar) ? p.prefs.avatar : '', wins: p.wins, losses: p.losses, draws: p.draws,
     bestWinStreak: p.bestWinStreak, currentStreak: p.currentStreak,
     fastestWin: p.fastestWin ?? null, fastestLoss: p.fastestLoss ?? null, highestMaxLife: p.highestMaxLife || 0,
   })));
@@ -128,13 +128,15 @@ export const handler = async (event) => {
     if (route === 'GET /me') return await getMe(userId, claims);
     if (route === 'GET /matches') return await getMatches(userId);
     if (route === 'GET /pnp') return pnp(claims, await loadPlayer(userId, claims));
-    if (route === 'POST /checkout') return await checkout(userId, claims, await loadPlayer(userId, claims), event);
+    if (route === 'GET /gifts') return await gifts(await loadPlayer(userId, claims));
 
     const body = parseBody(event);
     if (body === null || typeof body !== 'object' || Array.isArray(body)) return bad('body must be a JSON object');
     if (route === 'PUT /me') return await putMe(userId, claims, body);
     if (route === 'POST /matches') return await postMatch(userId, claims, body);
-    if (route === 'POST /checkout/confirm') return await confirm(userId, claims, await loadPlayer(userId, claims), body);
+    if (route === 'POST /checkout') return await checkout(userId, claims, await loadPlayer(userId, claims), event, body);
+    if (route === 'POST /checkout/confirm') return await confirm(userId, claims, await loadPlayer(userId, claims));
+    if (route === 'POST /gift/redeem') return await redeem(userId, claims, await loadPlayer(userId, claims), body);
     return json(404, { error: 'not found' });
   } catch (e) {
     console.error(e);

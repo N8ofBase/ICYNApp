@@ -39,7 +39,11 @@ the Starvos Catastrophe and the Print & Play PDFs. Developers group members alwa
   `GET /pnp` (JWT, unlocked only) returns 15-minute S3 links. `GET /me` and `PUT /me` add `unlocked`.
 - Stored on the `icyn-players` item as `unlock: {at, via, env, order, payment, amount, currency}` (`env: 'sandbox'` = test unlock).
   To refund: refund in Square, then remove `unlock` from that player's item.
-  To gift an unlock (box codes, testers): set `unlock: {at, via: 'gift'}` on their item.
+  To gift an unlock directly (testers, early supporters): set `unlock: {at, via: 'gift'}` (or `via: 'early'`) on their item.
+- Gift codes (table `icyn-gifts`, key `code` = CRIT-XXXX-XXXX): `POST /checkout {gift:true}` buys one (order metadata kind 'gift',
+  saved as player `giftOrder`; minted by the webhook or `/checkout/confirm`, same order always gives the same code; the buyer's
+  codes are listed in player `gifts`). `GET /gifts` lists them, `POST /gift/redeem {code}` unlocks once (refused if the
+  player already has the Crit Pass, so the code stays usable). Box codes / giveaways: put `{code, via: 'box', createdAt}` items in the table.
 - `ws/ws.mjs`: `create` and joining a new game need the unlock. Env `FREE_JOIN=true` lets anyone join a game an unlocked player hosts.
 - Lambda env: `SQUARE_ACCESS_TOKEN`, `SQUARE_ENV` (sandbox|production), optional `SQUARE_LOCATION_ID`,
   `SQUARE_WEBHOOK_SIGNATURE_KEY`, `SQUARE_WEBHOOK_URL`, `PNP_BUCKET` (default icyn-premium-files).

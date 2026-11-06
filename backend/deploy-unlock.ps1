@@ -3,7 +3,7 @@
 #   aws sso login --profile prismcortex
 #   .\deploy-unlock.ps1 -Step 1   (then 2, 3, 4 in order; each step is safe to re-run)
 #
-# Step 1  S3: private bucket icyn-premium-files + the two Print & Play PDFs
+# Step 1  S3: private bucket icyn-premium-files + the two Print & Play PDFs; DynamoDB table icyn-gifts for gift codes
 # Step 2  icyn-api: S3 read permission, new code, Square keys, new routes
 # Step 3  icyn-ws: new code (online play needs the unlock). Run this only when the new index.html goes live.
 # Step 4  check: lists the routes and env var names (never prints the keys)
@@ -19,7 +19,13 @@ if ($Step -eq 1) {
   aws s3api put-public-access-block --bucket $Bucket --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true @P
   aws s3 cp "$Here\files\ICYN-Print-and-Play-Rulebook.pdf" "s3://$Bucket/print-and-play/ICYN-Print-and-Play-Rulebook.pdf" --content-type application/pdf @P
   aws s3 cp "$Here\files\ICYN-Hero-and-Starvos-Sheets.pdf" "s3://$Bucket/print-and-play/ICYN-Hero-and-Starvos-Sheets.pdf" --content-type application/pdf @P
-  Write-Host 'Step 1 done: bucket is private, PDFs uploaded.'
+  $t = aws dynamodb list-tables --query "TableNames[?@=='icyn-gifts']" --output text @P
+  if (-not $t) {
+    aws dynamodb create-table --table-name icyn-gifts --attribute-definitions AttributeName=code,AttributeType=S --key-schema AttributeName=code,KeyType=HASH --billing-mode PAY_PER_REQUEST @P | Out-Null
+    aws dynamodb wait table-exists --table-name icyn-gifts @P
+    aws dynamodb update-continuous-backups --table-name icyn-gifts --point-in-time-recovery-specification PointInTimeRecoveryEnabled=true @P | Out-Null
+  }
+  Write-Host 'Step 1 done: bucket is private, PDFs uploaded, gift code table ready.'
 }
 
 if ($Step -eq 2) {
@@ -44,7 +50,7 @@ if ($Step -eq 2) {
   # Reuse the integration and JWT authorizer the existing GET /me route uses.
   $me = aws apigatewayv2 get-routes --api-id $ApiId --query "Items[?RouteKey=='GET /me'] | [0]" --output json @P | ConvertFrom-Json
   $have = aws apigatewayv2 get-routes --api-id $ApiId --query 'Items[].RouteKey' --output json @P | ConvertFrom-Json
-  foreach ($rk in 'POST /checkout', 'POST /checkout/confirm', 'GET /pnp') {
+  foreach ($rk in 'POST /checkout', 'POST /checkout/confirm', 'GET /pnp', 'GET /gifts', 'POST /gift/redeem') {
     if ($have -notcontains $rk) {
       aws apigatewayv2 create-route --api-id $ApiId --route-key $rk --target $me.Target --authorization-type JWT --authorizer-id $me.AuthorizerId @P | Out-Null
     }

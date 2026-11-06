@@ -1,6 +1,6 @@
 // Saves, streaks and leaderboards for I Crit You Not! (needs auth.js loaded first).
 // Exposes window.ICYNStats: recordMatch(m), me(), setProfile(p), history(), leaderboard(by),
-// feedback(f), feedbackList(status), feedbackSet(id, status), checkout(), confirmCheckout(), pnpFiles().
+// feedback(f), feedbackList(status), feedbackSet(id, status), checkout(gift), confirmCheckout(), pnpFiles(), gifts(), redeemGift(code).
 // Every call resolves to null instead of throwing when the player is offline
 // or signed out, so guest play never breaks.
 (function () {
@@ -22,6 +22,16 @@
     }
   }
 
+  // Like call(), but hands back the server's {error} message so the player sees why.
+  async function callErr(method, path, body) {
+    try {
+      const token = window.ICYNAuth && window.ICYNAuth.user && window.ICYNAuth.user() && (await window.ICYNAuth.idToken());
+      if (!token) return { error: 'Sign in first' };
+      const res = await fetch(API + path, { method, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(body) });
+      return await res.json().catch(() => ({ error: 'Please try again' }));
+    } catch (e) { return { error: 'Could not reach the arena. Please try again.' }; }
+  }
+
   window.ICYNStats = {
     // m = { result: 'win'|'loss'|'draw', mode: 'cpu'|'pnp', hero, opponentHero, rounds, ko, startingLife }
     // Only 'cpu' duels count toward stats, streaks and the leaderboard.
@@ -36,7 +46,9 @@
     feedbackList: (status) => call('GET', '/feedback?status=' + (status === 'all' ? 'all' : 'new') + '&limit=50', null, true),
     feedbackSet: (id, status) => call('PATCH', '/feedback/' + encodeURIComponent(id), { status }, true),
     // $5 Crit Pass unlock (Online, Starvos, Print & Play). me() also returns {unlocked}.
-    checkout: () => call('POST', '/checkout', {}, true),             // -> {url} for Square checkout, or {unlocked:true}
+    checkout: (gift) => call('POST', '/checkout', { gift: !!gift }, true), // -> {url} for Square checkout, or {unlocked:true}; gift=true buys a code for someone else
+    gifts: () => call('GET', '/gifts', null, true),                  // -> {gifts:[{code, createdAt, redeemed}]}
+    redeemGift: (code) => callErr('POST', '/gift/redeem', { code }),  // -> {unlocked:true} or {error}
     confirmCheckout: () => call('POST', '/checkout/confirm', {}, true), // -> {unlocked}; checks the player's last Square order
     pnpFiles: () => call('GET', '/pnp', null, true),                 // -> {files:[{name, url}]}
   };

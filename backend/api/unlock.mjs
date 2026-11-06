@@ -18,13 +18,19 @@
 //   POST /checkout/confirm   (JWT)    -> {unlocked}; checks the player's last checkout with Square (webhook backup)
 //   POST /square/webhook     (public) Square payment events, signature checked
 //   GET  /pnp                (JWT)    -> {files:[{name, url}]} short-lived download links, unlocked players only
+//   POST /checkout {gift:true}        buys a gift: a one-use code (CRIT-XXXX-XXXX) for someone else
+//   GET  /gifts              (JWT)    -> {gifts:[{code, createdAt, redeemed}]} codes this player bought
+//   POST /gift/redeem        (JWT)    {code} -> {unlocked:true}; one use per code
+// Gift codes live in the icyn-gifts table (key `code`). Box codes and giveaways are the same items
+// with via:'box' or via:'giveaway' and no order.
 import crypto from 'node:crypto';
-import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { UpdateCommand, GetCommand, PutCommand, BatchGetCommand } from '@aws-sdk/lib-dynamodb';
 import { db, PLAYERS, defaultName } from './record.mjs';
 
 const SITE = 'https://icyn.prismcortex.net';
 const ORIGINS = new Set([SITE, 'http://localhost:8080', 'https://main.d3sn70u0fdzdgl.amplifyapp.com']);
 const PRICE_CENTS = 500;
+const GIFTS = process.env.GIFTS_TABLE || 'icyn-gifts';
 const BUCKET = process.env.PNP_BUCKET || 'icyn-premium-files';
 const REGION = process.env.AWS_REGION || 'us-east-1';
 export const PNP_FILES = [
@@ -98,14 +104,44 @@ async function paidOrder(orderId) {
   if (!userId || order?.metadata?.product !== 'full-arena') return null;
   for (const t of order.tenders || []) {
     const { payment } = await square('GET', '/v2/payments/' + encodeURIComponent(t.payment_id || t.id));
-    if (payment && payment.status === 'COMPLETED') return { userId, payment };
+    if (payment && payment.status === 'COMPLETED') return { userId, payment, gift: order.metadata.kind === 'gift' };
   }
   return null;
 }
 
+// ---------- Gift codes ----------
+const CODE_ABC = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const fmtCode = (chars) => `CRIT-${chars.slice(0, 4)}-${chars.slice(4, 8)}`;
+// Same order -> same code, so the webhook and the return page can both mint it safely.
+const orderCode = (orderId) => fmtCode(Array.from(crypto.createHash('sha256').update('icyn-gift:' + orderId).digest().subarray(0, 8), (b) => CODE_ABC[b % 31]).join(''));
+export const randomCode = () => fmtCode(Array.from(crypto.randomBytes(8), (b) => CODE_ABC[b % 31]).join(''));
+export function cleanCode(s) {
+  const c = String(s || '').toUpperCase().replace(/^CRIT/, '').replace(/[^A-Z0-9]/g, '');
+  return c.length === 8 && [...c].every((x) => CODE_ABC.includes(x)) ? fmtCode(c) : null;
+}
+async function mintGift(buyer, orderId, payment) {
+  const code = orderCode(orderId);
+  try {
+    await db.send(new PutCommand({
+      TableName: GIFTS, ConditionExpression: 'attribute_not_exists(code)',
+      Item: { code, buyer, via: 'square', order: orderId, payment: payment.id, env: process.env.SQUARE_ENV === 'sandbox' ? 'sandbox' : 'production', createdAt: new Date().toISOString() },
+    }));
+  } catch (e) {
+    if (e.name === 'ConditionalCheckFailedException') return code; // already minted
+    throw e;
+  }
+  await db.send(new UpdateCommand({
+    TableName: PLAYERS, Key: { userId: buyer },
+    UpdateExpression: 'SET gifts = list_append(if_not_exists(gifts, :e), :c) REMOVE giftOrder',
+    ExpressionAttributeValues: { ':e': [], ':c': [code] },
+  }));
+  return code;
+}
+
 // ---------- Routes ----------
-export async function checkout(userId, claims, player, event) {
-  if (hasUnlock(player, claims)) return json(200, { unlocked: true });
+export async function checkout(userId, claims, player, event, body = {}) {
+  const gift = body.gift === true;
+  if (!gift && hasUnlock(player, claims)) return json(200, { unlocked: true });
   const origin = event.headers?.origin;
   const base = ORIGINS.has(origin) ? origin : SITE;
   const loc = await location();
@@ -114,21 +150,21 @@ export async function checkout(userId, claims, player, event) {
     order: {
       location_id: loc,
       reference_id: userId.slice(0, 40),
-      metadata: { userId, product: 'full-arena' },
+      metadata: { userId, product: 'full-arena', kind: gift ? 'gift' : 'self' },
       line_items: [{
-        name: 'I Crit You Not! Crit Pass', quantity: '1',
+        name: gift ? 'I Crit You Not! Crit Pass (gift)' : 'I Crit You Not! Crit Pass', quantity: '1',
         note: 'One-time unlock: Online duels, the Starvos Catastrophe, and the Print & Play rulebook and sheets.',
         base_price_money: { amount: PRICE_CENTS, currency: 'USD' },
       }],
     },
-    checkout_options: { redirect_url: `${base}/?unlock=done`, ask_for_shipping_address: false },
+    checkout_options: { redirect_url: `${base}/?unlock=${gift ? 'gift' : 'done'}`, ask_for_shipping_address: false },
     pre_populated_data: claims.email ? { buyer_email: claims.email } : undefined,
-    payment_note: `ICYN Crit Pass for ${userId}`,
+    payment_note: `ICYN Crit Pass${gift ? ' gift' : ''} for ${userId}`,
   });
   const link = r.payment_link;
   // Remember the order so /checkout/confirm can check it when the player comes back.
   const { sets, names, vals } = seedParts(defaultName(claims));
-  sets.push('unlockOrder = :o'); vals[':o'] = link.order_id;
+  sets.push(`${gift ? 'giftOrder' : 'unlockOrder'} = :o`); vals[':o'] = link.order_id;
   await update(userId, sets, names, vals);
   return json(200, { url: link.url });
 }
@@ -136,13 +172,52 @@ export async function checkout(userId, claims, player, event) {
 // The browser lands back on ?unlock=done; ask Square about this player's last checkout so the
 // unlock shows at once even if the webhook is slow or missing.
 export async function confirm(userId, claims, player) {
-  if (hasUnlock(player, claims)) return json(200, { unlocked: true });
-  if (!player?.unlockOrder) return json(200, { unlocked: false });
-  const paid = await paidOrder(player.unlockOrder);
-  if (!paid || paid.userId !== userId) return json(200, { unlocked: false });
-  await grant(userId, player.unlockOrder, paid.payment);
+  let gift = null;
+  if (player?.giftOrder) {
+    const paid = await paidOrder(player.giftOrder);
+    if (paid && paid.userId === userId && paid.gift) gift = await mintGift(userId, player.giftOrder, paid.payment);
+  }
+  let unlocked = hasUnlock(player, claims);
+  if (!unlocked && player?.unlockOrder) {
+    const paid = await paidOrder(player.unlockOrder);
+    if (paid && paid.userId === userId && !paid.gift) { await grant(userId, player.unlockOrder, paid.payment); unlocked = true; }
+  }
+  return json(200, { unlocked, ...(gift ? { gift } : {}) });
+}
+
+export async function gifts(player) {
+  const codes = (player?.gifts || []).slice(-100);
+  if (!codes.length) return json(200, { gifts: [] });
+  const r = await db.send(new BatchGetCommand({ RequestItems: { [GIFTS]: { Keys: codes.map((code) => ({ code })) } } }));
+  const byCode = new Map((r.Responses?.[GIFTS] || []).map((g) => [g.code, g]));
+  return json(200, { gifts: codes.map((code) => byCode.get(code)).filter(Boolean).reverse()
+    .map((g) => ({ code: g.code, createdAt: g.createdAt, redeemed: !!g.redeemedBy })) });
+}
+
+export async function redeem(userId, claims, player, body) {
+  const code = cleanCode(body.code);
+  if (!code) return json(400, { error: 'That doesn’t look like a Crit Pass code (CRIT-XXXX-XXXX).' });
+  const g = (await db.send(new GetCommand({ TableName: GIFTS, Key: { code } }))).Item;
+  if (!g) return json(404, { error: 'That code isn’t valid. Check the letters and try again.' });
+  if (g.redeemedBy === userId) return json(200, { unlocked: true });
+  if (g.redeemedBy) return json(409, { error: 'That code has already been used.' });
+  if (hasUnlock(player, claims)) return json(409, { error: 'You already have the Crit Pass, so this code is still unused. Pass it on to a friend!' });
+  try {
+    await db.send(new UpdateCommand({
+      TableName: GIFTS, Key: { code }, ConditionExpression: 'attribute_exists(code) AND attribute_not_exists(redeemedBy)',
+      UpdateExpression: 'SET redeemedBy = :u, redeemedAt = :t', ExpressionAttributeValues: { ':u': userId, ':t': new Date().toISOString() },
+    }));
+  } catch (e) {
+    if (e.name === 'ConditionalCheckFailedException') return json(409, { error: 'That code has already been used.' });
+    throw e;
+  }
+  const { sets, names, vals } = seedParts(defaultName(claims));
+  sets.push('#u = if_not_exists(#u, :u)'); names['#u'] = 'unlock';
+  vals[':u'] = { at: new Date().toISOString(), via: g.via === 'square' ? 'gift' : g.via || 'gift', code, from: g.buyer || null };
+  await update(userId, sets, names, vals);
   return json(200, { unlocked: true });
 }
+
 
 // x-square-hmacsha256-signature = base64(HMAC-SHA256(signatureKey, notificationUrl + rawBody))
 export function verifySquare(raw, header, key, url) {
@@ -160,7 +235,8 @@ export async function webhook(event) {
   const payment = evt?.data?.object?.payment;
   if (['payment.created', 'payment.updated'].includes(evt.type) && payment?.status === 'COMPLETED' && payment.order_id) {
     const paid = await paidOrder(payment.order_id);
-    if (paid) await grant(paid.userId, payment.order_id, paid.payment);
+    if (paid && paid.gift) await mintGift(paid.userId, payment.order_id, paid.payment);
+    else if (paid) await grant(paid.userId, payment.order_id, paid.payment);
   }
   return json(200, { received: true });
 }
