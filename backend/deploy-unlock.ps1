@@ -1,4 +1,4 @@
-param([Parameter(Mandatory)][int]$Step)
+param([Parameter(Mandatory)][int]$Step, [string]$Before = '')
 # Deploys the $5 Crit Pass unlock backend. Run from the backend folder on Skynet:
 #   cd C:\Users\n8gr8\Documents\ICYN\backend-unlock
 #   aws sso login --profile prismcortex
@@ -8,6 +8,7 @@ param([Parameter(Mandatory)][int]$Step)
 # Step 2  icyn-api: S3 read permission, new code, Square keys, new routes
 # Step 3  icyn-ws: new code (online play needs the unlock). Run this only when the new index.html goes live.
 # Step 4  check: lists the routes and env var names (never prints the keys)
+# Step 5  early supporters: gives the Crit Pass (via 'early') to every account created before now (or -Before 'yyyy-mm-ddTHH:mm')
 $ErrorActionPreference = 'Stop'
 $P = @('--profile', 'prismcortex', '--region', 'us-east-1')
 $Bucket = 'icyn-premium-files'
@@ -70,4 +71,37 @@ if ($Step -eq 3) {
 if ($Step -eq 4) {
   aws apigatewayv2 get-routes --api-id $ApiId --query 'Items[].[RouteKey,AuthorizationType]' --output table @P
   aws lambda get-function-configuration --function-name icyn-api --query 'keys(Environment.Variables)' @P
+}
+
+if ($Step -eq 5) {
+  $cut = if ($Before) { [datetime]::Parse($Before).ToUniversalTime() } else { (Get-Date).ToUniversalTime() }
+  $users = @(); $token = $null
+  do {
+    $args2 = @('cognito-idp', 'list-users', '--user-pool-id', 'us-east-1_slqC7oLPd', '--output', 'json') + $P
+    if ($token) { $args2 += @('--pagination-token', $token) }
+    $page = (& aws @args2) | ConvertFrom-Json
+    $users += $page.Users; $token = $page.PaginationToken
+  } while ($token)
+  $now = (Get-Date).ToUniversalTime().ToString('o')
+  $n = 0
+  foreach ($u in $users) {
+    if (([datetime]$u.UserCreateDate).ToUniversalTime() -ge $cut) { continue }
+    $attr = @{}; foreach ($a in $u.Attributes) { $attr[$a.Name] = $a.Value }
+    $sub = $attr['sub']; if (-not $sub) { continue }
+    $name = if ($attr['nickname']) { $attr['nickname'] } elseif ($attr['email']) { $attr['email'].Split('@')[0] } else { 'Adventurer' }
+    $name = ($name -replace '[\x00-\x1f<>]', '').Trim(); if ($name.Length -gt 24) { $name = $name.Substring(0, 24) }; if (-not $name) { $name = 'Adventurer' }
+    $key = @{ userId = @{ S = $sub } } | ConvertTo-Json -Compress
+    $vals = @{
+      ':u' = @{ M = @{ at = @{ S = $now }; via = @{ S = 'early' } } }; ':n' = @{ S = $name }; ':z' = @{ N = '0' }; ':e' = @{ M = @{} }
+    } | ConvertTo-Json -Compress -Depth 6
+    $kf = New-TemporaryFile; $vf = New-TemporaryFile
+    [IO.File]::WriteAllText($kf.FullName, $key); [IO.File]::WriteAllText($vf.FullName, $vals)
+    $expr = 'SET #u = if_not_exists(#u, :u), #n = if_not_exists(#n, :n), heroCounts = if_not_exists(heroCounts, :e), prefs = if_not_exists(prefs, :e)'
+    foreach ($k in 'wins', 'losses', 'draws', 'played', 'kos', 'currentStreak', 'bestWinStreak', 'worstLossStreak', 'version') { $expr += ", $k = if_not_exists($k, :z)" }
+    $nf = New-TemporaryFile; [IO.File]::WriteAllText($nf.FullName, '{"#u":"unlock","#n":"name"}')
+    aws dynamodb update-item --table-name icyn-players --key "file://$kf" --update-expression $expr --expression-attribute-names "file://$nf" --expression-attribute-values "file://$vf" @P | Out-Null
+    Remove-Item $kf, $vf, $nf
+    $n++
+  }
+  Write-Host "Step 5 done: $n early supporters have the Crit Pass (accounts created before $cut UTC). Anyone who already had it keeps their original record."
 }

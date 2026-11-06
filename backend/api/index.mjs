@@ -30,7 +30,7 @@ async function leaderboard(event) {
 
 async function getMe(userId, claims) {
   const p = await loadPlayer(userId, claims);
-  return json(200, { stats: stats(p), prefs: p.prefs || {}, unlocked: hasUnlock(p, claims) });
+  return json(200, { stats: stats(p), prefs: p.prefs || {}, unlocked: hasUnlock(p, claims), passVia: p.unlock?.via || null });
 }
 
 async function putMe(userId, claims, body) {

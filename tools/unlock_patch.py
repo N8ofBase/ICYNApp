@@ -87,6 +87,9 @@ function welcomePass(extra){const o=arenaPanel('Crit Pass unlocked',`<p class="h
 async function giftArrive(){if(!PAYWALL())return;const q=new URLSearchParams(location.search);let c=q.get('gift');
   if(c){q.delete('gift');history.replaceState(null,'',location.pathname+(q.toString()?'?'+q:'')+location.hash)}else try{c=sessionStorage.getItem(GIFT_KEY)}catch(e){}
   if(!c)return;try{await ICYNAuth.ready}catch(e){}redeemPanel(c)}
+// Players who joined before the Crit Pass launched get it free, with a one-time thank-you.
+function earlyThanks(){try{if(localStorage.getItem('icyn.early.thanks'))return;localStorage.setItem('icyn.early.thanks','1')}catch(e){return}
+  setTimeout(()=>{const o=arenaPanel('A gift for our early Heroes',`<p class="herald">“Hear ye! The arena never forgets those who fought in its first days!”</p><p>You played I Crit You Not! before the Crit Pass existed, so it’s yours, free, as our thank-you. Online duels, the Starvos Catastrophe and the Print &amp; Play files are unlocked on your account.</p><div class="row"><button class="act" id="ul-pnp">Get the Print &amp; Play files</button><button class="ghost" id="ul-ok">Back to the arena</button></div>`);o.querySelector('#ul-pnp').onclick=()=>pnpPanel();o.querySelector('#ul-ok').onclick=()=>o.remove()},600)}
 async function unlockReturn(){const q=new URLSearchParams(location.search),st=q.get('unlock');if(!st||!PAYWALL())return;
   for(const k of ['unlock','orderId','transactionId','checkoutId','referenceId'])q.delete(k);history.replaceState(null,'',location.pathname+(q.toString()?'?'+q:'')+location.hash);
   if(st!=='done'&&st!=='gift'){toast('Checkout cancelled. Nothing was charged.');return}
@@ -115,7 +118,7 @@ def patch(path):
     # the unlock code sits just before refreshMe (needs S, esc, toast, signedIn in scope at call time)
     r('async function refreshMe(){if(!statsOn()||!signedIn()){S.me=null;return}const r=await ICYNStats.me();S.me=r&&r.stats||null;renderAcct()}',
       JS.strip() + '\n' +
-      'async function refreshMe(){if(!statsOn()||!signedIn()){S.me=null;S.unlocked=false;return}const was=hasArena(),r=await ICYNStats.me();S.me=r&&r.stats||null;if(r)setUnlocked(!!r.unlocked);renderAcct();if(was!==hasArena()&&S.screen===\'setup\'&&!document.activeElement?.matches?.(\'input\'))renderSetup()}')
+      'async function refreshMe(){if(!statsOn()||!signedIn()){S.me=null;S.unlocked=false;return}const was=hasArena(),r=await ICYNStats.me();S.me=r&&r.stats||null;if(r)setUnlocked(!!r.unlocked);if(r&&r.passVia===\'early\')earlyThanks();renderAcct();if(was!==hasArena()&&S.screen===\'setup\'&&!document.activeElement?.matches?.(\'input\'))renderSetup()}')
     # lock tags on the paid buttons
     r('<button id="m-net" aria-pressed="${S.mode===\'online\'}">Online</button>',
       '<button id="m-net" aria-pressed="${S.mode===\'online\'}">Online${lockTag()}</button>')
