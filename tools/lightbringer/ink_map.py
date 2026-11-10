@@ -139,7 +139,7 @@ RIVER = [(1648,512),(1650,545),(1640,575),(1618,610),(1600,650),(1588,690),(1578
          (1505,930),(1488,980),(1470,1030),(1452,1075),(1440,1120),(1432,1168)]
 FORESTS = [((1330,800),205,175),((1135,1085),95,150),((1490,520),85,70),((1700,640),62,80),((1660,880),75,95),
            ((1720,470),40,45),((1545,1010),40,40),((1235,1190),40,30)]
-HOLES = [blob(1335,780,95,90,10,.05), blob(1585,700,62,46,10,.05)]   # clearings for Yelena's tree and Hinon's farms
+HOLES = [blob(1335,790,62,58,10,.05), blob(1615,618,80,62,10,.05)]   # clearings for Yelena's tree and Hinon's farms
 
 out = []
 A = out.append
@@ -299,19 +299,19 @@ def cottage(x, y, s=1):
       f'<path d="M-2 6 v-5 h4 v5" fill="none" stroke="{INK}" stroke-width="1.2"/><path d="M-9 -3 l9 -8 l9 8" fill="none" stroke="{INK}" stroke-width="2.4"/></g>')
 
 # --- Hinon: quiet fishing and farming village, Life Crystal among farmland and gardens, statue of Hinon above the great tomb
-hx, hy = 1588, 700
-for (fx, fy, w, h, a) in [(-58,-30,34,22,-12),(-62,4,30,22,8),(-30,30,28,20,-4),(30,-36,32,22,10),(36,12,36,24,-8),(8,44,26,18,6)]:
+hx, hy = 1615, 612   # N8: just below the Oracle falls, farmland on both banks
+for (fx, fy, w, h, a) in [(-50,-24,28,18,-8),(-56,0,26,18,6),(-48,26,26,16,-4),(42,-26,28,18,8),(48,0,28,18,-6),(38,26,26,16,4)]:
     # furrowed fields: no hard box, just a soft hedge line and rows that change direction field to field
     rows = ''.join(f'<path d="M{-w/2+2} {-h/2+k} q{w/2} {random.uniform(-1.5,1.5):.1f} {w-4} 0" fill="none" stroke="{INK2}" stroke-width=".9"/>' for k in range(3, int(h), 4))
     G(f'<g transform="translate({hx+fx} {hy+fy}) rotate({a + random.choice((0, 90))})"><path d="{lpath(fractal([(-w/2,-h/2),(w/2,-h/2),(w/2,h/2),(-w/2,h/2)],2,.04))}" fill="none" stroke="{INK}" stroke-width="1" stroke-dasharray="3 2"/>{rows}</g>')
-for (cx, cy) in [(-22,-8),(-8,-16),(14,-4),(-16,12),(22,22)]: cottage(hx + cx, hy + cy, .9)
-crystal(hx + 2, hy + 8, .9)
+for (cx, cy) in [(-22,-10),(-24,12),(20,-12),(18,12)]: cottage(hx + cx, hy + cy, .85)
+crystal(hx - 4, hy + 40, .7)
 # statue on its tomb
-G(f'<g transform="translate({hx+58} {hy-62})"><rect x="-13" y="2" width="26" height="10" fill="{PARCH}" stroke="{INK}" stroke-width="1.6"/>'
+G(f'<g transform="translate({hx-46} {hy+52})"><rect x="-13" y="2" width="26" height="10" fill="{PARCH}" stroke="{INK}" stroke-width="1.6"/>'
   f'<path d="M-9 2 v-4 h18 v4" fill="none" stroke="{INK}" stroke-width="1.4"/><circle cx="0" cy="-17" r="3.5" fill="{PARCH}" stroke="{INK}" stroke-width="1.4"/>'
   f'<path d="M-5 -2 l1 -11 h8 l1 11 M4 -12 l7 -9 M11 -21 l-3 -2 h7 z" fill="none" stroke="{INK}" stroke-width="1.5"/></g>')
 # little boats on the river by the village
-G(f'<path d="M{hx-16} {hy+52} q8 6 16 0 z M{hx-8} {hy+52} v-9 l6 6 z" fill="{PARCH}" stroke="{INK}" stroke-width="1.2"/>')
+G(f'<path d="M{hx-14} {hy-8} q7 5 14 0 z M{hx-7} {hy-8} v-8 l5 5 z" fill="{PARCH}" stroke="{INK}" stroke-width="1.2"/>')
 
 # --- Rork: wheck stone fortress high on the Talon of Talus, Life Crystal in a grand courtyard
 rx_, ry_ = 318, 1150
@@ -361,14 +361,14 @@ for bx, by in [(ux + 92, uy + 64), (ux + 44, uy + 82)]:
 crystal(mx - 2, my - 12, .5)   # the holy crystal cave behind the waterfall
 
 # --- Yelena: a gigantic Riverwood tree city of trunks and branches, the sealed vault beneath its roots
-G(f'<g transform="translate(1335 800) scale(1.25)">'
+G(f'<g transform="translate(1335 798) scale(.82)">'
   f'<path d="M-40 42 q20 -10 28 -24 M40 42 q-20 -10 -28 -24 M-22 46 q12 -10 14 -26 M22 46 q-12 -10 -14 -26 M0 46 v-18" fill="none" stroke="{INK}" stroke-width="2.4"/>'
   f'<path d="M-12 20 q-6 -28 -2 -52 M12 20 q6 -28 2 -52 M-8 -14 q-18 -10 -34 -22 M8 -20 q18 -8 34 -20 M-4 -30 q-10 -14 -12 -30 M4 -30 q10 -16 18 -28" fill="none" stroke="{INK}" stroke-width="3"/>'
   f'<path d="M-62 -30 a24 24 0 0 1 28 -32 a28 28 0 0 1 48 -4 a24 24 0 0 1 26 30 a22 22 0 0 1 -18 30 q-10 8 -24 2 q-14 8 -30 0 q-16 4 -26 -6 a20 20 0 0 1 -4 -20 z" fill="{PARCH}" stroke="{INK}" stroke-width="3"/>'
   f'<path d="M-30 -40 q8 6 16 0 M6 -52 q8 6 16 0 M-44 -22 q8 6 16 0 M24 -30 q8 6 16 0 M-8 -34 q8 6 16 0" fill="none" stroke="{INK2}" stroke-width="1.4"/>'
   + ''.join(f'<path d="M{x-6} {y} h12 M{x-4} {y} v-7 h8 v7" fill="none" stroke="{INK}" stroke-width="1.3"/>' for x, y in [(-34,-14),(30,-10),(-6,-58),(22,-46),(-26,-44)])
   + f'<path d="M-12 46 h24 v8 h-24 z" fill="url(#hatch)" stroke="{INK}" stroke-width="1.4"/></g>')
-crystal(1335, 792, .55)
+crystal(1335, 793, .4)
 
 # --- Turantia: the shattered city of Light, ruins on its isolated plateau
 tur_in = scale(TURANTIA, .86)
@@ -381,14 +381,20 @@ for i in range(0, len(tur_in)):
 def broken_tower(x, y, h, w=12):
     G(f'<path d="M{x-w/2:.0f} {y:.0f} v-{h:.0f} l{w*.25:.0f} {random.uniform(4,9):.0f} l{w*.25:.0f} -{random.uniform(6,12):.0f} l{w*.2:.0f} {random.uniform(3,8):.0f} l{w*.3:.0f} -{random.uniform(2,6):.0f} V{y:.0f} z" fill="#fbf5e6" stroke="{INK}" stroke-width="1.8"/>'
       f'<path d="M{x-2:.0f} {y-h*.55:.0f} v-6 a2 2 0 0 1 4 0 v6" fill="none" stroke="{INK}" stroke-width="1.1"/>')
-for x, y, h in [(262,440,40),(300,410,58),(342,425,46),(380,450,30),(320,475,26),(236,480,22)]: broken_tower(x, y, h)
+for x, y, h in [(262,440,14),(305,412,20),(345,428,12),(382,452,10),(236,482,8)]: broken_tower(x, y, h, 10)   # stumps only
+for _ in range(14):   # rubble heaps
+    x, y = random.uniform(230, 410), random.uniform(370, 510)
+    if not inside((x, y), tur_in): continue
+    w = random.uniform(10, 20)
+    G(f'<path d="M{x-w:.0f} {y:.0f} l{w*.3:.0f} -{w*.35:.0f} l{w*.25:.0f} {w*.1:.0f} l{w*.3:.0f} -{w*.3:.0f} l{w*.4:.0f} {w*.25:.0f} l{w*.3:.0f} -{w*.05:.0f} l{w*.45:.0f} {w*.35:.0f} z" fill="{PARCH}" stroke="{INK}" stroke-width="1.4"/>'
+      f'<path d="M{x-w*.4:.0f} {y-w*.12:.0f} l3 -3 M{x+w*.2:.0f} {y-w*.15:.0f} l3 -2" stroke="{INK2}" stroke-width="1"/>')
 # broken wall runs, toppled columns, rubble
 for (x1, y1, x2, y2) in [(225,500,285,505),(300,505,350,500),(365,492,410,470),(225,500,215,455)]:
     G(f'<path d="M{x1} {y1} L{(x1+x2)/2:.0f} {(y1+y2)/2-3:.0f} L{x2} {y2}" fill="none" stroke="{INK}" stroke-width="5"/>'
       f'<path d="M{x1} {y1} L{(x1+x2)/2:.0f} {(y1+y2)/2-3:.0f} L{x2} {y2}" fill="none" stroke="{PARCH}" stroke-width="2"/>')
 for (x, y, a) in [(280,370,20),(360,380,-35),(250,410,70),(395,415,10)]:
     G(f'<g transform="translate({x} {y}) rotate({a})"><rect x="-14" y="-3" width="28" height="6" fill="{PARCH}" stroke="{INK}" stroke-width="1.4"/><path d="M-6 -3 v6 M3 -3 v6" stroke="{INK}" stroke-width="1"/></g>')
-for _ in range(40):
+for _ in range(90):
     x, y = random.uniform(220, 420), random.uniform(350, 520)
     if inside((x, y), tur_in): G(f'<path d="M{x:.0f} {y:.0f} l3 -4 l4 3 l-2 3 z" fill="{INK2}" opacity=".8"/>')
 
@@ -415,8 +421,8 @@ def label(t, x, y, size=34, big=False, ital=False):
     st = 'italic' if ital else 'normal'
     A(f'<text x="{x}" y="{y}" text-anchor="middle" font-family="{fam}, serif" font-style="{st}" font-size="{size}" fill="{INK}" '
       f'stroke="{PARCH}" stroke-width="{6 if big else 5}" paint-order="stroke" stroke-linejoin="round">{t}</text>')
-for t, x, y, s, b in [('Turantia',320,565,46,True),('Sartina',606,735,48,True),('Rork',330,1252,48,True),('Yelena',1335,688,48,True),
-                      ('Hinon',1690,742,46,True),('Umatu',1372,1100,46,True)]:
+for t, x, y, s, b in [('Turantia',320,565,46,True),('Sartina',606,735,48,True),('Rork',330,1252,48,True),('Yelena',1335,728,44,True),
+                      ('Hinon',1712,650,44,True),('Umatu',1372,1100,46,True)]:
     label(t, x, y, s, b)
 for t, x, y, s in [('Scorched Valley',545,830,30),('Salt Sand Desert',915,545,28),('Femrul',990,606,26),('Oashim',865,775,26),
                    ('Ruins',1100,438,24),('Ruins',905,868,24),('Nio Plains',1085,745,30),('Hills of Will',1305,525,32),
