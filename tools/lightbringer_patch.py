@@ -178,7 +178,7 @@ async function lbReader(at){document.querySelector('.lbr')?.remove();
   function showGl(on){gl.hidden=!on;gb.setAttribute('aria-expanded',on);if(!on){gb.focus();return}if(!toc.hidden)showToc(false);glRender()}
   function glRender(){const G=LB.glossary||{},row=(a,b)=>`<tr><th>${esc(a)}</th><td>${esc(b)}</td></tr>`,
       ent=(name,txt,img,cls)=>`<div class="lbg-ent">${img?`<img class="${cls||''}" src="${img}" alt="" loading="lazy">`:''}<div><h3>${esc(name)}</h3><p>${esc(txt)}</p></div></div>`,
-      T={map:['Map of Talus',()=>`<p class="lbg-note">Drawn from the old charts of Talus. Tap the map to open it full size.</p><a class="lbg-map" href="lb/map.webp" target="_blank" rel="noopener"><img src="lb/map.webp" alt="Map of Talus with Turantia, Lake Femrul, the Oracle, and the towns of Rork, Sartina, Hinon, Umatu and Yelena" width="1600" height="1236"></a>`],
+      T={map:['Map of Talus',()=>`<p class="lbg-note">The map of Talus by N8. Tap the map to open it full size.</p><a class="lbg-map" href="lb/map.webp" target="_blank" rel="noopener"><img src="lb/map.webp" alt="Map of Talus with Turantia, Lake Femrul, the Oracle, and the towns of Rork, Sartina, Hinon, Umatu and Yelena" width="1600" height="1236"></a>`],
         time:['Time & Sky',()=>`<table class="lbg-tbl"><caption>Time on Talus</caption>${(G.time||[]).map(x=>row(...x)).join('')}</table>
           <p class="lbg-note">400 rotations make one grand rotation. Each planet cycle is named for the moon or planet that rules the sky.</p>
           <table class="lbg-tbl"><caption>Rising Season</caption>${(G.rising||[]).map((x,i)=>`<tr><td class="n">${i+1}</td><th>${esc(x[0])}</th><td>${esc(x[1])}</td></tr>`).join('')}</table>
