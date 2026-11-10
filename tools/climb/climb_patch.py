@@ -29,13 +29,13 @@ rep("  if(S.mode==='boss')return renderBossSetup();\n", "  if(S.mode==='boss')re
 # Crit Pass card
 rep("const UL_WHY={online:'Duel your friends online',", "const UL_WHY={climb:'Enter the Crit Climb',online:'Duel your friends online',")
 rep('<li><b>The Starvos Catastrophe</b>, alone or with up to 4 friends</li><li><b>Print &amp; Play</b>',
-    '<li><b>The Starvos Catastrophe</b>, alone or with up to 4 friends</li><li><b>Crit Climb</b> tournaments with badges for every climber</li><li><b>Print &amp; Play</b>')
+    '<li><b>The Starvos Catastrophe</b>, alone or with up to 4 friends</li><li><b>Crit Climb</b> tournaments for 4, 8 or 16 players</li><li><b>Print &amp; Play</b>')
 
 # online duel hooks
 rep("ICYNOnline.onError((e,m)=>{NETUI.busy=false;if(m&&m.action==='nudge'&&NET.silent)return;NETUI.err=e;if(S.screen==='setup'){if(S.mode==='boss')renderBossNet();else renderNetBox()}else toast(e)});",
-    "ICYNOnline.onError((e,m)=>{NETUI.busy=false;if(m&&m.action==='nudge'&&NET.silent)return;NETUI.err=e;if(S.screen==='setup'){if(S.mode==='boss')renderBossNet();else if(S.mode==='climb'){CLIMB.err=e;CLIMB.busy=false;renderClimbMine()}else renderNetBox()}else toast(e)});")
+    "ICYNOnline.onError((e,m)=>{NETUI.busy=false;if(m&&m.action==='nudge'&&NET.silent)return;NETUI.err=e;if(S.screen==='setup'){if(S.mode==='boss')renderBossNet();else if(S.mode==='climb'){CLIMB.err=e;CLIMB.busy=false;renderClimb()}else renderNetBox()}else toast(e)});")
 rep("  if(game.mode==='boss')return onBossNetState(game);\n",
-    "  if(game.mode==='boss')return onBossNetState(game);\n  if(game.climb&&game.status==='waiting'){CLIMB.waiting=game;CLIMB.busy=false;if(S.screen==='setup'){if(S.mode!=='climb'){S.mode='climb';renderSetup()}else renderClimbMine()}return}\n")
+    "  if(game.mode==='boss')return onBossNetState(game);\n  if(game.climb&&game.status==='waiting'){CLIMB.waiting=game;CLIMB.busy=false;CLIMB.cur=game.climb.id;if(S.screen==='setup'){if(S.mode!=='climb'){S.mode='climb';renderSetup()}else renderClimb()}return}\n")
 rep("  Object.assign(NET,{you:game.you,gameId:game.gameId,used:new Set(),waiters:[],ended:false,fastUntil:0});",
     "  Object.assign(NET,{you:game.you,gameId:game.gameId,used:new Set(),waiters:[],ended:false,fastUntil:0,climb:game.climb||null});CLIMB.waiting=null;")
 rep("$('#modelbl').textContent=(S.mode==='online'?'Online vs '+rivalName():",
@@ -43,15 +43,16 @@ rep("$('#modelbl').textContent=(S.mode==='online'?'Online vs '+rivalName():",
 rep("<button class=\"act\" id=\"rematch\">${S.mode==='online'?'New online duel':'Rematch'}</button>",
     "<button class=\"act\" id=\"rematch\">${S.mode==='online'?(NET.climb?'Back to Crit Climb':'New online duel'):'Rematch'}</button>")
 rep("o.querySelector('#rematch').onclick=()=>{o.remove();if(S.mode==='online'){S.token++;S.screen='setup';NETUI.phase='idle';renderSetup()}",
-    "o.querySelector('#rematch').onclick=()=>{o.remove();if(S.mode==='online'){S.token++;S.screen='setup';NETUI.phase='idle';if(NET.climb){S.mode='climb';CLIMB.list=null}renderSetup()}")
+    "o.querySelector('#rematch').onclick=()=>{o.remove();if(S.mode==='online'){S.token++;S.screen='setup';NETUI.phase='idle';if(NET.climb){S.mode='climb';CLIMB.cur=NET.climb.id}renderSetup()}")
 rep("if(S.mode==='online'){el.innerHTML='<span>Ranked online result saved by the arena.</span>';",
     "if(S.mode==='online'){el.innerHTML=NET.climb?'<span>Ranked result saved. The Crit Climb bracket is updated.</span>':'<span>Ranked online result saved by the arena.</span>';")
 
-# badges in My Stats, crowns on the leaderboard
+# rings: account chip, My Stats, leaderboard
+rep("S.owner=!!(r&&r.owner);", "S.owner=!!(r&&r.owner);S.ring=(r&&r.ring)||'';")
+rep('${avHTML(myAvatar(),26,(S.me&&S.me.name)||u.name||u.email)}', '${ringAv(myAvatar(),26,(S.me&&S.me.name)||u.name||u.email,S.ring)}')
+rep('<div class="sp-av">${avHTML(myAvatar(),56,st.name)}', '<div class="sp-av">${ringAv(myAvatar(),56,st.name,me.ring)}')
+rep("return avHTML(mine?myAvatar():x.avatar,24,x.name)", "return ringAv(mine?myAvatar():x.avatar,24,x.name,x.ring)")
 rep("        ${st.currentStreak?`<div>${streakBadge(st.currentStreak)}</div>`:''}\n",
-    "        ${st.currentStreak?`<div>${streakBadge(st.currentStreak)}</div>`:''}\n        ${climbBadgesHTML(me.badges)}\n")
-rep('<span class="nm">${esc(x.name||\'Player\')}</span>',
-    '<span class="nm">${esc(x.name||\'Player\')}${x.crowns?` <span class="crowns" title="Crit Climb crowns">${BADGE_SVG.champion}${x.crowns>1?\'×\'+x.crowns:\'\'}</span>`:\'\'}</span>')
-rep("S.owner=!!(r&&r.owner);", "S.owner=!!(r&&r.owner);if(S.screen==='setup'&&S.mode==='climb')renderClimbOwner();")
+    "        ${st.currentStreak?`<div>${streakBadge(st.currentStreak)}</div>`:''}\n        ${climbRingsHTML(me.badges,me.ring)}\n")
 p.write_text(s, encoding='utf-8')
 print('patched', p)

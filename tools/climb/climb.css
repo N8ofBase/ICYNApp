@@ -7,12 +7,6 @@
 .cl-due{color:var(--muted);font-size:.9rem}
 .cl-roster .pick img{max-height:64px}
 .cl-live{color:#7ee08f;font-weight:700}
-.cl-owner{background:var(--stone);border:1px dashed rgba(224,184,98,.5);border-radius:12px;padding:10px 14px}
-.cl-owner summary{cursor:pointer;font-weight:700;color:var(--gold)}
-.cl-owner[open]{display:grid;gap:10px}
-.cl-owner label{display:grid;gap:4px;font-size:.88rem;color:var(--muted)}
-.cl-owner input,.cl-owner select{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--night);color:var(--text);min-width:0}
-.cl-owner .opt{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .cl-list{display:grid;gap:10px}
 .cl-h{margin:6px 0 0;font-family:var(--f-title);color:var(--gold);font-size:1rem}
 .cl-empty{text-align:center;color:var(--muted)}
@@ -38,8 +32,34 @@
 .cl-p.won{font-weight:800;color:var(--gold)}.cl-p.lost{opacity:.5;text-decoration:line-through}
 .cl-p.me{background:rgba(224,184,98,.12)}
 .cl-f{display:block;padding:2px 8px 4px;color:var(--muted);font-size:.7rem}
-.cl-judge{display:flex;flex-direction:column;padding:0 8px 4px;font-size:.72rem;align-items:flex-start}
-.cl-bsum{display:flex;flex-wrap:wrap;gap:8px}
-.cl-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 6px;border-radius:999px;background:var(--stone-2);border:1px solid var(--line);font-size:.85rem}
-.cl-badge svg{width:22px;height:22px}.cl-badge.champion{border-color:var(--gold)}
-.crowns{display:inline-flex;align-items:center;gap:1px;font-size:.7rem;color:var(--gold);font-weight:800}.crowns svg{width:16px;height:16px}
+.cl-host,.cl-room{background:var(--stone);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:10px;justify-items:center;text-align:center;min-width:0}
+.cl-host .opt{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center}
+.cl-host .cl-h{margin:0}
+.cl-name{display:grid;gap:4px;font-size:.88rem;color:var(--muted);width:min(320px,100%)}
+.cl-name input{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--night);color:var(--text);min-width:0}
+.cl-join{max-width:440px;margin:0 auto;width:100%;text-align:center;display:grid;gap:6px}
+.cl-join .row{display:flex;gap:8px;justify-content:center}
+.cl-join input{font:700 1.1rem ui-monospace,Menlo,monospace;letter-spacing:.2em;text-transform:uppercase;width:9ch;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--night);color:var(--text)}
+.cl-room{justify-items:stretch}.cl-room>p,.cl-room>.row,.cl-room>.nb-code{margin:0;justify-self:center}
+.cl-room header{display:flex;justify-content:space-between;gap:10px;align-items:baseline;text-align:left}
+.cl-room h3{margin:0;font-family:var(--f-title);color:var(--gold);font-size:1.2rem;overflow-wrap:anywhere}
+.cl-room .row,.cl-host .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.cl-room .cl-chips{justify-content:center}.cl-chip small{color:var(--gold);font-size:.68rem}
+.cl-back{justify-content:flex-start!important}
+.cl-champ{font-size:1.05rem}.cl-champ svg,.cl-line svg{width:20px;height:20px;vertical-align:-4px}
+.cl-out{color:var(--muted);font-style:italic}
+.cl-gold{color:#f2c94c}.cl-silver{color:#d6dbe3}
+/* Crit Climb profile rings */
+.rav{display:inline-grid;place-items:center;flex:none;position:relative;border-radius:50%}
+.rav .av{border-width:2px}
+.rav.gold .av{border-color:#f6d365;box-shadow:0 0 0 2px #a8822a,0 0 8px rgba(246,211,101,.75)}
+.rav.silver .av{border-color:#e4e8ee;box-shadow:0 0 0 2px #7d8590,0 0 6px rgba(228,232,238,.55)}
+.rav.big{width:var(--o);height:var(--o)}
+.rav.big svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.rav.big .av{box-shadow:none;border-width:2px}
+.rav .rr{fill:none;stroke-width:11}
+.rav.gold .rr{stroke:#c9962e}.rav.silver .rr{stroke:#8b939e}
+.rav .rt{font:800 7.2px/1 var(--f-body);letter-spacing:.06em}
+.rav.gold .rt{fill:#fff3c4}.rav.silver .rt{fill:#f4f6f9}
+.cl-joinbtn{border-color:var(--gold);color:var(--gold);font-weight:800;padding-inline:22px}
+.cl-room .cl-bracket{text-align:left}

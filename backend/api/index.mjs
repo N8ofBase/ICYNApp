@@ -4,7 +4,7 @@
 import { QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { db, PLAYERS, MATCHES, RecordError, cleanName, defaultName, stats, loadPlayer, recordMatch } from './record.mjs';
 import { hasUnlock, isDeveloper, checkout, confirm, webhook, pnp, gifts, redeem, promo } from './unlock.mjs';
-import { listClimbs, getClimb, createClimb, joinClimb, leaveClimb, ownerAction } from './climb.mjs';
+import { listClimbs, getClimb, createClimb, joinClimb, leaveClimb, startClimb, ringOf } from './climb.mjs';
 
 const json = (statusCode, body) => ({ statusCode, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
 const bad = (msg) => json(400, { error: msg });
@@ -26,13 +26,13 @@ async function leaderboard(event) {
     rank: i + 1, name: p.name, avatar: typeof p.prefs?.avatar === 'string' && /^(h|i):[a-z0-9-]{1,20}$/.test(p.prefs.avatar) ? p.prefs.avatar : '', wins: p.wins, losses: p.losses, draws: p.draws,
     bestWinStreak: p.bestWinStreak, currentStreak: p.currentStreak,
     fastestWin: p.fastestWin ?? null, fastestLoss: p.fastestLoss ?? null, highestMaxLife: p.highestMaxLife || 0,
-    crowns: p.climbWins || 0,
+    ring: ringOf(p),
   })));
 }
 
 async function getMe(userId, claims) {
   const p = await loadPlayer(userId, claims);
-  return json(200, { stats: stats(p), prefs: p.prefs || {}, unlocked: hasUnlock(p, claims), passVia: p.unlock?.via || null, owner: isDeveloper(claims), badges: p.badges || [] });
+  return json(200, { stats: stats(p), prefs: p.prefs || {}, unlocked: hasUnlock(p, claims), passVia: p.unlock?.via || null, owner: isDeveloper(claims), badges: p.badges || [], ring: ringOf(p) });
 }
 
 async function putMe(userId, claims, body) {
@@ -144,11 +144,10 @@ export const handler = async (event) => {
     if (route === 'POST /checkout/confirm') return await confirm(userId, claims, await loadPlayer(userId, claims));
     if (route === 'POST /gift/redeem') return await redeem(userId, claims, await loadPlayer(userId, claims), body);
     if (route === 'POST /gifts/promo') return await promo(userId, claims, body);
-    if (route === 'POST /climbs') return await createClimb(userId, claims, body, isDeveloper(claims));
+    if (route === 'POST /climbs') { const p = await loadPlayer(userId, claims); return await createClimb(userId, claims, p, body, hasUnlock(p, claims)); }
     if (route === 'POST /climbs/{id}/join') { const p = await loadPlayer(userId, claims); return await joinClimb(userId, claims, p, climbId, hasUnlock(p, claims)); }
     if (route === 'POST /climbs/{id}/leave') return await leaveClimb(userId, climbId);
-    const ownerRoute = /^POST \/climbs\/\{id\}\/(start|cancel|decide)$/.exec(route);
-    if (ownerRoute) return await ownerAction(isDeveloper(claims), climbId, ownerRoute[1], body);
+    if (route === 'POST /climbs/{id}/start') return await startClimb(userId, climbId);
     return json(404, { error: 'not found' });
   } catch (e) {
     console.error(e);

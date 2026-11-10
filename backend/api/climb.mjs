@@ -1,18 +1,19 @@
-// Crit Climb tournaments (N8 2026-11-10): scheduled single-elimination brackets of 4, 8 or 16 players.
-// Shared by icyn-api (sign-ups, owner tools, bracket views) and icyn-ws (playing the matches).
+// Crit Climb tournaments (N8 2026-11-10): single-elimination brackets of 4, 8 or 16 players, run like an
+// online Starvos lobby. Shared by icyn-api (lobbies, brackets) and icyn-ws (playing the matches).
 // Keep backend/api/climb.mjs and backend/ws/climb.mjs identical.
 //
-// Rules: the Crit Pass is needed to sign up; every match is a Standard online duel (100 Life,
-// Calamities on) and each player picks any Hero for each match. The owner (developers group)
-// schedules a Crit Climb; at its start time the bracket is drawn at random from whoever signed up
-// (a bracket shrinks to the smallest of 2/4/8/16 that fits, and the top seeds get any byes).
-// A match must be played within `matchHours` of both rivals being known. If the deadline passes,
-// a player waiting in the arena wins by walkover; if neither showed, the higher seed advances.
-// The owner can also decide a stuck match. Badges: champion, finalist, climber (everyone else).
+// A Crit Pass holder hosts a Climb (4, 8 or 16 seats, public or private) and gets a 5 letter code. Others join
+// with the code, or from the public list if the host made it public. The host presses Begin (3 or more players):
+// the bracket is drawn at random (it shrinks to the smallest of 4/8/16 that fits; top seeds get any byes).
+// Every match is a Standard online duel (100 Life, Calamities on); each player picks any Hero per match.
+// Once both rivals of a match are known they have 10 minutes to meet in the arena: if one waits and the other
+// never comes, the one who waited climbs on; if neither comes, the higher seed does. A lobby that never begins
+// closes after a day. Rewards: the winner earns the gold "Crit Climb Conqueror" ring around their profile
+// picture, everyone else the silver "Crit Climb Competitor" ring (gold outranks silver for good).
 //
-// Item in table icyn-climbs (key id):
-//   {id, name, size, matchHours, startsAt (ms), status: open|live|done|cancelled, createdAt, createdBy, version,
-//    entrants: [{u: userId, n: name, av: avatar, at}], seeds: [seed number per entrant] (once live),
+// Item in table icyn-climbs (key id = the join code; ttl removes it 30 days later):
+//   {id, name, size, public, host: userId, status: open|live|done|cancelled, createdAt, version, ttl,
+//    entrants: [{u: userId, n: name, av: avatar, ring, at}] (entrant 0 is the host), seeds: [seed per entrant] (once live),
 //    rounds: [[{a, b, w, how, due, state, gameId, code, host}]] (a/b = entrant index; w = 0 for a, 1 for b),
 //    champion, runnerUp, endedAt, awarded}
 import crypto from 'node:crypto';
@@ -23,8 +24,10 @@ export const cdb = DynamoDBDocumentClient.from(new DynamoDBClient({}), { marshal
 export const CLIMBS = process.env.CLIMBS_TABLE || 'icyn-climbs';
 const PLAYERS_T = process.env.PLAYERS_TABLE || 'icyn-players';
 export const SIZES = [4, 8, 16];
-export const MATCH_HOURS = [1, 2, 4, 12, 24, 48, 72];
-const HOUR = 3600000;
+export const MIN_PLAYERS = 3;
+const MIN = 60000, HOUR = 60 * MIN, DAY = 24 * HOUR;
+export const MATCH_MS = 10 * MIN;
+const LOBBY_MS = DAY;
 
 // ---------- pure bracket logic (no database; tested in tools/climb/test-climb.mjs) ----------
 
@@ -40,7 +43,7 @@ const loserOf = (m) => (m.w === 0 ? m.b : m.w === 1 ? m.a : null);
 // Draw the bracket from the entrants (random seeds) and start the Climb.
 export function begin(t, now, rand = Math.random) {
   const n = t.entrants.length;
-  if (n < 2) { t.status = 'cancelled'; t.note = 'Not enough Heroes signed up'; t.endedAt = now; return; }
+  if (n < 2) { t.status = 'cancelled'; t.note = 'Not enough Heroes joined'; t.endedAt = now; return; }
   let size = 2;
   while (size < n) size *= 2;
   const order = t.entrants.map((e, i) => i);
@@ -67,7 +70,7 @@ export function settle(t, now) {
   let changed = false;
   t.rounds.forEach((round, r) => round.forEach((m, i) => {
     if (m.w === null && m.a !== null && m.b !== null) {
-      if (!m.due) { m.due = now + (t.matchHours || 24) * HOUR; changed = true; }
+      if (!m.due) { m.due = now + MATCH_MS; changed = true; }
       if (now > m.due && m.state !== 'active') {
         if (m.state === 'waiting' && (m.host === 0 || m.host === 1)) { m.w = m.host; m.how = 'walkover'; }
         else { m.w = t.seeds[m.a] <= t.seeds[m.b] ? 0 : 1; m.how = 'noshow'; }
@@ -88,9 +91,9 @@ export function settle(t, now) {
   return changed;
 }
 
-// Open Climbs start at their time; live ones settle deadlines. True when the item changed.
-export function refresh(t, now, rand) {
-  if (t.status === 'open' && now >= t.startsAt) { begin(t, now, rand); return true; }
+// Lobbies that never begin close after a day; live Climbs settle deadlines. True when the item changed.
+export function refresh(t, now) {
+  if (t.status === 'open' && now - t.createdAt > LOBBY_MS) { t.status = 'cancelled'; t.note = 'The lobby closed after a day without a start'; t.endedAt = now; return true; }
   return settle(t, now);
 }
 
@@ -119,19 +122,22 @@ export function applyResult(t, r, i, gameId, winnerUser, forfeit, now) {
 export function badgesFor(t) {
   if (t.status !== 'done') return [];
   return t.entrants.map((e, k) => ({
-    u: e.u, k: k === t.champion ? 'champion' : k === t.runnerUp ? 'finalist' : 'climber',
+    u: e.u, k: k === t.champion ? 'conqueror' : 'competitor',
   }));
 }
 
-// Entrant ids are not shown publicly; a browser recognises itself by this key (same recipe in index.html).
+// Entrants are not shown publicly; a browser recognises itself by this key (same recipe in index.html).
 export const entrantKey = (userId) => crypto.createHash('sha256').update(`icyn-climb:${userId}`).digest('hex').slice(0, 16);
+
+// Profile ring earned in Crit Climbs: 'gold' (Conqueror) outranks 'silver' (Competitor).
+export const ringOf = (p) => (p?.climbWins > 0 ? 'gold' : p?.climbPlays > 0 ? 'silver' : '');
 
 // What everyone may see.
 export function view(t) {
   return {
-    id: t.id, name: t.name, size: t.size, bracketSize: t.bracketSize || null, matchHours: t.matchHours,
-    startsAt: t.startsAt, status: t.status, note: t.note || null, createdAt: t.createdAt, endedAt: t.endedAt || null,
-    entrants: t.entrants.map((e, k) => ({ n: e.n, av: e.av || '', k: entrantKey(e.u), seed: t.seeds ? t.seeds[k] : null })),
+    id: t.id, code: t.id, name: t.name, size: t.size, public: !!t.public, bracketSize: t.bracketSize || null,
+    status: t.status, note: t.note || null, createdAt: t.createdAt, endedAt: t.endedAt || null, matchMinutes: MATCH_MS / MIN,
+    entrants: t.entrants.map((e, k) => ({ n: e.n, av: e.av || '', ring: e.ring || '', k: entrantKey(e.u), seed: t.seeds ? t.seeds[k] : null })),
     rounds: (t.rounds || []).map((round) => round.map((m) => ({
       a: m.a, b: m.b, w: m.w, how: m.how || null, due: m.due || null, state: m.state || null, host: m.host ?? null,
     }))),
@@ -142,7 +148,7 @@ export function view(t) {
 // ---------- database ----------
 
 export async function loadClimb(id) {
-  return (await cdb.send(new GetCommand({ TableName: CLIMBS, Key: { id: String(id || '') } }))).Item || null;
+  return (await cdb.send(new GetCommand({ TableName: CLIMBS, Key: { id: String(id || '').trim().toUpperCase() } }))).Item || null;
 }
 export async function saveClimb(t, prevVersion) {
   t.version = prevVersion + 1;
@@ -158,31 +164,31 @@ export async function saveClimb(t, prevVersion) {
 export async function withClimb(id, fn, now = Date.now()) {
   for (let attempt = 0; attempt < 4; attempt++) {
     const t = await loadClimb(id);
-    if (!t) return { error: 'No such Crit Climb' };
+    if (!t) return { error: 'No Crit Climb with that code' };
     const prev = t.version || 0;
     const refreshed = refresh(t, now);
-    let out = await fn(t);
+    const out = await fn(t);
     const error = typeof out === 'string' ? out : null;
     if (error && !refreshed) return { error };
     const award = t.status === 'done' && !t.awarded;
     if (award) t.awarded = true;
     try { await saveClimb(t, prev); }
     catch (e) { if (e.name === 'ConditionalCheckFailedException') continue; throw e; }
-    if (award) await awardBadges(t);
+    if (award) await awardRings(t);
     return error ? { error } : { t, out };
   }
   return { error: 'The arena is busy. Please try again.' };
 }
 
-export async function awardBadges(t) {
+export async function awardRings(t) {
   const at = new Date(t.endedAt || Date.now()).toISOString();
   await Promise.all(badgesFor(t).map(({ u, k }) => cdb.send(new UpdateCommand({
     TableName: PLAYERS_T, Key: { userId: u }, ConditionExpression: 'attribute_exists(userId)',
-    // version moves too, so a stats save that loaded the player before this can't wipe the badge
-    UpdateExpression: 'SET badges = list_append(if_not_exists(badges, :e), :b), version = if_not_exists(version, :z) + :one'
-      + (k === 'champion' ? ', climbWins = if_not_exists(climbWins, :z) + :one' : ''),
-    ExpressionAttributeValues: { ':e': [], ':b': [{ k, id: t.id, name: t.name, size: t.bracketSize || t.size, at }], ':z': 0, ':one': 1 },
-  })).catch((e) => console.error('badge', u, e))));
+    // version moves too, so a stats save that loaded the player before this can't wipe the ring
+    UpdateExpression: 'SET badges = list_append(if_not_exists(badges, :e), :b), version = if_not_exists(version, :z) + :one, climbPlays = if_not_exists(climbPlays, :z) + :one'
+      + (k === 'conqueror' ? ', climbWins = if_not_exists(climbWins, :z) + :one' : ''),
+    ExpressionAttributeValues: { ':e': [], ':b': [{ k, id: t.id, name: t.name, size: t.bracketSize || t.size, players: t.entrants.length, at }], ':z': 0, ':one': 1 },
+  })).catch((e) => console.error('ring', u, e))));
 }
 
 // icyn-ws: a duel has started or ended. patch is applied to match (r, i) if it still belongs to gameId.
@@ -203,10 +209,12 @@ export async function climbResult(game, result) {
 const json = (statusCode, body) => ({ statusCode, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
 const clean = (s, n) => String(s || '').replace(/[\u0000-\u001f\u007f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, n);
 const avatarOf = (p) => (typeof p?.prefs?.avatar === 'string' && /^(h|i):[a-z0-9-]{1,20}$/.test(p.prefs.avatar) ? p.prefs.avatar : '');
-const newId = () => Array.from(crypto.randomBytes(10), (b) => 'abcdefghjkmnpqrstuvwxyz23456789'[b % 31]).join('');
-const done = (r) => (r.error ? json(r.error === 'No such Crit Climb' ? 404 : 400, { error: r.error }) : json(200, view(r.t)));
+const newCode = () => Array.from(crypto.randomBytes(5), (b) => 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[b % 31]).join('');
+const done = (r) => (r.error ? json(/^No Crit Climb/.test(r.error) ? 404 : 400, { error: r.error }) : json(200, view(r.t)));
+const NEED_PASS = 'Crit Climb needs the Crit Pass. Get it on the setup screen.';
+const entrantOf = (userId, claims, player) => ({ u: userId, n: clean(player?.name, 24) || clean(claims.nickname, 24) || 'Hero', av: avatarOf(player), ring: ringOf(player), at: Date.now() });
 
-// GET /climbs (public): live, open and recent Climbs. Starts and settles any that are due.
+// GET /climbs (public): open public lobbies that still have seats, newest first.
 export async function listClimbs() {
   const items = [];
   let key;
@@ -214,80 +222,64 @@ export async function listClimbs() {
     const r = await cdb.send(new ScanCommand({ TableName: CLIMBS, ExclusiveStartKey: key }));
     items.push(...(r.Items || []));
     key = r.LastEvaluatedKey;
-  } while (key && items.length < 500);
+  } while (key && items.length < 2000);
   const now = Date.now();
-  const out = await Promise.all(items.map(async (t) => {
-    const copy = structuredClone(t);
-    if (!refresh(copy, now)) return t;
-    const r = await withClimb(t.id, () => null, now).catch(() => ({}));
-    return r.t || copy;
-  }));
-  const weekAgo = now - 7 * 24 * HOUR, monthsAgo = now - 90 * 24 * HOUR;
-  const keep = out.filter((t) => t.status === 'open' || t.status === 'live'
-    || (t.status === 'done' && (t.endedAt || 0) > monthsAgo) || (t.status === 'cancelled' && (t.endedAt || t.createdAt || 0) > weekAgo));
-  const rank = { live: 0, open: 1, done: 2, cancelled: 3 };
-  keep.sort((x, y) => rank[x.status] - rank[y.status] || (x.status === 'open' ? x.startsAt - y.startsAt : (y.endedAt || y.startsAt) - (x.endedAt || x.startsAt)));
-  return json(200, keep.slice(0, 40).map(view));
+  const open = items.filter((t) => t.public && t.status === 'open' && now - t.createdAt <= LOBBY_MS && t.entrants.length < t.size);
+  open.sort((x, y) => y.createdAt - x.createdAt);
+  return json(200, open.slice(0, 30).map(view));
 }
 
-// GET /climbs/{id} (public)
+// GET /climbs/{code} (public)
 export async function getClimb(id) {
   const t = await loadClimb(id);
-  if (!t) return json(404, { error: 'No such Crit Climb' });
+  if (!t) return json(404, { error: 'No Crit Climb with that code' });
   if (refresh(structuredClone(t), Date.now())) return done(await withClimb(id, () => null));
   return json(200, view(t));
 }
 
-// POST /climbs (owner): {name, size, startsAt (ms or ISO), matchHours}
-export async function createClimb(userId, claims, body, isOwner) {
-  if (!isOwner) return json(403, { error: 'Only the arena owner can schedule a Crit Climb' });
-  const name = clean(body.name, 40);
-  const size = Number(body.size), matchHours = Number(body.matchHours || 24);
-  const startsAt = typeof body.startsAt === 'number' ? body.startsAt : Date.parse(body.startsAt);
-  const now = Date.now();
-  if (!name) return json(400, { error: 'Give the Crit Climb a name' });
+// POST /climbs (Crit Pass): {size: 4|8|16, public: bool, name?} -> the new lobby; you are its host.
+export async function createClimb(userId, claims, player, body, unlocked) {
+  if (!unlocked) return json(403, { error: NEED_PASS });
+  const size = Number(body.size);
   if (!SIZES.includes(size)) return json(400, { error: 'Size must be 4, 8 or 16 players' });
-  if (!MATCH_HOURS.includes(matchHours)) return json(400, { error: `Hours per match must be one of ${MATCH_HOURS.join(', ')}` });
-  if (!Number.isFinite(startsAt) || startsAt < now - 5 * 60000 || startsAt > now + 90 * 24 * HOUR) return json(400, { error: 'Pick a start time within the next 90 days' });
-  const t = { id: newId(), name, size, matchHours, startsAt, status: 'open', entrants: [], createdAt: now, createdBy: userId, version: 0 };
-  await saveClimb(t, 0);
-  return json(200, view(t));
+  const me = entrantOf(userId, claims, player);
+  const name = clean(body.name, 40) || `${me.n}'s Crit Climb`;
+  const now = Date.now();
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const t = { id: newCode(), name, size, public: body.public === true, host: userId, status: 'open', entrants: [me],
+      createdAt: now, version: 0, ttl: Math.floor(now / 1000) + 30 * 86400 };
+    try { await saveClimb(t, 0); return json(200, view(t)); }
+    catch (e) { if (e.name !== 'ConditionalCheckFailedException') throw e; }
+  }
+  return json(500, { error: 'Please try again' });
 }
 
-// POST /climbs/{id}/join (Crit Pass)
+// POST /climbs/{code}/join (Crit Pass)
 export async function joinClimb(userId, claims, player, id, unlocked) {
-  if (!unlocked) return json(403, { error: 'Crit Climb needs the Crit Pass. Get it on the setup screen.' });
+  if (!unlocked) return json(403, { error: NEED_PASS });
   return done(await withClimb(id, (t) => {
-    if (t.status !== 'open') return t.status === 'live' ? 'This Crit Climb has already begun' : 'This Crit Climb is closed';
     if (t.entrants.some((e) => e.u === userId)) return null;
+    if (t.status !== 'open') return t.status === 'live' ? 'This Crit Climb has already begun' : 'This Crit Climb is closed';
     if (t.entrants.length >= t.size) return 'This Crit Climb is full';
-    t.entrants.push({ u: userId, n: clean(player?.name, 24) || clean(claims.nickname, 24) || 'Hero', av: avatarOf(player), at: Date.now() });
+    t.entrants.push(entrantOf(userId, claims, player));
   }));
 }
 
-// POST /climbs/{id}/leave (before it begins)
+// POST /climbs/{code}/leave (before it begins). The host leaving closes the lobby.
 export async function leaveClimb(userId, id) {
   return done(await withClimb(id, (t) => {
     if (t.status !== 'open') return 'The bracket is already drawn';
+    if (t.host === userId) { t.status = 'cancelled'; t.note = 'The host closed the lobby'; t.endedAt = Date.now(); return null; }
     t.entrants = t.entrants.filter((e) => e.u !== userId);
   }));
 }
 
-// POST /climbs/{id}/start | /cancel | /decide {r, i, w} (owner)
-export async function ownerAction(isOwner, id, what, body) {
-  if (!isOwner) return json(403, { error: 'Only the arena owner can do that' });
+// POST /climbs/{code}/start (host): draw the bracket and begin.
+export async function startClimb(userId, id) {
   return done(await withClimb(id, (t) => {
-    if (what === 'start') {
-      if (t.status !== 'open') return 'This Crit Climb is not waiting to start';
-      begin(t, Date.now());
-    } else if (what === 'cancel') {
-      if (t.status !== 'open' && t.status !== 'live') return 'This Crit Climb is already over';
-      t.status = 'cancelled'; t.note = 'Cancelled by the arena'; t.endedAt = Date.now();
-    } else if (what === 'decide') {
-      const m = t.rounds?.[body.r]?.[body.i];
-      if (t.status !== 'live' || !m || m.w !== null || m.a === null || m.b === null || ![0, 1].includes(body.w)) return 'That match cannot be decided';
-      m.w = body.w; m.how = 'judge'; m.state = 'done';
-      settle(t, Date.now());
-    } else return 'Unknown action';
+    if (t.host !== userId) return 'Only the host can begin the Climb';
+    if (t.status !== 'open') return 'This Crit Climb is not waiting to begin';
+    if (t.entrants.length < MIN_PLAYERS) return `Wait for at least ${MIN_PLAYERS} players`;
+    begin(t, Date.now());
   }));
 }

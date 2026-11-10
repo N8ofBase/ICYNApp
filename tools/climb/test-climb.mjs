@@ -121,20 +121,23 @@ const call = (routeKey, claims, body, id) => api.handler({ routeKey, pathParamet
 // players 1..4 have the Crit Pass, player 5 does not
 for (let k = 1; k <= 5; k++) T['icyn-players'].set('p' + k, { userId: 'p' + k, name: 'Player' + k, wins: 0, losses: 0, draws: 0, played: 0, kos: 0, currentStreak: 0, bestWinStreak: 0, worstLossStreak: 0, heroCounts: {}, prefs: { avatar: 'i:sun' }, version: 0, ...(k < 5 ? { unlock: { via: 'gift' } } : {}) });
 
-let r = await call('POST /climbs', P(1), { name: 'Test', size: 4, startsAt: Date.now() + 3600000, matchHours: 24 });
-assert.equal(r.status, 403, 'only the owner can create');
-r = await call('POST /climbs', owner, { name: 'First Crit Climb', size: 4, startsAt: Date.now() + 3600000, matchHours: 24 });
-assert.equal(r.status, 200); const id = r.body.id;
+let r = await call('POST /climbs', P(5), { size: 4, public: true });
+assert.equal(r.status, 403, 'hosting needs the Crit Pass');
+r = await call('POST /climbs', P(1), { size: 4, public: true });
+assert.equal(r.status, 200); const id = r.body.code; assert.match(id, /^[A-Z2-9]{5}$/);
+assert.equal(r.body.entrants.length, 1, 'the host is in'); assert.equal(r.body.name, "Player1's Crit Climb");
 assert.equal((await call('POST /climbs/{id}/join', P(5), {}, id)).status, 403, 'Crit Pass needed');
-for (const k of [1, 2, 3]) assert.equal((await call('POST /climbs/{id}/join', P(k), {}, id)).status, 200);
+assert.equal((await call('POST /climbs/{id}/join', P(2), {}, id.toLowerCase())).status, 200, 'codes are not case sensitive');
+r = await call('POST /climbs/{id}/start', P(1), {}, id); assert.equal(r.status, 400, 'needs 3 players');
+r = await call('POST /climbs/{id}/join', P(3), {}, id); assert.equal(r.body.entrants.length, 3);
 r = await call('POST /climbs/{id}/leave', P(3), {}, id); assert.equal(r.body.entrants.length, 2);
-for (const k of [3, 4]) await call('POST /climbs/{id}/join', P(k), {}, id);
-r = await call('POST /climbs/{id}/join', owner, {}, id); assert.equal(r.status, 400, 'full'); // owner has no player item, still "unlocked"
-r = await call('GET /climbs');
-assert.equal(r.body[0].status, 'open'); assert.equal(r.body[0].entrants.length, 4);
+await call('POST /climbs/{id}/join', P(3), {}, id); await call('POST /climbs/{id}/join', P(4), {}, id);
+r = await call('GET /climbs'); assert.equal(r.body.length, 0, 'a full lobby leaves the public list');
+r = await call('GET /climbs/{id}', null, null, id);
 assert.ok(!JSON.stringify(r.body).includes('"p1"'), 'user ids stay private');
-assert.equal(r.body[0].entrants[0].k, climbMod.entrantKey('p1'));
-r = await call('POST /climbs/{id}/start', owner, {}, id);
+assert.equal(r.body.entrants[0].k, climbMod.entrantKey('p1'));
+assert.equal((await call('POST /climbs/{id}/start', P(2), {}, id)).status, 400, 'only the host begins');
+r = await call('POST /climbs/{id}/start', P(1), {}, id);
 assert.equal(r.body.status, 'live'); assert.equal(r.body.rounds.length, 2);
 
 const conns = {};
@@ -186,40 +189,44 @@ await wsSend(fb, { action: 'forfeit', gameId: last(fb).gameId });
 t = T['icyn-climbs'].get(id);
 assert.equal(t.status, 'done'); assert.equal(t.champion, fin.a); assert.equal(t.rounds[1][0].how, 'forfeit');
 const champ = T['icyn-players'].get('p' + fa);
-assert.equal(champ.climbWins, 1); assert.equal(champ.badges[0].k, 'champion');
-assert.equal(T['icyn-players'].get('p' + fb).badges[0].k, 'finalist');
-assert.equal(T['icyn-players'].get('p' + entrantNo(t, loser)).badges[0].k, 'climber');
+assert.equal(champ.climbWins, 1); assert.equal(champ.badges[0].k, 'conqueror');
+assert.equal(T['icyn-players'].get('p' + fb).badges[0].k, 'competitor');
+assert.equal(T['icyn-players'].get('p' + entrantNo(t, loser)).badges[0].k, 'competitor');
 assert.ok(champ.wins >= 1, 'climb duels still count as ranked online duels');
-r = await call('GET /me', P(fa)); assert.equal(r.body.badges.length, 1);
-r = await call('GET /climbs'); assert.equal(r.body[0].status, 'done'); assert.equal(r.body[0].champion, fin.a);
+r = await call('GET /me', P(fa)); assert.equal(r.body.ring, 'gold');
+r = await call('GET /me', P(fb)); assert.equal(r.body.ring, 'silver');
+r = await call('GET /climbs/{id}', null, null, id); assert.equal(r.body.status, 'done'); assert.equal(r.body.champion, fin.a);
 
 // walkover: in a second Climb, one rival waits and the other never comes
-r = await call('POST /climbs', owner, { name: 'Walkover', size: 4, startsAt: Date.now() + 60000, matchHours: 1 });
-const id2 = r.body.id;
-for (const k of [1, 2, 3]) await call('POST /climbs/{id}/join', P(k), {}, id2);
-T['icyn-climbs'].get(id2).startsAt = Date.now() - 1; // the start time arrives
-r = await call('GET /climbs/{id}', null, null, id2);
-assert.equal(r.body.status, 'live', 'starts by itself at its time'); assert.equal(r.body.bracketSize, 4);
+r = await call('POST /climbs', P(2), { size: 8, public: false, name: 'Walkover Cup' });
+const id2 = r.body.code;
+assert.equal((await call('GET /climbs')).body.length, 0, 'private lobbies stay off the public list');
+for (const k of [1, 3]) await call('POST /climbs/{id}/join', P(k), {}, id2);
+r = await call('POST /climbs/{id}/start', P(2), {}, id2);
+assert.equal(r.body.status, 'live'); assert.equal(r.body.bracketSize, 4, '3 players play a 4 bracket');
+assert.equal(r.body.entrants.find((e) => e.k === climbMod.entrantKey('p' + fa)).ring, 'gold', 'rings show in later Climbs');
 const t2 = T['icyn-climbs'].get(id2);
 const real = t2.rounds[0].find((m) => m.how !== 'bye');
 assert.equal(t2.rounds[0].filter((m) => m.how === 'bye').length, 1);
+assert.ok(real.due - Date.now() <= 10 * 60000 && real.due - Date.now() > 9 * 60000, '10 minutes to meet');
 const waiter = entrantNo(t2, real.b);
 await wsSend(waiter, { action: 'climb', climbId: id2, hero: 'whisper' });
 assert.equal(last(waiter).type, 'created');
-const stored = T['icyn-climbs'].get(id2); stored.rounds[0].forEach((m) => { if (m.due) m.due = Date.now() - 1; });
+T['icyn-climbs'].get(id2).rounds[0].forEach((m) => { if (m.due) m.due = Date.now() - 1; });
 r = await call('GET /climbs/{id}', null, null, id2);
 const m2 = r.body.rounds[0].find((m) => m.how === 'walkover');
 assert.ok(m2, 'the player who waited wins by walkover'); assert.equal(m2.w, 1);
-assert.equal(r.body.rounds[1][0].b !== null || r.body.rounds[1][0].a !== null, true);
-// owner decides the final
-r = await call('POST /climbs/{id}/decide', owner, { r: 1, i: 0, w: 0 }, id2);
-assert.equal(r.body.status, 'done');
+// nobody comes to the final: higher seed takes it
+T['icyn-climbs'].get(id2).rounds[1][0].due = Date.now() - 1;
+r = await call('GET /climbs/{id}', null, null, id2);
+assert.equal(r.body.status, 'done'); assert.equal(r.body.rounds[1][0].how, 'noshow');
 
-// not enough players: cancelled at start time
-r = await call('POST /climbs', owner, { name: 'Lonely', size: 8, startsAt: Date.now() + 60000, matchHours: 24 });
-await call('POST /climbs/{id}/join', P(1), {}, r.body.id);
-T['icyn-climbs'].get(r.body.id).startsAt = Date.now() - 1;
-r = await call('GET /climbs/{id}', null, null, r.body.id);
-assert.equal(r.body.status, 'cancelled');
+// the host leaving closes the lobby; a stale lobby closes after a day
+r = await call('POST /climbs', P(1), { size: 4, public: true });
+assert.equal((await call('GET /climbs')).body.length, 1, 'public lobby is listed');
+r = await call('POST /climbs/{id}/leave', P(1), {}, r.body.code); assert.equal(r.body.status, 'cancelled');
+r = await call('POST /climbs', P(1), { size: 16, public: true });
+T['icyn-climbs'].get(r.body.code).createdAt -= 25 * 3600000;
+r = await call('GET /climbs/{id}', null, null, r.body.code); assert.equal(r.body.status, 'cancelled');
 
 console.log('Crit Climb tests passed');

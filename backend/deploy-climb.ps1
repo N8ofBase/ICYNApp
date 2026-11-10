@@ -1,11 +1,11 @@
 param([Parameter(Mandatory)][int]$Step)
-# Deploys Crit Climb tournaments (2026-11-10). Run from the repo's backend folder on Skynet:
+# Deploys Crit Climb tournaments (2026-11-10): code lobbies like online Starvos, public or private. Run from the repo's backend folder on Skynet:
 #   aws sso login --profile prismcortex
 #   .\deploy-climb.ps1 -Step 1   (then 2, then 3; each step is safe to re-run)
 #
 # Step 1  backups of today's icyn-api and icyn-ws code (backup-before-climb\), DynamoDB table icyn-climbs,
 #         and an extra inline policy 'icyn-climb' on both Lambda roles (the existing policies are left alone)
-# Step 2  icyn-api: new code (climb.mjs) + routes GET /climbs, GET /climbs/{id}, POST /climbs[...]. Harmless to the live page.
+# Step 2  icyn-api: new code (climb.mjs) + routes GET /climbs, GET /climbs/{id}, POST /climbs, /join, /leave, /start. Harmless to the live page.
 # Step 3  icyn-ws: new code (the 'climb' action). Also harmless to the live page; the page change goes live separately.
 # Step 4  check: lists the routes and the table
 # Rollback: aws lambda update-function-code --function-name icyn-api --zip-file fileb://backup-before-climb\icyn-api.zip (same for icyn-ws)
@@ -33,6 +33,7 @@ if ($Step -eq 1) {
     aws dynamodb create-table --table-name icyn-climbs --attribute-definitions AttributeName=id,AttributeType=S --key-schema AttributeName=id,KeyType=HASH --billing-mode PAY_PER_REQUEST @P | Out-Null
     aws dynamodb wait table-exists --table-name icyn-climbs @P
     aws dynamodb update-continuous-backups --table-name icyn-climbs --point-in-time-recovery-specification PointInTimeRecoveryEnabled=true @P | Out-Null
+    aws dynamodb update-time-to-live --table-name icyn-climbs --time-to-live-specification Enabled=true,AttributeName=ttl @P | Out-Null
   }
   $policy = @{ Version = '2012-10-17'; Statement = @(
     @{ Effect = 'Allow'; Action = @('dynamodb:GetItem', 'dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:Scan'); Resource = "arn:aws:dynamodb:us-east-1:${Acct}:table/icyn-climbs" },
@@ -53,7 +54,7 @@ if ($Step -eq 2) {
   foreach ($rk in 'GET /climbs', 'GET /climbs/{id}') {
     if ($have -notcontains $rk) { aws apigatewayv2 create-route --api-id $ApiId --route-key $rk --target $me.Target @P | Out-Null }
   }
-  foreach ($rk in 'POST /climbs', 'POST /climbs/{id}/join', 'POST /climbs/{id}/leave', 'POST /climbs/{id}/start', 'POST /climbs/{id}/cancel', 'POST /climbs/{id}/decide') {
+  foreach ($rk in 'POST /climbs', 'POST /climbs/{id}/join', 'POST /climbs/{id}/leave', 'POST /climbs/{id}/start') {
     if ($have -notcontains $rk) { aws apigatewayv2 create-route --api-id $ApiId --route-key $rk --target $me.Target --authorization-type JWT --authorizer-id $me.AuthorizerId @P | Out-Null }
   }
   Write-Host 'Step 2 done: icyn-api has the Crit Climb routes.'

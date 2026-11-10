@@ -52,18 +52,18 @@ the Starvos Catastrophe and the Print & Play PDFs. Developers group members alwa
 
 ## Crit Climb tournaments (2026-11-10)
 
-Scheduled single-elimination brackets of 4, 8 or 16 players (`api/climb.mjs`, identical copy in `ws/climb.mjs`).
-Table `icyn-climbs` (key `id`, on-demand). The owner (developers group) schedules one; anyone with the Crit Pass signs up
-until the start time; the first read after the start time draws a random bracket (shrinks to the smallest of 2/4/8/16 that
-fits; top seeds get byes; fewer than 2 entrants = cancelled). Every match is a Standard online duel (100 Life, Calamities on),
-any Hero per match. A match has `matchHours` once both rivals are known: after that, a player waiting in the arena wins by
-walkover, otherwise the higher seed advances; the owner can also decide a match. Climb duels still count as ranked online duels.
-Badges go on the player item (`badges: [{k: champion|finalist|climber, id, name, size, at}]`, champions also `climbWins`);
-`GET /me` returns `badges`, `GET /leaderboard` returns `crowns`.
+Single-elimination brackets of 4, 8 or 16 players, hosted like an online Starvos lobby (`api/climb.mjs`, identical copy in `ws/climb.mjs`).
+Table `icyn-climbs` (key `id` = the 5 letter join code, on-demand, TTL attribute `ttl` = 30 days).
+A Crit Pass holder hosts one (`public` or private) and is entrant 0; others join by code (or from the public list); the host
+presses Begin with 3+ players. The bracket is drawn at random (shrinks to the smallest of 4/8/16 that fits; top seeds get byes).
+Every match is a Standard online duel (100 Life, Calamities on), any Hero per match. Once both rivals are known they have
+10 minutes: a player waiting in the arena wins by walkover, otherwise the higher seed advances. Open lobbies close after a day.
+Climb duels still count as ranked online duels. Rewards on the player item: `badges: [{k: conqueror|competitor, id, name, size, players, at}]`,
+`climbWins`, `climbPlays`. Ring = gold (any win, "Crit Climb Conqueror") else silver (played, "Crit Climb Competitor").
+`GET /me` returns `badges` and `ring`; `GET /leaderboard` returns `ring`.
 
-- `GET /climbs`, `GET /climbs/{id}` (public). Entrants are shown as `{n, av, k, seed}` where `k` = first 16 hex of sha256(`icyn-climb:<sub>`).
-- `POST /climbs` (owner) `{name, size, startsAt (ms), matchHours: 1|2|4|12|24|48|72}`; `POST /climbs/{id}/join|leave` (JWT; join needs the Crit Pass);
-  `POST /climbs/{id}/start|cancel|decide {r, i, w}` (owner).
+- `GET /climbs` (public open lobbies with seats), `GET /climbs/{code}` (public). Entrants are `{n, av, ring, k, seed}`, `k` = first 16 hex of sha256(`icyn-climb:<sub>`).
+- `POST /climbs {size, public, name?}`, `POST /climbs/{code}/join` (Crit Pass), `/leave` (host leaving closes the lobby), `/start` (host).
 - WebSocket `{action:'climb', climbId, hero}`: the first rival creates the duel and waits, the second joins it; nobody else can join by code.
-  When the duel ends, `recordResults` moves the winner up the bracket and the final awards the badges.
+  When the duel ends, `recordResults` moves the winner up the bracket and the final awards the rings.
 - Deploy: `deploy-climb.ps1 -Step 1..4`. Test without AWS: `NM=<folder with @aws-sdk node_modules> node tools/climb/test-climb.mjs`.
