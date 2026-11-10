@@ -67,3 +67,11 @@ Climb duels still count as ranked online duels. Rewards on the player item: `bad
 - WebSocket `{action:'climb', climbId, hero}`: the first rival creates the duel and waits, the second joins it; nobody else can join by code.
   When the duel ends, `recordResults` moves the winner up the bracket and the final awards the rings.
 - Deploy: `deploy-climb.ps1 -Step 1..4`. Test without AWS: `NM=<folder with @aws-sdk node_modules> node tools/climb/test-climb.mjs`.
+
+## Open games (2026-11-10)
+
+Public Online duels and Starvos battles anyone can join. `create` takes `public: true`; icyn-ws keeps `open = 'OPEN'` and `openAt`
+on a waiting public game (sparse GSI `byOpen` on icyn-games: `open` HASH, `openAt` RANGE, projection ALL) and removes `open`
+once it starts, fills (Starvos: 5 players) or closes. WebSocket `{action:'cancel', gameId}` lets a host take down a duel nobody joined.
+`GET /games/open?mode=duel|boss` (public, `api/lobby.mjs`) lists up to 30, newest first, only while the host is still connected
+(`icyn-connections`), skipping Crit Climb matches. Joining uses the normal code join. Deploy: `deploy-climb.ps1` Steps 1-3.

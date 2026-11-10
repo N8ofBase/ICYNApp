@@ -4,7 +4,9 @@
 // browser can fake a roll.
 //
 // Client -> server                         Server -> client
-//   {action:'create', hero, life, easy?}     {type:'created', gameId, code}   (easy: 50 Life, no Calamity before each turn)
+//   {action:'create', hero, life, easy?, public?} {type:'created', gameId, code} (easy: 50 Life, no Calamity before each turn;
+//                                            public: listed by GET /games/open until someone joins)
+//   {action:'cancel', gameId}                host takes down a duel nobody joined -> {type:'cancelled'}
 //   {action:'join', code, hero}              {type:'state', ...} to both players
 //   {action:'resume', gameId, since}         {type:'state', ...}
 //   {action:'act', gameId, kind, choice?}    {type:'state', ...} to both players
@@ -103,7 +105,14 @@ async function broadcast(api, game) {
   await Promise.all(game.conns.map((c, i) => send(api, c, stateFor(game, i, 0))));
 }
 
+// Public games waiting for players sit on the sparse index byOpen (open, openAt) so anyone can find them
+// (GET /games/open in icyn-api). They drop off it once they start, fill up or close.
+function syncOpen(game) {
+  const listed = game.public && game.status === 'waiting' && (isBoss(game) ? game.players.length < BOSS_SEATS : !game.players[1]);
+  if (listed) { game.open = 'OPEN'; game.openAt = game.openAt || Date.now(); } else delete game.open;
+}
 async function saveGame(game, prevVersion) {
+  syncOpen(game);
   game.version = prevVersion + 1;
   game.ttl = Math.floor(Date.now() / 1000) + 7 * DAY;
   await db.send(new PutCommand({ TableName: GAMES, Item: game, ConditionExpression: 'version = :v', ExpressionAttributeValues: { ':v': prevVersion } }));
@@ -210,8 +219,9 @@ export async function handler(event) {
       gameId: crypto.randomUUID(), code: newCode(), status: 'waiting', seed: crypto.randomBytes(16).toString('hex'),
       setup: { mode: 'boss', v: 3, heroes, owners: heroes.map(() => 0) }, players: [conn.userId], names: [conn.name],
       conns: [connectionId], inputs: [], version: 0, createdAt: new Date().toISOString(),
-      ttl: Math.floor(Date.now() / 1000) + DAY,
+      ttl: Math.floor(Date.now() / 1000) + DAY, public: msg.public === true,
     };
+    syncOpen(game);
     await db.send(new PutCommand({ TableName: GAMES, Item: game }));
     await db.send(new UpdateCommand({ TableName: CONNS, Key: { connectionId }, UpdateExpression: 'SET gameId = :g', ExpressionAttributeValues: { ':g': game.gameId } }));
     await send(api, connectionId, { type: 'created', mode: 'boss', gameId: game.gameId, code: game.code });
@@ -225,8 +235,9 @@ export async function handler(event) {
       gameId: crypto.randomUUID(), code: newCode(), status: 'waiting', seed: crypto.randomBytes(16).toString('hex'),
       setup: easy ? { heroes: [msg.hero, null], life: 50, easy: true } : { heroes: [msg.hero, null], life: Number(msg.life) }, players: [conn.userId, null], names: [conn.name, null],
       conns: [connectionId, null], inputs: [], version: 0, createdAt: new Date().toISOString(),
-      ttl: Math.floor(Date.now() / 1000) + DAY,
+      ttl: Math.floor(Date.now() / 1000) + DAY, public: msg.public === true,
     };
+    syncOpen(game);
     await db.send(new PutCommand({ TableName: GAMES, Item: game }));
     await db.send(new UpdateCommand({ TableName: CONNS, Key: { connectionId }, UpdateExpression: 'SET gameId = :g', ExpressionAttributeValues: { ':g': game.gameId } }));
     await send(api, connectionId, { type: 'created', gameId: game.gameId, code: game.code });
@@ -298,6 +309,13 @@ export async function handler(event) {
         game.status = 'active'; game.pendingSince = Date.now();
       }
       game.conns[you] = connectionId;
+    } else if (msg.action === 'cancel') {
+      // the host of a duel nobody has joined takes it down (and off the open list)
+      if (you !== 0 || game.status !== 'waiting' || boss) return fail('Nothing to cancel');
+      game.status = 'done'; game.cancelled = true;
+      try { await saveGame(game, prev); } catch (e) { if (e.name === 'ConditionalCheckFailedException' && attempt === 0) continue; throw e; }
+      await send(api, connectionId, { type: 'cancelled', gameId: game.gameId });
+      return { statusCode: 200 };
     } else if (you === -1) {
       return fail('You are not in this duel');
     } else if (msg.action === 'resume') {

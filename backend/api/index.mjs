@@ -6,6 +6,7 @@ import { db, PLAYERS, MATCHES, RecordError, cleanName, defaultName, stats, loadP
 import { hasUnlock, isDeveloper, checkout, confirm, webhook, pnp, gifts, redeem, promo } from './unlock.mjs';
 import { listClimbs, getClimb, createClimb, joinClimb, leaveClimb, startClimb, ringOf, isProfane } from './climb.mjs';
 // Names other players see are kept friendly (N8 2026-11-10): new ones are refused, old ones are hidden.
+import { openGames } from './lobby.mjs';
 const shown = (n) => (isProfane(n) ? 'Hero' : n);
 
 const json = (statusCode, body) => ({ statusCode, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
@@ -127,6 +128,7 @@ export const handler = async (event) => {
     if (route === 'POST /square/webhook') return await webhook(event);
     // Crit Climb tournaments (climb.mjs)
     const climbId = event.pathParameters?.id;
+    if (route === 'GET /games/open') return await openGames(event);
     if (route === 'GET /climbs') return await listClimbs();
     if (route === 'GET /climbs/{id}') return await getClimb(climbId);
 

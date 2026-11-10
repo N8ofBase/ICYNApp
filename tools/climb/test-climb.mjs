@@ -71,6 +71,7 @@ DynamoDBDocumentClient.prototype.send = async function (cmd) {
   }
   if (n === 'QueryCommand') {
     if (i.IndexName === 'byCode') return { Items: [...t.values()].filter((g) => g.code === i.ExpressionAttributeValues[':c']).map(clone) };
+    if (i.IndexName === 'byOpen') return { Items: [...t.values()].filter((g) => g.open === i.ExpressionAttributeValues[':o'] && g.openAt > i.ExpressionAttributeValues[':since']).sort((x, y) => y.openAt - x.openAt).map(clone) };
     throw new Error('query');
   }
   if (n === 'ScanCommand') return { Items: [...t.values()].map(clone) };
@@ -275,4 +276,27 @@ r = await call('GET /climbs/{id}', null, null, r.body.code); assert.equal(r.body
 // leaderboard names
 assert.equal((await call('PUT /me', P(1), { name: 'Sh!thead' })).status, 400, 'unfriendly leaderboard names are refused');
 assert.equal((await call('PUT /me', P(1), { name: 'Crit Lord' })).status, 200);
-console.log('Crit Climb tests passed');
+// ---------- open games (public duels and Starvos battles) ----------
+const openOf = async (mode) => (await api.handler({ routeKey: 'GET /games/open', queryStringParameters: { mode }, requestContext: {} }).then((x) => JSON.parse(x.body)));
+await wsSend(1, { action: 'create', hero: 'brawler', life: 100, public: true });
+const pubCode = last(1).code;
+await wsSend(2, { action: 'create', hero: 'whisper', life: 100 }); // private
+await wsSend(3, { action: 'create', mode: 'boss', public: true });
+let og = await openOf('duel');
+assert.deepEqual(og.map((g) => g.code), [pubCode], 'only the public duel is listed');
+assert.equal(og[0].hero, 'Brawler'); assert.equal(og[0].host, 'Player1');
+assert.equal((await openOf('boss')).length, 1, 'public Starvos battle listed');
+T['icyn-connections'].delete('c1'); // host closed the tab
+assert.equal((await openOf('duel')).length, 0, 'gone hosts drop off the list');
+T['icyn-connections'].set('c1', { connectionId: 'c1', userId: 'p1', name: 'Player1', dev: false });
+assert.equal((await openOf('duel')).length, 1);
+await wsSend(4, { action: 'join', code: pubCode, hero: 'maverick' });
+assert.equal(last(4).status, 'active');
+assert.equal((await openOf('duel')).length, 0, 'a joined duel leaves the list');
+await wsSend(1, { action: 'create', hero: 'brawler', life: 50, easy: true, public: true });
+const c2 = last(1); og = await openOf('duel'); assert.equal(og[0].easy, true);
+await wsSend(1, { action: 'cancel', gameId: c2.gameId });
+assert.equal(last(1).type, 'cancelled'); assert.equal((await openOf('duel')).length, 0, 'cancelled duels leave the list');
+await wsSend(4, { action: 'join', code: c2.code, hero: 'maverick' }); assert.match(errOf(4), /already started|not in play/);
+
+console.log('Crit Climb + open games tests passed');

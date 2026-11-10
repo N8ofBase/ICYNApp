@@ -3,7 +3,7 @@ param([Parameter(Mandatory)][int]$Step)
 #   aws sso login --profile prismcortex
 #   .\deploy-climb.ps1 -Step 1   (then 2, then 3; each step is safe to re-run)
 #
-# Step 1  backups of today's icyn-api and icyn-ws code (backup-before-climb\), DynamoDB table icyn-climbs,
+# Step 1  backups of today's icyn-api and icyn-ws code (backup-before-climb\), DynamoDB table icyn-climbs, index byOpen on icyn-games,
 #         and an extra inline policy 'icyn-climb' on both Lambda roles (the existing policies are left alone)
 # Step 2  icyn-api: new code (climb.mjs) + routes GET /climbs, GET /climbs/{id}, POST /climbs, /join, /leave, /start. Harmless to the live page.
 # Step 3  icyn-ws: new code (the 'climb' action). Also harmless to the live page; the page change goes live separately.
@@ -35,9 +35,20 @@ if ($Step -eq 1) {
     aws dynamodb update-continuous-backups --table-name icyn-climbs --point-in-time-recovery-specification PointInTimeRecoveryEnabled=true @P | Out-Null
     aws dynamodb update-time-to-live --table-name icyn-climbs --time-to-live-specification Enabled=true,AttributeName=ttl @P | Out-Null
   }
+  # Open games: sparse index byOpen on icyn-games (only public games still waiting carry `open`)
+  $idx = aws dynamodb describe-table --table-name icyn-games --query "Table.GlobalSecondaryIndexes[?IndexName=='byOpen'].IndexName" --output text @P
+  if (-not $idx) {
+    $gf = New-TemporaryFile
+    [IO.File]::WriteAllText($gf.FullName, '[{"Create":{"IndexName":"byOpen","KeySchema":[{"AttributeName":"open","KeyType":"HASH"},{"AttributeName":"openAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}}]')
+    aws dynamodb update-table --table-name icyn-games --attribute-definitions AttributeName=open,AttributeType=S AttributeName=openAt,AttributeType=N --global-secondary-index-updates "file://$gf" @P | Out-Null
+    Remove-Item $gf
+    do { Start-Sleep 10; $st = aws dynamodb describe-table --table-name icyn-games --query "Table.GlobalSecondaryIndexes[?IndexName=='byOpen'].IndexStatus" --output text @P; Write-Host "byOpen index: $st" } while ($st -ne 'ACTIVE')
+  }
   $policy = @{ Version = '2012-10-17'; Statement = @(
     @{ Effect = 'Allow'; Action = @('dynamodb:GetItem', 'dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:Scan'); Resource = "arn:aws:dynamodb:us-east-1:${Acct}:table/icyn-climbs" },
-    @{ Effect = 'Allow'; Action = @('dynamodb:UpdateItem'); Resource = "arn:aws:dynamodb:us-east-1:${Acct}:table/icyn-players" }
+    @{ Effect = 'Allow'; Action = @('dynamodb:UpdateItem'); Resource = "arn:aws:dynamodb:us-east-1:${Acct}:table/icyn-players" },
+    @{ Effect = 'Allow'; Action = @('dynamodb:Query'); Resource = "arn:aws:dynamodb:us-east-1:${Acct}:table/icyn-games/index/byOpen" },
+    @{ Effect = 'Allow'; Action = @('dynamodb:GetItem'); Resource = "arn:aws:dynamodb:us-east-1:${Acct}:table/icyn-connections" }
   ) } | ConvertTo-Json -Depth 5 -Compress
   $pf = New-TemporaryFile; [IO.File]::WriteAllText($pf.FullName, $policy)
   foreach ($fn in 'icyn-api', 'icyn-ws') { aws iam put-role-policy --role-name (RoleOf $fn) --policy-name icyn-climb --policy-document "file://$pf" @P }
@@ -46,12 +57,12 @@ if ($Step -eq 1) {
 }
 
 if ($Step -eq 2) {
-  Compress-Archive -Path "$Here\api\index.mjs", "$Here\api\record.mjs", "$Here\api\unlock.mjs", "$Here\api\climb.mjs", "$Here\ws\engine.mjs" -DestinationPath "$Here\api-climb.zip" -Force
+  Compress-Archive -Path "$Here\api\index.mjs", "$Here\api\record.mjs", "$Here\api\unlock.mjs", "$Here\api\climb.mjs", "$Here\api\lobby.mjs", "$Here\ws\engine.mjs" -DestinationPath "$Here\api-climb.zip" -Force
   aws lambda update-function-code --function-name icyn-api --zip-file "fileb://$Here\api-climb.zip" @P | Out-Null
   aws lambda wait function-updated --function-name icyn-api @P
   $me = aws apigatewayv2 get-routes --api-id $ApiId --query "Items[?RouteKey=='GET /me'] | [0]" --output json @P | ConvertFrom-Json
   $have = aws apigatewayv2 get-routes --api-id $ApiId --query 'Items[].RouteKey' --output json @P | ConvertFrom-Json
-  foreach ($rk in 'GET /climbs', 'GET /climbs/{id}') {
+  foreach ($rk in 'GET /climbs', 'GET /climbs/{id}', 'GET /games/open') {
     if ($have -notcontains $rk) { aws apigatewayv2 create-route --api-id $ApiId --route-key $rk --target $me.Target @P | Out-Null }
   }
   foreach ($rk in 'POST /climbs', 'POST /climbs/{id}/join', 'POST /climbs/{id}/leave', 'POST /climbs/{id}/start') {
@@ -66,10 +77,13 @@ if ($Step -eq 3) {
   aws lambda wait function-updated --function-name icyn-ws @P
   # The WebSocket API picks a route by action; add 'climb' unless a $default route already catches everything.
   $have = aws apigatewayv2 get-routes --api-id $WsId --query 'Items[].RouteKey' --output json @P | ConvertFrom-Json
-  if ($have -notcontains '$default' -and $have -notcontains 'climb') {
+  if ($have -notcontains '$default') {
     $join = aws apigatewayv2 get-routes --api-id $WsId --query "Items[?RouteKey=='join'] | [0]" --output json @P | ConvertFrom-Json
-    aws apigatewayv2 create-route --api-id $WsId --route-key climb --target $join.Target @P | Out-Null
-    aws apigatewayv2 create-deployment --api-id $WsId --stage-name prod @P | Out-Null
+    $made = $false
+    foreach ($rk in 'climb', 'cancel') {
+      if ($have -notcontains $rk) { aws apigatewayv2 create-route --api-id $WsId --route-key $rk --target $join.Target @P | Out-Null; $made = $true }
+    }
+    if ($made) { aws apigatewayv2 create-deployment --api-id $WsId --stage-name prod @P | Out-Null }
   }
   Write-Host 'Step 3 done: icyn-ws plays Crit Climb matches.'
 }

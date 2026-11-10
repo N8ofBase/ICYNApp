@@ -69,3 +69,13 @@
 .cl-cpu{font-weight:800;color:#9fb4c8!important;letter-spacing:.04em}
 .cl-soloend{margin:4px 0}
 .cl-bracket.solo{grid-template-columns:repeat(2,minmax(110px,1fr));overflow:visible;text-align:left}
+/* Open games */
+.og-pub{margin:0 auto}
+.og{text-align:left;display:grid;gap:6px;margin-top:4px}
+.og h4{margin:0;display:flex;justify-content:space-between;align-items:baseline;font-family:var(--f-title);color:var(--gold);font-size:.95rem}
+.og h4 .linkish{font:inherit;font-size:.75rem;color:var(--muted)}
+.og ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.og li{display:flex;align-items:center;gap:10px;background:var(--stone-2);border:1px solid var(--line);border-radius:10px;padding:6px 8px 6px 12px}
+.og-who{flex:1;min-width:0;display:grid}.og-who b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.og-who small{color:var(--muted);font-size:.78rem}
+.og-join{border-color:var(--gold);color:var(--gold);font-weight:800}
+.og-empty{margin:0;color:var(--muted);font-size:.85rem}

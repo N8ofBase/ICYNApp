@@ -57,6 +57,7 @@
     confirmCheckout: () => call('POST', '/checkout/confirm', {}, true), // -> {unlocked}; checks the player's last Square order
     pnpFiles: () => call('GET', '/pnp', null, true),                 // -> {files:[{name, url}]}
     // Crit Climb lobbies: anyone can look; hosting and joining need the Crit Pass; the host begins.
+    openGames: (mode) => call('GET', '/games/open?mode=' + (mode === 'boss' ? 'boss' : 'duel'), null, false), // public games still waiting
     climbs: () => call('GET', '/climbs', null, false),               // -> public open lobbies [{code, name, size, public, status, entrants, rounds, ...}]
     climb: (code) => call('GET', '/climbs/' + encodeURIComponent(code), null, false),
     climbCreate: (c) => callErr('POST', '/climbs', c),               // c = {size: 4|8|16, public, name?}

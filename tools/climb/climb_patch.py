@@ -47,6 +47,26 @@ rep("o.querySelector('#rematch').onclick=()=>{o.remove();if(S.mode==='online'){S
 rep("if(S.mode==='online'){el.innerHTML='<span>Ranked online result saved by the arena.</span>';",
     "if(S.mode==='online'){el.innerHTML=NET.climb?'<span>Ranked result saved. The Crit Climb bracket is updated.</span>':'<span>Ranked online result saved by the arena.</span>';")
 
+# Open games: Public/Private on create + Open games lists (Online duels and Starvos)
+ojs = (here / 'open_ui.js').read_text(encoding='utf-8')
+rep('// ---------- Online lobby (online.js: create/join by code, server referees) ----------', ojs + '// ---------- Online lobby (online.js: create/join by code, server referees) ----------')
+rep("    el.querySelector('#nb-cancel').onclick=()=>{O.close();NETUI.phase='idle';NETUI.code=null;renderNetBox()};return}",
+    "    el.querySelector('#nb-cancel').onclick=async()=>{try{await O.cancel()}catch(e){}setTimeout(()=>O.close(),300);NETUI.phase='idle';NETUI.code=null;renderNetBox()};return}")
+rep('''    <button class="act begin" id="nb-create" ${NETUI.busy?'disabled':''}><span class="who">${esc(HEROES[S.picks[0]].name)} · ${S.noCal?'Easy':'Standard'}</span>Create online duel</button>''',
+    '''    ${pubToggle()}<button class="act begin" id="nb-create" ${NETUI.busy?'disabled':''}><span class="who">${esc(HEROES[S.picks[0]].name)} · ${S.noCal?'Easy':'Standard'} · ${NETUI.pub?'Public':'Private'}</span>Create online duel</button>''')
+rep("<small>The duel’s creator sets the Game Mode.</small></div>${err}`;",
+    "<small>The duel’s creator sets the Game Mode.</small></div>${err}${ogHTML('duel')}`;wirePub(el,renderNetBox);wireOG(el,'duel');if(!OG.duel||Date.now()-OG.t>4000){OG.t=Date.now();ogLoad('duel')}")
+rep("  el.querySelector('#nb-create').onclick=()=>netCall(()=>O.create(S.picks[0],S.noCal?50:100,!!S.noCal));",
+    "  el.querySelector('#nb-create').onclick=()=>netCall(()=>O.create(S.picks[0],S.noCal?50:100,!!S.noCal,!!NETUI.pub));")
+rep('''      <button class="act begin" id="nb-create" ${NETUI.busy?'disabled':''}><span class="who">You host · friends join with a code</span>Open a battle</button>''',
+    '''      ${pubToggle()}<button class="act begin" id="nb-create" ${NETUI.busy?'disabled':''}><span class="who">You host · ${NETUI.pub?'anyone can join':'friends join with a code'}</span>Open a battle</button>''')
+rep("""<button class="ghost" id="nb-join" ${NETUI.busy?'disabled':''}>Join</button></div></div>${err}`;
+    if(saved)el.querySelector('#nb-re').onclick=()=>netCall(()=>O.resume(saved));
+    el.querySelector('#nb-create').onclick=()=>netCall(()=>O.createBoss());""",
+    """<button class="ghost" id="nb-join" ${NETUI.busy?'disabled':''}>Join</button></div></div>${err}${ogHTML('boss')}`;wirePub(el,renderBossNet);wireOG(el,'boss');if(!OG.boss||Date.now()-OG.t>4000){OG.t=Date.now();ogLoad('boss')}
+    if(saved)el.querySelector('#nb-re').onclick=()=>netCall(()=>O.resume(saved));
+    el.querySelector('#nb-create').onclick=()=>netCall(()=>O.createBoss(undefined,!!NETUI.pub));""")
+
 # Solo Climb hooks
 rep("  recordResult(w,ko,o.querySelector('#endrec'));\n}", "  recordResult(w,ko,o.querySelector('#endrec'));\n  if(S.solo&&S.mode==='cpu')soloEnd(o,w);\n}")
 rep("$('#modelbl').textContent=(", "$('#modelbl').textContent=(S.solo&&S.mode==='cpu'?'Solo Climb '+(S.solo.stage==='final'?'Final':'Semifinal')+' · ':'')+(")
