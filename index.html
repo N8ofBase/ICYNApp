@@ -1038,6 +1038,7 @@ body.lb-open .sfx-btn{display:none}
 .lbr-cover .lbr-go button{border:0;border-radius:999px;padding:11px 20px;font-weight:800;background:#7a2232;color:#fff;min-height:44px}
 .lbr-cover .lbr-go button.alt{background:transparent;color:#3a0f18;border:1px solid rgba(122,34,50,.55)}
 .lbr-cover small{color:var(--ink-2)}
+.lbr-cover .lbr-call{font-family:var(--f-title);font-style:italic;color:#7a2232;font-size:1.15rem}
 .lbr-cover .lbr-st-h{margin:22px 0 10px;font-family:var(--f-display);font-weight:400;color:#7a2232;font-size:1.15rem}
 .lbr-starts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:0 0 16px;text-align:left}
 .lbr-start{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-radius:12px;border:1px solid rgba(122,34,50,.35);background:rgba(255,255,255,.4);color:var(--ink);min-height:44px;text-align:left}
@@ -2134,9 +2135,10 @@ async function lbReader(at){document.querySelector('.lbr')?.remove();
     const card=p=>{const c=C[p.i],lock=!lbOpenCh(p.i),[a,b]=p.part.split(' · ');
       return `<button class="lbr-start" data-go="${p.i}"><span class="lbr-st-k">${esc(b?a:p.part)}</span><b>${esc(b||c.title)}</b><small>${esc(BLURB[p.part]||c.title)}${lock?' · 🔒 Crit Pass':''}</small></button>`};
     pg.innerHTML=`<div class="lbr-cover"><p class="lbr-part">A novel in progress</p><h2>${esc(LB.title)}</h2><p class="lbr-sub">${esc(LB.subtitle)}</p><p class="lbr-by">by ${esc(LB.author)}</p><svg class="lbr-orn" viewBox="0 0 160 14" aria-hidden="true"><path d="M4 7h58M98 7h58" stroke="currentColor" stroke-width="1.2"/><path d="M80 1l6 6-6 6-6-6z" fill="currentColor"/><circle cx="68" cy="7" r="2" fill="currentColor"/><circle cx="92" cy="7" r="2" fill="currentColor"/></svg>
-      <p class="lbr-blurb">You were mortal once. Now you wake in a strange new body with a voice in your head calling you <i>Lightbringer</i>.</p>
-      <p class="lbr-blurb">Below you turns Talus, a crowded moon where five Heroes gave their lives to stop the falling star Starvos. They saved the world, but a Fear Rift opened in the ashes and cut Talus off from Icosa and the loving universe beyond. Life Crystals flicker. Plague gremlins prowl the wells. Someone has to carry Love back into the dark.</p>
-      <p class="lbr-blurb">You cannot truly die here. Every mistake only sends you back to try again. So be brave, Lightbringer.</p>
+      <p class="lbr-blurb"><b>Somewhere in a grand and loving universe, one small world has fallen into Fear.</b></p>
+      <p class="lbr-blurb">In this universe, death is not an ending. It is a doorway. When a mortal life is over, the true adventure begins: a journey across trillions of young, evolving worlds, helping each one rise toward perfection by bringing Love wherever Fear has taken root.</p>
+      <p class="lbr-blurb">For your next journey you have chosen the greatest honor of all. You will become the Lightbringer, the heart of a celestial project sent to stop an army of Fear before it devours Talus and spills out into the galaxies beyond. Victory is not promised. But with the power of Love, the gifts of Project Lightbringer, and the noble peoples of Talus at your side, the Fear Rift can be sealed.</p>
+      <p class="lbr-blurb lbr-call">Go forth, champion of Love. Light and Life are waiting.</p>
       ${go?`<div class="lbr-go"><button data-go="${st.c}">Continue: ${esc(C[st.c].title)}</button></div>`:''}
       <h3 class="lbr-st-h">${go?'Or start somewhere new':'Where would you like to begin?'}</h3>
       <div class="lbr-starts">${parts.map(card).join('')}</div>
