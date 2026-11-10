@@ -1,0 +1,72 @@
+
+=== Level 1 duels: 55500 fights, avg 8.89 rounds, draws 0.5%, won by Inspire 86.4%, execute/yield 0.0%, Death Knell 0.0%
+ roles: Champion 59.2 | Whisper 55.1 | Soul Seer 52.0 | Brawler 43.1 | Maverick 40.6
+ lifeforms: Melkin 56.4 | Sapien 53.0 | Leyf 49.4 | Lizerus 45.7 | Dimoneesh 45.4
+ builds: Champion (Oath) 68.3 | Soul Seer (Mender) 66.8 | Whisper (Wind) 62.4 | Whisper (Shadow) 61.2 | Champion (Sacred) 58.0 | Soul Seer (Nature) 53.3 | Champion (Honor) 51.1 | Brawler (Fury) 48.2 | Brawler (Que Bao) 42.2 | Whisper (Heart) 41.7 | Maverick (Trickster) 40.7 | Maverick (Sharpsight) 40.6 | Maverick (Wayfinder) 40.5 | Brawler (Iron Body) 38.9 | Soul Seer (Sound) 36.0
+ best pairs: Melkin Whisper 68.0 | Sapien Champion 66.2 | Lizerus Champion 62.3 | Leyf Whisper 61.9
+ worst pairs: Leyf Maverick 34.1 | Dimoneesh Brawler 33.6 | Dimoneesh Maverick 31.9 | Lizerus Maverick 30.0
+
+=== Level 3 duels: 55500 fights, avg 10.82 rounds, draws 3.2%, won by Inspire 82.7%, execute/yield 0.0%, Death Knell 0.0%
+ roles: Whisper 52.9 | Champion 51.6 | Brawler 50.5 | Soul Seer 49.1 | Maverick 45.9
+ lifeforms: Melkin 54.9 | Sapien 53.0 | Leyf 48.4 | Lizerus 47.3 | Dimoneesh 46.4
+ builds: Soul Seer (Mender) 73.2 | Brawler (Que Bao) 70.0 | Maverick (Wayfinder) 67.4 | Whisper (Shadow) 62.9 | Champion (Honor) 61.9 | Whisper (Wind) 60.3 | Champion (Sacred) 47.6 | Brawler (Iron Body) 45.5 | Champion (Oath) 45.2 | Soul Seer (Sound) 41.0 | Maverick (Trickster) 38.1 | Brawler (Fury) 36.0 | Whisper (Heart) 35.6 | Soul Seer (Nature) 33.1 | Maverick (Sharpsight) 32.2
+ best pairs: Melkin Whisper 64.9 | Melkin Maverick 61.7 | Sapien Champion 61.4 | Sapien Brawler 61.2
+ worst pairs: Lizerus Soul Seer 42.1 | Leyf Maverick 40.8 | Dimoneesh Maverick 40.6 | Lizerus Maverick 37.6
+
+=== Level 5 duels: 55500 fights, avg 9.31 rounds, draws 0.5%, won by Inspire 78.0%, execute/yield 0.0%, Death Knell 0.0%
+ roles: Brawler 59.4 | Maverick 53.3 | Whisper 49.3 | Soul Seer 44.6 | Champion 43.4
+ lifeforms: Melkin 56.9 | Sapien 51.3 | Lizerus 48.2 | Leyf 46.9 | Dimoneesh 46.7
+ builds: Brawler (Iron Body) 67.7 | Brawler (Fury) 56.9 | Soul Seer (Mender) 56.9 | Maverick (Trickster) 55.6 | Maverick (Wayfinder) 54.9 | Whisper (Shadow) 53.7 | Brawler (Que Bao) 53.6 | Maverick (Sharpsight) 49.5 | Whisper (Wind) 48.1 | Champion (Honor) 46.6 | Whisper (Heart) 46.0 | Champion (Sacred) 44.7 | Soul Seer (Sound) 42.9 | Champion (Oath) 38.8 | Soul Seer (Nature) 33.9
+ best pairs: Melkin Maverick 69.7 | Sapien Brawler 69.3 | Lizerus Brawler 67.5 | Melkin Whisper 65.5
+ worst pairs: Lizerus Soul Seer 39.1 | Sapien Soul Seer 38.0 | Dimoneesh Champion 37.2 | Leyf Champion 32.7
+
+=== Level 10 duels: 55500 fights, avg 7.07 rounds, draws 0.0%, won by Inspire 68.4%, execute/yield 0.0%, Death Knell 0.0%
+ roles: Brawler 61.8 | Whisper 59.6 | Maverick 48.0 | Champion 47.3 | Soul Seer 33.3
+ lifeforms: Melkin 60.0 | Dimoneesh 49.6 | Leyf 47.0 | Sapien 46.8 | Lizerus 46.5
+ builds: Brawler (Que Bao) 65.1 | Brawler (Iron Body) 62.7 | Whisper (Wind) 61.7 | Whisper (Shadow) 58.8 | Whisper (Heart) 58.3 | Brawler (Fury) 57.6 | Champion (Honor) 51.9 | Maverick (Wayfinder) 51.5 | Maverick (Trickster) 50.8 | Champion (Oath) 46.5 | Champion (Sacred) 43.5 | Maverick (Sharpsight) 41.8 | Soul Seer (Sound) 35.3 | Soul Seer (Mender) 34.0 | Soul Seer (Nature) 30.7
+ best pairs: Melkin Whisper 71.5 | Melkin Brawler 69.8 | Dimoneesh Brawler 61.2 | Sapien Brawler 60.2
+ worst pairs: Dimoneesh Soul Seer 33.5 | Lizerus Soul Seer 30.7 | Leyf Soul Seer 30.3 | Sapien Soul Seer 28.9
+
+=== Level 15 duels: 55500 fights, avg 8.01 rounds, draws 0.0%, won by Inspire 79.1%, execute/yield 0.0%, Death Knell 0.0%
+ roles: Whisper 54.6 | Brawler 54.1 | Maverick 50.7 | Soul Seer 47.1 | Champion 43.6
+ lifeforms: Melkin 60.3 | Dimoneesh 48.6 | Lizerus 47.4 | Leyf 47.2 | Sapien 46.4
+ builds: Whisper (Heart) 65.8 | Brawler (Que Bao) 59.1 | Whisper (Wind) 57.1 | Brawler (Fury) 56.9 | Maverick (Trickster) 52.1 | Maverick (Sharpsight) 50.3 | Soul Seer (Sound) 50.1 | Maverick (Wayfinder) 49.6 | Champion (Oath) 48.0 | Soul Seer (Nature) 46.5 | Brawler (Iron Body) 46.3 | Champion (Honor) 46.3 | Soul Seer (Mender) 44.6 | Whisper (Shadow) 40.8 | Champion (Sacred) 36.5
+ best pairs: Melkin Whisper 65.5 | Melkin Maverick 63.9 | Melkin Brawler 63.3 | Melkin Soul Seer 56.1
+ worst pairs: Dimoneesh Champion 42.0 | Lizerus Champion 41.9 | Sapien Champion 41.5 | Leyf Champion 39.7
+
+=== Level 20 duels: 55500 fights, avg 6.46 rounds, draws 0.0%, won by Inspire 54.3%, execute/yield 0.0%, Death Knell 16.6%
+ roles: Soul Seer 60.3 | Champion 56.0 | Brawler 53.4 | Maverick 40.4 | Whisper 39.8
+ lifeforms: Melkin 57.6 | Dimoneesh 50.7 | Leyf 48.0 | Lizerus 47.6 | Sapien 46.1
+ builds: Soul Seer (Sound) 71.5 | Soul Seer (Nature) 70.6 | Champion (Honor) 59.7 | Champion (Sacred) 57.9 | Brawler (Que Bao) 56.5 | Brawler (Fury) 56.3 | Champion (Oath) 50.5 | Whisper (Heart) 50.4 | Maverick (Sharpsight) 49.6 | Brawler (Iron Body) 47.6 | Whisper (Wind) 41.3 | Soul Seer (Mender) 38.7 | Maverick (Trickster) 36.6 | Maverick (Wayfinder) 35.1 | Whisper (Shadow) 27.9
+ best pairs: Melkin Soul Seer 66.6 | Melkin Champion 63.1 | Dimoneesh Soul Seer 61.4 | Melkin Brawler 61.0
+ worst pairs: Lizerus Whisper 37.9 | Leyf Whisper 36.6 | Sapien Maverick 36.4 | Sapien Whisper 35.8
+
+=== Level 1 gauntlet: raider avg win 84.7%, beast pack avg win 39.1%
+   Brawler (Que Bao) 92.0/39.0 | Brawler (Fury) 92.0/42.0 | Brawler (Iron Body) 81.0/26.0 | Champion (Honor) 80.0/46.0 | Champion (Sacred) 95.0/59.0 | Champion (Oath) 97.0/69.0 | Maverick (Sharpsight) 78.0/19.0 | Maverick (Trickster) 74.0/20.0 | Maverick (Wayfinder) 70.0/22.0 | Soul Seer (Mender) 91.0/61.0 | Soul Seer (Sound) 71.0/32.0 | Soul Seer (Nature) 91.0/55.0 | Whisper (Wind) 88.0/45.0 | Whisper (Shadow) 82.0/33.0 | Whisper (Heart) 88.0/19.0
+
+=== Level 3 gauntlet: raider avg win 92.1%, beast pack avg win 42.3%
+   Brawler (Que Bao) 97.0/57.0 | Brawler (Fury) 88.0/31.0 | Brawler (Iron Body) 99.0/61.0 | Champion (Honor) 100.0/59.0 | Champion (Sacred) 95.0/54.0 | Champion (Oath) 96.0/33.0 | Maverick (Sharpsight) 80.0/17.0 | Maverick (Trickster) 81.0/16.0 | Maverick (Wayfinder) 96.0/42.0 | Soul Seer (Mender) 100.0/87.0 | Soul Seer (Sound) 83.0/29.0 | Soul Seer (Nature) 87.0/35.0 | Whisper (Wind) 95.0/47.0 | Whisper (Shadow) 96.0/43.0 | Whisper (Heart) 89.0/24.0
+
+=== Level 5 gauntlet: raider avg win 62.5%, beast pack avg win 59.5%
+   Brawler (Que Bao) 62.0/66.0 | Brawler (Fury) 73.0/55.0 | Brawler (Iron Body) 85.0/85.0 | Champion (Honor) 63.0/59.0 | Champion (Sacred) 62.0/76.0 | Champion (Oath) 56.0/64.0 | Maverick (Sharpsight) 64.0/31.0 | Maverick (Trickster) 62.0/38.0 | Maverick (Wayfinder) 60.0/41.0 | Soul Seer (Mender) 83.0/90.0 | Soul Seer (Sound) 55.0/69.0 | Soul Seer (Nature) 48.0/49.0 | Whisper (Wind) 58.0/51.0 | Whisper (Shadow) 55.0/56.0 | Whisper (Heart) 52.0/62.0
+
+=== Level 10 gauntlet: raider avg win 48.7%, beast pack avg win 30.1%
+   Brawler (Que Bao) 76.0/28.0 | Brawler (Fury) 61.0/16.0 | Brawler (Iron Body) 70.0/35.0 | Champion (Honor) 40.0/66.0 | Champion (Sacred) 51.0/65.0 | Champion (Oath) 41.0/53.0 | Maverick (Sharpsight) 36.0/3.0 | Maverick (Trickster) 47.0/4.0 | Maverick (Wayfinder) 54.0/3.0 | Soul Seer (Mender) 37.0/57.0 | Soul Seer (Sound) 25.0/44.0 | Soul Seer (Nature) 26.0/40.0 | Whisper (Wind) 58.0/17.0 | Whisper (Shadow) 54.0/7.0 | Whisper (Heart) 54.0/14.0
+
+=== Level 15 gauntlet: raider avg win 22.7%, beast pack avg win 1.8%
+   Brawler (Que Bao) 37.0/5.0 | Brawler (Fury) 39.0/5.0 | Brawler (Iron Body) 25.0/2.0 | Champion (Honor) 18.0/4.0 | Champion (Sacred) 9.0/2.0 | Champion (Oath) 11.0/1.0 | Maverick (Sharpsight) 20.0/0.0 | Maverick (Trickster) 24.0/1.0 | Maverick (Wayfinder) 21.0/0.0 | Soul Seer (Mender) 15.0/2.0 | Soul Seer (Sound) 23.0/0.0 | Soul Seer (Nature) 20.0/5.0 | Whisper (Wind) 24.0/0.0 | Whisper (Shadow) 7.0/0.0 | Whisper (Heart) 47.0/0.0
+
+=== Level 20 gauntlet: raider avg win 19.7%, beast pack avg win 1.5%
+   Brawler (Que Bao) 20.0/3.0 | Brawler (Fury) 22.0/2.0 | Brawler (Iron Body) 38.0/4.0 | Champion (Honor) 24.0/1.0 | Champion (Sacred) 18.0/0.0 | Champion (Oath) 13.0/1.0 | Maverick (Sharpsight) 8.0/1.0 | Maverick (Trickster) 7.0/0.0 | Maverick (Wayfinder) 4.0/1.0 | Soul Seer (Mender) 6.0/1.0 | Soul Seer (Sound) 56.0/5.0 | Soul Seer (Nature) 62.0/4.0 | Whisper (Wind) 4.0/0.0 | Whisper (Shadow) 1.0/0.0 | Whisper (Heart) 12.0/0.0
+
+=== L1 Wilted Wood ambush (1 gremlin, solo): avg win 99.8%, avg rounds 2.7
+  Brawler (Que Bao) 100.0% (3.1r, 85.0% Life left) | Brawler (Fury) 100.0% (3r, 84.0% Life left) | Brawler (Iron Body) 100.0% (2.9r, 87.0% Life left) | Champion (Honor) 99.5% (2.5r, 86.0% Life left) | Champion (Sacred) 100.0% (2.8r, 85.0% Life left) | Champion (Oath) 100.0% (2.8r, 89.0% Life left) | Maverick (Sharpsight) 99.5% (2.9r, 81.0% Life left) | Maverick (Trickster) 100.0% (2.7r, 85.0% Life left) | Maverick (Wayfinder) 100.0% (2.6r, 85.0% Life left) | Soul Seer (Mender) 100.0% (2.9r, 90.0% Life left) | Soul Seer (Sound) 100.0% (2.7r, 83.0% Life left) | Soul Seer (Nature) 100.0% (2.4r, 85.0% Life left) | Whisper (Wind) 100.0% (2.1r, 88.0% Life left) | Whisper (Shadow) 100.0% (2.3r, 88.0% Life left) | Whisper (Heart) 98.5% (2.7r, 82.0% Life left)
+
+=== L1 Well fight (2 gremlins + spitter, solo): avg win 60.4%, avg rounds 6.4
+  Brawler (Que Bao) 61.5% (7.1r, 23.0% Life left) | Brawler (Fury) 61.0% (7.1r, 26.0% Life left) | Brawler (Iron Body) 64.0% (7.4r, 23.0% Life left) | Champion (Honor) 66.5% (6.3r, 28.0% Life left) | Champion (Sacred) 74.5% (7.2r, 39.0% Life left) | Champion (Oath) 74.0% (9.3r, 46.0% Life left) | Maverick (Sharpsight) 43.0% (5.5r, 16.0% Life left) | Maverick (Trickster) 44.0% (5.7r, 18.0% Life left) | Maverick (Wayfinder) 47.5% (5.8r, 18.0% Life left) | Soul Seer (Mender) 65.0% (6.8r, 36.0% Life left) | Soul Seer (Sound) 48.5% (5.8r, 18.0% Life left) | Soul Seer (Nature) 81.0% (4.8r, 33.0% Life left) | Whisper (Wind) 67.5% (5.6r, 27.0% Life left) | Whisper (Shadow) 62.5% (5.8r, 27.0% Life left) | Whisper (Heart) 45.0% (5.7r, 17.0% Life left)
+
+=== L2 Rotfang (solo, Cleanse charm): avg win 38.4%, avg rounds 9.0
+  Brawler (Que Bao) 33.0% (9.8r, 12.0% Life left) | Brawler (Fury) 41.5% (9.6r, 16.0% Life left) | Brawler (Iron Body) 33.0% (10.4r, 11.0% Life left) | Champion (Honor) 44.0% (8.8r, 20.0% Life left) | Champion (Sacred) 44.5% (10.2r, 20.0% Life left) | Champion (Oath) 52.0% (12.5r, 24.0% Life left) | Maverick (Sharpsight) 34.0% (8.2r, 13.0% Life left) | Maverick (Trickster) 29.5% (8.1r, 12.0% Life left) | Maverick (Wayfinder) 31.5% (8.2r, 12.0% Life left) | Soul Seer (Mender) 51.0% (9.2r, 27.0% Life left) | Soul Seer (Sound) 25.5% (8.2r, 10.0% Life left) | Soul Seer (Nature) 40.5% (7.7r, 16.0% Life left) | Whisper (Wind) 56.5% (7.5r, 23.0% Life left) | Whisper (Shadow) 31.0% (9.1r, 12.0% Life left) | Whisper (Heart) 28.5% (8.2r, 13.0% Life left)
+
+=== L2 Rotfang (party of 3, Cleanse charm): avg win 100.0%, avg rounds 6.3
+  Brawler (Que Bao) 100.0% (6.7r, 79.0% Life left) | Brawler (Fury) 100.0% (6.5r, 81.0% Life left) | Brawler (Iron Body) 100.0% (6.8r, 80.0% Life left) | Champion (Honor) 100.0% (6.3r, 81.0% Life left) | Champion (Sacred) 100.0% (6.4r, 80.0% Life left) | Champion (Oath) 100.0% (6.4r, 81.0% Life left) | Maverick (Sharpsight) 100.0% (6.3r, 80.0% Life left) | Maverick (Trickster) 100.0% (6.2r, 81.0% Life left) | Maverick (Wayfinder) 100.0% (6.2r, 81.0% Life left) | Soul Seer (Mender) 100.0% (6.3r, 83.0% Life left) | Soul Seer (Sound) 100.0% (6.2r, 80.0% Life left) | Soul Seer (Nature) 100.0% (6.3r, 80.0% Life left) | Whisper (Wind) 100.0% (5.3r, 83.0% Life left) | Whisper (Shadow) 100.0% (6.3r, 81.0% Life left) | Whisper (Heart) 100.0% (6.5r, 78.0% Life left)
