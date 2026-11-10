@@ -1,15 +1,16 @@
 {
- "tuned": false,
+ "variant": "base",
  "config": {
   "lifeGrowth": {
-   "Brawler": 5,
-   "Champion": 4,
+   "Brawler": 4,
+   "Champion": 5,
    "Maverick": 4,
-   "Soul Seer": 3,
+   "Soul Seer": 4,
    "Whisper": 4
   },
   "inspireDC": 12,
-  "inspireBase": 12,
+  "inspireBase": 10,
+  "inspireStat": "C",
   "inspire": true,
   "inspireAt": 0.25,
   "maxRounds": 30,
@@ -25,68 +26,68 @@
  "N": 20,
  "duels": {
   "1": {
-   "avgRounds": 9.19,
-   "drawRate": 0.006,
-   "inspireWinRate": 0.715,
+   "avgRounds": 8.31,
+   "drawRate": 0.005,
+   "inspireWinRate": 0.865,
    "executeWinRate": 0,
    "knellWinRate": 0,
    "byRole": {
-    "Champion": 0.596,
-    "Soul Seer": 0.508,
-    "Brawler": 0.482,
-    "Whisper": 0.465,
-    "Maverick": 0.449
+    "Champion": 0.587,
+    "Whisper": 0.552,
+    "Soul Seer": 0.517,
+    "Brawler": 0.436,
+    "Maverick": 0.408
    },
    "byLifeform": {
-    "Melkin": 0.557,
-    "Sapien": 0.535,
-    "Leyf": 0.49,
-    "Lizerus": 0.467,
-    "Dimoneesh": 0.451
+    "Sapien": 0.526,
+    "Lizerus": 0.509,
+    "Melkin": 0.509,
+    "Dimoneesh": 0.484,
+    "Leyf": 0.472
    },
    "byBuild": {
-    "Champion (Oath)": 0.676,
-    "Whisper (Wind)": 0.665,
+    "Champion (Oath)": 0.69,
     "Soul Seer (Mender)": 0.659,
-    "Champion (Sacred)": 0.587,
-    "Brawler (Fury)": 0.532,
-    "Champion (Honor)": 0.525,
-    "Soul Seer (Nature)": 0.509,
-    "Whisper (Heart)": 0.485,
-    "Brawler (Que Bao)": 0.479,
-    "Maverick (Sharpsight)": 0.458,
-    "Maverick (Wayfinder)": 0.455,
-    "Brawler (Iron Body)": 0.434,
-    "Maverick (Trickster)": 0.434,
-    "Soul Seer (Sound)": 0.356,
-    "Whisper (Shadow)": 0.246
+    "Whisper (Shadow)": 0.612,
+    "Whisper (Wind)": 0.611,
+    "Champion (Sacred)": 0.562,
+    "Soul Seer (Nature)": 0.542,
+    "Champion (Honor)": 0.508,
+    "Brawler (Fury)": 0.49,
+    "Whisper (Heart)": 0.434,
+    "Brawler (Que Bao)": 0.432,
+    "Maverick (Sharpsight)": 0.412,
+    "Maverick (Trickster)": 0.406,
+    "Maverick (Wayfinder)": 0.406,
+    "Brawler (Iron Body)": 0.385,
+    "Soul Seer (Sound)": 0.352
    },
    "byPair": {
-    "Sapien Champion": 0.687,
-    "Lizerus Champion": 0.62,
-    "Melkin Maverick": 0.612,
-    "Melkin Champion": 0.594,
-    "Melkin Whisper": 0.587,
-    "Leyf Soul Seer": 0.585,
-    "Sapien Brawler": 0.578,
-    "Dimoneesh Soul Seer": 0.565,
-    "Lizerus Brawler": 0.547,
-    "Leyf Champion": 0.542,
-    "Dimoneesh Champion": 0.537,
-    "Leyf Whisper": 0.523,
-    "Melkin Soul Seer": 0.521,
-    "Sapien Maverick": 0.517,
-    "Melkin Brawler": 0.473,
-    "Sapien Soul Seer": 0.45,
-    "Sapien Whisper": 0.444,
-    "Lizerus Soul Seer": 0.418,
-    "Leyf Brawler": 0.415,
-    "Dimoneesh Brawler": 0.395,
-    "Dimoneesh Whisper": 0.395,
-    "Leyf Maverick": 0.383,
-    "Lizerus Whisper": 0.378,
+    "Lizerus Champion": 0.671,
+    "Sapien Champion": 0.644,
+    "Melkin Whisper": 0.632,
+    "Dimoneesh Soul Seer": 0.601,
+    "Leyf Whisper": 0.586,
+    "Leyf Soul Seer": 0.578,
+    "Dimoneesh Champion": 0.554,
+    "Melkin Champion": 0.547,
+    "Lizerus Brawler": 0.535,
+    "Dimoneesh Whisper": 0.534,
+    "Leyf Champion": 0.518,
+    "Sapien Brawler": 0.515,
+    "Sapien Whisper": 0.512,
+    "Melkin Maverick": 0.507,
+    "Lizerus Whisper": 0.499,
+    "Sapien Maverick": 0.49,
+    "Lizerus Soul Seer": 0.473,
+    "Melkin Soul Seer": 0.468,
+    "Sapien Soul Seer": 0.467,
+    "Melkin Brawler": 0.39,
+    "Dimoneesh Brawler": 0.372,
     "Lizerus Maverick": 0.369,
-    "Dimoneesh Maverick": 0.364
+    "Leyf Brawler": 0.366,
+    "Dimoneesh Maverick": 0.36,
+    "Leyf Maverick": 0.313
    },
    "sample": {
     "Sapien Brawler (Que Bao)": {
@@ -130,7 +131,7 @@
     },
     "Sapien Champion (Honor)": {
      "life": 33,
-     "def": 10,
+     "def": 11,
      "st": {
       "P": 3,
       "E": 1,
@@ -143,7 +144,7 @@
     },
     "Sapien Champion (Sacred)": {
      "life": 33,
-     "def": 10,
+     "def": 11,
      "st": {
       "P": 3,
       "E": 1,
@@ -156,7 +157,7 @@
     },
     "Sapien Champion (Oath)": {
      "life": 33,
-     "def": 10,
+     "def": 11,
      "st": {
       "P": 3,
       "E": 1,
@@ -207,7 +208,7 @@
      ]
     },
     "Sapien Soul Seer (Mender)": {
-     "life": 27,
+     "life": 30,
      "def": 10,
      "st": {
       "P": 1,
@@ -220,7 +221,7 @@
      ]
     },
     "Sapien Soul Seer (Sound)": {
-     "life": 27,
+     "life": 30,
      "def": 10,
      "st": {
       "P": 1,
@@ -233,7 +234,7 @@
      ]
     },
     "Sapien Soul Seer (Nature)": {
-     "life": 27,
+     "life": 30,
      "def": 10,
      "st": {
       "P": 1,
@@ -287,72 +288,72 @@
    }
   },
   "3": {
-   "avgRounds": 10.92,
-   "drawRate": 0.031,
-   "inspireWinRate": 0.688,
+   "avgRounds": 10.3,
+   "drawRate": 0.03,
+   "inspireWinRate": 0.827,
    "executeWinRate": 0,
    "knellWinRate": 0,
    "byRole": {
-    "Brawler": 0.591,
-    "Maverick": 0.555,
-    "Champion": 0.489,
-    "Soul Seer": 0.473,
-    "Whisper": 0.391
+    "Whisper": 0.523,
+    "Champion": 0.511,
+    "Brawler": 0.503,
+    "Soul Seer": 0.501,
+    "Maverick": 0.461
    },
    "byLifeform": {
-    "Melkin": 0.544,
-    "Sapien": 0.526,
-    "Lizerus": 0.486,
-    "Leyf": 0.479,
-    "Dimoneesh": 0.465
+    "Sapien": 0.521,
+    "Lizerus": 0.515,
+    "Melkin": 0.494,
+    "Dimoneesh": 0.492,
+    "Leyf": 0.477
    },
    "byBuild": {
-    "Maverick (Wayfinder)": 0.873,
-    "Brawler (Que Bao)": 0.774,
-    "Soul Seer (Mender)": 0.708,
-    "Whisper (Wind)": 0.65,
-    "Champion (Honor)": 0.595,
-    "Brawler (Iron Body)": 0.536,
-    "Brawler (Fury)": 0.463,
-    "Champion (Sacred)": 0.461,
-    "Maverick (Trickster)": 0.419,
-    "Champion (Oath)": 0.412,
-    "Whisper (Heart)": 0.409,
-    "Soul Seer (Sound)": 0.39,
-    "Maverick (Sharpsight)": 0.372,
-    "Soul Seer (Nature)": 0.322,
-    "Whisper (Shadow)": 0.115
+    "Soul Seer (Mender)": 0.748,
+    "Brawler (Que Bao)": 0.684,
+    "Maverick (Wayfinder)": 0.677,
+    "Whisper (Shadow)": 0.622,
+    "Champion (Honor)": 0.608,
+    "Whisper (Wind)": 0.595,
+    "Champion (Sacred)": 0.475,
+    "Brawler (Iron Body)": 0.459,
+    "Champion (Oath)": 0.449,
+    "Soul Seer (Sound)": 0.412,
+    "Maverick (Trickster)": 0.375,
+    "Brawler (Fury)": 0.367,
+    "Whisper (Heart)": 0.354,
+    "Soul Seer (Nature)": 0.343,
+    "Maverick (Sharpsight)": 0.331
    },
    "byPair": {
-    "Sapien Brawler": 0.673,
-    "Melkin Maverick": 0.671,
-    "Lizerus Brawler": 0.651,
-    "Sapien Maverick": 0.581,
-    "Sapien Champion": 0.575,
-    "Melkin Brawler": 0.574,
-    "Dimoneesh Brawler": 0.539,
-    "Lizerus Champion": 0.528,
-    "Leyf Soul Seer": 0.521,
-    "Dimoneesh Soul Seer": 0.52,
-    "Leyf Maverick": 0.519,
-    "Leyf Brawler": 0.518,
-    "Dimoneesh Maverick": 0.502,
-    "Lizerus Maverick": 0.501,
-    "Melkin Whisper": 0.5,
-    "Melkin Champion": 0.492,
-    "Melkin Soul Seer": 0.483,
-    "Dimoneesh Champion": 0.438,
-    "Sapien Soul Seer": 0.428,
-    "Leyf Whisper": 0.425,
-    "Lizerus Soul Seer": 0.415,
-    "Leyf Champion": 0.414,
-    "Sapien Whisper": 0.374,
-    "Lizerus Whisper": 0.332,
-    "Dimoneesh Whisper": 0.325
+    "Lizerus Brawler": 0.599,
+    "Lizerus Champion": 0.598,
+    "Dimoneesh Soul Seer": 0.594,
+    "Melkin Whisper": 0.588,
+    "Sapien Brawler": 0.58,
+    "Sapien Champion": 0.568,
+    "Leyf Whisper": 0.567,
+    "Leyf Soul Seer": 0.555,
+    "Melkin Maverick": 0.539,
+    "Sapien Maverick": 0.522,
+    "Dimoneesh Champion": 0.499,
+    "Sapien Whisper": 0.49,
+    "Dimoneesh Whisper": 0.488,
+    "Lizerus Whisper": 0.484,
+    "Lizerus Soul Seer": 0.469,
+    "Dimoneesh Brawler": 0.461,
+    "Melkin Brawler": 0.451,
+    "Melkin Champion": 0.451,
+    "Sapien Soul Seer": 0.445,
+    "Melkin Soul Seer": 0.443,
+    "Leyf Champion": 0.438,
+    "Leyf Brawler": 0.426,
+    "Lizerus Maverick": 0.424,
+    "Dimoneesh Maverick": 0.418,
+    "Leyf Maverick": 0.401
    },
    "sample": {
     "Sapien Brawler (Que Bao)": {
-     "life": 50,
+     "life": 48,
      "def": 10,
      "st": {
       "P": 3,
@@ -366,7 +367,7 @@
      ]
     },
     "Sapien Brawler (Fury)": {
-     "life": 50,
+     "life": 48,
      "def": 10,
      "st": {
       "P": 3,
@@ -380,7 +381,7 @@
      ]
     },
     "Sapien Brawler (Iron Body)": {
-     "life": 50,
+     "life": 48,
      "def": 10,
      "st": {
       "P": 3,
@@ -394,8 +395,8 @@
      ]
     },
     "Sapien Champion (Honor)": {
-     "life": 41,
-     "def": 10,
+     "life": 43,
+     "def": 11,
      "st": {
       "P": 4,
       "E": 1,
@@ -408,8 +409,8 @@
      ]
     },
     "Sapien Champion (Sacred)": {
-     "life": 41,
-     "def": 10,
+     "life": 43,
+     "def": 11,
      "st": {
       "P": 4,
       "E": 1,
@@ -422,8 +423,8 @@
      ]
     },
     "Sapien Champion (Oath)": {
-     "life": 41,
-     "def": 10,
+     "life": 43,
+     "def": 11,
      "st": {
       "P": 4,
       "E": 1,
@@ -478,7 +479,7 @@
      ]
     },
     "Sapien Soul Seer (Mender)": {
-     "life": 33,
+     "life": 38,
      "def": 10,
      "st": {
       "P": 1,
@@ -492,7 +493,7 @@
      ]
     },
     "Sapien Soul Seer (Sound)": {
-     "life": 33,
+     "life": 38,
      "def": 10,
      "st": {
       "P": 1,
@@ -506,7 +507,7 @@
      ]
     },
     "Sapien Soul Seer (Nature)": {
-     "life": 33,
+     "life": 38,
      "def": 10,
      "st": {
       "P": 1,
@@ -543,8 +544,8 @@
       "C": 2
      },
      "abilities": [
-      "Darkness",
-      "Shadow Step"
+      "Shadow Step",
+      "Darkness"
      ]
     },
     "Sapien Whisper (Heart)": {
@@ -564,72 +565,72 @@
    }
   },
   "5": {
-   "avgRounds": 8.86,
-   "drawRate": 0.004,
-   "inspireWinRate": 0.726,
+   "avgRounds": 8.82,
+   "drawRate": 0.005,
+   "inspireWinRate": 0.774,
    "executeWinRate": 0,
    "knellWinRate": 0,
    "byRole": {
-    "Maverick": 0.733,
-    "Brawler": 0.643,
-    "Whisper": 0.427,
-    "Soul Seer": 0.354,
-    "Champion": 0.342
+    "Brawler": 0.59,
+    "Maverick": 0.527,
+    "Whisper": 0.494,
+    "Soul Seer": 0.451,
+    "Champion": 0.437
    },
    "byLifeform": {
-    "Melkin": 0.563,
-    "Sapien": 0.508,
-    "Leyf": 0.488,
-    "Lizerus": 0.479,
-    "Dimoneesh": 0.462
+    "Lizerus": 0.528,
+    "Sapien": 0.517,
+    "Dimoneesh": 0.495,
+    "Melkin": 0.487,
+    "Leyf": 0.472
    },
    "byBuild": {
-    "Maverick (Wayfinder)": 0.743,
-    "Maverick (Trickster)": 0.741,
-    "Maverick (Sharpsight)": 0.715,
-    "Brawler (Iron Body)": 0.706,
-    "Brawler (Fury)": 0.614,
-    "Brawler (Que Bao)": 0.611,
-    "Soul Seer (Mender)": 0.467,
-    "Whisper (Heart)": 0.464,
-    "Whisper (Wind)": 0.438,
-    "Champion (Honor)": 0.381,
-    "Whisper (Shadow)": 0.38,
-    "Champion (Sacred)": 0.352,
-    "Soul Seer (Sound)": 0.345,
-    "Champion (Oath)": 0.294,
-    "Soul Seer (Nature)": 0.251
+    "Brawler (Iron Body)": 0.678,
+    "Soul Seer (Mender)": 0.584,
+    "Whisper (Shadow)": 0.56,
+    "Brawler (Que Bao)": 0.548,
+    "Maverick (Trickster)": 0.545,
+    "Maverick (Wayfinder)": 0.545,
+    "Brawler (Fury)": 0.544,
+    "Maverick (Sharpsight)": 0.493,
+    "Champion (Honor)": 0.467,
+    "Whisper (Wind)": 0.466,
+    "Whisper (Heart)": 0.457,
+    "Champion (Sacred)": 0.451,
+    "Soul Seer (Sound)": 0.428,
+    "Champion (Oath)": 0.393,
+    "Soul Seer (Nature)": 0.341
    },
    "byPair": {
-    "Melkin Maverick": 0.847,
-    "Sapien Maverick": 0.739,
-    "Sapien Brawler": 0.728,
-    "Lizerus Brawler": 0.708,
-    "Leyf Maverick": 0.706,
-    "Dimoneesh Maverick": 0.703,
-    "Lizerus Maverick": 0.671,
-    "Melkin Brawler": 0.647,
-    "Melkin Whisper": 0.588,
-    "Dimoneesh Brawler": 0.575,
-    "Leyf Brawler": 0.559,
-    "Leyf Whisper": 0.512,
-    "Sapien Champion": 0.433,
-    "Dimoneesh Soul Seer": 0.395,
-    "Leyf Soul Seer": 0.395,
-    "Melkin Soul Seer": 0.373,
-    "Lizerus Champion": 0.371,
-    "Melkin Champion": 0.361,
-    "Dimoneesh Whisper": 0.36,
-    "Sapien Whisper": 0.343,
-    "Lizerus Whisper": 0.334,
-    "Lizerus Soul Seer": 0.309,
-    "Sapien Soul Seer": 0.299,
-    "Dimoneesh Champion": 0.277,
-    "Leyf Champion": 0.269
+    "Lizerus Brawler": 0.716,
+    "Sapien Brawler": 0.682,
+    "Melkin Maverick": 0.588,
+    "Sapien Maverick": 0.582,
+    "Dimoneesh Soul Seer": 0.563,
+    "Melkin Whisper": 0.562,
+    "Leyf Whisper": 0.545,
+    "Dimoneesh Brawler": 0.542,
+    "Lizerus Champion": 0.537,
+    "Melkin Brawler": 0.517,
+    "Sapien Champion": 0.511,
+    "Leyf Soul Seer": 0.508,
+    "Dimoneesh Maverick": 0.503,
+    "Lizerus Maverick": 0.501,
+    "Leyf Brawler": 0.493,
+    "Dimoneesh Whisper": 0.467,
+    "Lizerus Whisper": 0.464,
+    "Leyf Maverick": 0.462,
+    "Sapien Whisper": 0.433,
+    "Lizerus Soul Seer": 0.423,
+    "Dimoneesh Champion": 0.401,
+    "Melkin Champion": 0.385,
+    "Melkin Soul Seer": 0.384,
+    "Sapien Soul Seer": 0.377,
+    "Leyf Champion": 0.35
    },
    "sample": {
     "Sapien Brawler (Que Bao)": {
-     "life": 60,
+     "life": 56,
      "def": 11,
      "st": {
       "P": 4,
@@ -644,7 +645,7 @@
      ]
     },
     "Sapien Brawler (Fury)": {
-     "life": 60,
+     "life": 56,
      "def": 11,
      "st": {
       "P": 4,
@@ -659,7 +660,7 @@
      ]
     },
     "Sapien Brawler (Iron Body)": {
-     "life": 60,
+     "life": 56,
      "def": 11,
      "st": {
       "P": 4,
@@ -674,8 +675,8 @@
      ]
     },
     "Sapien Champion (Honor)": {
-     "life": 49,
-     "def": 11,
+     "life": 53,
+     "def": 12,
      "st": {
       "P": 5,
       "E": 1,
@@ -689,8 +690,8 @@
      ]
     },
     "Sapien Champion (Sacred)": {
-     "life": 49,
-     "def": 11,
+     "life": 53,
+     "def": 12,
      "st": {
       "P": 5,
       "E": 1,
@@ -704,8 +705,8 @@
      ]
     },
     "Sapien Champion (Oath)": {
-     "life": 49,
-     "def": 11,
+     "life": 53,
+     "def": 12,
      "st": {
       "P": 5,
       "E": 1,
@@ -764,7 +765,7 @@
      ]
     },
     "Sapien Soul Seer (Mender)": {
-     "life": 39,
+     "life": 46,
      "def": 11,
      "st": {
       "P": 1,
@@ -779,7 +780,7 @@
      ]
     },
     "Sapien Soul Seer (Sound)": {
-     "life": 39,
+     "life": 46,
      "def": 11,
      "st": {
       "P": 1,
@@ -794,7 +795,7 @@
      ]
     },
     "Sapien Soul Seer (Nature)": {
-     "life": 39,
+     "life": 46,
      "def": 11,
      "st": {
       "P": 1,
@@ -819,8 +820,8 @@
      },
      "abilities": [
       "Double Strike",
-      "Downdraft",
-      "Heartbreak"
+      "Shadow Step",
+      "Downdraft"
      ]
     },
     "Sapien Whisper (Shadow)": {
@@ -834,8 +835,8 @@
      },
      "abilities": [
       "Double Strike",
-      "Darkness",
-      "Shadow Step"
+      "Shadow Step",
+      "Darkness"
      ]
     },
     "Sapien Whisper (Heart)": {
@@ -856,72 +857,72 @@
    }
   },
   "10": {
-   "avgRounds": 6.62,
+   "avgRounds": 6.4,
    "drawRate": 0,
-   "inspireWinRate": 0.636,
+   "inspireWinRate": 0.659,
    "executeWinRate": 0,
    "knellWinRate": 0,
    "byRole": {
-    "Brawler": 0.687,
-    "Maverick": 0.644,
-    "Whisper": 0.577,
-    "Champion": 0.349,
-    "Soul Seer": 0.243
+    "Brawler": 0.593,
+    "Whisper": 0.581,
+    "Maverick": 0.457,
+    "Champion": 0.449,
+    "Soul Seer": 0.42
    },
    "byLifeform": {
-    "Melkin": 0.59,
-    "Dimoneesh": 0.496,
-    "Leyf": 0.487,
-    "Sapien": 0.465,
-    "Lizerus": 0.463
+    "Lizerus": 0.521,
+    "Dimoneesh": 0.514,
+    "Melkin": 0.499,
+    "Sapien": 0.487,
+    "Leyf": 0.479
    },
    "byBuild": {
-    "Brawler (Que Bao)": 0.719,
-    "Brawler (Iron Body)": 0.689,
-    "Maverick (Trickster)": 0.684,
-    "Brawler (Fury)": 0.653,
-    "Maverick (Wayfinder)": 0.652,
-    "Whisper (Wind)": 0.602,
-    "Maverick (Sharpsight)": 0.597,
-    "Whisper (Heart)": 0.573,
-    "Whisper (Shadow)": 0.555,
-    "Champion (Honor)": 0.394,
-    "Champion (Oath)": 0.344,
-    "Champion (Sacred)": 0.31,
-    "Soul Seer (Sound)": 0.263,
-    "Soul Seer (Mender)": 0.251,
-    "Soul Seer (Nature)": 0.215
+    "Brawler (Que Bao)": 0.633,
+    "Whisper (Wind)": 0.606,
+    "Brawler (Iron Body)": 0.603,
+    "Whisper (Shadow)": 0.575,
+    "Whisper (Heart)": 0.562,
+    "Brawler (Fury)": 0.543,
+    "Champion (Honor)": 0.494,
+    "Maverick (Wayfinder)": 0.493,
+    "Maverick (Trickster)": 0.487,
+    "Champion (Oath)": 0.447,
+    "Soul Seer (Mender)": 0.447,
+    "Soul Seer (Sound)": 0.445,
+    "Champion (Sacred)": 0.405,
+    "Maverick (Sharpsight)": 0.392,
+    "Soul Seer (Nature)": 0.368
    },
    "byPair": {
-    "Melkin Brawler": 0.764,
-    "Melkin Maverick": 0.736,
-    "Melkin Whisper": 0.694,
-    "Dimoneesh Brawler": 0.685,
-    "Sapien Brawler": 0.679,
-    "Leyf Brawler": 0.663,
-    "Dimoneesh Maverick": 0.657,
-    "Leyf Maverick": 0.651,
-    "Lizerus Brawler": 0.643,
-    "Lizerus Maverick": 0.599,
-    "Sapien Maverick": 0.578,
-    "Dimoneesh Whisper": 0.57,
-    "Leyf Whisper": 0.569,
-    "Lizerus Whisper": 0.531,
-    "Sapien Whisper": 0.519,
-    "Melkin Champion": 0.436,
-    "Sapien Champion": 0.341,
-    "Dimoneesh Champion": 0.331,
-    "Leyf Champion": 0.324,
-    "Melkin Soul Seer": 0.322,
-    "Lizerus Champion": 0.315,
-    "Dimoneesh Soul Seer": 0.235,
-    "Leyf Soul Seer": 0.227,
-    "Lizerus Soul Seer": 0.224,
-    "Sapien Soul Seer": 0.206
+    "Lizerus Brawler": 0.615,
+    "Lizerus Whisper": 0.596,
+    "Dimoneesh Brawler": 0.595,
+    "Dimoneesh Whisper": 0.595,
+    "Melkin Whisper": 0.595,
+    "Melkin Brawler": 0.594,
+    "Sapien Brawler": 0.587,
+    "Leyf Brawler": 0.575,
+    "Leyf Whisper": 0.561,
+    "Sapien Whisper": 0.559,
+    "Lizerus Maverick": 0.492,
+    "Lizerus Champion": 0.478,
+    "Dimoneesh Champion": 0.471,
+    "Dimoneesh Maverick": 0.462,
+    "Dimoneesh Soul Seer": 0.447,
+    "Leyf Maverick": 0.446,
+    "Melkin Maverick": 0.446,
+    "Melkin Champion": 0.442,
+    "Sapien Maverick": 0.441,
+    "Sapien Champion": 0.44,
+    "Lizerus Soul Seer": 0.423,
+    "Melkin Soul Seer": 0.419,
+    "Leyf Champion": 0.412,
+    "Sapien Soul Seer": 0.41,
+    "Leyf Soul Seer": 0.402
    },
    "sample": {
     "Sapien Brawler (Que Bao)": {
-     "life": 85,
+     "life": 76,
      "def": 12,
      "st": {
       "P": 6,
@@ -937,7 +938,7 @@
      ]
     },
     "Sapien Brawler (Fury)": {
-     "life": 85,
+     "life": 76,
      "def": 12,
      "st": {
       "P": 6,
@@ -953,7 +954,7 @@
      ]
     },
     "Sapien Brawler (Iron Body)": {
-     "life": 85,
+     "life": 76,
      "def": 12,
      "st": {
       "P": 6,
@@ -969,8 +970,8 @@
      ]
     },
     "Sapien Champion (Honor)": {
-     "life": 69,
-     "def": 12,
+     "life": 78,
+     "def": 13,
      "st": {
       "P": 6,
       "E": 3,
@@ -985,8 +986,8 @@
      ]
     },
     "Sapien Champion (Sacred)": {
-     "life": 69,
-     "def": 12,
+     "life": 78,
+     "def": 13,
      "st": {
       "P": 6,
       "E": 3,
@@ -1001,8 +1002,8 @@
      ]
     },
     "Sapien Champion (Oath)": {
-     "life": 69,
-     "def": 12,
+     "life": 78,
+     "def": 13,
      "st": {
       "P": 6,
       "E": 1,
@@ -1065,7 +1066,7 @@
      ]
     },
     "Sapien Soul Seer (Mender)": {
-     "life": 54,
+     "life": 66,
      "def": 12,
      "st": {
       "P": 2,
@@ -1081,7 +1082,7 @@
      ]
     },
     "Sapien Soul Seer (Sound)": {
-     "life": 54,
+     "life": 66,
      "def": 12,
      "st": {
       "P": 1,
@@ -1097,7 +1098,7 @@
      ]
     },
     "Sapien Soul Seer (Nature)": {
-     "life": 54,
+     "life": 66,
      "def": 12,
      "st": {
       "P": 2,
@@ -1123,9 +1124,9 @@
      },
      "abilities": [
       "Double Strike II",
+      "Shadow Step",
       "Downdraft",
-      "Gale Gust",
-      "Heartbreak"
+      "Gale Gust"
      ]
     },
     "Sapien Whisper (Shadow)": {
@@ -1139,8 +1140,8 @@
      },
      "abilities": [
       "Double Strike II",
-      "Darkness",
       "Shadow Step",
+      "Darkness",
       "Smoke"
      ]
     },
@@ -1163,72 +1164,72 @@
    }
   },
   "15": {
-   "avgRounds": 7.55,
+   "avgRounds": 7.35,
    "drawRate": 0,
-   "inspireWinRate": 0.702,
+   "inspireWinRate": 0.782,
    "executeWinRate": 0,
    "knellWinRate": 0,
    "byRole": {
-    "Maverick": 0.71,
-    "Brawler": 0.629,
-    "Whisper": 0.53,
-    "Soul Seer": 0.35,
-    "Champion": 0.281
+    "Whisper": 0.545,
+    "Brawler": 0.53,
+    "Soul Seer": 0.507,
+    "Maverick": 0.499,
+    "Champion": 0.418
    },
    "byLifeform": {
-    "Melkin": 0.591,
-    "Dimoneesh": 0.488,
-    "Leyf": 0.48,
-    "Lizerus": 0.473,
-    "Sapien": 0.467
+    "Lizerus": 0.526,
+    "Dimoneesh": 0.52,
+    "Melkin": 0.494,
+    "Sapien": 0.484,
+    "Leyf": 0.476
    },
    "byBuild": {
-    "Maverick (Trickster)": 0.745,
-    "Maverick (Sharpsight)": 0.721,
-    "Brawler (Que Bao)": 0.691,
-    "Maverick (Wayfinder)": 0.665,
-    "Brawler (Fury)": 0.656,
-    "Whisper (Heart)": 0.585,
-    "Whisper (Wind)": 0.566,
-    "Brawler (Iron Body)": 0.542,
-    "Whisper (Shadow)": 0.439,
-    "Soul Seer (Sound)": 0.355,
-    "Soul Seer (Nature)": 0.349,
-    "Soul Seer (Mender)": 0.346,
-    "Champion (Honor)": 0.315,
-    "Champion (Oath)": 0.29,
-    "Champion (Sacred)": 0.236
+    "Whisper (Heart)": 0.649,
+    "Brawler (Que Bao)": 0.582,
+    "Whisper (Wind)": 0.569,
+    "Brawler (Fury)": 0.561,
+    "Soul Seer (Sound)": 0.54,
+    "Maverick (Trickster)": 0.508,
+    "Maverick (Wayfinder)": 0.501,
+    "Soul Seer (Nature)": 0.499,
+    "Maverick (Sharpsight)": 0.488,
+    "Soul Seer (Mender)": 0.481,
+    "Champion (Oath)": 0.451,
+    "Brawler (Iron Body)": 0.447,
+    "Champion (Honor)": 0.443,
+    "Whisper (Shadow)": 0.419,
+    "Champion (Sacred)": 0.362
    },
    "byPair": {
-    "Melkin Maverick": 0.815,
-    "Leyf Maverick": 0.713,
-    "Melkin Brawler": 0.711,
-    "Dimoneesh Maverick": 0.706,
-    "Lizerus Maverick": 0.667,
-    "Sapien Maverick": 0.648,
-    "Melkin Whisper": 0.631,
-    "Lizerus Brawler": 0.623,
-    "Sapien Brawler": 0.618,
-    "Leyf Brawler": 0.604,
-    "Dimoneesh Brawler": 0.59,
-    "Dimoneesh Whisper": 0.518,
-    "Leyf Whisper": 0.514,
-    "Lizerus Whisper": 0.505,
-    "Sapien Whisper": 0.482,
-    "Melkin Soul Seer": 0.428,
-    "Melkin Champion": 0.37,
-    "Dimoneesh Soul Seer": 0.364,
-    "Leyf Soul Seer": 0.335,
-    "Sapien Soul Seer": 0.316,
-    "Lizerus Soul Seer": 0.308,
-    "Sapien Champion": 0.27,
-    "Lizerus Champion": 0.264,
-    "Dimoneesh Champion": 0.263,
-    "Leyf Champion": 0.236
+    "Dimoneesh Whisper": 0.577,
+    "Lizerus Brawler": 0.57,
+    "Lizerus Whisper": 0.556,
+    "Melkin Whisper": 0.546,
+    "Lizerus Maverick": 0.536,
+    "Dimoneesh Soul Seer": 0.532,
+    "Sapien Whisper": 0.529,
+    "Dimoneesh Brawler": 0.527,
+    "Sapien Brawler": 0.526,
+    "Lizerus Soul Seer": 0.524,
+    "Dimoneesh Maverick": 0.519,
+    "Leyf Whisper": 0.518,
+    "Leyf Brawler": 0.514,
+    "Melkin Brawler": 0.513,
+    "Melkin Soul Seer": 0.503,
+    "Melkin Maverick": 0.496,
+    "Sapien Soul Seer": 0.493,
+    "Leyf Soul Seer": 0.482,
+    "Sapien Maverick": 0.479,
+    "Leyf Maverick": 0.467,
+    "Dimoneesh Champion": 0.447,
+    "Lizerus Champion": 0.442,
+    "Melkin Champion": 0.411,
+    "Leyf Champion": 0.4,
+    "Sapien Champion": 0.392
    },
    "sample": {
     "Sapien Brawler (Que Bao)": {
-     "life": 110,
+     "life": 96,
      "def": 13,
      "st": {
       "P": 6,
@@ -1244,7 +1245,7 @@
      ]
     },
     "Sapien Brawler (Fury)": {
-     "life": 110,
+     "life": 96,
      "def": 13,
      "st": {
       "P": 6,
@@ -1260,7 +1261,7 @@
      ]
     },
     "Sapien Brawler (Iron Body)": {
-     "life": 110,
+     "life": 96,
      "def": 13,
      "st": {
       "P": 6,
@@ -1276,8 +1277,8 @@
      ]
     },
     "Sapien Champion (Honor)": {
-     "life": 89,
-     "def": 13,
+     "life": 103,
+     "def": 14,
      "st": {
       "P": 6,
       "E": 5,
@@ -1292,8 +1293,8 @@
      ]
     },
     "Sapien Champion (Sacred)": {
-     "life": 89,
-     "def": 13,
+     "life": 103,
+     "def": 14,
      "st": {
       "P": 6,
       "E": 5,
@@ -1308,8 +1309,8 @@
      ]
     },
     "Sapien Champion (Oath)": {
-     "life": 89,
-     "def": 13,
+     "life": 103,
+     "def": 14,
      "st": {
       "P": 6,
       "E": 1,
@@ -1372,7 +1373,7 @@
      ]
     },
     "Sapien Soul Seer (Mender)": {
-     "life": 69,
+     "life": 86,
      "def": 13,
      "st": {
       "P": 4,
@@ -1388,7 +1389,7 @@
      ]
     },
     "Sapien Soul Seer (Sound)": {
-     "life": 69,
+     "life": 86,
      "def": 13,
      "st": {
       "P": 1,
@@ -1404,7 +1405,7 @@
      ]
     },
     "Sapien Soul Seer (Nature)": {
-     "life": 69,
+     "life": 86,
      "def": 13,
      "st": {
       "P": 4,
@@ -1432,7 +1433,7 @@
       "Stinging Breeze",
       "Double Strike II",
       "Shadow-Strike",
-      "Downdraft"
+      "Shadow Step"
      ]
     },
     "Sapien Whisper (Shadow)": {
@@ -1448,7 +1449,7 @@
       "Stinging Breeze II",
       "Double Strike",
       "Shadow-Strike",
-      "Nightfall"
+      "Shadow Step"
      ]
     },
     "Sapien Whisper (Heart)": {
@@ -1470,72 +1471,72 @@
    }
   },
   "20": {
-   "avgRounds": 6.63,
+   "avgRounds": 6.53,
    "drawRate": 0,
-   "inspireWinRate": 0.539,
+   "inspireWinRate": 0.593,
    "executeWinRate": 0,
-   "knellWinRate": 0.157,
+   "knellWinRate": 0.09,
    "byRole": {
-    "Brawler": 0.588,
-    "Maverick": 0.546,
-    "Soul Seer": 0.523,
-    "Whisper": 0.437,
-    "Champion": 0.407
+    "Champion": 0.585,
+    "Brawler": 0.564,
+    "Soul Seer": 0.5,
+    "Maverick": 0.431,
+    "Whisper": 0.42
    },
    "byLifeform": {
-    "Melkin": 0.578,
-    "Dimoneesh": 0.509,
-    "Leyf": 0.491,
-    "Lizerus": 0.467,
-    "Sapien": 0.456
+    "Dimoneesh": 0.528,
+    "Lizerus": 0.526,
+    "Sapien": 0.487,
+    "Melkin": 0.484,
+    "Leyf": 0.475
    },
    "byBuild": {
-    "Soul Seer (Nature)": 0.646,
-    "Soul Seer (Sound)": 0.642,
-    "Brawler (Fury)": 0.624,
-    "Maverick (Trickster)": 0.613,
-    "Brawler (Que Bao)": 0.611,
-    "Maverick (Sharpsight)": 0.573,
-    "Brawler (Iron Body)": 0.528,
-    "Whisper (Shadow)": 0.482,
-    "Whisper (Heart)": 0.455,
-    "Champion (Honor)": 0.453,
-    "Maverick (Wayfinder)": 0.453,
-    "Champion (Sacred)": 0.413,
-    "Whisper (Wind)": 0.372,
-    "Champion (Oath)": 0.354,
-    "Soul Seer (Mender)": 0.281
+    "Champion (Honor)": 0.619,
+    "Champion (Sacred)": 0.604,
+    "Brawler (Fury)": 0.596,
+    "Brawler (Que Bao)": 0.594,
+    "Soul Seer (Sound)": 0.559,
+    "Maverick (Sharpsight)": 0.545,
+    "Champion (Oath)": 0.533,
+    "Soul Seer (Nature)": 0.528,
+    "Whisper (Heart)": 0.525,
+    "Brawler (Iron Body)": 0.503,
+    "Whisper (Wind)": 0.429,
+    "Soul Seer (Mender)": 0.414,
+    "Maverick (Trickster)": 0.376,
+    "Maverick (Wayfinder)": 0.371,
+    "Whisper (Shadow)": 0.307
    },
    "byPair": {
-    "Melkin Brawler": 0.685,
-    "Melkin Maverick": 0.625,
-    "Dimoneesh Brawler": 0.591,
-    "Leyf Brawler": 0.579,
-    "Melkin Soul Seer": 0.578,
-    "Dimoneesh Maverick": 0.567,
-    "Lizerus Brawler": 0.542,
-    "Leyf Maverick": 0.541,
-    "Sapien Brawler": 0.541,
-    "Leyf Soul Seer": 0.539,
-    "Dimoneesh Soul Seer": 0.534,
-    "Melkin Whisper": 0.533,
-    "Lizerus Maverick": 0.508,
-    "Sapien Maverick": 0.492,
-    "Lizerus Soul Seer": 0.489,
-    "Sapien Soul Seer": 0.475,
-    "Melkin Champion": 0.468,
-    "Dimoneesh Whisper": 0.439,
-    "Lizerus Whisper": 0.423,
-    "Dimoneesh Champion": 0.413,
-    "Leyf Whisper": 0.406,
-    "Sapien Champion": 0.392,
-    "Leyf Champion": 0.387,
-    "Sapien Whisper": 0.382,
-    "Lizerus Champion": 0.373
+    "Dimoneesh Champion": 0.617,
+    "Lizerus Champion": 0.598,
+    "Lizerus Brawler": 0.593,
+    "Dimoneesh Brawler": 0.583,
+    "Melkin Champion": 0.575,
+    "Sapien Champion": 0.575,
+    "Leyf Champion": 0.562,
+    "Sapien Brawler": 0.561,
+    "Melkin Brawler": 0.546,
+    "Leyf Brawler": 0.537,
+    "Lizerus Soul Seer": 0.525,
+    "Dimoneesh Soul Seer": 0.524,
+    "Melkin Soul Seer": 0.493,
+    "Sapien Soul Seer": 0.483,
+    "Leyf Soul Seer": 0.475,
+    "Dimoneesh Maverick": 0.472,
+    "Lizerus Maverick": 0.467,
+    "Lizerus Whisper": 0.448,
+    "Dimoneesh Whisper": 0.447,
+    "Sapien Whisper": 0.408,
+    "Sapien Maverick": 0.407,
+    "Leyf Maverick": 0.405,
+    "Melkin Maverick": 0.402,
+    "Melkin Whisper": 0.402,
+    "Leyf Whisper": 0.395
    },
    "sample": {
     "Sapien Brawler (Que Bao)": {
-     "life": 135,
+     "life": 116,
      "def": 14,
      "st": {
       "P": 6,
@@ -1551,7 +1552,7 @@
      ]
     },
     "Sapien Brawler (Fury)": {
-     "life": 135,
+     "life": 116,
      "def": 14,
      "st": {
       "P": 6,
@@ -1567,7 +1568,7 @@
      ]
     },
     "Sapien Brawler (Iron Body)": {
-     "life": 135,
+     "life": 116,
      "def": 14,
      "st": {
       "P": 6,
@@ -1583,8 +1584,8 @@
      ]
     },
     "Sapien Champion (Honor)": {
-     "life": 109,
-     "def": 14,
+     "life": 128,
+     "def": 15,
      "st": {
       "P": 6,
       "E": 6,
@@ -1599,8 +1600,8 @@
      ]
     },
     "Sapien Champion (Sacred)": {
-     "life": 109,
-     "def": 14,
+     "life": 128,
+     "def": 15,
      "st": {
       "P": 6,
       "E": 6,
@@ -1615,8 +1616,8 @@
      ]
     },
     "Sapien Champion (Oath)": {
-     "life": 109,
-     "def": 14,
+     "life": 128,
+     "def": 15,
      "st": {
       "P": 6,
       "E": 3,
@@ -1679,7 +1680,7 @@
      ]
     },
     "Sapien Soul Seer (Mender)": {
-     "life": 84,
+     "life": 106,
      "def": 14,
      "st": {
       "P": 6,
@@ -1695,7 +1696,7 @@
      ]
     },
     "Sapien Soul Seer (Sound)": {
-     "life": 84,
+     "life": 106,
      "def": 14,
      "st": {
       "P": 2,
@@ -1711,7 +1712,7 @@
      ]
     },
     "Sapien Soul Seer (Nature)": {
-     "life": 84,
+     "life": 106,
      "def": 14,
      "st": {
       "P": 6,
@@ -1723,7 +1724,7 @@
       "Engulf II",
       "Nature Blast",
       "Death Knell",
-      "Explosion II"
+      "Sonic Slice"
      ]
     },
     "Sapien Whisper (Wind)": {
@@ -1755,7 +1756,7 @@
       "Stinging Breeze III",
       "Double Strike",
       "Shadow-Strike",
-      "One with Shadow"
+      "Darkness"
      ]
     },
     "Sapien Whisper (Heart)": {
@@ -1781,289 +1782,289 @@
   "L1 Wilted Wood ambush (1 gremlin, solo)": {
    "Brawler (Que Bao)": {
     "win": 1,
-    "rounds": 3.7,
-    "lifeLeft": 0.82
+    "rounds": 2.9,
+    "lifeLeft": 0.85
    },
    "Brawler (Fury)": {
-    "win": 1,
-    "rounds": 3.3,
-    "lifeLeft": 0.83
+    "win": 0.995,
+    "rounds": 2.9,
+    "lifeLeft": 0.85
    },
    "Brawler (Iron Body)": {
     "win": 1,
-    "rounds": 3.6,
-    "lifeLeft": 0.8
+    "rounds": 3,
+    "lifeLeft": 0.86
    },
    "Champion (Honor)": {
-    "win": 0.995,
-    "rounds": 3,
-    "lifeLeft": 0.81
+    "win": 1,
+    "rounds": 2.4,
+    "lifeLeft": 0.87
    },
    "Champion (Sacred)": {
-    "win": 0.99,
-    "rounds": 3.4,
-    "lifeLeft": 0.8
+    "win": 1,
+    "rounds": 2.4,
+    "lifeLeft": 0.88
    },
    "Champion (Oath)": {
     "win": 1,
-    "rounds": 3.4,
-    "lifeLeft": 0.84
+    "rounds": 2.5,
+    "lifeLeft": 0.91
    },
    "Maverick (Sharpsight)": {
     "win": 0.995,
-    "rounds": 3.4,
-    "lifeLeft": 0.77
+    "rounds": 2.5,
+    "lifeLeft": 0.85
    },
    "Maverick (Trickster)": {
-    "win": 0.98,
-    "rounds": 3.4,
-    "lifeLeft": 0.77
+    "win": 1,
+    "rounds": 2.6,
+    "lifeLeft": 0.84
    },
    "Maverick (Wayfinder)": {
-    "win": 1,
-    "rounds": 3.2,
-    "lifeLeft": 0.8
+    "win": 0.995,
+    "rounds": 2.5,
+    "lifeLeft": 0.85
    },
    "Soul Seer (Mender)": {
     "win": 1,
-    "rounds": 2.9,
-    "lifeLeft": 0.89
+    "rounds": 2.4,
+    "lifeLeft": 0.92
    },
    "Soul Seer (Sound)": {
-    "win": 0.985,
-    "rounds": 3.4,
-    "lifeLeft": 0.77
+    "win": 1,
+    "rounds": 2.5,
+    "lifeLeft": 0.85
    },
    "Soul Seer (Nature)": {
-    "win": 0.995,
-    "rounds": 3,
-    "lifeLeft": 0.78
-   },
-   "Whisper (Wind)": {
-    "win": 0.995,
-    "rounds": 2.4,
+    "win": 1,
+    "rounds": 2.3,
     "lifeLeft": 0.86
    },
+   "Whisper (Wind)": {
+    "win": 1,
+    "rounds": 1.8,
+    "lifeLeft": 0.92
+   },
    "Whisper (Shadow)": {
-    "win": 0.96,
-    "rounds": 5.3,
-    "lifeLeft": 0.66
+    "win": 1,
+    "rounds": 2.2,
+    "lifeLeft": 0.88
    },
    "Whisper (Heart)": {
-    "win": 0.985,
-    "rounds": 3.2,
-    "lifeLeft": 0.79
+    "win": 0.99,
+    "rounds": 2.4,
+    "lifeLeft": 0.85
    }
   },
   "L1 Well fight (2 gremlins + spitter, solo)": {
    "Brawler (Que Bao)": {
-    "win": 0.42,
-    "rounds": 7.4,
-    "lifeLeft": 0.14
-   },
-   "Brawler (Fury)": {
-    "win": 0.45,
-    "rounds": 7.3,
-    "lifeLeft": 0.15
-   },
-   "Brawler (Iron Body)": {
-    "win": 0.425,
-    "rounds": 7.3,
-    "lifeLeft": 0.15
-   },
-   "Champion (Honor)": {
-    "win": 0.46,
-    "rounds": 6.2,
-    "lifeLeft": 0.17
-   },
-   "Champion (Sacred)": {
-    "win": 0.565,
-    "rounds": 8,
+    "win": 0.635,
+    "rounds": 7,
     "lifeLeft": 0.25
    },
+   "Brawler (Fury)": {
+    "win": 0.67,
+    "rounds": 6.8,
+    "lifeLeft": 0.27
+   },
+   "Brawler (Iron Body)": {
+    "win": 0.605,
+    "rounds": 7.2,
+    "lifeLeft": 0.22
+   },
+   "Champion (Honor)": {
+    "win": 0.655,
+    "rounds": 5.9,
+    "lifeLeft": 0.3
+   },
+   "Champion (Sacred)": {
+    "win": 0.75,
+    "rounds": 7.2,
+    "lifeLeft": 0.35
+   },
    "Champion (Oath)": {
-    "win": 0.63,
-    "rounds": 10,
-    "lifeLeft": 0.38
+    "win": 0.715,
+    "rounds": 8.7,
+    "lifeLeft": 0.47
    },
    "Maverick (Sharpsight)": {
-    "win": 0.365,
-    "rounds": 5.9,
-    "lifeLeft": 0.13
+    "win": 0.54,
+    "rounds": 5.6,
+    "lifeLeft": 0.22
    },
    "Maverick (Trickster)": {
-    "win": 0.33,
-    "rounds": 5.8,
-    "lifeLeft": 0.09
-   },
-   "Maverick (Wayfinder)": {
-    "win": 0.3,
-    "rounds": 5.9,
-    "lifeLeft": 0.11
-   },
-   "Soul Seer (Mender)": {
-    "win": 0.57,
-    "rounds": 6.5,
-    "lifeLeft": 0.29
-   },
-   "Soul Seer (Sound)": {
-    "win": 0.235,
-    "rounds": 5.4,
-    "lifeLeft": 0.08
-   },
-   "Soul Seer (Nature)": {
-    "win": 0.595,
-    "rounds": 5.2,
+    "win": 0.52,
+    "rounds": 5.6,
     "lifeLeft": 0.19
    },
+   "Maverick (Wayfinder)": {
+    "win": 0.525,
+    "rounds": 5.5,
+    "lifeLeft": 0.22
+   },
+   "Soul Seer (Mender)": {
+    "win": 0.775,
+    "rounds": 6.1,
+    "lifeLeft": 0.44
+   },
+   "Soul Seer (Sound)": {
+    "win": 0.53,
+    "rounds": 5.3,
+    "lifeLeft": 0.22
+   },
+   "Soul Seer (Nature)": {
+    "win": 0.84,
+    "rounds": 4.6,
+    "lifeLeft": 0.36
+   },
    "Whisper (Wind)": {
-    "win": 0.555,
-    "rounds": 5.6,
-    "lifeLeft": 0.21
+    "win": 0.72,
+    "rounds": 5.3,
+    "lifeLeft": 0.32
    },
    "Whisper (Shadow)": {
-    "win": 0.12,
-    "rounds": 6.2,
-    "lifeLeft": 0.03
+    "win": 0.75,
+    "rounds": 5.7,
+    "lifeLeft": 0.32
    },
    "Whisper (Heart)": {
-    "win": 0.36,
-    "rounds": 6.1,
-    "lifeLeft": 0.11
+    "win": 0.55,
+    "rounds": 5.4,
+    "lifeLeft": 0.23
    }
   },
   "L2 Rotfang (solo, Cleanse charm)": {
    "Brawler (Que Bao)": {
-    "win": 0.065,
-    "rounds": 11.3,
-    "lifeLeft": 0.02
+    "win": 0.335,
+    "rounds": 9.5,
+    "lifeLeft": 0.13
    },
    "Brawler (Fury)": {
-    "win": 0.095,
-    "rounds": 10.9,
-    "lifeLeft": 0.02
+    "win": 0.45,
+    "rounds": 9.4,
+    "lifeLeft": 0.17
    },
    "Brawler (Iron Body)": {
-    "win": 0.02,
-    "rounds": 11.1,
-    "lifeLeft": 0.01
+    "win": 0.29,
+    "rounds": 9.7,
+    "lifeLeft": 0.11
    },
    "Champion (Honor)": {
-    "win": 0.065,
-    "rounds": 9.5,
-    "lifeLeft": 0.02
+    "win": 0.48,
+    "rounds": 8.1,
+    "lifeLeft": 0.21
    },
    "Champion (Sacred)": {
-    "win": 0.06,
-    "rounds": 11.1,
-    "lifeLeft": 0.02
+    "win": 0.55,
+    "rounds": 10,
+    "lifeLeft": 0.24
    },
    "Champion (Oath)": {
-    "win": 0.1,
-    "rounds": 14.8,
-    "lifeLeft": 0.05
+    "win": 0.48,
+    "rounds": 12.3,
+    "lifeLeft": 0.22
    },
    "Maverick (Sharpsight)": {
-    "win": 0.045,
-    "rounds": 8.6,
-    "lifeLeft": 0.01
+    "win": 0.37,
+    "rounds": 7.6,
+    "lifeLeft": 0.19
    },
    "Maverick (Trickster)": {
-    "win": 0.05,
-    "rounds": 9,
-    "lifeLeft": 0.02
+    "win": 0.375,
+    "rounds": 7.8,
+    "lifeLeft": 0.16
    },
    "Maverick (Wayfinder)": {
-    "win": 0.04,
-    "rounds": 9,
-    "lifeLeft": 0.01
+    "win": 0.375,
+    "rounds": 8,
+    "lifeLeft": 0.15
    },
    "Soul Seer (Mender)": {
-    "win": 0.095,
-    "rounds": 10.3,
-    "lifeLeft": 0.03
+    "win": 0.545,
+    "rounds": 8.7,
+    "lifeLeft": 0.28
    },
    "Soul Seer (Sound)": {
-    "win": 0.025,
-    "rounds": 8.3,
-    "lifeLeft": 0.01
+    "win": 0.29,
+    "rounds": 8,
+    "lifeLeft": 0.12
    },
    "Soul Seer (Nature)": {
-    "win": 0.06,
-    "rounds": 7.8,
-    "lifeLeft": 0.02
+    "win": 0.47,
+    "rounds": 7.6,
+    "lifeLeft": 0.18
    },
    "Whisper (Wind)": {
-    "win": 0.18,
-    "rounds": 8.5,
-    "lifeLeft": 0.06
+    "win": 0.515,
+    "rounds": 7.1,
+    "lifeLeft": 0.23
    },
    "Whisper (Shadow)": {
-    "win": 0.005,
-    "rounds": 9.8,
-    "lifeLeft": 0
+    "win": 0.285,
+    "rounds": 8.4,
+    "lifeLeft": 0.11
    },
    "Whisper (Heart)": {
-    "win": 0.055,
-    "rounds": 8.9,
-    "lifeLeft": 0.01
+    "win": 0.27,
+    "rounds": 8.1,
+    "lifeLeft": 0.09
    }
   },
   "L2 Rotfang (party of 3, Cleanse charm)": {
    "Brawler (Que Bao)": {
     "win": 1,
-    "rounds": 6.3,
+    "rounds": 6.2,
     "lifeLeft": 0.81
    },
    "Brawler (Fury)": {
     "win": 1,
-    "rounds": 6.1,
-    "lifeLeft": 0.82
+    "rounds": 6.2,
+    "lifeLeft": 0.81
    },
    "Brawler (Iron Body)": {
     "win": 1,
-    "rounds": 6.2,
+    "rounds": 6.5,
     "lifeLeft": 0.81
    },
    "Champion (Honor)": {
     "win": 1,
-    "rounds": 5.8,
+    "rounds": 6.1,
     "lifeLeft": 0.81
    },
    "Champion (Sacred)": {
     "win": 1,
-    "rounds": 5.9,
-    "lifeLeft": 0.82
+    "rounds": 6.1,
+    "lifeLeft": 0.81
    },
    "Champion (Oath)": {
     "win": 1,
-    "rounds": 6,
-    "lifeLeft": 0.82
+    "rounds": 6.2,
+    "lifeLeft": 0.81
    },
    "Maverick (Sharpsight)": {
     "win": 1,
-    "rounds": 6,
-    "lifeLeft": 0.81
+    "rounds": 6.2,
+    "lifeLeft": 0.79
    },
    "Maverick (Trickster)": {
     "win": 1,
-    "rounds": 5.7,
-    "lifeLeft": 0.8
+    "rounds": 6.2,
+    "lifeLeft": 0.79
    },
    "Maverick (Wayfinder)": {
     "win": 1,
-    "rounds": 5.6,
-    "lifeLeft": 0.82
+    "rounds": 6.1,
+    "lifeLeft": 0.8
    },
    "Soul Seer (Mender)": {
     "win": 1,
-    "rounds": 5.6,
+    "rounds": 5.9,
     "lifeLeft": 0.83
    },
    "Soul Seer (Sound)": {
     "win": 1,
-    "rounds": 6.1,
-    "lifeLeft": 0.79
+    "rounds": 5.8,
+    "lifeLeft": 0.81
    },
    "Soul Seer (Nature)": {
     "win": 1,
@@ -2072,18 +2073,18 @@
    },
    "Whisper (Wind)": {
     "win": 1,
-    "rounds": 5,
-    "lifeLeft": 0.82
+    "rounds": 5.2,
+    "lifeLeft": 0.83
    },
    "Whisper (Shadow)": {
-    "win": 0.995,
-    "rounds": 7,
-    "lifeLeft": 0.77
+    "win": 1,
+    "rounds": 6,
+    "lifeLeft": 0.78
    },
    "Whisper (Heart)": {
     "win": 1,
-    "rounds": 5.9,
-    "lifeLeft": 0.8
+    "rounds": 6.2,
+    "lifeLeft": 0.79
    }
   }
  },
@@ -2091,363 +2092,363 @@
   "1": {
    "Brawler (Que Bao)": {
     "raider": {
-     "win": 0.8,
-     "rounds": 9.3,
-     "life": 0.41
+     "win": 0.96,
+     "rounds": 8.8,
+     "life": 0.49
     },
     "pack": {
-     "win": 0.45,
-     "rounds": 8.4,
-     "life": 0.16
+     "win": 0.47,
+     "rounds": 8.5,
+     "life": 0.15
     }
    },
    "Brawler (Fury)": {
     "raider": {
-     "win": 0.89,
-     "rounds": 9,
-     "life": 0.43
+     "win": 0.86,
+     "rounds": 8.2,
+     "life": 0.46
     },
     "pack": {
-     "win": 0.39,
-     "rounds": 8.5,
-     "life": 0.13
+     "win": 0.47,
+     "rounds": 8.6,
+     "life": 0.16
     }
    },
    "Brawler (Iron Body)": {
     "raider": {
-     "win": 0.75,
-     "rounds": 10.1,
-     "life": 0.34
+     "win": 0.84,
+     "rounds": 9.5,
+     "life": 0.38
     },
     "pack": {
-     "win": 0.31,
+     "win": 0.37,
      "rounds": 8.9,
-     "life": 0.08
+     "life": 0.09
     }
    },
    "Champion (Honor)": {
     "raider": {
-     "win": 0.76,
-     "rounds": 7.7,
-     "life": 0.33
+     "win": 0.94,
+     "rounds": 7.3,
+     "life": 0.49
     },
     "pack": {
-     "win": 0.34,
+     "win": 0.52,
      "rounds": 7.5,
-     "life": 0.11
+     "life": 0.17
     }
    },
    "Champion (Sacred)": {
     "raider": {
-     "win": 0.88,
-     "rounds": 8,
-     "life": 0.41
+     "win": 0.91,
+     "rounds": 8.2,
+     "life": 0.47
     },
     "pack": {
-     "win": 0.52,
-     "rounds": 10,
-     "life": 0.24
+     "win": 0.59,
+     "rounds": 9.3,
+     "life": 0.31
     }
    },
    "Champion (Oath)": {
     "raider": {
-     "win": 0.97,
-     "rounds": 9.6,
-     "life": 0.56
+     "win": 0.96,
+     "rounds": 8.6,
+     "life": 0.6
     },
     "pack": {
-     "win": 0.5,
-     "rounds": 12.2,
-     "life": 0.31
+     "win": 0.79,
+     "rounds": 12.9,
+     "life": 0.54
     }
    },
    "Maverick (Sharpsight)": {
     "raider": {
-     "win": 0.75,
-     "rounds": 7.7,
-     "life": 0.32
-    },
-    "pack": {
-     "win": 0.25,
-     "rounds": 6.7,
-     "life": 0.07
-    }
-   },
-   "Maverick (Trickster)": {
-    "raider": {
-     "win": 0.77,
-     "rounds": 8.1,
-     "life": 0.33
-    },
-    "pack": {
-     "win": 0.15,
-     "rounds": 6.6,
-     "life": 0.03
-    }
-   },
-   "Maverick (Wayfinder)": {
-    "raider": {
-     "win": 0.79,
-     "rounds": 7.3,
-     "life": 0.35
-    },
-    "pack": {
-     "win": 0.22,
-     "rounds": 6.5,
-     "life": 0.05
-    }
-   },
-   "Soul Seer (Mender)": {
-    "raider": {
-     "win": 0.88,
-     "rounds": 7.8,
-     "life": 0.52
-    },
-    "pack": {
-     "win": 0.5,
-     "rounds": 7.8,
-     "life": 0.24
-    }
-   },
-   "Soul Seer (Sound)": {
-    "raider": {
-     "win": 0.68,
-     "rounds": 7.6,
-     "life": 0.32
-    },
-    "pack": {
-     "win": 0.19,
-     "rounds": 6.2,
-     "life": 0.05
-    }
-   },
-   "Soul Seer (Nature)": {
-    "raider": {
-     "win": 0.75,
-     "rounds": 6.7,
-     "life": 0.29
-    },
-    "pack": {
-     "win": 0.4,
-     "rounds": 6.1,
-     "life": 0.11
-    }
-   },
-   "Whisper (Wind)": {
-    "raider": {
-     "win": 0.9,
-     "rounds": 6.2,
-     "life": 0.51
-    },
-    "pack": {
-     "win": 0.57,
-     "rounds": 6.5,
-     "life": 0.17
-    }
-   },
-   "Whisper (Shadow)": {
-    "raider": {
-     "win": 0.52,
-     "rounds": 10.7,
-     "life": 0.21
-    },
-    "pack": {
-     "win": 0.06,
-     "rounds": 7,
-     "life": 0.01
-    }
-   },
-   "Whisper (Heart)": {
-    "raider": {
-     "win": 0.76,
+     "win": 0.83,
      "rounds": 7.5,
      "life": 0.37
     },
     "pack": {
-     "win": 0.28,
+     "win": 0.31,
+     "rounds": 6.7,
+     "life": 0.09
+    }
+   },
+   "Maverick (Trickster)": {
+    "raider": {
+     "win": 0.81,
+     "rounds": 7.1,
+     "life": 0.39
+    },
+    "pack": {
+     "win": 0.29,
+     "rounds": 6.6,
+     "life": 0.07
+    }
+   },
+   "Maverick (Wayfinder)": {
+    "raider": {
+     "win": 0.81,
+     "rounds": 7.8,
+     "life": 0.34
+    },
+    "pack": {
+     "win": 0.32,
      "rounds": 6.8,
-     "life": 0.08
+     "life": 0.09
+    }
+   },
+   "Soul Seer (Mender)": {
+    "raider": {
+     "win": 0.94,
+     "rounds": 7.3,
+     "life": 0.59
+    },
+    "pack": {
+     "win": 0.63,
+     "rounds": 8.5,
+     "life": 0.32
+    }
+   },
+   "Soul Seer (Sound)": {
+    "raider": {
+     "win": 0.79,
+     "rounds": 7.7,
+     "life": 0.39
+    },
+    "pack": {
+     "win": 0.27,
+     "rounds": 6.7,
+     "life": 0.06
+    }
+   },
+   "Soul Seer (Nature)": {
+    "raider": {
+     "win": 0.9,
+     "rounds": 6.5,
+     "life": 0.44
+    },
+    "pack": {
+     "win": 0.64,
+     "rounds": 5.9,
+     "life": 0.21
+    }
+   },
+   "Whisper (Wind)": {
+    "raider": {
+     "win": 0.87,
+     "rounds": 6.3,
+     "life": 0.47
+    },
+    "pack": {
+     "win": 0.58,
+     "rounds": 6.3,
+     "life": 0.22
+    }
+   },
+   "Whisper (Shadow)": {
+    "raider": {
+     "win": 0.86,
+     "rounds": 6.9,
+     "life": 0.42
+    },
+    "pack": {
+     "win": 0.49,
+     "rounds": 7.8,
+     "life": 0.17
+    }
+   },
+   "Whisper (Heart)": {
+    "raider": {
+     "win": 0.79,
+     "rounds": 7.7,
+     "life": 0.36
+    },
+    "pack": {
+     "win": 0.28,
+     "rounds": 6.7,
+     "life": 0.07
     }
    }
   },
   "3": {
    "Brawler (Que Bao)": {
     "raider": {
-     "win": 0.96,
-     "rounds": 7.7,
-     "life": 0.63
+     "win": 1,
+     "rounds": 7.2,
+     "life": 0.69
     },
     "pack": {
-     "win": 0.71,
-     "rounds": 10.1,
-     "life": 0.24
+     "win": 0.69,
+     "rounds": 9.4,
+     "life": 0.23
     }
    },
    "Brawler (Fury)": {
     "raider": {
-     "win": 0.87,
-     "rounds": 10.7,
-     "life": 0.38
+     "win": 0.88,
+     "rounds": 10.2,
+     "life": 0.4
     },
     "pack": {
-     "win": 0.28,
-     "rounds": 10,
-     "life": 0.06
+     "win": 0.32,
+     "rounds": 9.9,
+     "life": 0.09
     }
    },
    "Brawler (Iron Body)": {
     "raider": {
-     "win": 0.95,
-     "rounds": 13.4,
-     "life": 0.47
+     "win": 0.96,
+     "rounds": 12.2,
+     "life": 0.51
     },
     "pack": {
-     "win": 0.54,
-     "rounds": 16,
-     "life": 0.31
+     "win": 0.53,
+     "rounds": 15.2,
+     "life": 0.3
     }
    },
    "Champion (Honor)": {
     "raider": {
-     "win": 0.95,
-     "rounds": 7.9,
-     "life": 0.49
+     "win": 0.96,
+     "rounds": 7.6,
+     "life": 0.53
     },
     "pack": {
-     "win": 0.43,
-     "rounds": 8.4,
-     "life": 0.13
+     "win": 0.54,
+     "rounds": 8.6,
+     "life": 0.17
     }
    },
    "Champion (Sacred)": {
     "raider": {
-     "win": 0.91,
-     "rounds": 10.8,
-     "life": 0.35
+     "win": 0.95,
+     "rounds": 9.7,
+     "life": 0.46
     },
     "pack": {
-     "win": 0.48,
-     "rounds": 12.5,
-     "life": 0.19
+     "win": 0.59,
+     "rounds": 13.3,
+     "life": 0.26
     }
    },
    "Champion (Oath)": {
     "raider": {
-     "win": 0.9,
-     "rounds": 16.6,
-     "life": 0.48
+     "win": 0.93,
+     "rounds": 14.8,
+     "life": 0.56
     },
     "pack": {
-     "win": 0.21,
-     "rounds": 16.9,
-     "life": 0.19
+     "win": 0.4,
+     "rounds": 20,
+     "life": 0.38
     }
    },
    "Maverick (Sharpsight)": {
     "raider": {
-     "win": 0.79,
-     "rounds": 10.1,
-     "life": 0.33
+     "win": 0.85,
+     "rounds": 9.8,
+     "life": 0.36
     },
     "pack": {
-     "win": 0.15,
-     "rounds": 7.8,
+     "win": 0.16,
+     "rounds": 8.3,
      "life": 0.04
     }
    },
    "Maverick (Trickster)": {
     "raider": {
-     "win": 0.79,
-     "rounds": 9.8,
-     "life": 0.32
+     "win": 0.86,
+     "rounds": 8.6,
+     "life": 0.38
     },
     "pack": {
-     "win": 0.22,
-     "rounds": 8.2,
-     "life": 0.03
+     "win": 0.24,
+     "rounds": 8,
+     "life": 0.05
     }
    },
    "Maverick (Wayfinder)": {
     "raider": {
-     "win": 0.99,
-     "rounds": 6.9,
-     "life": 0.67
+     "win": 0.96,
+     "rounds": 7.3,
+     "life": 0.56
     },
     "pack": {
-     "win": 0.59,
-     "rounds": 8.3,
-     "life": 0.2
+     "win": 0.31,
+     "rounds": 7.9,
+     "life": 0.1
     }
    },
    "Soul Seer (Mender)": {
     "raider": {
-     "win": 0.95,
-     "rounds": 10.3,
-     "life": 0.63
+     "win": 0.99,
+     "rounds": 9.4,
+     "life": 0.67
     },
     "pack": {
-     "win": 0.71,
-     "rounds": 13.5,
-     "life": 0.58
+     "win": 0.87,
+     "rounds": 13.6,
+     "life": 0.7
     }
    },
    "Soul Seer (Sound)": {
     "raider": {
-     "win": 0.71,
-     "rounds": 9,
-     "life": 0.26
+     "win": 0.86,
+     "rounds": 7.7,
+     "life": 0.44
     },
     "pack": {
-     "win": 0.19,
-     "rounds": 7,
-     "life": 0.05
+     "win": 0.4,
+     "rounds": 8.2,
+     "life": 0.1
     }
    },
    "Soul Seer (Nature)": {
     "raider": {
-     "win": 0.74,
-     "rounds": 10.6,
-     "life": 0.27
+     "win": 0.88,
+     "rounds": 9.8,
+     "life": 0.39
     },
     "pack": {
-     "win": 0.13,
-     "rounds": 6.8,
-     "life": 0.03
+     "win": 0.36,
+     "rounds": 8,
+     "life": 0.08
     }
    },
    "Whisper (Wind)": {
     "raider": {
-     "win": 0.96,
-     "rounds": 7.5,
+     "win": 0.91,
+     "rounds": 7,
      "life": 0.48
     },
     "pack": {
-     "win": 0.47,
-     "rounds": 8,
-     "life": 0.16
+     "win": 0.62,
+     "rounds": 8.1,
+     "life": 0.19
     }
    },
    "Whisper (Shadow)": {
     "raider": {
-     "win": 0.32,
-     "rounds": 14.2,
-     "life": 0.06
+     "win": 0.94,
+     "rounds": 7.5,
+     "life": 0.52
     },
     "pack": {
-     "win": 0.02,
-     "rounds": 7.1,
-     "life": 0
+     "win": 0.52,
+     "rounds": 8.6,
+     "life": 0.14
     }
    },
    "Whisper (Heart)": {
     "raider": {
-     "win": 0.89,
-     "rounds": 11.4,
-     "life": 0.38
+     "win": 0.88,
+     "rounds": 10.9,
+     "life": 0.4
     },
     "pack": {
      "win": 0.3,
-     "rounds": 10.5,
+     "rounds": 11,
      "life": 0.12
     }
    }
@@ -2455,468 +2456,444 @@
   "5": {
    "Brawler (Que Bao)": {
     "raider": {
-     "win": 0.74,
-     "rounds": 8.4,
-     "life": 0.33
+     "win": 0.76,
+     "rounds": 8.1,
+     "life": 0.31
     },
     "pack": {
-     "win": 0.6,
-     "rounds": 11.8,
-     "life": 0.19
+     "win": 0.65,
+     "rounds": 11.3,
+     "life": 0.23
     }
    },
    "Brawler (Fury)": {
     "raider": {
-     "win": 0.76,
-     "rounds": 8.3,
-     "life": 0.37
+     "win": 0.69,
+     "rounds": 7.8,
+     "life": 0.31
     },
     "pack": {
-     "win": 0.7,
-     "rounds": 11.5,
-     "life": 0.21
+     "win": 0.65,
+     "rounds": 10.6,
+     "life": 0.22
     }
    },
    "Brawler (Iron Body)": {
     "raider": {
-     "win": 0.94,
-     "rounds": 9.4,
-     "life": 0.48
+     "win": 0.86,
+     "rounds": 9.5,
+     "life": 0.41
     },
     "pack": {
-     "win": 0.92,
-     "rounds": 14.9,
-     "life": 0.55
+     "win": 0.85,
+     "rounds": 14.4,
+     "life": 0.51
     }
    },
    "Champion (Honor)": {
     "raider": {
-     "win": 0.48,
-     "rounds": 8.1,
-     "life": 0.15
+     "win": 0.59,
+     "rounds": 7.9,
+     "life": 0.24
     },
     "pack": {
-     "win": 0.37,
-     "rounds": 10.3,
-     "life": 0.09
+     "win": 0.62,
+     "rounds": 10.7,
+     "life": 0.18
     }
    },
    "Champion (Sacred)": {
     "raider": {
-     "win": 0.42,
-     "rounds": 8.7,
-     "life": 0.12
+     "win": 0.64,
+     "rounds": 8.6,
+     "life": 0.22
     },
     "pack": {
-     "win": 0.61,
-     "rounds": 13.1,
-     "life": 0.2
+     "win": 0.73,
+     "rounds": 13.5,
+     "life": 0.27
     }
    },
    "Champion (Oath)": {
     "raider": {
-     "win": 0.42,
-     "rounds": 11.6,
-     "life": 0.15
+     "win": 0.54,
+     "rounds": 11.9,
+     "life": 0.2
     },
     "pack": {
-     "win": 0.43,
-     "rounds": 17.6,
-     "life": 0.24
+     "win": 0.64,
+     "rounds": 19.9,
+     "life": 0.39
     }
    },
    "Maverick (Sharpsight)": {
     "raider": {
-     "win": 0.69,
-     "rounds": 8.5,
-     "life": 0.31
+     "win": 0.66,
+     "rounds": 8.4,
+     "life": 0.27
     },
     "pack": {
-     "win": 0.58,
-     "rounds": 10.7,
-     "life": 0.15
+     "win": 0.38,
+     "rounds": 10.8,
+     "life": 0.1
     }
    },
    "Maverick (Trickster)": {
     "raider": {
-     "win": 0.82,
-     "rounds": 7.7,
-     "life": 0.37
+     "win": 0.57,
+     "rounds": 7.8,
+     "life": 0.24
     },
     "pack": {
-     "win": 0.6,
-     "rounds": 9.8,
-     "life": 0.18
+     "win": 0.39,
+     "rounds": 9.6,
+     "life": 0.12
     }
    },
    "Maverick (Wayfinder)": {
     "raider": {
-     "win": 0.82,
-     "rounds": 7.7,
-     "life": 0.37
+     "win": 0.62,
+     "rounds": 7.6,
+     "life": 0.26
     },
     "pack": {
-     "win": 0.54,
-     "rounds": 9.8,
-     "life": 0.14
+     "win": 0.49,
+     "rounds": 9.6,
+     "life": 0.13
     }
    },
    "Soul Seer (Mender)": {
     "raider": {
-     "win": 0.6,
-     "rounds": 10.3,
-     "life": 0.28
+     "win": 0.74,
+     "rounds": 10.2,
+     "life": 0.33
     },
     "pack": {
-     "win": 0.86,
-     "rounds": 16.4,
-     "life": 0.68
+     "win": 0.96,
+     "rounds": 15.1,
+     "life": 0.73
     }
    },
    "Soul Seer (Sound)": {
     "raider": {
-     "win": 0.33,
-     "rounds": 7.6,
-     "life": 0.12
+     "win": 0.61,
+     "rounds": 7.8,
+     "life": 0.23
     },
     "pack": {
-     "win": 0.45,
-     "rounds": 10.6,
-     "life": 0.19
+     "win": 0.72,
+     "rounds": 12.1,
+     "life": 0.3
     }
    },
    "Soul Seer (Nature)": {
     "raider": {
-     "win": 0.17,
-     "rounds": 7.5,
-     "life": 0.05
+     "win": 0.43,
+     "rounds": 7.8,
+     "life": 0.13
     },
     "pack": {
-     "win": 0.22,
-     "rounds": 7.8,
-     "life": 0.05
+     "win": 0.55,
+     "rounds": 9,
+     "life": 0.14
     }
    },
    "Whisper (Wind)": {
     "raider": {
-     "win": 0.48,
-     "rounds": 7.2,
-     "life": 0.15
+     "win": 0.69,
+     "rounds": 6.6,
+     "life": 0.28
     },
     "pack": {
-     "win": 0.43,
-     "rounds": 9,
-     "life": 0.11
+     "win": 0.67,
+     "rounds": 9.1,
+     "life": 0.21
     }
    },
    "Whisper (Shadow)": {
     "raider": {
-     "win": 0.37,
-     "rounds": 7.5,
-     "life": 0.11
+     "win": 0.65,
+     "rounds": 7.2,
+     "life": 0.24
     },
     "pack": {
-     "win": 0.25,
-     "rounds": 9.9,
-     "life": 0.05
+     "win": 0.74,
+     "rounds": 9.6,
+     "life": 0.23
     }
    },
    "Whisper (Heart)": {
     "raider": {
-     "win": 0.53,
+     "win": 0.63,
      "rounds": 7.5,
-     "life": 0.2
+     "life": 0.23
     },
     "pack": {
-     "win": 0.59,
-     "rounds": 10.5,
-     "life": 0.22
+     "win": 0.8,
+     "rounds": 10.9,
+     "life": 0.29
     }
    }
   },
   "10": {
    "Brawler (Que Bao)": {
     "raider": {
-     "win": 0.8,
+     "win": 0.64,
      "rounds": 7,
-     "life": 0.39
+     "life": 0.28
     },
     "pack": {
-     "win": 0.31,
-     "rounds": 7.8,
-     "life": 0.07
+     "win": 0.35,
+     "rounds": 7.2,
+     "life": 0.09
     }
    },
    "Brawler (Fury)": {
     "raider": {
-     "win": 0.65,
-     "rounds": 7.6,
-     "life": 0.29
+     "win": 0.67,
+     "rounds": 6.8,
+     "life": 0.27
     },
     "pack": {
-     "win": 0.28,
-     "rounds": 7.9,
-     "life": 0.08
+     "win": 0.2,
+     "rounds": 7,
+     "life": 0.03
     }
    },
    "Brawler (Iron Body)": {
     "raider": {
-     "win": 0.82,
-     "rounds": 8.6,
-     "life": 0.35
+     "win": 0.8,
+     "rounds": 7.8,
+     "life": 0.36
     },
     "pack": {
      "win": 0.46,
-     "rounds": 10.4,
-     "life": 0.15
+     "rounds": 9.6,
+     "life": 0.2
     }
    },
    "Champion (Honor)": {
     "raider": {
-     "win": 0.23,
-     "rounds": 6.9,
-     "life": 0.07
+     "win": 0.48,
+     "rounds": 7,
+     "life": 0.18
     },
     "pack": {
-     "win": 0.43,
-     "rounds": 5.7,
-     "life": 0.11
+     "win": 0.71,
+     "rounds": 6.2,
+     "life": 0.22
     }
    },
    "Champion (Sacred)": {
     "raider": {
-     "win": 0.22,
-     "rounds": 8.6,
-     "life": 0.05
+     "win": 0.48,
+     "rounds": 9.3,
+     "life": 0.17
     },
     "pack": {
-     "win": 0.45,
-     "rounds": 6.7,
-     "life": 0.14
+     "win": 0.77,
+     "rounds": 7.8,
+     "life": 0.28
     }
    },
    "Champion (Oath)": {
     "raider": {
-     "win": 0.28,
-     "rounds": 8,
-     "life": 0.07
+     "win": 0.46,
+     "rounds": 8.4,
+     "life": 0.16
     },
     "pack": {
-     "win": 0.43,
-     "rounds": 6.7,
-     "life": 0.14
+     "win": 0.8,
+     "rounds": 7.8,
+     "life": 0.29
     }
    },
    "Maverick (Sharpsight)": {
     "raider": {
-     "win": 0.59,
-     "rounds": 8.6,
-     "life": 0.21
+     "win": 0.44,
+     "rounds": 8.1,
+     "life": 0.14
     },
     "pack": {
      "win": 0.03,
-     "rounds": 6.2,
-     "life": 0
+     "rounds": 6.4,
+     "life": 0.01
     }
    },
    "Maverick (Trickster)": {
     "raider": {
-     "win": 0.74,
-     "rounds": 7.8,
-     "life": 0.25
+     "win": 0.55,
+     "rounds": 7,
+     "life": 0.18
     },
     "pack": {
-     "win": 0.07,
-     "rounds": 6.3,
-     "life": 0.01
+     "win": 0.08,
+     "rounds": 6.2,
+     "life": 0.02
     }
    },
    "Maverick (Wayfinder)": {
     "raider": {
-     "win": 0.7,
-     "rounds": 7.7,
-     "life": 0.23
+     "win": 0.64,
+     "rounds": 7.4,
+     "life": 0.21
     },
     "pack": {
-     "win": 0.09,
-     "rounds": 6.2,
+     "win": 0.08,
+     "rounds": 6.1,
      "life": 0.02
     }
    },
    "Soul Seer (Mender)": {
     "raider": {
-     "win": 0.24,
-     "rounds": 7.8,
-     "life": 0.06
+     "win": 0.49,
+     "rounds": 7.5,
+     "life": 0.17
     },
     "pack": {
-     "win": 0.29,
-     "rounds": 5.6,
-     "life": 0.13
+     "win": 0.76,
+     "rounds": 6.2,
+     "life": 0.36
     }
    },
    "Soul Seer (Sound)": {
     "raider": {
-     "win": 0.2,
-     "rounds": 6.1,
-     "life": 0.05
+     "win": 0.44,
+     "rounds": 6.7,
+     "life": 0.11
     },
     "pack": {
-     "win": 0.21,
-     "rounds": 4.8,
-     "life": 0.05
+     "win": 0.76,
+     "rounds": 5.5,
+     "life": 0.24
     }
    },
    "Soul Seer (Nature)": {
     "raider": {
-     "win": 0.06,
-     "rounds": 5.7,
-     "life": 0.01
+     "win": 0.35,
+     "rounds": 6.2,
+     "life": 0.1
     },
     "pack": {
-     "win": 0.18,
-     "rounds": 4.2,
-     "life": 0.03
+     "win": 0.63,
+     "rounds": 5.2,
+     "life": 0.21
     }
    },
    "Whisper (Wind)": {
     "raider": {
-     "win": 0.42,
-     "rounds": 6.2,
-     "life": 0.12
+     "win": 0.59,
+     "rounds": 5.8,
+     "life": 0.19
     },
     "pack": {
-     "win": 0.24,
-     "rounds": 6.1,
-     "life": 0.05
+     "win": 0.32,
+     "rounds": 6.4,
+     "life": 0.07
     }
    },
    "Whisper (Shadow)": {
     "raider": {
-     "win": 0.49,
-     "rounds": 6.4,
-     "life": 0.14
+     "win": 0.7,
+     "rounds": 5.8,
+     "life": 0.24
     },
     "pack": {
-     "win": 0.09,
+     "win": 0.22,
      "rounds": 6.2,
-     "life": 0.01
+     "life": 0.04
     }
    },
    "Whisper (Heart)": {
     "raider": {
-     "win": 0.57,
-     "rounds": 6.4,
-     "life": 0.17
+     "win": 0.64,
+     "rounds": 5.9,
+     "life": 0.2
     },
     "pack": {
-     "win": 0.16,
-     "rounds": 5.9,
-     "life": 0.03
+     "win": 0.28,
+     "rounds": 6.3,
+     "life": 0.07
     }
    }
   },
   "15": {
    "Brawler (Que Bao)": {
     "raider": {
-     "win": 0.5,
-     "rounds": 8.3,
-     "life": 0.15
+     "win": 0.41,
+     "rounds": 7.6,
+     "life": 0.12
     },
     "pack": {
-     "win": 0.08,
-     "rounds": 5.5,
+     "win": 0.06,
+     "rounds": 4.8,
      "life": 0.01
     }
    },
    "Brawler (Fury)": {
     "raider": {
-     "win": 0.51,
-     "rounds": 8,
-     "life": 0.16
+     "win": 0.3,
+     "rounds": 7.3,
+     "life": 0.08
     },
     "pack": {
-     "win": 0.1,
-     "rounds": 5.7,
-     "life": 0.01
+     "win": 0.15,
+     "rounds": 5,
+     "life": 0.02
     }
    },
    "Brawler (Iron Body)": {
     "raider": {
-     "win": 0.34,
-     "rounds": 9.5,
-     "life": 0.11
+     "win": 0.25,
+     "rounds": 8.7,
+     "life": 0.07
     },
     "pack": {
-     "win": 0.02,
-     "rounds": 6.2,
+     "win": 0.05,
+     "rounds": 5.4,
      "life": 0.01
     }
    },
    "Champion (Honor)": {
     "raider": {
-     "win": 0.05,
-     "rounds": 6.9,
-     "life": 0.02
+     "win": 0.17,
+     "rounds": 7.6,
+     "life": 0.05
     },
     "pack": {
-     "win": 0.01,
-     "rounds": 4.4,
-     "life": 0
+     "win": 0.12,
+     "rounds": 6.1,
+     "life": 0.01
     }
    },
    "Champion (Sacred)": {
     "raider": {
-     "win": 0,
-     "rounds": 6.8,
-     "life": 0
+     "win": 0.18,
+     "rounds": 7.6,
+     "life": 0.04
     },
     "pack": {
-     "win": 0,
-     "rounds": 4.3,
-     "life": 0
+     "win": 0.08,
+     "rounds": 5.5,
+     "life": 0.02
     }
    },
    "Champion (Oath)": {
     "raider": {
-     "win": 0.01,
-     "rounds": 7.2,
-     "life": 0
+     "win": 0.16,
+     "rounds": 8.3,
+     "life": 0.04
     },
     "pack": {
-     "win": 0.01,
-     "rounds": 4.6,
-     "life": 0
+     "win": 0.07,
+     "rounds": 5.6,
+     "life": 0.01
     }
    },
    "Maverick (Sharpsight)": {
     "raider": {
-     "win": 0.38,
-     "rounds": 8.4,
-     "life": 0.11
-    },
-    "pack": {
-     "win": 0.01,
-     "rounds": 5,
-     "life": 0
-    }
-   },
-   "Maverick (Trickster)": {
-    "raider": {
-     "win": 0.44,
-     "rounds": 8.5,
-     "life": 0.1
-    },
-    "pack": {
-     "win": 0.02,
-     "rounds": 4.9,
-     "life": 0
-    }
-   },
-   "Maverick (Wayfinder)": {
-    "raider": {
      "win": 0.31,
-     "rounds": 8.7,
+     "rounds": 7.8,
      "life": 0.08
     },
     "pack": {
@@ -2925,75 +2902,99 @@
      "life": 0
     }
    },
-   "Soul Seer (Mender)": {
+   "Maverick (Trickster)": {
     "raider": {
-     "win": 0.07,
-     "rounds": 6.7,
-     "life": 0.01
+     "win": 0.35,
+     "rounds": 8.1,
+     "life": 0.09
     },
     "pack": {
      "win": 0,
-     "rounds": 3.5,
+     "rounds": 4.5,
      "life": 0
+    }
+   },
+   "Maverick (Wayfinder)": {
+    "raider": {
+     "win": 0.27,
+     "rounds": 8.1,
+     "life": 0.06
+    },
+    "pack": {
+     "win": 0,
+     "rounds": 4.7,
+     "life": 0
+    }
+   },
+   "Soul Seer (Mender)": {
+    "raider": {
+     "win": 0.21,
+     "rounds": 7.5,
+     "life": 0.05
+    },
+    "pack": {
+     "win": 0.1,
+     "rounds": 4.9,
+     "life": 0.02
     }
    },
    "Soul Seer (Sound)": {
     "raider": {
-     "win": 0.09,
-     "rounds": 6.6,
-     "life": 0.04
+     "win": 0.37,
+     "rounds": 7.2,
+     "life": 0.09
     },
     "pack": {
-     "win": 0,
-     "rounds": 3.7,
-     "life": 0
+     "win": 0.13,
+     "rounds": 5,
+     "life": 0.03
     }
    },
    "Soul Seer (Nature)": {
     "raider": {
-     "win": 0.1,
-     "rounds": 6.5,
-     "life": 0.02
+     "win": 0.35,
+     "rounds": 7.3,
+     "life": 0.11
     },
     "pack": {
-     "win": 0,
-     "rounds": 3.7,
-     "life": 0
+     "win": 0.18,
+     "rounds": 4.8,
+     "life": 0.05
     }
    },
    "Whisper (Wind)": {
     "raider": {
-     "win": 0.21,
-     "rounds": 6.4,
-     "life": 0.04
+     "win": 0.36,
+     "rounds": 6.2,
+     "life": 0.09
     },
     "pack": {
-     "win": 0.01,
+     "win": 0,
      "rounds": 4.5,
      "life": 0
     }
    },
    "Whisper (Shadow)": {
     "raider": {
-     "win": 0.15,
-     "rounds": 6.4,
-     "life": 0.03
+     "win": 0.13,
+     "rounds": 6.3,
+     "life": 0.02
     },
     "pack": {
      "win": 0,
-     "rounds": 4.8,
+     "rounds": 4.4,
      "life": 0
     }
    },
    "Whisper (Heart)": {
     "raider": {
-     "win": 0.44,
-     "rounds": 6,
-     "life": 0.11
+     "win": 0.48,
+     "rounds": 5.5,
+     "life": 0.17
     },
     "pack": {
      "win": 0,
-     "rounds": 4.3,
+     "rounds": 4.4,
      "life": 0
     }
    }
@@ -3001,177 +3002,177 @@
   "20": {
    "Brawler (Que Bao)": {
     "raider": {
-     "win": 0.35,
-     "rounds": 8.1,
-     "life": 0.12
+     "win": 0.38,
+     "rounds": 7.2,
+     "life": 0.11
     },
     "pack": {
      "win": 0.09,
-     "rounds": 4.6,
+     "rounds": 4.1,
      "life": 0.01
     }
    },
    "Brawler (Fury)": {
     "raider": {
-     "win": 0.3,
-     "rounds": 7.7,
-     "life": 0.06
+     "win": 0.22,
+     "rounds": 6.8,
+     "life": 0.07
     },
     "pack": {
-     "win": 0.04,
-     "rounds": 4.5,
-     "life": 0
+     "win": 0.03,
+     "rounds": 4,
+     "life": 0.01
     }
    },
    "Brawler (Iron Body)": {
     "raider": {
-     "win": 0.39,
-     "rounds": 9.9,
+     "win": 0.4,
+     "rounds": 8.6,
      "life": 0.08
     },
     "pack": {
-     "win": 0.08,
-     "rounds": 6.3,
-     "life": 0.01
+     "win": 0.03,
+     "rounds": 5.3,
+     "life": 0
     }
    },
    "Champion (Honor)": {
     "raider": {
-     "win": 0.07,
-     "rounds": 5.8,
-     "life": 0.01
+     "win": 0.29,
+     "rounds": 6.7,
+     "life": 0.06
     },
     "pack": {
-     "win": 0,
-     "rounds": 3.8,
+     "win": 0.03,
+     "rounds": 4.7,
      "life": 0
     }
    },
    "Champion (Sacred)": {
     "raider": {
-     "win": 0.03,
-     "rounds": 6,
-     "life": 0
+     "win": 0.26,
+     "rounds": 6.8,
+     "life": 0.06
     },
     "pack": {
-     "win": 0,
-     "rounds": 3.6,
+     "win": 0.01,
+     "rounds": 4.7,
      "life": 0
     }
    },
    "Champion (Oath)": {
     "raider": {
-     "win": 0.05,
-     "rounds": 7.1,
-     "life": 0.01
+     "win": 0.13,
+     "rounds": 8.4,
+     "life": 0.04
     },
     "pack": {
      "win": 0.01,
-     "rounds": 3.9,
+     "rounds": 5.2,
      "life": 0
     }
    },
    "Maverick (Sharpsight)": {
     "raider": {
-     "win": 0.16,
-     "rounds": 7,
-     "life": 0.03
+     "win": 0.13,
+     "rounds": 6.1,
+     "life": 0.02
     },
     "pack": {
-     "win": 0,
-     "rounds": 3.5,
-     "life": 0
+     "win": 0.04,
+     "rounds": 3.8,
+     "life": 0.01
     }
    },
    "Maverick (Trickster)": {
     "raider": {
-     "win": 0.3,
-     "rounds": 9.2,
-     "life": 0.07
+     "win": 0.13,
+     "rounds": 6.8,
+     "life": 0.03
     },
     "pack": {
-     "win": 0,
-     "rounds": 3.8,
+     "win": 0.01,
+     "rounds": 3.5,
      "life": 0
     }
    },
    "Maverick (Wayfinder)": {
     "raider": {
-     "win": 0.06,
-     "rounds": 7.8,
-     "life": 0.01
+     "win": 0.08,
+     "rounds": 6.5,
+     "life": 0.02
     },
     "pack": {
-     "win": 0,
+     "win": 0.02,
      "rounds": 3.6,
      "life": 0
     }
    },
    "Soul Seer (Mender)": {
     "raider": {
-     "win": 0,
-     "rounds": 5.4,
-     "life": 0
+     "win": 0.05,
+     "rounds": 6.4,
+     "life": 0.01
     },
     "pack": {
-     "win": 0,
-     "rounds": 2.9,
-     "life": 0
+     "win": 0.05,
+     "rounds": 3.8,
+     "life": 0.01
     }
    },
    "Soul Seer (Sound)": {
     "raider": {
-     "win": 0.55,
-     "rounds": 3,
-     "life": 0.4
+     "win": 0.25,
+     "rounds": 6.1,
+     "life": 0.08
     },
     "pack": {
-     "win": 0.04,
-     "rounds": 3.2,
-     "life": 0.01
+     "win": 0.09,
+     "rounds": 3.9,
+     "life": 0.03
     }
    },
    "Soul Seer (Nature)": {
     "raider": {
-     "win": 0.55,
-     "rounds": 3.2,
-     "life": 0.37
+     "win": 0.26,
+     "rounds": 6.1,
+     "life": 0.07
     },
     "pack": {
-     "win": 0.02,
-     "rounds": 2.8,
-     "life": 0
+     "win": 0.09,
+     "rounds": 3.7,
+     "life": 0.03
     }
    },
    "Whisper (Wind)": {
     "raider": {
-     "win": 0.03,
-     "rounds": 5.7,
-     "life": 0.01
+     "win": 0.01,
+     "rounds": 5.5,
+     "life": 0
     },
     "pack": {
      "win": 0,
-     "rounds": 3.5,
+     "rounds": 3.4,
      "life": 0
     }
    },
    "Whisper (Shadow)": {
     "raider": {
-     "win": 0.13,
-     "rounds": 9.4,
-     "life": 0.03
+     "win": 0.01,
+     "rounds": 6.1,
+     "life": 0
     },
     "pack": {
-     "win": 0.01,
-     "rounds": 6.3,
-     "life": 0.01
+     "win": 0,
+     "rounds": 3.7,
+     "life": 0
     }
    },
    "Whisper (Heart)": {
     "raider": {
-     "win": 0.15,
-     "rounds": 5.6,
-     "life": 0.03
+     "win": 0.21,
+     "rounds": 5.5,
+     "life": 0.05
     },
     "pack": {
      "win": 0,

@@ -11,10 +11,17 @@ Nothing here is used by the live game.
   - The Farluck Farm fights.
 
 ```
-node tools/critquest/run.mjs 20            # current rules  -> results.json, report-before.txt
-TUNED=1 node tools/critquest/run.mjs 20    # proposed fixes -> results-tuned.json, report-after.txt
-LEVELS=1,10 node tools/critquest/run.mjs 6 # quick run
+node tools/critquest/run.mjs 20             # current rules -> results-base.json
+CHARM=CE node tools/critquest/run.mjs 20    # variant: Inspire adds the higher of Charm or Energy
+CHARM=melkin node tools/critquest/run.mjs 20 # variant: Melkin get Speed +1, Energy +1
+LEVELS=1,10 node tools/critquest/run.mjs 6  # quick run
 ```
+
+The Balance test 1 fixes are built into `data.mjs` and `sim.mjs`. N8 approved them on 2026-11-10, and Lifeform battle actions were removed the same day.
+The saved reports:
+
+- `report-test1-before.txt` and `report-test1-after.txt` are test 1 (the old rules, then the proposed fixes).
+- `report-test2.txt` is the adopted rules.
 
 The simulator does not model yet:
 

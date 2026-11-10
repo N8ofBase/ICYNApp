@@ -3,9 +3,10 @@
 import { LIFEFORMS, ROLES, ABILITIES, TIER_CD, TIERS, TERRORS } from './data.mjs';
 
 export const CFG = {
-  lifeGrowth: { Brawler: 5, Champion: 4, Maverick: 4, 'Soul Seer': 3, Whisper: 4 }, // Life per level after 1 (draft)
+  lifeGrowth: { Brawler: 4, Champion: 5, Maverick: 4, 'Soul Seer': 4, Whisper: 4 }, // Life per level after 1 (test 1 fix)
   inspireDC: 12,          // Cleanse DC for terrors (d20 + Charm + bonuses)
-  inspireBase: 12,        // Inspire DC vs a sentient foe = inspireBase + foe Charm (contest variant: 10)
+  inspireBase: 10,        // Inspire DC vs a sentient foe = 10 + foe Charm (test 1 fix)
+  inspireStat: 'C',       // 'C' = Charm; 'CE' = the higher of Charm or Energy
   inspire: true,          // false = duels must be won by Life alone
   inspireAt: 0.25,        // foe Life fraction that opens Inspire
   maxRounds: 30,
@@ -97,7 +98,6 @@ export function buildHero(lifeform, role, level, focus, opts = {}) {
     weapon: [R.weapon[0] + CFG.weaponDieLevels.filter(l => level >= l).length, R.weapon[1]],
     dmgBonus: R.dmg || 0, main: R.main,
     abilities: loadout.map(k => ({ ab: k.ab, rank: k.rank, bonusHit: Math.floor((branchCount[k.ab.branch] || 0) / 3) * CFG.branchBonusHit })),
-    lifeAction: L.action,
   };
 }
 
@@ -106,7 +106,7 @@ function heroUnit(h, side) {
   return {
     name: h.id, side, hero: true, sentient: true, h, max: h.life, life: h.life, baseDef: h.def,
     st: { ...h.st }, weapon: h.weapon, dmgBonus: h.dmgBonus,
-    abs: h.abilities.map(a => ({ ...a, cd: 0 })), fx: [], once: {}, lifeAction: h.lifeAction,
+    abs: h.abilities.map(a => ({ ...a, cd: 0 })), fx: [], once: {},
     passive: {
       rise: h.abilities.some(a => a.ab.rise), gentle: h.abilities.some(a => a.ab.gentle), silver: h.abilities.some(a => a.ab.silver),
       inspire: h.abilities.reduce((s, a) => s + (a.ab.inspire || 0), 0),
@@ -253,9 +253,10 @@ function applySelfFx(a, rank, u, F) {
 }
 
 // ---------------------------------------------------------------- hero AI
+const inspStat = u => CFG.inspireStat === 'CE' ? Math.max(statOf(u, 'C'), statOf(u, 'E')) : statOf(u, 'C');
 const inspireDCof = foe => foe.sentient ? CFG.inspireBase + statOf(foe, 'C') + (foe.inspireLvl || 0) : CFG.inspireDC;
 function inspireChance(u, foe) {
-  const need = inspireDCof(foe) - statOf(u, 'C') - u.passive.inspire - fxSum(u, 'allRolls');
+  const need = inspireDCof(foe) - inspStat(u) - u.passive.inspire - fxSum(u, 'allRolls');
   const p = Math.min(0.95, Math.max(0.05, (21 - need) / 20));
   return u.passive.silver ? 1 - (1 - p) * (1 - p) : p;
 }
@@ -299,7 +300,7 @@ function abilityValue(u, foe, slot, foes, F) {
   if (a.dmgBuff && !hasFx(u, 'dmgBuff')) v += 3;
   if (a.extraAttack) v += 10;
   if (a.extraTurn) v += 14;
-  if (a.knell && foe.sentient) v += 25;
+  if (a.knell && foe.sentient) v += foe.life / foe.max <= (a.knellAt || 1) ? 25 : -1;
   if (a.knell && !foe.sentient) v += avg(6, 10) + statOf(u, 'E');
   if ((a.execute || a.yieldAt) && foe.life / foe.max <= (a.execute || a.yieldAt)) v += 1000;
   return v;
@@ -320,23 +321,9 @@ function heroTurn(u, F) {
   if (exec && !foe.fx.some(x => x.untarget)) { exec.cd = cdOf(exec); F.stats.execute[u.side]++; win(foe, F, 'execute'); return; }
   if (CFG.inspire && canCalm && foe.life / foe.max <= (foe.sentient ? thr : foe.t.boss ? foe.t.cleanseAt : 0.5) && inspireChance(u, foe) >= 0.4) {
     let r = d20(u); if (u.passive.silver) r = Math.max(r, d20(u));
-    const total = r + statOf(u, 'C') + u.passive.inspire + fxSum(u, 'allRolls') - (F.stench || 0);
+    const total = r + inspStat(u) + u.passive.inspire + fxSum(u, 'allRolls') - (F.stench || 0);
     if (r !== 1 && total >= inspireDCof(foe)) { F.stats.inspire[u.side]++; win(foe, F, 'inspire'); }
     return;
-  }
-  // 2. lifeform action once per fight
-  if (!u.once.life) {
-    const la = u.lifeAction;
-    const lifeFrac = u.life / u.max;
-    if ((la === 'forage' && lifeFrac < 0.6) || (la === 'ward' && lifeFrac < 0.7) || la === 'standProud' || la === 'quickTune' || la === 'heave') {
-      u.once.life = true;
-      if (la === 'forage') heal(u, roll(1, 6), F);
-      if (la === 'ward') addFx(u, { def: 2, dur: 2 });
-      if (la === 'standProud') foes.forEach(f => addFx(f, { hit: -1, dur: 1 }));
-      if (la === 'quickTune') u.quickTune = true;
-      if (la === 'heave') { attack(u, foe, { dmg: [1, 6], stat: 'P' }, F); return; }
-      if (la !== 'quickTune') return; // Quick Tune is a free hum before acting (counts as half the turn)
-    }
   }
   // 3. best ability or weapon
   let best = null, bestV = expectedHit(u, foe, { stat: u.h.main }) * (avg(...u.weapon) + (u.disarmed ? 0 : statOf(u, u.h.main)) + (u.dmgBonus || 0));

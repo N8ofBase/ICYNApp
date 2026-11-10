@@ -1,5 +1,6 @@
 // Crit Quest balance data (Phase 1, rules on paper).
 // Source: the "Crit Quest: Design Plan" doc (Hero creation + Ability trees, Recommendation column).
+// Balance test 1 fixes (N8 approved 2026-11-10) are built in and marked "test 1 fix".
 // Stats: P = power, E = energy, S = speed, C = charm.
 // Ability fields read by sim.js:
 //   dmg:[n,sides]  stat  hits  aoe  critMin  auto (no to-hit roll)  ignoreBuffs
@@ -13,18 +14,19 @@
 //   utility: true = value comes from Fear/party/hex play the duel sim cannot see
 
 export const LIFEFORMS = {
-  Dimoneesh: { def: 1, E: 1, action: 'ward' },
-  Leyf:      { E: 1, S: 1, action: 'forage' },
-  Lizerus:   { def: 1, P: 1, action: 'standProud' },
-  Melkin:    { S: 1, C: 1, action: 'quickTune' },
-  Sapien:    { P: 1, C: 1, action: 'heave' },
+  // No Lifeform battle actions (N8 2026-11-10).
+  Dimoneesh: { def: 1, E: 1 },
+  Leyf:      { E: 1, S: 1 },
+  Lizerus:   { def: 1, P: 1 },
+  Melkin:    { S: 1, C: 1 },
+  Sapien:    { P: 1, C: 1 },
 };
 
 export const ROLES = {
   Brawler:   { life: 40, P: 1, S: 1, main: 'P', weapon: [1, 6], branches: ['Que Bao', 'Fury', 'Iron Body'] },
-  Champion:  { life: 33, P: 2, E: 1, main: 'P', weapon: [1, 6], branches: ['Honor', 'Sacred', 'Oath'] },
+  Champion:  { life: 33, def: 1, P: 2, E: 1, main: 'P', weapon: [1, 6], branches: ['Honor', 'Sacred', 'Oath'] },
   Maverick:  { life: 30, S: 1, C: 2, main: 'C', weapon: [1, 6], branches: ['Sharpsight', 'Trickster', 'Wayfinder'] },
-  'Soul Seer': { life: 27, E: 2, S: 1, main: 'E', weapon: [1, 6], branches: ['Mender', 'Sound', 'Nature'] },
+  'Soul Seer': { life: 30, E: 2, S: 1, main: 'E', weapon: [1, 6], branches: ['Mender', 'Sound', 'Nature'] },
   Whisper:   { life: 30, S: 1, C: 1, dmg: 1, main: 'S', weapon: [1, 6], branches: ['Wind', 'Shadow', 'Heart'] },
 };
 
@@ -37,9 +39,9 @@ const A = (role, branch, tier, name, o) => ({ role, branch, tier, name, ...o });
 export const ABILITIES = [
   // ---------- Brawler ----------
   A('Brawler', 'Que Bao', 1, 'Suplex', { dmg: [1, 8], stat: 'P', loseSpeed: true }),
-  A('Brawler', 'Que Bao', 3, 'Bear Hug', { dmg: [1, 6], stat: 'P', hold: [1, 6, 12] }),
+  A('Brawler', 'Que Bao', 3, 'Bear Hug', { dmg: [1, 6], stat: 'P', hold: [1, 6, 12, 2] }), // test 1 fix: 2 rounds max
   A('Brawler', 'Que Bao', 7, 'Throat Grab', { dmg: [2, 6], stat: 'P', noAbil: 1 }),
-  A('Brawler', 'Que Bao', 11, 'Submit', { stat: 'C', yieldAt: 0.25, auto: true }),
+  A('Brawler', 'Que Bao', 11, 'Submit', { stat: 'C', yieldAt: 0.5, auto: true }), // test 1 fix: half Life
   A('Brawler', 'Que Bao', 15, 'Tackle', { dmg: [3, 6], stat: 'P', def: [-2, 1], aoe2: true }),
   A('Brawler', 'Que Bao', 19, 'Skull Crusher', { dmg: [5, 8], stat: 'P', stun: 1 }),
   A('Brawler', 'Fury', 1, 'Crush', { dmg: [1, 10], stat: 'P' }),
@@ -87,7 +89,7 @@ export const ABILITIES = [
   A('Maverick', 'Trickster', 15, 'Silver Tongue', { silver: true, passive: true }),
   A('Maverick', 'Trickster', 19, 'Bladestorm', { dmg: [5, 6], stat: 'C', aoe: true }),
   A('Maverick', 'Wayfinder', 1, 'Poison', { stat: 'C', dot: [0, 0, 2, 3] }),
-  A('Maverick', 'Wayfinder', 3, 'Snare', { dmg: [2, 6], stat: 'C', auto: true, stun: 1 }),
+  A('Maverick', 'Wayfinder', 3, 'Snare', { dmg: [2, 6], stat: 'C', stun: 1 }), // test 1 fix: Charm roll to spring
   A('Maverick', 'Wayfinder', 7, 'Soul Shot', { dmg: [2, 8], stat: 'E', ignoreBuffs: true }),
   A('Maverick', 'Wayfinder', 11, 'Camouflage', { untarget: 1, nextDie: 1, auto: true }),
   A('Maverick', 'Wayfinder', 15, 'Rocsprey Call', { dmg: [3, 6], auto: true }),
@@ -101,10 +103,10 @@ export const ABILITIES = [
   A('Soul Seer', 'Mender', 19, 'Salvation', { utility: true, auto: true, revive: true }),
   A('Soul Seer', 'Sound', 1, 'Psylance', { dmg: [1, 8], stat: 'C' }),
   A('Soul Seer', 'Sound', 3, 'Mind-Spike', { dmg: [1, 10], stat: 'E', statMod: { S: -2, dur: 2 } }),
-  A('Soul Seer', 'Sound', 7, 'Sonic Slice', { dmg: [2, 8], stat: 'E', aoe: true }),
+  A('Soul Seer', 'Sound', 7, 'Sonic Slice', { dmg: [3, 8], /* test 1 fix */ stat: 'E', aoe: true }),
   A('Soul Seer', 'Sound', 11, 'Lullaby', { sleep: 2, contested: 'C', aoe: true, auto: true }),
   A('Soul Seer', 'Sound', 15, 'Echo Sight', { selfDef: [2, 2], auto: true }),
-  A('Soul Seer', 'Sound', 19, 'Death Knell', { knell: true, dmgBeast: [6, 10], stat: 'E', auto: true }),
+  A('Soul Seer', 'Sound', 19, 'Death Knell', { knell: true, knellAt: 0.5, /* test 1 fix */ dmgBeast: [6, 10], stat: 'E', auto: true }),
   A('Soul Seer', 'Nature', 1, 'Thorns', { thorns: [1, 6, 2], dmg: [1, 4], stat: 'E' }),
   A('Soul Seer', 'Nature', 3, 'Entangle', { stat: 'E', stun: 1 }),
   A('Soul Seer', 'Nature', 7, 'Explosion', { dmg: [2, 6], stat: 'P', aoe: true }),
@@ -117,9 +119,9 @@ export const ABILITIES = [
   A('Whisper', 'Wind', 7, 'Gale Gust', { dmg: [2, 8], stat: 'P', critMin: 18 }),
   A('Whisper', 'Wind', 11, 'Crosswind', { stat: 'S', def: [-2, 2], statMod: { S: -2, dur: 2 } }),
   A('Whisper', 'Wind', 15, 'Stinging Breeze', { dmg: [2, 6], stat: 'S', dot: [1, 6, 0, 3] }),
-  A('Whisper', 'Wind', 19, 'Eye of the Storm', { execute: 0.25, auto: true }),
-  A('Whisper', 'Shadow', 1, 'Darkness', { stat: 'E', statMod: { P: -2, dur: 2 }, selfDef: [2, 2], auto: true }),
-  A('Whisper', 'Shadow', 3, 'Shadow Step', { nextDie: 1, auto: true }),
+  A('Whisper', 'Wind', 19, 'Eye of the Storm', { execute: 0.5, auto: true }), // test 1 fix: half Life
+  A('Whisper', 'Shadow', 1, 'Darkness', { dmg: [1, 6], /* test 1 fix */ stat: 'E', statMod: { P: -2, dur: 2 }, selfDef: [2, 2], auto: true }),
+  A('Whisper', 'Shadow', 3, 'Shadow Step', { dmg: [1, 6], stat: 'S', nextDie: 1 }), // test 1 fix
   A('Whisper', 'Shadow', 7, 'Smoke', { hit: [-3, 1], aoe: true, auto: true }),
   A('Whisper', 'Shadow', 11, 'Shadow-Strike', { dmg: [3, 6], stat: 'S', noCounter: true }),
   A('Whisper', 'Shadow', 15, 'Nightfall', { hit: [-4, 1], aoe: true, auto: true }),
@@ -134,7 +136,7 @@ export const ABILITIES = [
 
 // Farluck Farm terrors (First quest tab). toHit and Defense are draft guesses.
 export const TERRORS = {
-  gremlin: { name: 'Plague Gremlin', life: 10, def: 10, toHit: 2, attacks: [{ dmg: [1, 6], plague: 0.3 }], flees: 0.25 },
+  gremlin: { name: 'Plague Gremlin', life: 8, /* test 1 fix */ def: 10, toHit: 2, attacks: [{ dmg: [1, 6], plague: 0.3 }], flees: 0.25 },
   spitter: { name: 'Gremlin Spitter', life: 8, def: 11, toHit: 2, attacks: [{ dmg: [1, 6] }], flees: 0.25 },
-  rotfang: { name: 'Rotfang', life: 45, def: 12, toHit: 4, attacks: [{ dmg: [2, 6], plague: 0.5 }], screech: 3, summon: 0.5, cleanseAt: 0.25, boss: true },
+  rotfang: { name: 'Rotfang', life: 25, perHero: 15, def: 12, toHit: 3, partyToHit: 4, /* test 1 fix: solo 25 Life */ attacks: [{ dmg: [2, 6], plague: 0.5 }], screech: 3, summon: 0.5, cleanseAt: 0.25, boss: true },
 };

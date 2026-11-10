@@ -6,25 +6,13 @@ import { buildHero, heroUnit, terrorUnit, fight, seed, CFG } from './sim.mjs';
 const N = +(process.argv[2] || 40);
 const LEVELS = (process.env.LEVELS || '1,3,5,10,15,20').split(',').map(Number);
 seed(20261110);
-// TUNED=1 applies the proposed fixes so the report shows before and after
-const TUNED = process.env.TUNED === '1';
-if (TUNED) {
-  ROLES['Soul Seer'].life = 30; CFG.lifeGrowth['Soul Seer'] = 4;
-  CFG.lifeGrowth.Champion = 5; ROLES.Champion.def = 1;
-  const ab = n => ABILITIES.find(a => a.name === n);
-  ab('Snare').auto = false;                 // Snare needs a Charm roll to spring
-  ab('Bear Hug').hold = [1, 6, 12, 2];      // a hug lasts at most 2 rounds
-  CFG.inspireBase = 10;                     // Inspire DC = 10 + foe Charm
-  TERRORS.rotfang.life = 25; TERRORS.rotfang.toHit = 3; // solo Rotfang; +15 Life per extra Hero
-  CFG.lifeGrowth.Brawler = 4;
-  ab('Shadow Step').dmg = [1, 6]; ab('Shadow Step').stat = 'S'; ab('Shadow Step').auto = false; // step in with a quick strike
-  ab('Darkness').dmg = [1, 6];              // the dark stings as it falls
-  TERRORS.gremlin.life = 8;
-}
-
+// CHARM=CE: Inspire adds the higher of Charm or Energy.  CHARM=melkin: Melkin get Speed +1, Energy +1.
+const VARIANT = process.env.CHARM || 'base';
+if (VARIANT === 'CE') CFG.inspireStat = 'CE';
+if (VARIANT === 'melkin') LIFEFORMS.Melkin = { S: 1, E: 1 };
 const lfs = Object.keys(LIFEFORMS), roles = Object.keys(ROLES);
 const pct = x => (100 * x).toFixed(1);
-const out = { tuned: TUNED, config: CFG, N, duels: {}, pve: {} };
+const out = { variant: VARIANT, config: CFG, N, duels: {}, pve: {} };
 
 // ---------------- Hero vs Hero round robin
 for (const level of LEVELS) {
@@ -116,6 +104,6 @@ const T = TERRORS;
 pve('L1 Wilted Wood ambush (1 gremlin, solo)', 1, () => [terrorUnit(T.gremlin, 'B')], { zone: true });
 pve('L1 Well fight (2 gremlins + spitter, solo)', 1, () => [terrorUnit(T.gremlin, 'B', ' 1'), terrorUnit(T.gremlin, 'B', ' 2'), terrorUnit(T.spitter, 'B')], { zone: true });
 pve('L2 Rotfang (solo, Cleanse charm)', 2, () => [terrorUnit(T.rotfang, 'B')], { zone: true, cleanse: true });
-pve('L2 Rotfang (party of 3, Cleanse charm)', 2, () => [terrorUnit(TUNED ? { ...T.rotfang, life: T.rotfang.life + 30, toHit: 4 } : T.rotfang, 'B')], { zone: true, cleanse: true }, 3);
+pve('L2 Rotfang (party of 3, Cleanse charm)', 2, () => [terrorUnit({ ...T.rotfang, life: T.rotfang.life + 2 * T.rotfang.perHero, toHit: T.rotfang.partyToHit }, 'B')], { zone: true, cleanse: true }, 3);
 
-writeFileSync(new URL(TUNED ? './results-tuned.json' : './results.json', import.meta.url), JSON.stringify(out, null, 1));
+writeFileSync(new URL(`./results-${VARIANT}.json`, import.meta.url), JSON.stringify(out, null, 1));
