@@ -223,7 +223,8 @@ def patch(path):
     r('<li><b>Print &amp; Play</b> rulebook and Hero sheets (PDF)</li></ul>',
       '<li><b>Print &amp; Play</b> rulebook and Hero sheets (PDF)</li><li><b>Project Lightbringer</b>, every chapter of N8’s novel</li></ul>')
     # Duel and Starvos setup screens: right after How to play
-    r('</ol></div></details>\n   ', '</ol></div></details>\n   ${lbBanner()}\n   ', 2)
+    # (anchor includes the newline before </ol>, so Crit Climb's How to play, which ends </li></ol>, is skipped)
+    r('\n     </ol></div></details>\n   ', '\n     </ol></div></details>\n   ${lbBanner()}\n   ', 2)
     open(path, 'w', encoding='utf-8').write(s); print(path, 'patched')
 
 for p in sys.argv[1:]:

@@ -1,6 +1,7 @@
 // Saves, streaks and leaderboards for I Crit You Not! (needs auth.js loaded first).
 // Exposes window.ICYNStats: recordMatch(m), me(), setProfile(p), history(), leaderboard(by),
-// feedback(f), feedbackList(status), feedbackSet(id, status), checkout(gift), confirmCheckout(), pnpFiles(), gifts(), redeemGift(code).
+// feedback(f), feedbackList(status), feedbackSet(id, status), checkout(gift), confirmCheckout(), pnpFiles(), gifts(), redeemGift(code),
+// climbs(), climb(code), climbCreate(c), climbJoin(code), climbLeave(code), climbStart(code).
 // Every call resolves to null instead of throwing when the player is offline
 // or signed out, so guest play never breaks.
 (function () {
@@ -38,6 +39,7 @@
     recordMatch: (m) => call('POST', '/matches', m, true),
     me: () => call('GET', '/me', null, true),
     setProfile: (p) => call('PUT', '/me', p, true),
+    setName: (name) => callErr('PUT', '/me', { name }),            // -> {stats} or {error} (unfriendly names are refused)
     history: () => call('GET', '/matches', null, true),
     leaderboard: (by) => call('GET', '/leaderboard?by=' + (by === 'streak' ? 'streak' : 'wins'), null, false),
     // Beta feedback: anyone can send (signed-in players are named); only the developers group can list or update it.
@@ -54,5 +56,13 @@
     promoCodes: (count, note) => callErr('POST', '/gifts/promo', { count, note }), // owner only -> {codes, note} or {error}
     confirmCheckout: () => call('POST', '/checkout/confirm', {}, true), // -> {unlocked}; checks the player's last Square order
     pnpFiles: () => call('GET', '/pnp', null, true),                 // -> {files:[{name, url}]}
+    // Crit Climb lobbies: anyone can look; hosting and joining need the Crit Pass; the host begins.
+    openGames: (mode) => call('GET', '/games/open?mode=' + (mode === 'boss' ? 'boss' : 'duel'), null, false), // public games still waiting
+    climbs: () => call('GET', '/climbs', null, false),               // -> public open lobbies [{code, name, size, public, status, entrants, rounds, ...}]
+    climb: (code) => call('GET', '/climbs/' + encodeURIComponent(code), null, false),
+    climbCreate: (c) => callErr('POST', '/climbs', c),               // c = {size: 4|8|16, public, name?}
+    climbJoin: (code) => callErr('POST', '/climbs/' + encodeURIComponent(code) + '/join', {}),
+    climbLeave: (code) => callErr('POST', '/climbs/' + encodeURIComponent(code) + '/leave', {}),
+    climbStart: (code) => callErr('POST', '/climbs/' + encodeURIComponent(code) + '/start', {}),
   };
 })();

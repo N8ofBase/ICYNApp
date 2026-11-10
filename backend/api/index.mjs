@@ -4,6 +4,10 @@
 import { QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { db, PLAYERS, MATCHES, RecordError, cleanName, defaultName, stats, loadPlayer, recordMatch } from './record.mjs';
 import { hasUnlock, isDeveloper, checkout, confirm, webhook, pnp, gifts, redeem, promo } from './unlock.mjs';
+import { listClimbs, getClimb, createClimb, joinClimb, leaveClimb, startClimb, ringOf, isProfane } from './climb.mjs';
+// Names other players see are kept friendly (N8 2026-11-10): new ones are refused, old ones are hidden.
+import { openGames } from './lobby.mjs';
+const shown = (n) => (isProfane(n) ? 'Hero' : n);
 
 const json = (statusCode, body) => ({ statusCode, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
 const bad = (msg) => json(400, { error: msg });
@@ -22,15 +26,16 @@ async function leaderboard(event) {
     ScanIndexForward: false, Limit: 100,
   }));
   return json(200, (r.Items || []).map((p, i) => ({
-    rank: i + 1, name: p.name, avatar: typeof p.prefs?.avatar === 'string' && /^(h|i):[a-z0-9-]{1,20}$/.test(p.prefs.avatar) ? p.prefs.avatar : '', wins: p.wins, losses: p.losses, draws: p.draws,
+    rank: i + 1, name: shown(p.name), avatar: typeof p.prefs?.avatar === 'string' && /^(h|i):[a-z0-9-]{1,20}$/.test(p.prefs.avatar) ? p.prefs.avatar : '', wins: p.wins, losses: p.losses, draws: p.draws,
     bestWinStreak: p.bestWinStreak, currentStreak: p.currentStreak,
     fastestWin: p.fastestWin ?? null, fastestLoss: p.fastestLoss ?? null, highestMaxLife: p.highestMaxLife || 0,
+    ring: ringOf(p),
   })));
 }
 
 async function getMe(userId, claims) {
   const p = await loadPlayer(userId, claims);
-  return json(200, { stats: stats(p), prefs: p.prefs || {}, unlocked: hasUnlock(p, claims), passVia: p.unlock?.via || null, owner: isDeveloper(claims) });
+  return json(200, { stats: stats(p), prefs: p.prefs || {}, unlocked: hasUnlock(p, claims), passVia: p.unlock?.via || null, owner: isDeveloper(claims), badges: p.badges || [], ring: ringOf(p) });
 }
 
 async function putMe(userId, claims, body) {
@@ -38,6 +43,7 @@ async function putMe(userId, claims, body) {
   if (body.name !== undefined) {
     const n = cleanName(body.name);
     if (!n) return bad('name must have visible characters');
+    if (isProfane(n)) return bad('Please pick a friendlier name');
     sets[0] = '#n = :n'; vals[':n'] = n; delete vals[':dn'];
   }
   if (body.prefs !== undefined) {
@@ -120,6 +126,11 @@ export const handler = async (event) => {
     const route = event.routeKey;
     if (route === 'GET /leaderboard') return await leaderboard(event);
     if (route === 'POST /square/webhook') return await webhook(event);
+    // Crit Climb tournaments (climb.mjs)
+    const climbId = event.pathParameters?.id;
+    if (route === 'GET /games/open') return await openGames(event);
+    if (route === 'GET /climbs') return await listClimbs();
+    if (route === 'GET /climbs/{id}') return await getClimb(climbId);
 
     const claims = event.requestContext?.authorizer?.jwt?.claims;
     if (!claims?.sub) return json(401, { error: 'sign in required' });
@@ -138,6 +149,10 @@ export const handler = async (event) => {
     if (route === 'POST /checkout/confirm') return await confirm(userId, claims, await loadPlayer(userId, claims));
     if (route === 'POST /gift/redeem') return await redeem(userId, claims, await loadPlayer(userId, claims), body);
     if (route === 'POST /gifts/promo') return await promo(userId, claims, body);
+    if (route === 'POST /climbs') { const p = await loadPlayer(userId, claims); return await createClimb(userId, claims, p, body, hasUnlock(p, claims)); }
+    if (route === 'POST /climbs/{id}/join') { const p = await loadPlayer(userId, claims); return await joinClimb(userId, claims, p, climbId, hasUnlock(p, claims)); }
+    if (route === 'POST /climbs/{id}/leave') return await leaveClimb(userId, climbId);
+    if (route === 'POST /climbs/{id}/start') return await startClimb(userId, climbId);
     return json(404, { error: 'not found' });
   } catch (e) {
     console.error(e);

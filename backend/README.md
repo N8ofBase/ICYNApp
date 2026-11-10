@@ -49,3 +49,29 @@ the Starvos Catastrophe and the Print & Play PDFs. Developers group members alwa
   `SQUARE_WEBHOOK_SIGNATURE_KEY`, `SQUARE_WEBHOOK_URL`, `PNP_BUCKET` (default icyn-premium-files).
 - Square webhook subscription: URL `https://r9s8gd8duk.execute-api.us-east-1.amazonaws.com/square/webhook`, events `payment.created`, `payment.updated`.
 - Deploy: `deploy-unlock.ps1 -Step 1..4`. Rollback: previous zips `function-starvos.zip` (icyn-api) and `ws-v3.zip` (icyn-ws).
+
+## Crit Climb tournaments (2026-11-10)
+
+Single-elimination brackets of 4, 8 or 16 players, hosted like an online Starvos lobby (`api/climb.mjs`, identical copy in `ws/climb.mjs`).
+Table `icyn-climbs` (key `id` = the 5 letter join code, on-demand, TTL attribute `ttl` = 30 days).
+A Crit Pass holder hosts one (`public` or private) and is entrant 0; others join by code (or from the public list); the host
+presses Begin with 3+ players. The bracket is drawn at random (shrinks to the smallest of 4/8/16 that fits; top seeds get byes).
+Every match is a Standard online duel (100 Life, Calamities on), any Hero per match. Once both rivals are known they have
+10 minutes: a player waiting in the arena wins by walkover, otherwise the higher seed advances. Open lobbies close after a day.
+Climb duels still count as ranked online duels. Rewards on the player item: `badges: [{k: conqueror|competitor, id, name, size, players, at}]`,
+`climbWins`, `climbPlays`. Ring = gold (any win, "Crit Climb Conqueror") else silver (played, "Crit Climb Competitor").
+`GET /me` returns `badges` and `ring`; `GET /leaderboard` returns `ring`.
+
+- `GET /climbs` (public open lobbies with seats), `GET /climbs/{code}` (public). Entrants are `{n, av, ring, k, seed}`, `k` = first 16 hex of sha256(`icyn-climb:<sub>`).
+- `POST /climbs {size, public, name?}`, `POST /climbs/{code}/join` (Crit Pass), `/leave` (host leaving closes the lobby), `/start` (host).
+- WebSocket `{action:'climb', climbId, hero}`: the first rival creates the duel and waits, the second joins it; nobody else can join by code.
+  When the duel ends, `recordResults` moves the winner up the bracket and the final awards the rings.
+- Deploy: `deploy-climb.ps1 -Step 1..4`. Test without AWS: `NM=<folder with @aws-sdk node_modules> node tools/climb/test-climb.mjs`.
+
+## Open games (2026-11-10)
+
+Public Online duels and Starvos battles anyone can join. `create` takes `public: true`; icyn-ws keeps `open = 'OPEN'` and `openAt`
+on a waiting public game (sparse GSI `byOpen` on icyn-games: `open` HASH, `openAt` RANGE, projection ALL) and removes `open`
+once it starts, fills (Starvos: 5 players) or closes. WebSocket `{action:'cancel', gameId}` lets a host take down a duel nobody joined.
+`GET /games/open?mode=duel|boss` (public, `api/lobby.mjs`) lists up to 30, newest first, only while the host is still connected
+(`icyn-connections`), skipping Crit Climb matches. Joining uses the normal code join. Deploy: `deploy-climb.ps1` Steps 1-3.

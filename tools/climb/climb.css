@@ -1,0 +1,81 @@
+/* Crit Climb tournaments */
+.climb{display:flex;flex-direction:column;gap:14px;max-width:820px;margin:0 auto;width:100%}
+.climb .how{max-width:none;width:100%;box-sizing:border-box}
+.cl-mine{display:grid;gap:10px;text-align:center;padding:16px;border:1px solid rgba(224,184,98,.55);border-radius:14px;background:linear-gradient(rgba(224,184,98,.12),rgba(224,184,98,.03))}
+.cl-mine p{margin:0}.cl-mine .ul-k{font-family:var(--f-title);color:var(--gold);font-size:1.15rem}
+.cl-mine .row,.cl-card .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center}
+.cl-due{color:var(--muted);font-size:.9rem}
+.cl-roster .pick img{max-height:64px}
+.cl-live{color:#7ee08f;font-weight:700}
+.cl-list{display:grid;gap:10px}
+.cl-h{margin:6px 0 0;font-family:var(--f-title);color:var(--gold);font-size:1rem}
+.cl-empty{text-align:center;color:var(--muted)}
+.cl-card{background:var(--stone);border:1px solid var(--line);border-left:4px solid var(--gold-deep);border-radius:12px;padding:12px 14px;display:grid;gap:8px;min-width:0}
+.cl-card.live{border-left-color:#3f8f4f}.cl-card.cancelled{opacity:.6;border-left-color:var(--line)}
+.cl-card header{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.cl-card h4{margin:0;font-family:var(--f-title);font-size:1.05rem;overflow-wrap:anywhere}
+.cl-tag{flex:none;font-size:.72rem;font-weight:800;padding:2px 8px;border-radius:999px;border:1px solid rgba(224,184,98,.5);color:var(--gold)}
+.cl-line{margin:0;font-size:.9rem;color:var(--muted)}.cl-line b{color:var(--text)}
+.cl-crown svg,.cl-bi svg{width:18px;height:18px;vertical-align:-3px}
+.cl-in{font-weight:700;color:#7ee08f}
+.cl-chips{display:flex;flex-wrap:wrap;gap:6px}
+.cl-chip{display:inline-flex;align-items:center;gap:5px;font-size:.8rem;padding:2px 8px 2px 2px;border-radius:999px;background:var(--stone-2);border:1px solid var(--line);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cl-chip.me{border-color:var(--gold)}.cl-chip.open{padding:2px 8px;opacity:.55;font-style:italic}
+.cl-bracket{display:grid;grid-template-columns:repeat(var(--cols),minmax(150px,1fr));gap:12px;overflow-x:auto;padding:4px 2px 8px;-webkit-overflow-scrolling:touch}
+.cl-col{display:flex;flex-direction:column;justify-content:space-around;gap:10px;min-width:0}
+.cl-col h5{margin:0;text-align:center;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}
+.cl-m{background:var(--night);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.cl-p{display:flex;align-items:center;gap:6px;padding:4px 8px;font-size:.84rem;min-width:0}
+.cl-p+.cl-p{border-top:1px solid var(--line)}
+.cl-p>span:not(.av){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cl-p small{color:var(--muted);font-size:.68rem}
+.cl-p.won{font-weight:800;color:var(--gold)}.cl-p.lost{opacity:.5;text-decoration:line-through}
+.cl-p.me{background:rgba(224,184,98,.12)}
+.cl-f{display:block;padding:2px 8px 4px;color:var(--muted);font-size:.7rem}
+.cl-host,.cl-room{background:var(--stone);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:10px;justify-items:center;text-align:center;min-width:0}
+.cl-host .opt{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center}
+.cl-host .cl-h{margin:0}
+.cl-name{display:grid;gap:4px;font-size:.88rem;color:var(--muted);width:min(320px,100%)}
+.cl-name input{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--night);color:var(--text);min-width:0}
+.cl-join{max-width:440px;margin:0 auto;width:100%;text-align:center;display:grid;gap:6px}
+.cl-join .row{display:flex;gap:8px;justify-content:center}
+.cl-join input{font:700 1.1rem ui-monospace,Menlo,monospace;letter-spacing:.2em;text-transform:uppercase;width:9ch;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--night);color:var(--text)}
+.cl-room{justify-items:stretch}.cl-room>p,.cl-room>.row,.cl-room>.nb-code{margin:0;justify-self:center}
+.cl-room header{display:flex;justify-content:space-between;gap:10px;align-items:baseline;text-align:left}
+.cl-room h3{margin:0;font-family:var(--f-title);color:var(--gold);font-size:1.2rem;overflow-wrap:anywhere}
+.cl-room .row,.cl-host .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.cl-room .cl-chips{justify-content:center}.cl-chip small{color:var(--gold);font-size:.68rem}
+.cl-back{justify-content:flex-start!important}
+.cl-champ{font-size:1.05rem}.cl-champ svg,.cl-line svg{width:20px;height:20px;vertical-align:-4px}
+.cl-out{color:var(--muted);font-style:italic}
+.cl-gold{color:#f2c94c}.cl-silver{color:#d6dbe3}
+/* Crit Climb profile rings */
+.rav{display:inline-grid;place-items:center;flex:none;position:relative;border-radius:50%}
+.rav .av{border-width:2px}
+.rav.gold .av{border-color:#f6d365;box-shadow:0 0 0 2px #a8822a,0 0 8px rgba(246,211,101,.75)}
+.rav.silver .av{border-color:#e4e8ee;box-shadow:0 0 0 2px #7d8590,0 0 6px rgba(228,232,238,.55)}
+.rav.big{width:var(--o);height:var(--o)}
+.rav.big svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.rav.big .av{box-shadow:none;border-width:2px}
+.rav .rr{fill:none;stroke-width:11}
+.rav.gold .rr{stroke:#c9962e}.rav.silver .rr{stroke:#8b939e}
+.rav .rt{font:800 7.2px/1 var(--f-body);letter-spacing:.06em}
+.rav.gold .rt{fill:#fff3c4}.rav.silver .rt{fill:#f4f6f9}
+.cl-joinbtn{border-color:var(--gold);color:var(--gold);font-weight:800;padding-inline:22px}
+.cl-room .cl-bracket{text-align:left}
+.cl-solo{background:linear-gradient(rgba(63,143,79,.12),rgba(63,143,79,.03));border:1px solid rgba(63,143,79,.55);border-radius:14px;padding:14px;display:grid;gap:10px;text-align:center}
+.cl-solo p{margin:0;color:var(--muted)}.cl-solo .cl-h{margin:0}
+.cl-free{font:800 .7rem var(--f-body);letter-spacing:.06em;text-transform:uppercase;background:#3f8f4f;color:#fff;border-radius:999px;padding:2px 8px;vertical-align:2px}
+.cl-cpu{font-weight:800;color:#9fb4c8!important;letter-spacing:.04em}
+.cl-soloend{margin:4px 0}
+.cl-bracket.solo{grid-template-columns:repeat(2,minmax(110px,1fr));overflow:visible;text-align:left}
+/* Open games */
+.og-pub{margin:0 auto}
+.og{text-align:left;display:grid;gap:6px;margin-top:4px}
+.og h4{margin:0;display:flex;justify-content:space-between;align-items:baseline;font-family:var(--f-title);color:var(--gold);font-size:.95rem}
+.og h4 .linkish{font:inherit;font-size:.75rem;color:var(--muted)}
+.og ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.og li{display:flex;align-items:center;gap:10px;background:var(--stone-2);border:1px solid var(--line);border-radius:10px;padding:6px 8px 6px 12px}
+.og-who{flex:1;min-width:0;display:grid}.og-who b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.og-who small{color:var(--muted);font-size:.78rem}
+.og-join{border-color:var(--gold);color:var(--gold);font-weight:800}
+.og-empty{margin:0;color:var(--muted);font-size:.85rem}
