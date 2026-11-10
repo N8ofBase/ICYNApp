@@ -66,6 +66,13 @@ body.lb-open .sfx-btn{display:none}
 .lbr-cover .lbr-go button{border:0;border-radius:999px;padding:11px 20px;font-weight:800;background:#7a2232;color:#fff;min-height:44px}
 .lbr-cover .lbr-go button.alt{background:transparent;color:#3a0f18;border:1px solid rgba(122,34,50,.55)}
 .lbr-cover small{color:var(--ink-2)}
+.lbr-cover .lbr-st-h{margin:22px 0 10px;font-family:var(--f-display);font-weight:400;color:#7a2232;font-size:1.15rem}
+.lbr-starts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:0 0 16px;text-align:left}
+.lbr-start{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-radius:12px;border:1px solid rgba(122,34,50,.35);background:rgba(255,255,255,.4);color:var(--ink);min-height:44px;text-align:left}
+.lbr-start:hover,.lbr-start:focus-visible{border-color:#7a2232;background:rgba(122,34,50,.08)}
+.lbr-start .lbr-st-k{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#7a2232}
+.lbr-start b{font-family:var(--f-title);font-size:1.15rem;color:#3a0f18;line-height:1.15}
+.lbr-start small{font-size:.85rem;line-height:1.35}
 .lbr-toc{position:absolute;inset:0;z-index:2;display:flex;justify-content:flex-start;background:rgba(5,4,8,.6)}
 .lbr-toc[hidden]{display:none}
 .lbr-toc-in{width:min(380px,88vw);height:100%;overflow:auto;background:#17142a;border-right:1px solid rgba(224,184,98,.35);padding:16px 14px calc(16px + env(safe-area-inset-bottom,0px));box-shadow:10px 0 30px rgba(0,0,0,.5);animation:lbslide .25s ease-out both}
@@ -161,11 +168,21 @@ async function lbReader(at){document.querySelector('.lbr')?.remove();
       return p+`<li><button data-i="${i}"${i===cur?' aria-current="true"':''}><span>${esc(c.title)}</span><small>${c.teaser?'Coming soon':lbOpenCh(i)?Math.max(1,Math.round(c.words/230))+' min':'🔒 Crit Pass'}</small></button></li>`}).join('')}</ol></div>`;
     toc.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{showToc(false);show(+b.dataset.i)});toc.querySelector('button')?.focus()}
   toc.onclick=e=>{if(e.target===toc)showToc(false)};tb.onclick=()=>showToc(toc.hidden);
-  function cover(){cur=-1;const st=lbState(),go=st.c!=null&&C[st.c];
+  function cover(){cur=-1;const st=lbState(),go=st.c!=null&&C[st.c]&&!C[st.c].teaser;
+    // N8 2026-11-10: opening page rewritten; readers pick where to start (one card per part of the book)
+    const parts=[];C.forEach((c,i)=>{if(!parts.length||parts[parts.length-1].part!==c.part)parts.push({part:c.part,i})});
+    const BLURB={'Prologue':'Start at the very beginning, with the vision that calls you.','The Knowledge Beacon':'The history of Talus, the Scorch, and the Heroes who fell.',
+      'Mission 1 · The Universe Medallion':'Wake on Talus and find the Medallion.','Mission 2 · The Strength of Love':'Captured and far from home, the mission goes on.'};
+    const card=p=>{const c=C[p.i],lock=!lbOpenCh(p.i),[a,b]=p.part.split(' · ');
+      return `<button class="lbr-start" data-go="${p.i}"><span class="lbr-st-k">${esc(b?a:p.part)}</span><b>${esc(b||c.title)}</b><small>${esc(BLURB[p.part]||c.title)}${lock?' · 🔒 Crit Pass':''}</small></button>`};
     pg.innerHTML=`<div class="lbr-cover"><p class="lbr-part">A novel in progress</p><h2>${esc(LB.title)}</h2><p class="lbr-sub">${esc(LB.subtitle)}</p><p class="lbr-by">by ${esc(LB.author)}</p>__ORN__
-      <p class="lbr-blurb">A Fear Rift has opened on Talus, the world of the Heroes of I Crit You Not! Its Life Crystals are failing, and the Death Lazuron Starvos left only ash behind. Icosa calls a cosmic traveler to answer. That traveler is you.</p>
-      <div class="lbr-go">${go?`<button data-go="${st.c}">Continue: ${esc(C[st.c].title)}</button><button class="alt" data-go="0">Start from the beginning</button>`:'<button data-go="0">Begin reading</button>'}</div>
-      <small>${C.length} chapters · ${PAYWALL()&&!hasArena()?`The first ${LB_FREE} are free. The rest open with the Crit Pass.`:'The story so far.'}</small></div>`;
+      <p class="lbr-blurb">You were mortal once. Now you wake in a strange new body with a voice in your head calling you <i>Lightbringer</i>.</p>
+      <p class="lbr-blurb">Below you turns Talus, a crowded moon where five Heroes gave their lives to stop the falling star Starvos. They saved the world, but a Fear Rift opened in the ashes and cut Talus off from Icosa and the loving universe beyond. Life Crystals flicker. Plague gremlins prowl the wells. Someone has to carry Love back into the dark.</p>
+      <p class="lbr-blurb">You cannot truly die here. Every mistake only sends you back to try again. So be brave, Lightbringer.</p>
+      ${go?`<div class="lbr-go"><button data-go="${st.c}">Continue: ${esc(C[st.c].title)}</button></div>`:''}
+      <h3 class="lbr-st-h">${go?'Or start somewhere new':'Where would you like to begin?'}</h3>
+      <div class="lbr-starts">${parts.map(card).join('')}</div>
+      <small>${PAYWALL()&&!hasArena()?`The first ${LB_FREE} chapters are free. The rest open with the Crit Pass.`:'New chapters arrive as N8 writes them.'}</small></div>`;
     pg.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(+b.dataset.go,b.dataset.go==st.c?st.y:0));sc.scrollTop=0}
   function show(i,y){cur=i;const c=C[i],open=lbOpenCh(i);lbSave({c:i,y:y||0});
     const nav=`<nav class="lbr-nav"><button data-n="-1"${i?'':' disabled'}>‹ Back</button><span>${i+1} / ${C.length}</span><button data-n="1"${i<C.length-1?'':' disabled'}>Next ›</button></nav>`;
