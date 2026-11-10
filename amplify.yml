@@ -12,7 +12,7 @@ frontend:
       - stats.js
       - online.js
       - lightbringer.json
-      - lb-map.webp
+      - lb/*.webp
       - manifest.json
       - sw.js
       - icon-192.png

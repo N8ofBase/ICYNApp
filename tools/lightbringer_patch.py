@@ -6,7 +6,7 @@
 # Needs unlock_patch.py first. Usage: python3 tools/lightbringer_patch.py index.html
 import sys
 
-LB_FREE = 3   # Prologue, Terror on Talus, Stranger in a Strange Land
+LB_FREE = 3   # Prologue, Terror on Talus, Stranger in a Strange Land (the Crit Pass starts at Harder Than It Looks)
 
 CSS = r"""
 /* Read Project Lightbringer (2026-11-10) */
@@ -84,6 +84,35 @@ body.lb-open .sfx-btn{display:none}
 .lbr-lockbox .unlock{margin-top:8px}
 .lbr-lockbox .ul-story{margin:10px 0 0;text-align:center;font-family:var(--f-title);color:var(--gold);font-size:1.15rem}
 .lbr-msg{text-align:center;font-family:Georgia,serif;padding:40px 0}
+@media (max-width:520px){.lbr-bar .lbr-tbl{display:none}.lbr-bar{gap:6px;padding:8px 10px}}
+/* Glossary: reference panel over the reader */
+.lbr-gl{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;background:radial-gradient(120% 80% at 50% 0%,#232046 0%,#0d0b14 70%);animation:lbin .2s ease-out both}
+.lbr-gl[hidden]{display:none}
+.lbr-gl-tabs{flex:0 0 auto;display:flex;gap:6px;overflow-x:auto;padding:10px 14px;border-bottom:1px solid rgba(224,184,98,.2);scrollbar-width:thin}
+.lbr-gl-tabs button{flex:0 0 auto;border-radius:999px;padding:6px 13px;min-height:34px;background:rgba(255,255,255,.05);border:1px solid rgba(224,184,98,.3);color:var(--text);font-size:.9rem}
+.lbr-gl-tabs button[aria-selected="true"]{background:var(--gold);color:#1d1708;border-color:var(--gold);font-weight:800}
+.lbr-gl .lbr-page h2{margin-bottom:2px}
+.lbr-gl .lbr-text p{text-indent:0}
+.lbg-note{text-align:center;font-style:italic;color:var(--ink-2);margin:0 0 14px;font-size:.92em}
+.lbg-map{display:block;margin:0 -8px;filter:drop-shadow(0 3px 6px rgba(60,30,10,.35))}
+.lbg-map img{display:block;width:100%;height:auto}
+.lbg-tbl{width:100%;border-collapse:collapse;margin:0 0 1.2em;font-size:.95em}
+.lbg-tbl caption{caption-side:top;font-family:var(--f-display);color:#7a2232;font-size:1.15em;padding:.6em 0 .3em}
+.lbg-tbl th,.lbg-tbl td{text-align:left;vertical-align:top;padding:5px 8px;border-bottom:1px dotted rgba(109,92,72,.45)}
+.lbg-tbl th{white-space:nowrap;font-weight:700;color:#3a0f18;width:1%}
+.lbg-tbl td{color:var(--ink-2)}
+.lbg-tbl .n{color:#7a2232;font-variant-numeric:tabular-nums;width:1%;padding-right:2px}
+.lbg-sw{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.lbg-sw li{display:flex;align-items:center;gap:10px;padding:6px;border-radius:10px;background:rgba(255,255,255,.35);border:1px solid rgba(109,92,72,.25)}
+.lbg-sw i{flex:0 0 auto;width:34px;height:34px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(0,0,0,.25),0 1px 2px rgba(0,0,0,.3)}
+.lbg-sw b{display:block;color:#3a0f18}.lbg-sw small{color:var(--ink-2)}
+.lbg-ent{display:flex;gap:16px;align-items:flex-start;padding:14px 0;border-bottom:1px dotted rgba(109,92,72,.45)}
+.lbg-ent:last-child{border-bottom:0}
+.lbg-ent img{flex:0 0 auto;width:96px;height:auto;border-radius:8px;background:#e7dcc3;box-shadow:0 0 0 2px var(--gold-deep),0 3px 8px rgba(0,0,0,.25)}
+.lbg-ent .hero{background:radial-gradient(circle at 50% 40%,#3a3460,#16132a);object-fit:contain;height:128px}
+.lbg-ent h3{margin:0 0 4px!important;text-align:left!important}
+.lbg-ent p{margin:0}
+@media (max-width:460px){.lbg-ent img{width:72px}.lbg-ent .hero{height:96px}}
 """
 
 # An original open book with a glowing star sphere above it, drawn inline.
@@ -112,14 +141,14 @@ const lbBanner=()=>`<button class="lbban" data-lbban type="button">__SVG__<span 
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-lbban]'))lbReader()});
 async function lbReader(at){document.querySelector('.lbr')?.remove();
   const o=document.createElement('div');o.className='lbr';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');o.setAttribute('aria-label','Project Lightbringer');
-  o.innerHTML=`<div class="lbr-bar"><button class="lbr-tb" aria-label="Chapters" aria-expanded="false">☰ <span class="lbr-tbl">Chapters</span></button><b class="lbr-t">Project Lightbringer</b><button class="lbr-aa" aria-label="Text size">Aa</button><button class="lbr-x" aria-label="Close">✕</button></div>
-    <div class="lbr-scroll"><article class="lbr-page"><p class="lbr-msg">Opening the book…</p></article></div><div class="lbr-toc" hidden></div>`;
+  o.innerHTML=`<div class="lbr-bar"><button class="lbr-tb" aria-label="Chapters" aria-expanded="false">☰ <span class="lbr-tbl">Chapters</span></button><b class="lbr-t">Project Lightbringer</b><button class="lbr-gb" aria-label="Glossary" aria-expanded="false">📜 <span class="lbr-tbl">Glossary</span></button><button class="lbr-aa" aria-label="Text size">Aa</button><button class="lbr-x" aria-label="Close">✕</button></div>
+    <div class="lbr-scroll"><article class="lbr-page"><p class="lbr-msg">Opening the book…</p></article></div><div class="lbr-toc" hidden></div><div class="lbr-gl" hidden></div>`;
   document.body.append(o);document.body.style.overflow='hidden';document.body.classList.add('lb-open');
-  const sc=o.querySelector('.lbr-scroll'),pg=o.querySelector('.lbr-page'),toc=o.querySelector('.lbr-toc'),tb=o.querySelector('.lbr-tb');
+  const gl=o.querySelector('.lbr-gl'),gb=o.querySelector('.lbr-gb'),sc=o.querySelector('.lbr-scroll'),pg=o.querySelector('.lbr-page'),toc=o.querySelector('.lbr-toc'),tb=o.querySelector('.lbr-tb');
   let cur=-1,saveT=0;
   const setFs=()=>{const f=lbState().fs??1;o.style.setProperty('--lbfs',LB_FS[f]||LB_FS[1])};setFs();
   const close=()=>{if(cur>=0)lbSave({c:cur,y:sc.scrollTop/Math.max(1,sc.scrollHeight-sc.clientHeight)});o.remove();document.body.style.overflow='';document.body.classList.remove('lb-open');removeEventListener('keydown',key)};
-  const key=e=>{if(e.key==='Escape'&&!document.querySelector('.over')){if(!toc.hidden)showToc(false);else close()}};
+  const key=e=>{if(e.key==='Escape'&&!document.querySelector('.over')){if(!toc.hidden)showToc(false);else if(!gl.hidden)showGl(false);else close()}};
   addEventListener('keydown',key);
   o.querySelector('.lbr-x').onclick=close;
   o.querySelector('.lbr-aa').onclick=()=>{const f=((lbState().fs??1)+1)%LB_FS.length;lbSave({fs:f});setFs()};
@@ -145,6 +174,30 @@ async function lbReader(at){document.querySelector('.lbr')?.remove();
     if(!open)wireUnlock(pg);
     pg.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>show(cur+ +b.dataset.n));
     requestAnimationFrame(()=>{sc.scrollTop=y?y*(sc.scrollHeight-sc.clientHeight):0});o.querySelector('.lbr-t').textContent=c.title}
+  // Glossary: free reference built from what the book has told the reader so far (the print edition's glossary + Terror on Talus)
+  let glTab=lbState().g||'map';
+  function showGl(on){gl.hidden=!on;gb.setAttribute('aria-expanded',on);if(!on){gb.focus();return}if(!toc.hidden)showToc(false);glRender()}
+  function glRender(){const G=LB.glossary||{},row=(a,b)=>`<tr><th>${esc(a)}</th><td>${esc(b)}</td></tr>`,
+      ent=(name,txt,img,cls)=>`<div class="lbg-ent">${img?`<img class="${cls||''}" src="${img}" alt="" loading="lazy">`:''}<div><h3>${esc(name)}</h3><p>${esc(txt)}</p></div></div>`,
+      HERO={Hinon:'brawler',Rork:'soulseer',Sartina:'whisper',Umatu:'champion',Yelena:'maverick'},
+      T={map:['Map of Talus',()=>`<p class="lbg-note">Drawn from the old charts of Talus. Tap the map to open it full size.</p><a class="lbg-map" href="lb/map.webp" target="_blank" rel="noopener"><img src="lb/map.webp" alt="Map of Talus with Turantia, Lake Femrul, the Oracle, and the towns of Rork, Sartina, Hinon, Umatu and Yelena" width="1600" height="1236"></a>`],
+        time:['Time & Sky',()=>`<table class="lbg-tbl"><caption>Time on Talus</caption>${(G.time||[]).map(x=>row(...x)).join('')}</table>
+          <p class="lbg-note">400 rotations make one grand rotation. Each planet cycle is named for the moon or planet that rules the sky.</p>
+          <table class="lbg-tbl"><caption>Rising Season</caption>${(G.rising||[]).map((x,i)=>`<tr><td class="n">${i+1}</td><th>${esc(x[0])}</th><td>${esc(x[1])}</td></tr>`).join('')}</table>
+          <table class="lbg-tbl"><caption>Retreating Season</caption>${(G.retreating||[]).map((x,i)=>`<tr><td class="n">${i+11}</td><th>${esc(x[0])}</th><td>${esc(x[1])}</td></tr>`).join('')}</table>`],
+        measures:['Measures',()=>`<table class="lbg-tbl"><caption>Distance</caption>${(G.distance||[]).map(x=>row(...x)).join('')}</table><table class="lbg-tbl"><caption>Weight</caption>${(G.weight||[]).map(x=>row(...x)).join('')}</table>`],
+        colors:['Colors',()=>`<ul class="lbg-sw">${(G.colors||[]).map(c=>`<li><i style="background:${c[2]}"></i><span><b>${esc(c[0])}</b><small>${esc(c[1])}</small></span></li>`).join('')}</ul>`],
+        peoples:['Peoples',()=>(G.peoples||[]).map(x=>ent(x[0],x[1],'lb/race-'+(x[0]==='Sapiens'?'sapien':x[0].toLowerCase())+'.webp')).join('')],
+        roles:['Roles',()=>(G.roles||[]).map(x=>ent(x[0],x[1])).join('')],
+        heroes:['Heroes of the Scorch',()=>(G.heroes||[]).map(x=>ent(x[0],x[1],typeof SEL!=='undefined'&&SEL[HERO[x[0]]],'hero')).join('')],
+        towns:['Towns',()=>(G.towns||[]).map(x=>ent(x[0],x[1])).join('')],
+        cosmos:['Cosmos',()=>(G.cosmos||[]).map(x=>ent(x[0],x[1])).join('')]};
+    if(!T[glTab])glTab='map';
+    gl.innerHTML=`<div class="lbr-gl-tabs" role="tablist" aria-label="Glossary sections">${Object.keys(T).map(k=>`<button role="tab" data-g="${k}" aria-selected="${k===glTab}">${esc(T[k][0])}</button>`).join('')}</div>
+      <div class="lbr-scroll"><article class="lbr-page"><p class="lbr-part">Glossary</p><h2>${esc(T[glTab][0])}</h2>__ORN__<div class="lbr-text">${T[glTab][1]()}</div></article></div>`;
+    gl.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{glTab=b.dataset.g;lbSave({g:glTab});glRender();gl.querySelector(`[data-g="${glTab}"]`)?.focus()});
+    gl.querySelector('[aria-selected="true"]')?.scrollIntoView({inline:'center',block:'nearest'})}
+  gb.onclick=()=>showGl(gl.hidden);
   if(at!=null&&C[at])show(at);else cover()}
 addEventListener('load',()=>{const q=new URLSearchParams(location.search);if(!q.has('read'))return;q.delete('read');history.replaceState(null,'',location.pathname+(q.toString()?'?'+q:'')+location.hash);Promise.resolve(window.ICYNAuth&&ICYNAuth.ready).catch(()=>{}).then(()=>lbReader())});
 """.replace('__SVG__', SVG).replace('__ORN__', ORN).replace('__LB_FREE__', str(LB_FREE))

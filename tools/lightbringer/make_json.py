@@ -84,7 +84,47 @@ for i, (_, h, title, part) in enumerate(CHAPTERS):
 
 chapters[-1]['html'] += '\n<p class="lb-tbc">To be continued… N8 is still writing this chapter.</p>'
 chapters[-1]['wip'] = True
-data = {'title': 'Project Lightbringer', 'subtitle': 'Terror on Talus', 'author': 'N8', 'chapters': chapters}
+# ---- Glossary (reference panel in the reader). Only what the book has already told the reader:
+# the print edition's glossary tables plus the Terror on Talus entries, quoted from the doc text.
+T = span(1)
+def para(start):
+    for q in T:
+        if q.startswith(start): return q
+    raise SystemExit(f'glossary: no paragraph starting {start!r}')
+def after_colon(start): return para(start).split(': ', 1)[1]
+RISING = [('Icona', 'Large gresh colored planet that is dominant in the sky throughout Rising Season'),
+    ('Caspien', 'Abluza moon that appears from behind Icona'), ('Olphine', 'Swirling abluza and wheck gas planet'),
+    ('Silva', 'Norangia and yemillow striped planet'), ('Avendwel', 'Distant but bright wheck star that shines until Distar'),
+    ('Horace', 'Small brozn moon of Silva'), ('Ego', 'Rojed and bleck lava moon of Icona'),
+    ('Distar', 'Gresh planet with a grerde ring; eclipses Avendwel until both are covered by Illconus in the Retreating Season'),
+    ('Ryovess', 'Smallest moon of Icona, grerde in color'), ('Nachuun', 'Abluza ice moon of Olphine')]
+RETREAT = [('Illconus', 'Large brozn and grerde planet that dominates the sky during the Retreating Season'),
+    ('Clovum', 'Rojed star that peeks from under Illconus'), ('Orkun', 'Wheck gas planet with two rocky rings surrounding it'),
+    ('Shuntu', 'Largest moon of Illconus, pale gresh in color'), ('Alecra', 'Gaseous moon of Orkun striped in shades of anildigo and verado'),
+    ('Hresh', 'Smallest moon of Illconus, brozn with bleck patches'), ('Envereen', 'Grerde, yemillow, and abluza colored planet'),
+    ('Diyaposa', 'Largest moon of Envereen, brozn in color'), ('Ryovinn', 'Anildigo moon of Envereen'), ('Nio', 'Small yemillow moon of Envereen')]
+COLORS = [('Rojed', 'Red', '#c0392b'), ('Norangia', 'Orange', '#e67e22'), ('Yemillow', 'Yellow', '#f1c40f'), ('Grerde', 'Green', '#27ae60'),
+    ('Abluza', 'Blue', '#2e86de'), ('Anildigo', 'Indigo', '#3f3d9b'), ('Verado', 'Violet', '#8e44ad'), ('Brozn', 'Brown', '#7b4f2c'),
+    ('Gresh', 'Grey', '#8a8a8a'), ('Bleck', 'Black', '#111111'), ('Wheck', 'White', '#f7f4ec'), ('Slata', 'Silver', '#c0c6cc')]
+glossary = {
+  'time': [['Sectick', '3 seconds'], ['Mintick', '20 secticks · 60 seconds'], ['Trintick', '20 minticks · 20 minutes'],
+           ['Tick', '3 trinticks · 1 hour'], ['Rotation', '20 ticks · 1 day'], ['Planet Cycle', '20 rotations · 1 month'],
+           ['Grand Rotation', '20 planet cycles · 1 year']],
+  'rising': RISING, 'retreating': RETREAT,
+  'distance': [['Ting', '1 centimeter'], ['Link', '20 tings · 20 cm · about 8 inches'], ['Length', '10 links · 2 meters · about 6.5 feet'],
+               ['Tang', '200 lengths · 400 meters · about ¼ mile'], ['Tong', '20 tangs · 8 km · about 5 miles']],
+  'weight': [['Parse', '20 grams'], ['Pec', '20 parse · 400 grams · about 1 pound'], ['Chunk', '20 pecs · 8 kg · about 20 pounds'],
+             ['Gort', '20 chunks · 160 kg · about 400 pounds']],
+  'colors': COLORS,
+  'cosmos': [['Icosa', after_colon('Icosa: ')], ['Life Carrier', after_colon('Life Carrier: ')], ['All Spirit', after_colon('All Spirit: ')],
+             ['Talus', para('The world of Talus is')], ['Starvos', para('From the ashes of the impact')]],
+  'peoples': [[k, para(f'The {k}')] for k in ('Dimoneesh', 'Leyf', 'Lizerus', 'Melkin', 'Sapiens')],
+  'roles': [[k, after_colon(k + ': ')] for k in ('Brawler', 'Champion', 'Maverick', 'Soul Seer', 'Whisper')],
+  'heroes': [[k, para(k + ', a ')] for k in ('Hinon', 'Rork', 'Sartina', 'Umatu', 'Yelena')],
+  'towns': [[k, para(st)] for k, st in (('Hinon', 'Hinon is a'), ('Rork', 'Rork has'), ('Sartina', 'Sartina itself'),
+                                         ('Umatu', 'Umatu is'), ('Yelena', 'Yelena’s Life Crystal'))],
+}
+data = {'title': 'Project Lightbringer', 'subtitle': 'Terror on Talus', 'author': 'N8', 'chapters': chapters, 'glossary': glossary}
 json.dump(data, open(out, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 for c in chapters:
     print(f"{c['words']:6}  {c['part']} / {c['title']}")
