@@ -109,10 +109,9 @@ body.lb-open .sfx-btn{display:none}
 .lbg-ent{display:flex;gap:16px;align-items:flex-start;padding:14px 0;border-bottom:1px dotted rgba(109,92,72,.45)}
 .lbg-ent:last-child{border-bottom:0}
 .lbg-ent img{flex:0 0 auto;width:96px;height:auto;border-radius:8px;background:#e7dcc3;box-shadow:0 0 0 2px var(--gold-deep),0 3px 8px rgba(0,0,0,.25)}
-.lbg-ent .hero{background:radial-gradient(circle at 50% 40%,#3a3460,#16132a);object-fit:contain;height:128px}
 .lbg-ent h3{margin:0 0 4px!important;text-align:left!important}
 .lbg-ent p{margin:0}
-@media (max-width:460px){.lbg-ent img{width:72px}.lbg-ent .hero{height:96px}}
+@media (max-width:460px){.lbg-ent img{width:72px}}
 """
 
 # An original open book with a glowing star sphere above it, drawn inline.
@@ -179,7 +178,6 @@ async function lbReader(at){document.querySelector('.lbr')?.remove();
   function showGl(on){gl.hidden=!on;gb.setAttribute('aria-expanded',on);if(!on){gb.focus();return}if(!toc.hidden)showToc(false);glRender()}
   function glRender(){const G=LB.glossary||{},row=(a,b)=>`<tr><th>${esc(a)}</th><td>${esc(b)}</td></tr>`,
       ent=(name,txt,img,cls)=>`<div class="lbg-ent">${img?`<img class="${cls||''}" src="${img}" alt="" loading="lazy">`:''}<div><h3>${esc(name)}</h3><p>${esc(txt)}</p></div></div>`,
-      HERO={Hinon:'brawler',Rork:'soulseer',Sartina:'whisper',Umatu:'champion',Yelena:'maverick'},
       T={map:['Map of Talus',()=>`<p class="lbg-note">Drawn from the old charts of Talus. Tap the map to open it full size.</p><a class="lbg-map" href="lb/map.webp" target="_blank" rel="noopener"><img src="lb/map.webp" alt="Map of Talus with Turantia, Lake Femrul, the Oracle, and the towns of Rork, Sartina, Hinon, Umatu and Yelena" width="1600" height="1236"></a>`],
         time:['Time & Sky',()=>`<table class="lbg-tbl"><caption>Time on Talus</caption>${(G.time||[]).map(x=>row(...x)).join('')}</table>
           <p class="lbg-note">400 rotations make one grand rotation. Each planet cycle is named for the moon or planet that rules the sky.</p>
@@ -189,7 +187,7 @@ async function lbReader(at){document.querySelector('.lbr')?.remove();
         colors:['Colors',()=>`<ul class="lbg-sw">${(G.colors||[]).map(c=>`<li><i style="background:${c[2]}"></i><span><b>${esc(c[0])}</b><small>${esc(c[1])}</small></span></li>`).join('')}</ul>`],
         peoples:['Peoples',()=>(G.peoples||[]).map(x=>ent(x[0],x[1],'lb/race-'+(x[0]==='Sapiens'?'sapien':x[0].toLowerCase())+'.webp')).join('')],
         roles:['Roles',()=>(G.roles||[]).map(x=>ent(x[0],x[1])).join('')],
-        heroes:['Heroes of the Scorch',()=>(G.heroes||[]).map(x=>ent(x[0],x[1],typeof SEL!=='undefined'&&SEL[HERO[x[0]]],'hero')).join('')],
+        heroes:['Heroes of the Scorch',()=>(G.heroes||[]).map(x=>ent(x[0],x[1],'lb/hero-'+x[0].toLowerCase()+'.webp')).join('')],
         towns:['Towns',()=>(G.towns||[]).map(x=>ent(x[0],x[1])).join('')],
         cosmos:['Cosmos',()=>(G.cosmos||[]).map(x=>ent(x[0],x[1])).join('')]};
     if(!T[glTab])glTab='map';

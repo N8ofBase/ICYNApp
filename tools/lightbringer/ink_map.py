@@ -1,5 +1,7 @@
 # Draws the Talus map as a hand-inked, quill-and-parchment SVG, traced from N8's painted map (TalusMap.png).
-# Usage: python3 ink_map.py out.svg   (then render with Playwright)
+# Usage: python3 ink_map.py out.svg   (then render with Playwright: scratch render.js, IM Fell English fonts)
+# 2026-11-10 v2 (N8): more natural coast/mountains/forests, towns drawn from their Terror on Talus descriptions,
+# Rork and Sartina swapped, Turantia in ruins, Oracle lake-on-a-hill waterfall feeding the river to Umatu.
 import math, random, sys
 random.seed(7)
 W, H = 2000, 1545
@@ -77,19 +79,6 @@ FORESTS = [((1330,800),200,170),((1135,1080),95,150),((1500,520),80,70),((1680,6
            ((1600,580),45,40),((1700,470),35,40),((1530,900),35,40)]
 RIVER = [(1645,490),(1630,560),(1640,620),(1600,690),(1570,770),(1545,860),(1520,950),(1490,1010),(1462,1060),(1455,1110)]
 
-out = []
-A = out.append
-A(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">')
-A('''<defs>
-<filter id="paper" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".008" numOctaves="4" seed="3"/>
-<feColorMatrix values="0 0 0 0 .93  0 0 0 0 .85  0 0 0 0 .69  0 0 0 -.9 .55"/><feComposite in2="SourceGraphic" operator="in"/></filter>
-<filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="9"/><feColorMatrix values="0 0 0 0 .35 0 0 0 0 .22 0 0 0 0 .1 0 0 0 .22 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>
-<filter id="rough"><feTurbulence type="fractalNoise" baseFrequency=".04" numOctaves="2" seed="5" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="5"/></filter>
-<filter id="inkbleed"><feGaussianBlur stdDeviation=".45"/></filter>
-<radialGradient id="vig" cx="50%" cy="50%" r="70%"><stop offset="55%" stop-color="#7a4a1c" stop-opacity="0"/><stop offset="100%" stop-color="#5a3210" stop-opacity=".55"/></radialGradient>
-<pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="9" stroke="#4a3320" stroke-width="1.1" opacity=".55"/></pattern>
-</defs>''')
-# parchment with torn edge
 def torn(pts, step=9):
     out = []
     for i in range(len(pts)):
@@ -100,156 +89,342 @@ def torn(pts, step=9):
             t = k / seg; v = v * .55 + random.uniform(-1, 1) * 9 + (random.uniform(-22, 6) if random.random() < .04 else 0)
             out.append((x1 + (x2 - x1) * t - (y2 - y1) / L * v, y1 + (y2 - y1) * t + (x2 - x1) / L * v))
     return out
+# ---------------------------------------------------------------- natural helpers
+def fractal(poly, depth=4, rough=.16):
+    """Midpoint displacement: turns a traced outline into a natural, ragged coast."""
+    pts = list(poly)
+    for d in range(depth):
+        nxt = []
+        for i in range(len(pts)):
+            (x1, y1), (x2, y2) = pts[i], pts[(i + 1) % len(pts)]
+            L = math.hypot(x2 - x1, y2 - y1) or 1
+            off = random.gauss(0, rough) * L
+            nxt += [(x1, y1), ((x1 + x2) / 2 - (y2 - y1) / L * off, (y1 + y2) / 2 + (x2 - x1) / L * off)]
+        pts = nxt; rough *= .62
+    return pts
+
+def lpath(pts, closed=True):
+    s = 'M%.1f %.1f ' % pts[0] + ' '.join('L%.1f %.1f' % p for p in pts[1:])
+    return s + (' Z' if closed else '')
+
+def edge_dist(pt, poly):
+    x, y = pt; best = 1e9
+    for i in range(len(poly)):
+        (x1, y1), (x2, y2) = poly[i], poly[i - 1]
+        dx, dy = x2 - x1, y2 - y1; L2 = dx * dx + dy * dy or 1
+        t = max(0, min(1, ((x - x1) * dx + (y - y1) * dy) / L2))
+        best = min(best, math.hypot(x - x1 - t * dx, y - y1 - t * dy))
+    return best
+
+def poisson(poly, r, tries=4000, avoid=()):
+    xs = [p[0] for p in poly]; ys = [p[1] for p in poly]
+    pts = []
+    for _ in range(tries):
+        q = (random.uniform(min(xs), max(xs)), random.uniform(min(ys), max(ys)))
+        if not inside(q, poly) or any(inside(q, a) for a in avoid): continue
+        if all((q[0] - a) ** 2 + (q[1] - b) ** 2 > r * r for a, b in pts): pts.append(q)
+    return pts
+
+def blob(cx, cy, rx, ry, n=16, wob=.18):
+    return [(cx + rx * math.cos(a) * (1 + random.uniform(-wob, wob)), cy + ry * math.sin(a) * (1 + random.uniform(-wob, wob)))
+            for a in [i * 6.283 / n for i in range(n)]]
+
+PARCH = '#f1e4c4'
+# Book (Terror on Talus) + N8 2026-11-10: Rork = Dimoneesh fortress high in the mountains on the Talon of Talus (south-west tip);
+# Sartina = Melkin city carved in a cliff face (north rim of the Scorched Valley). Oracle = lake on a hill whose waterfall
+# becomes the river through Hinon, ending in a waterfall at the coastal city Umatu into the sea. Turantia lies in ruins.
+TALON = [(232,1100),(300,1080),(390,1090),(440,1080),(420,1150),(380,1200),(330,1225),(275,1205),(250,1150)]
+MOUNT.append(TALON)
+RIVER = [(1648,512),(1650,545),(1640,575),(1618,610),(1600,650),(1588,690),(1578,730),(1560,780),(1548,830),(1530,880),
+         (1505,930),(1488,980),(1470,1030),(1452,1075),(1440,1120),(1432,1168)]
+FORESTS = [((1330,800),205,175),((1135,1085),95,150),((1490,520),85,70),((1700,640),62,80),((1660,880),75,95),
+           ((1720,470),40,45),((1545,1010),40,40),((1235,1190),40,30)]
+HOLES = [blob(1335,780,95,90,10,.05), blob(1585,700,62,46,10,.05)]   # clearings for Yelena's tree and Hinon's farms
+
+out = []
+A = out.append
+A(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">')
+A('''<defs>
+<filter id="paper" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".008" numOctaves="4" seed="3"/>
+<feColorMatrix values="0 0 0 0 .93  0 0 0 0 .85  0 0 0 0 .69  0 0 0 -.9 .55"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+<filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="9"/><feColorMatrix values="0 0 0 0 .35 0 0 0 0 .22 0 0 0 0 .1 0 0 0 .22 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+<filter id="rough"><feTurbulence type="fractalNoise" baseFrequency=".04" numOctaves="2" seed="5" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="5"/></filter>
+<filter id="quill"><feTurbulence type="fractalNoise" baseFrequency=".06" numOctaves="2" seed="11" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" result="d"/><feGaussianBlur in="d" stdDeviation=".4"/></filter>
+<radialGradient id="vig" cx="50%" cy="50%" r="70%"><stop offset="55%" stop-color="#7a4a1c" stop-opacity="0"/><stop offset="100%" stop-color="#5a3210" stop-opacity=".55"/></radialGradient>
+<pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="7" stroke="#4a3320" stroke-width="1" opacity=".6"/></pattern>
+<pattern id="water" width="16" height="7" patternUnits="userSpaceOnUse"><path d="M0 4 q4 -3 8 0 t8 0" fill="none" stroke="#4a3320" stroke-width=".9" opacity=".5"/></pattern>
+</defs>''')
 edge = torn([(110,120),(1890,120),(1890,1430),(110,1430)])
-A(f'<path d="{path(edge)}" fill="#ecdcb6"/>')
-edge_d = path(edge)
-A(f'<path d="{path(edge)}" fill="#e6d2a6" filter="url(#paper)"/>')
-A(f'<path d="{path(edge)}" fill="#000" filter="url(#grain)"/>')
-A(f'<path d="{path(edge)}" fill="url(#vig)"/>')
-A(f'<path d="{path(edge)}" fill="none" stroke="#6b4421" stroke-width="5" opacity=".55" filter="url(#rough)"/>')
-# double ruled border
+for f in ('fill="#ecdcb6"', 'fill="#e6d2a6" filter="url(#paper)"', 'fill="#000" filter="url(#grain)"', 'fill="url(#vig)"',
+          'fill="none" stroke="#6b4421" stroke-width="5" opacity=".55" filter="url(#rough)"'):
+    A(f'<path d="{path(edge)}" {f}/>')
 A(f'<rect x="160" y="165" width="1680" height="1220" fill="none" stroke="{INK}" stroke-width="3" filter="url(#rough)"/>')
 A(f'<rect x="172" y="177" width="1656" height="1196" fill="none" stroke="{INK}" stroke-width="1.2" filter="url(#rough)"/>')
 
-g = ['<g filter="url(#inkbleed)" stroke-linecap="round" stroke-linejoin="round">']
-def land(poly, amt=7):
-    j = jitter(poly, amt)
-    # offshore echo lines
-    for k, (f, op) in enumerate([(1.035, .45), (1.07, .28), (1.11, .16)]):
-        e = jitter(scale(poly, f), amt * 1.3)
-        g.append(f'<path d="{path(e)}" fill="none" stroke="{INK2}" stroke-width="1.4" opacity="{op}" stroke-dasharray="{14-k*3} {5+k*4}"/>')
-    g.append(f'<path d="{path(j)}" fill="#f1e4c4" fill-opacity=".55" stroke="{INK}" stroke-width="4"/>')
-    g.append(f'<path d="{path(jitter(poly, amt*.7))}" fill="none" stroke="{INK}" stroke-width="1.2" opacity=".7"/>')
-land(COAST); land(TURANTIA, 5)
+g = ['<g filter="url(#quill)" stroke-linecap="round" stroke-linejoin="round">']
+G = g.append
+coast = fractal(COAST, 5, .14); tur = fractal(TURANTIA, 4, .12)
+# sea: ripple lines that follow the shore, fading out
+for poly in (coast, tur):
+    for k, (f, op) in enumerate([(1.025, .55), (1.05, .38), (1.08, .24), (1.115, .13)]):
+        G(f'<path d="{lpath(scale(poly, f))}" fill="none" stroke="{INK2}" stroke-width="1.3" opacity="{op}" stroke-dasharray="{16-k*3} {4+k*5}"/>')
+for poly in (coast, tur):
+    G(f'<path d="{lpath(poly)}" fill="{PARCH}" fill-opacity=".6" stroke="{INK}" stroke-width="3.6"/>')
+    G(f'<path d="{lpath(scale(poly, .992))}" fill="none" stroke="{INK}" stroke-width="1" opacity=".55"/>')
+# wave strokes out at sea
+for _ in range(70):
+    x, y = random.uniform(190, 1810), random.uniform(200, 1360)
+    if inside((x, y), scale(coast, 1.12)) or inside((x, y), scale(tur, 1.15)) or (850 < x < 1150 and y < 330): continue
+    w = random.uniform(14, 24)
+    G(f'<path d="M{x:.0f} {y:.0f} q{w/2:.0f} -{w*.35:.0f} {w:.0f} 0 q{w/2:.0f} -{w*.35:.0f} {w:.0f} 0" fill="none" stroke="{INK2}" stroke-width="1.3" opacity=".6"/>')
+# little rocks and isles off the coast
+for (x, y, r) in [(1835,610,9),(1820,1010,12),(1210,1290,10),(560,1060,8),(470,250,7),(1500,250,9)]:
+    G(f'<path d="{lpath(fractal(blob(x,y,r,r*.7,8,.2),2,.1))}" fill="{PARCH}" stroke="{INK}" stroke-width="2"/>')
 
-# Great Gash: cracked canyon
-g.append(f'<path d="{path(jitter(GASH,4))}" fill="url(#hatch)" stroke="{INK}" stroke-width="2.2"/>')
-for i in range(9):
-    x = random.uniform(715, 835); y = random.uniform(760, 930)
-    pts = [(x, y)]
-    for _ in range(4): x += random.uniform(-14, 14); y += random.uniform(8, 20); pts.append((x, y))
-    g.append('<polyline points="%s" fill="none" stroke="%s" stroke-width="1.6"/>' % (' '.join('%.0f,%.0f' % p for p in pts), INK))
+# Great Gash: a dark scar of hatching with cracks
+gash = fractal(GASH, 3, .1)
+G(f'<path d="{lpath(gash)}" fill="url(#hatch)" stroke="{INK}" stroke-width="2.2"/>')
+for i in range(10):
+    x = random.uniform(718, 830); y = random.uniform(760, 930); pts = [(x, y)]
+    for _ in range(5): x += random.uniform(-12, 12); y += random.uniform(6, 16); pts.append((x, y))
+    G('<polyline points="%s" fill="none" stroke="%s" stroke-width="1.5"/>' % (' '.join('%.0f,%.0f' % p for p in pts), INK))
 
-def scatter(poly, gap, fn, jit=.45):
-    xs = [p[0] for p in poly]; ys = [p[1] for p in poly]
-    y = min(ys)
-    row = 0
-    while y < max(ys):
-        x = min(xs) + (gap / 2 if row % 2 else 0)
-        while x < max(xs):
-            px, py = x + random.uniform(-gap * jit, gap * jit), y + random.uniform(-gap * jit, gap * jit)
-            if inside((px, py), poly): fn(px, py)
-            x += gap
-        y += gap * .8; row += 1
-
-def peak(x, y, s=None):
-    s = s or random.uniform(26, 40); w = s * random.uniform(.8, 1.1)
-    top = (x + random.uniform(-4, 4), y - s)
-    g.append(f'<path d="M{x-w:.1f} {y:.1f} L{top[0]:.1f} {top[1]:.1f} L{x+w:.1f} {y:.1f}" fill="#f1e4c4" stroke="{INK}" stroke-width="2.2"/>')
-    # shaded right flank hatching
-    for k in range(1, 6):
-        t = k / 6
-        ax, ay = top[0] + (x + w - top[0]) * t, top[1] + (y - top[1]) * t
-        g.append(f'<line x1="{ax:.1f}" y1="{ay:.1f}" x2="{ax-w*.35*(1-t)-4:.1f}" y2="{y-1:.1f}" stroke="{INK2}" stroke-width="1"/>')
-    # snow cap tick
-    g.append(f'<path d="M{top[0]-w*.22:.1f} {top[1]+s*.22:.1f} l{w*.12:.1f} -4 l{w*.1:.1f} 5" fill="none" stroke="{INK}" stroke-width="1.2"/>')
-for m in MOUNT: scatter(m, 42, peak)
-
-def stip(x, y):
-    for _ in range(3):
-        g.append(f'<circle cx="{x+random.uniform(-9,9):.1f}" cy="{y+random.uniform(-9,9):.1f}" r="{random.uniform(.9,1.8):.1f}" fill="{INK2}" opacity=".75"/>')
-scatter(DESERT, 22, stip, .6)
-def dune(x, y):
-    if random.random() < .18:
-        g.append(f'<path d="M{x-18:.0f} {y:.0f} q18 -10 36 0" fill="none" stroke="{INK2}" stroke-width="1.3"/>')
-scatter(DESERT, 40, dune)
-def rock(x, y):
+# desert stipple + dunes, valley pebbles, open-land tufts
+for x, y in poisson(DESERT, 13, 9000):
+    G(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{random.uniform(.8,1.7):.1f}" fill="{INK2}" opacity=".7"/>')
+for x, y in poisson(DESERT, 55, 600):
+    w = random.uniform(16, 26)
+    G(f'<path d="M{x-w:.0f} {y:.0f} q{w*.6:.0f} -{w*.45:.0f} {w*2:.0f} 0 M{x-w*.2:.0f} {y-w*.18:.0f} q{w*.4:.0f} {w*.1:.0f} {w*.7:.0f} {w*.35:.0f}" fill="none" stroke="{INK2}" stroke-width="1.2"/>')
+for x, y in poisson(VALLEY, 17, 5000):
     r = random.random()
-    if r < .35: g.append(f'<path d="M{x-6:.0f} {y:.0f} q6 -9 12 0 z" fill="none" stroke="{INK2}" stroke-width="1.2"/>')
-    elif r < .8: g.append(f'<circle cx="{x:.0f}" cy="{y:.0f}" r="1.4" fill="{INK2}"/>')
-scatter(VALLEY, 20, rock, .6)
-def hill(x, y):
-    w = random.uniform(22, 34)
-    g.append(f'<path d="M{x-w:.0f} {y:.0f} Q{x:.0f} {y-w*.9:.0f} {x+w:.0f} {y:.0f}" fill="none" stroke="{INK}" stroke-width="2"/>')
-    g.append(f'<path d="M{x+3:.0f} {y-w*.35:.0f} q{w*.35:.0f} 6 {w*.6:.0f} {w*.3:.0f}" fill="none" stroke="{INK2}" stroke-width="1"/>')
-scatter(HILLS, 48, hill)
-def tuft(x, y):
-    if random.random() < .5:
-        g.append(f'<path d="M{x-4:.0f} {y:.0f} l2 -7 M{x:.0f} {y:.0f} l0 -9 M{x+4:.0f} {y:.0f} l-2 -7" stroke="{INK2}" stroke-width="1.1"/>')
-grass = [(980,420),(1330,410),(1790,380),(1785,900),(1600,1050),(1100,1230),(1000,1080),(1050,800),(990,500)]
-def tree(x, y):
-    r = random.uniform(9, 13)
-    g.append(f'<path d="M{x:.1f} {y+r*1.6:.1f} v-{r*.8:.1f}" stroke="{INK}" stroke-width="1.6"/>')
+    if r < .25: G(f'<path d="M{x-5:.0f} {y:.0f} q5 -8 10 0 z" fill="none" stroke="{INK2}" stroke-width="1.1"/>')
+    elif r < .8: G(f'<circle cx="{x:.0f}" cy="{y:.0f}" r="1.3" fill="{INK2}"/>')
+for x, y in poisson(coast, 46, 3000, avoid=MOUNT + [DESERT, VALLEY, GASH, HILLS]):
+    if random.random() < .45:
+        G(f'<path d="M{x-4:.0f} {y:.0f} l2 -7 M{x:.0f} {y:.0f} l0 -9 M{x+4:.0f} {y:.0f} l-2 -7" stroke="{INK2}" stroke-width="1.1"/>')
+
+# rolling hills (Hills of Will), sorted back to front
+for x, y in sorted(poisson(HILLS, 40, 1500), key=lambda p: p[1]):
+    w = random.uniform(20, 34)
+    G(f'<path d="M{x-w:.0f} {y:.0f} Q{x-w*.2:.0f} {y-w*.95:.0f} {x+w:.0f} {y:.0f}" fill="{PARCH}" stroke="{INK}" stroke-width="2"/>')
+    for k in range(3):
+        G(f'<path d="M{x+w*(.1+k*.22):.0f} {y-w*(.5-k*.13):.0f} l{w*.12:.0f} {w*.25:.0f}" stroke="{INK2}" stroke-width="1"/>')
+
+# mountains: back-to-front, tallest along each range's spine, shaded east flank
+def peak(x, y, s):
+    wl = s * random.uniform(.75, 1.05); wr = s * random.uniform(.8, 1.15)
+    tx, ty = x + random.uniform(-s * .18, s * .18), y - s * random.uniform(.95, 1.25)
+    k1 = (tx - wl * .45, ty + s * .45 + random.uniform(-4, 4))
+    G(f'<path d="M{x-wl:.1f} {y:.1f} L{k1[0]:.1f} {k1[1]:.1f} L{tx:.1f} {ty:.1f} L{x+wr:.1f} {y:.1f}" fill="{PARCH}" stroke="{INK}" stroke-width="2"/>')
+    G(f'<path d="M{tx:.1f} {ty:.1f} L{tx+wr*.12:.1f} {ty+s*.35:.1f} L{tx+wr*.05:.1f} {y-s*.25:.1f}" fill="none" stroke="{INK}" stroke-width="1.2"/>')
+    for k in range(1, 7):
+        t = k / 7
+        ax, ay = tx + (x + wr - tx) * t, ty + (y - ty) * t
+        G(f'<line x1="{ax:.1f}" y1="{ay:.1f}" x2="{ax-wr*.3*(1-t)-3:.1f}" y2="{min(y-1, ay + s*.55):.1f}" stroke="{INK2}" stroke-width=".9"/>')
+peaks = []
+for m in MOUNT:
+    fm = fractal(m, 2, .06)
+    for q in poisson(fm, 27, 4000):
+        d = edge_dist(q, m)
+        peaks.append((q, 20 + min(d, 70) * .42 + random.uniform(-4, 6)))
+for (x, y), s in sorted(peaks, key=lambda p: p[0][1]): peak(x, y, s)
+
+# forests: ragged outlines, trees back to front, a few conifers
+def tree(x, y, r):
+    if random.random() < .2:
+        G(f'<path d="M{x:.1f} {y-r*1.6:.1f} l{r*.7:.1f} {r*1.3:.1f} h-{r*.35:.1f} l{r*.55:.1f} {r*.9:.1f} h-{r*1.8:.1f} l{r*.55:.1f} -{r*.9:.1f} h-{r*.35:.1f} z" fill="{PARCH}" stroke="{INK}" stroke-width="1.5"/>'
+          f'<path d="M{x:.1f} {y+r*.6:.1f} v{r*.5:.1f}" stroke="{INK}" stroke-width="1.5"/>')
+        return
+    G(f'<path d="M{x:.1f} {y+r*1.5:.1f} v-{r*.8:.1f}" stroke="{INK}" stroke-width="1.5"/>')
     bumps = ' '.join(f'a{r*.55:.1f} {r*.55:.1f} 0 0 1 {dx:.1f} {dy:.1f}' for dx, dy in [(r*.7,-r*.7),(r*.7,r*.4),(-r*.2,r*.8),(-r*1.2,0),(-r*.2,-r*.8)])
-    g.append(f'<path d="M{x-r*.6:.1f} {y+r*.4:.1f} {bumps} z" fill="#f1e4c4" stroke="{INK}" stroke-width="1.7"/>')
-    g.append(f'<path d="M{x+r*.15:.1f} {y-r*.1:.1f} q{r*.3:.1f} {r*.2:.1f} {r*.25:.1f} {r*.6:.1f}" fill="none" stroke="{INK2}" stroke-width="1"/>')
+    G(f'<path d="M{x-r*.6:.1f} {y+r*.4:.1f} {bumps} z" fill="{PARCH}" stroke="{INK}" stroke-width="1.6"/>')
+    G(f'<path d="M{x+r*.2:.1f} {y-r*.15:.1f} q{r*.3:.1f} {r*.2:.1f} {r*.2:.1f} {r*.6:.1f}" fill="none" stroke="{INK2}" stroke-width=".9"/>')
+trees = []
 for (cx, cy), rx, ry in FORESTS:
-    ell = [(cx + rx * math.cos(a) * random.uniform(.85, 1.1), cy + ry * math.sin(a) * random.uniform(.85, 1.1)) for a in [i * 6.283 / 18 for i in range(18)]]
-    pts = []
-    scatter(ell, 26, lambda x, y: pts.append((x, y)))
-    for x, y in sorted(pts, key=lambda p: p[1]): tree(x, y)
-# scattered grass tufts on open green land
-GREEN = [(1000,430),(1250,420),(1330,410),(1780,400),(1770,900),(1600,1040),(1220,1180),(1080,1150),(1060,900),(1000,700)]
-scatter(GREEN, 55, tuft, .5)
-# river
-rv = RIVER
-g.append(f'<path d="{path(rv, False)}" fill="none" stroke="{INK}" stroke-width="5"/>')
-g.append(f'<path d="{path(rv, False)}" fill="none" stroke="#f1e4c4" stroke-width="2.2"/>')
-# lake Femrul + Oracle pool + crater
-g.append(f'<ellipse cx="985" cy="640" rx="34" ry="16" fill="url(#hatch)" stroke="{INK}" stroke-width="2"/>')
-g.append(f'<circle cx="1645" cy="460" r="30" fill="none" stroke="{INK}" stroke-width="2.4"/><circle cx="1645" cy="460" r="18" fill="none" stroke="{INK2}" stroke-width="1.2" stroke-dasharray="4 4"/>')
-for a in range(0, 360, 30):
-    ra = math.radians(a); g.append(f'<line x1="{1645+36*math.cos(ra):.0f}" y1="{460+36*math.sin(ra):.0f}" x2="{1645+48*math.cos(ra):.0f}" y2="{460+48*math.sin(ra):.0f}" stroke="{INK2}" stroke-width="1.4"/>')
-g.append(f'<ellipse cx="1740" cy="822" rx="28" ry="22" fill="url(#hatch)" stroke="{INK}" stroke-width="2.4"/><ellipse cx="1740" cy="822" rx="12" ry="9" fill="{INK}" opacity=".7"/>')
-# Turantia: shattered city on its plateau
-for i in range(16):
-    x = random.uniform(250, 380); y = random.uniform(360, 470); h = random.uniform(18, 46)
-    g.append(f'<path d="M{x:.0f} {y:.0f} v-{h:.0f} l6 -8 l6 8 v{h:.0f}" fill="#f1e4c4" stroke="{INK}" stroke-width="1.8"/>')
-for a in range(0, 360, 24):
-    ra = math.radians(a); peak(315 + 150 * math.cos(ra), 450 + 125 * math.sin(ra), 26)
-# town icons
-def town(x, y, s=1, crown=False):
-    g.append(f'<g transform="translate({x} {y}) scale({s})"><path d="M-22 10 v-18 h8 v-8 h6 v8 h16 v-14 l6 -9 l6 9 v14 h6 v18 z" fill="#f1e4c4" stroke="{INK}" stroke-width="2.2"/>'
-             f'<path d="M-16 10 v-6 h5 v6 M4 10 v-8 h5 v8" fill="none" stroke="{INK}" stroke-width="1.4"/>'
-             + (f'<path d="M14 -31 v-12 l10 4 l-10 4" fill="{RED}" stroke="{INK}" stroke-width="1.2"/>' if crown else '') + '</g>')
-town(605, 655, 1.3, True); town(305, 1160, 1.2, True); town(1580, 690, 1.1, True); town(1470, 1020, 1.3, True)
-town(865, 735, .8); town(1310, 450, .8); town(1200, 650, .7); town(1190, 840, .7)
-# ruins
+    f = fractal(blob(cx, cy, rx, ry, 12, .22), 3, .1)
+    trees += [(q, random.uniform(8, 12.5)) for q in poisson(f, 19, 5000, avoid=HOLES) if inside(q, coast)]
+for (x, y), r in sorted(trees, key=lambda p: p[0][1]): tree(x, y, r)
+
+# Oracle: a lake on a hill, its waterfall cascading down into the river
+ox, oy = 1648, 470
+for k, rr in enumerate([88]):
+    G(f'<path d="{path(blob(ox, oy + 6, rr, rr*.72, 14, .07))}" fill="{PARCH}" stroke="{INK}" stroke-width="{2.4 - k*.5:.1f}" stroke-dasharray="{"" if k == 0 else "10 4"}"/>')
+for a in range(200, 340, 9):
+    ra = math.radians(a); G(f'<line x1="{ox+92*math.cos(ra):.0f}" y1="{oy+6+66*math.sin(ra):.0f}" x2="{ox+80*math.cos(ra):.0f}" y2="{oy+6+56*math.sin(ra):.0f}" stroke="{INK2}" stroke-width="1"/>')
+G(f'<path d="{lpath(fractal(blob(ox, oy, 34, 20, 10, .1), 2, .06))}" fill="url(#water)" stroke="{INK}" stroke-width="2.4"/>')
+# cascade: stepped falls down the hill's south face
+for i, (y0, y1) in enumerate([(492, 506), (510, 522), (526, 540)]):
+    G(f'<path d="M{ox-8:.0f} {y0} v{y1-y0} M{ox-3:.0f} {y0} v{y1-y0+2} M{ox+2:.0f} {y0} v{y1-y0} M{ox+7:.0f} {y0} v{y1-y0-2}" stroke="{INK}" stroke-width="1.3"/>')
+    G(f'<path d="M{ox-12:.0f} {y1+2} q12 4 24 0" fill="none" stroke="{INK}" stroke-width="1.4"/>')
+
+# the river: meanders from the Oracle through Hinon to Umatu, widening as it goes
+dense = []
+for i in range(len(RIVER) - 1):
+    (x1, y1), (x2, y2) = RIVER[i], RIVER[i + 1]
+    for k in range(6):
+        t = k / 6; dense.append((x1 + (x2 - x1) * t, y1 + (y2 - y1) * t))
+dense.append(RIVER[-1])
+ph = random.uniform(0, 6)
+mean = []
+for i, (x, y) in enumerate(dense):
+    nx, ny = dense[min(i + 1, len(dense) - 1)]; px, py = dense[max(i - 1, 0)]
+    dx, dy = nx - px, ny - py; L = math.hypot(dx, dy) or 1
+    a = 9 * math.sin(i * .55 + ph) * (0 if i in (0, len(dense) - 1) else 1)
+    mean.append((x - dy / L * a, y + dx / L * a))
+seg = len(mean) // 3
+for k in range(3):
+    part = mean[k * seg: (k + 1) * seg + 1] if k < 2 else mean[k * seg:]
+    G(f'<path d="{path(part, False)}" fill="none" stroke="{INK}" stroke-width="{4 + k*1.6:.1f}"/>')
+    G(f'<path d="{path(part, False)}" fill="none" stroke="{PARCH}" stroke-width="{1.6 + k*1.4:.1f}"/>')
+# the river's last fall, off the cliffs at Umatu into the sea
+mx, my = RIVER[-1]
+G(f'<path d="M{mx-7} {my} v26 M{mx-2} {my} v30 M{mx+3} {my} v28 M{mx+8} {my} v24" stroke="{INK}" stroke-width="1.4"/>')
+for k in range(7):
+    G(f'<circle cx="{mx + random.uniform(-16,16):.0f}" cy="{my + 32 + random.uniform(-4,6):.0f}" r="{random.uniform(1.5,3.5):.1f}" fill="none" stroke="{INK2}" stroke-width="1"/>')
+G(f'<path d="M{mx-26} {my+40} q13 -6 26 0 t26 0" fill="none" stroke="{INK2}" stroke-width="1.3"/>')
+
+# Lake Femrul, the eastern crater
+G(f'<path d="{lpath(fractal(blob(985, 640, 36, 16, 10, .12), 2, .08))}" fill="url(#water)" stroke="{INK}" stroke-width="2"/>')
+G(f'<path d="{lpath(fractal(blob(1740, 822, 30, 23, 12, .1), 2, .07))}" fill="url(#hatch)" stroke="{INK}" stroke-width="2.4"/>'
+  f'<ellipse cx="1740" cy="824" rx="12" ry="9" fill="{INK}" opacity=".65"/>')
+
+def crystal(x, y, s=1):
+    G(f'<g transform="translate({x} {y}) scale({s})"><path d="M0 -14 L7 -2 L0 10 L-7 -2 Z" fill="{PARCH}" stroke="{INK}" stroke-width="1.6"/>'
+      f'<path d="M-7 -2 h14 M0 -14 v24" stroke="{INK2}" stroke-width=".9"/>'
+      + ''.join(f'<line x1="{11*math.cos(math.radians(a)):.1f}" y1="{-2+11*math.sin(math.radians(a)):.1f}" x2="{16*math.cos(math.radians(a)):.1f}" y2="{-2+16*math.sin(math.radians(a)):.1f}" stroke="{INK2}" stroke-width="1"/>' for a in range(0, 360, 45))
+      + '</g>')
+
+def cottage(x, y, s=1):
+    G(f'<g transform="translate({x:.1f} {y:.1f}) scale({s})"><path d="M-9 6 v-9 l9 -8 l9 8 v9 z" fill="{PARCH}" stroke="{INK}" stroke-width="1.6"/>'
+      f'<path d="M-2 6 v-5 h4 v5" fill="none" stroke="{INK}" stroke-width="1.2"/><path d="M-9 -3 l9 -8 l9 8" fill="none" stroke="{INK}" stroke-width="2.4"/></g>')
+
+# --- Hinon: quiet fishing and farming village, Life Crystal among farmland and gardens, statue of Hinon above the great tomb
+hx, hy = 1588, 700
+for (fx, fy, w, h, a) in [(-58,-30,34,22,-12),(-62,4,30,22,8),(-30,30,28,20,-4),(30,-36,32,22,10),(36,12,36,24,-8),(8,44,26,18,6)]:
+    # furrowed fields: no hard box, just a soft hedge line and rows that change direction field to field
+    rows = ''.join(f'<path d="M{-w/2+2} {-h/2+k} q{w/2} {random.uniform(-1.5,1.5):.1f} {w-4} 0" fill="none" stroke="{INK2}" stroke-width=".9"/>' for k in range(3, int(h), 4))
+    G(f'<g transform="translate({hx+fx} {hy+fy}) rotate({a + random.choice((0, 90))})"><path d="{lpath(fractal([(-w/2,-h/2),(w/2,-h/2),(w/2,h/2),(-w/2,h/2)],2,.04))}" fill="none" stroke="{INK}" stroke-width="1" stroke-dasharray="3 2"/>{rows}</g>')
+for (cx, cy) in [(-22,-8),(-8,-16),(14,-4),(-16,12),(22,22)]: cottage(hx + cx, hy + cy, .9)
+crystal(hx + 2, hy + 8, .9)
+# statue on its tomb
+G(f'<g transform="translate({hx+58} {hy-62})"><rect x="-13" y="2" width="26" height="10" fill="{PARCH}" stroke="{INK}" stroke-width="1.6"/>'
+  f'<path d="M-9 2 v-4 h18 v4" fill="none" stroke="{INK}" stroke-width="1.4"/><circle cx="0" cy="-17" r="3.5" fill="{PARCH}" stroke="{INK}" stroke-width="1.4"/>'
+  f'<path d="M-5 -2 l1 -11 h8 l1 11 M4 -12 l7 -9 M11 -21 l-3 -2 h7 z" fill="none" stroke="{INK}" stroke-width="1.5"/></g>')
+# little boats on the river by the village
+G(f'<path d="M{hx-16} {hy+52} q8 6 16 0 z M{hx-8} {hy+52} v-9 l6 6 z" fill="{PARCH}" stroke="{INK}" stroke-width="1.2"/>')
+
+# --- Rork: wheck stone fortress high on the Talon of Talus, Life Crystal in a grand courtyard
+rx_, ry_ = 318, 1150
+G(f'<g transform="translate({rx_} {ry_})">'
+  f'<path d="M-62 30 L-40 -6 L-20 6 L0 -22 L22 4 L44 -8 L64 30 Z" fill="{PARCH}" stroke="{INK}" stroke-width="2"/>'
+  + ''.join(f'<line x1="{x}" y1="{y}" x2="{x-8}" y2="30" stroke="{INK2}" stroke-width=".9"/>' for x, y in [(4,-16),(10,-9),(16,-2),(28,0),(36,-4),(48,4),(56,16)])
+  + f'<path d="M-36 -2 h72 v-26 h-72 z" fill="#fbf5e6" stroke="{INK}" stroke-width="2.2"/>'
+  + ''.join(f'<path d="M{x-7} -2 v-38 h14 v38 M{x-7} -40 v-5 h4 v4 h3 v-4 h4 v5" fill="#fbf5e6" stroke="{INK}" stroke-width="2"/>' for x in (-36, 36))
+  + f'<path d="M-8 -28 v-26 l8 -10 l8 10 v26" fill="#fbf5e6" stroke="{INK}" stroke-width="2"/><path d="M0 -64 v-10 l9 3 l-9 3" fill="{RED}" stroke="{INK}" stroke-width="1.1"/>'
+  + ''.join(f'<path d="M{x} -28 v-4 h5 v4" fill="none" stroke="{INK}" stroke-width="1.4"/>' for x in (-28, -18, 12, 22))
+  + f'<path d="M-3 -2 v-9 a3 3 0 0 1 6 0 v9" fill="{INK}"/></g>')
+crystal(rx_ - 18, ry_ - 12, .55)
+
+# --- Sartina: an intricate city carved in a cliff face, tunnels leading deep underground to a grerde oasis
+sx, sy = 606, 650
+top = [(-78, 22), (-72, -20)]
+x = -72
+while x < 72:
+    x += random.uniform(8, 16); top.append((x, -34 - random.uniform(0, 22)))
+top += [(80, -18), (84, 22)]
+G(f'<g transform="translate({sx} {sy})"><path d="{lpath(top)} Z" fill="{PARCH}" stroke="{INK}" stroke-width="2.4"/>')
+for x in range(-70, 80, 5):   # rock face hatching, heavier on the shaded east side
+    y0 = max(py for px, py in top if abs(px - x) < 12) if False else -18 - random.uniform(0, 12)
+    G(f'<line x1="{x}" y1="{y0:.0f}" x2="{x + random.uniform(-2,2):.0f}" y2="20" stroke="{INK2}" stroke-width="{.6 if x < 20 else .9}" opacity=".75"/>')
+for y in (-14, 0, 13):          # carved terraces
+    G(f'<path d="M-68 {y} q34 {random.uniform(-3,3):.0f} 68 0 t70 0" fill="none" stroke="{INK}" stroke-width="1.2"/>')
+for _ in range(26):             # windows and doorways cut into the rock
+    x, y = random.uniform(-64, 70), random.choice((-22, -8, 6, 18)) + random.uniform(-2, 1)
+    w = random.uniform(2.5, 4.5)
+    G(f'<path d="M{x-w/2:.1f} {y:.1f} v-{w*1.4:.1f} a{w/2:.1f} {w/2:.1f} 0 0 1 {w:.1f} 0 v{w*1.4:.1f} z" fill="{INK}"/>')
+G(f'<path d="M-4 22 v-9 a7 7 0 0 1 14 0 v9 z" fill="{INK}"/><path d="M-30 22 l8 -8 h10 l8 -8 h10" fill="none" stroke="{INK}" stroke-width="1.3"/></g>')
+crystal(sx + 2, sy + 44, .55)
+
+# --- Umatu: thriving coastal city with walls of the Lazur Shield, the first temple of Icosa, a harbor at the river's fall
+ux, uy = 1478, 1118
+G(f'<g transform="translate({ux} {uy})">'
+  f'<path d="M-46 22 v-26 l10 -4 v-8 h8 v8 h20 v-6 h8 v6 h22 v-8 h8 v8 l10 4 v26 z" fill="{PARCH}" stroke="{INK}" stroke-width="2"/>'
+  + ''.join(f'<path d="M{x} -4 v-5 h4 v5" fill="none" stroke="{INK}" stroke-width="1.2"/>' for x in (-30, -20, 0, 10, 20))
+  + f'<path d="M-12 -10 v-14 a12 12 0 0 1 24 0 v14 z" fill="#fbf5e6" stroke="{INK}" stroke-width="2"/><path d="M0 -36 v-8 M-4 -40 h8" stroke="{INK}" stroke-width="1.6"/>'
+  + f'<path d="M-6 -10 v-8 M0 -10 v-8 M6 -10 v-8" stroke="{INK2}" stroke-width="1.2"/>'
+  + ''.join(f'<path d="M{x-6} 22 v-10 l6 -5 l6 5 v10" fill="{PARCH}" stroke="{INK}" stroke-width="1.4"/>' for x in (-34, 30))
+  + '</g>')
+# pier and ships in the bay
+G(f'<path d="M{ux+40} {uy+44} h40" stroke="{INK}" stroke-width="2.4"/>')
+for bx, by in [(ux + 92, uy + 64), (ux + 44, uy + 82)]:
+    G(f'<path d="M{bx-14} {by} q14 9 28 0 z" fill="{PARCH}" stroke="{INK}" stroke-width="1.5"/><path d="M{bx} {by} v-22 M{bx} {by-20} q10 6 0 14" fill="none" stroke="{INK}" stroke-width="1.4"/>')
+crystal(mx - 2, my - 12, .5)   # the holy crystal cave behind the waterfall
+
+# --- Yelena: a gigantic Riverwood tree city of trunks and branches, the sealed vault beneath its roots
+G(f'<g transform="translate(1335 800) scale(1.25)">'
+  f'<path d="M-40 42 q20 -10 28 -24 M40 42 q-20 -10 -28 -24 M-22 46 q12 -10 14 -26 M22 46 q-12 -10 -14 -26 M0 46 v-18" fill="none" stroke="{INK}" stroke-width="2.4"/>'
+  f'<path d="M-12 20 q-6 -28 -2 -52 M12 20 q6 -28 2 -52 M-8 -14 q-18 -10 -34 -22 M8 -20 q18 -8 34 -20 M-4 -30 q-10 -14 -12 -30 M4 -30 q10 -16 18 -28" fill="none" stroke="{INK}" stroke-width="3"/>'
+  f'<path d="M-62 -30 a24 24 0 0 1 28 -32 a28 28 0 0 1 48 -4 a24 24 0 0 1 26 30 a22 22 0 0 1 -18 30 q-10 8 -24 2 q-14 8 -30 0 q-16 4 -26 -6 a20 20 0 0 1 -4 -20 z" fill="{PARCH}" stroke="{INK}" stroke-width="3"/>'
+  f'<path d="M-30 -40 q8 6 16 0 M6 -52 q8 6 16 0 M-44 -22 q8 6 16 0 M24 -30 q8 6 16 0 M-8 -34 q8 6 16 0" fill="none" stroke="{INK2}" stroke-width="1.4"/>'
+  + ''.join(f'<path d="M{x-6} {y} h12 M{x-4} {y} v-7 h8 v7" fill="none" stroke="{INK}" stroke-width="1.3"/>' for x, y in [(-34,-14),(30,-10),(-6,-58),(22,-46),(-26,-44)])
+  + f'<path d="M-12 46 h24 v8 h-24 z" fill="url(#hatch)" stroke="{INK}" stroke-width="1.4"/></g>')
+crystal(1335, 792, .55)
+
+# --- Turantia: the shattered city of Light, ruins on its isolated plateau
+tur_in = scale(TURANTIA, .86)
+for i in range(0, len(tur_in)):
+    (x1, y1), (x2, y2) = tur_in[i], tur_in[(i + 1) % len(tur_in)]
+    for k in range(6):
+        t = k / 6; x, y = x1 + (x2 - x1) * t, y1 + (y2 - y1) * t
+        cx_, cy_ = 320, 430; dx, dy = x - cx_, y - cy_; L = math.hypot(dx, dy)
+        G(f'<line x1="{x:.0f}" y1="{y:.0f}" x2="{x + dx/L*18:.0f}" y2="{y + dy/L*18:.0f}" stroke="{INK2}" stroke-width="1.2"/>')   # cliff hachures
+def broken_tower(x, y, h, w=12):
+    G(f'<path d="M{x-w/2:.0f} {y:.0f} v-{h:.0f} l{w*.25:.0f} {random.uniform(4,9):.0f} l{w*.25:.0f} -{random.uniform(6,12):.0f} l{w*.2:.0f} {random.uniform(3,8):.0f} l{w*.3:.0f} -{random.uniform(2,6):.0f} V{y:.0f} z" fill="#fbf5e6" stroke="{INK}" stroke-width="1.8"/>'
+      f'<path d="M{x-2:.0f} {y-h*.55:.0f} v-6 a2 2 0 0 1 4 0 v6" fill="none" stroke="{INK}" stroke-width="1.1"/>')
+for x, y, h in [(262,440,40),(300,410,58),(342,425,46),(380,450,30),(320,475,26),(236,480,22)]: broken_tower(x, y, h)
+# broken wall runs, toppled columns, rubble
+for (x1, y1, x2, y2) in [(225,500,285,505),(300,505,350,500),(365,492,410,470),(225,500,215,455)]:
+    G(f'<path d="M{x1} {y1} L{(x1+x2)/2:.0f} {(y1+y2)/2-3:.0f} L{x2} {y2}" fill="none" stroke="{INK}" stroke-width="5"/>'
+      f'<path d="M{x1} {y1} L{(x1+x2)/2:.0f} {(y1+y2)/2-3:.0f} L{x2} {y2}" fill="none" stroke="{PARCH}" stroke-width="2"/>')
+for (x, y, a) in [(280,370,20),(360,380,-35),(250,410,70),(395,415,10)]:
+    G(f'<g transform="translate({x} {y}) rotate({a})"><rect x="-14" y="-3" width="28" height="6" fill="{PARCH}" stroke="{INK}" stroke-width="1.4"/><path d="M-6 -3 v6 M3 -3 v6" stroke="{INK}" stroke-width="1"/></g>')
+for _ in range(40):
+    x, y = random.uniform(220, 420), random.uniform(350, 520)
+    if inside((x, y), tur_in): G(f'<path d="M{x:.0f} {y:.0f} l3 -4 l4 3 l-2 3 z" fill="{INK2}" opacity=".8"/>')
+
+# small settlements and old ruins inland (from N8's painted map)
+for (x, y) in [(865, 735), (1310, 450), (1200, 650), (1190, 845)]:
+    for k in range(3): cottage(x + (k - 1) * 14 + random.uniform(-2, 2), y + (k % 2) * 6, .8)
 for (x, y) in [(1100, 470), (905, 900)]:
-    g.append(f'<path d="M{x-18} {y+10} v-14 l5 -4 v18 M{x-4} {y+10} v-22 l4 3 l3 -6 v25 M{x+10} {y+10} v-10 l6 2 v8 M{x-24} {y+10} h48" fill="none" stroke="{INK}" stroke-width="2"/>')
-# Yelena great tree
-g.append(f'<g transform="translate(1335 790)"><path d="M-6 30 q-4 -22 0 -40 M6 30 q4 -22 0 -40 M-18 32 q12 -8 18 -2 q6 -6 18 2" fill="none" stroke="{INK}" stroke-width="3"/>'
-         f'<path d="M-46 -12 a22 22 0 0 1 26 -30 a26 26 0 0 1 44 -2 a22 22 0 0 1 22 30 a20 20 0 0 1 -26 22 a24 24 0 0 1 -40 0 a20 20 0 0 1 -26 -20 z" fill="#f1e4c4" stroke="{INK}" stroke-width="3"/>'
-         f'<path d="M-20 -14 q8 6 16 0 M8 -24 q8 6 16 0 M0 2 q8 6 16 0" fill="none" stroke="{INK2}" stroke-width="1.4"/></g>')
+    broken_tower(x - 12, y + 10, 22, 10); broken_tower(x + 6, y + 10, 30, 10)
+    G(f'<path d="M{x-26} {y+10} h52" stroke="{INK}" stroke-width="2"/>')
 g.append('</g>')
 out += g
 
 # compass rose
-cx, cy = 1700, 1230
-A(f'<g transform="translate({cx} {cy})" stroke="{INK}" stroke-width="2" filter="url(#inkbleed)">'
+cx, cy = 1700, 1240
+A(f'<g transform="translate({cx} {cy})" stroke="{INK}" stroke-width="2" filter="url(#quill)">'
   '<circle r="62" fill="none"/><circle r="54" fill="none" stroke-width="1"/>'
-  + ''.join(f'<path d="M0 -80 L10 -10 L0 0 Z" fill="{INK}" transform="rotate({a})"/><path d="M0 -80 L-10 -10 L0 0 Z" fill="#f1e4c4" transform="rotate({a})"/>' for a in (0, 90, 180, 270))
-  + ''.join(f'<path d="M0 -50 L6 -6 L0 0 L-6 -6 Z" fill="#f1e4c4" transform="rotate({a})" stroke-width="1.3"/>' for a in (45, 135, 225, 315))
+  + ''.join(f'<path d="M0 -80 L10 -10 L0 0 Z" fill="{INK}" transform="rotate({a})"/><path d="M0 -80 L-10 -10 L0 0 Z" fill="{PARCH}" transform="rotate({a})"/>' for a in (0, 90, 180, 270))
+  + ''.join(f'<path d="M0 -50 L6 -6 L0 0 L-6 -6 Z" fill="{PARCH}" transform="rotate({a})" stroke-width="1.3"/>' for a in (45, 135, 225, 315))
   + '</g>')
 A(f'<text x="{cx}" y="{cy-92}" text-anchor="middle" font-family="IM Fell English SC, serif" font-size="34" fill="{INK}">N</text>')
 
-# labels
 def label(t, x, y, size=34, big=False, ital=False):
     fam = 'IM Fell English SC' if big else 'IM Fell English'
     st = 'italic' if ital else 'normal'
     A(f'<text x="{x}" y="{y}" text-anchor="middle" font-family="{fam}, serif" font-style="{st}" font-size="{size}" fill="{INK}" '
-      f'stroke="#f1e4c4" stroke-width="{6 if big else 5}" paint-order="stroke" stroke-linejoin="round">{t}</text>')
-for t, x, y, s, b in [('Turantia',320,535,46,True),('Rork',605,720,50,True),('Sartina',410,1100,46,True),('Yelena',1335,700,48,True),
-                      ('Hinon',1615,760,50,True),('Umatu',1510,975,48,True)]:
+      f'stroke="{PARCH}" stroke-width="{6 if big else 5}" paint-order="stroke" stroke-linejoin="round">{t}</text>')
+for t, x, y, s, b in [('Turantia',320,565,46,True),('Sartina',606,735,48,True),('Rork',330,1252,48,True),('Yelena',1335,688,48,True),
+                      ('Hinon',1690,742,46,True),('Umatu',1372,1100,46,True)]:
     label(t, x, y, s, b)
-for t, x, y, s in [('Scorched Valley',545,815,30),('Salt Sand Desert',915,545,28),('Femrul',990,605,26),('Oashim',865,780,26),
-                   ('Ruins',1090,425,24),('Ruins',905,860,24),('Nio Plains',1085,745,30),('Hills of Will',1305,520,32),
-                   ('Oracle',1645,525,26),('Mikelwoods',1300,930,32)]:
+for t, x, y, s in [('Scorched Valley',545,830,30),('Salt Sand Desert',915,545,28),('Femrul',990,606,26),('Oashim',865,775,26),
+                   ('Ruins',1100,438,24),('Ruins',905,868,24),('Nio Plains',1085,745,30),('Hills of Will',1305,525,32),
+                   ('Oracle',1648,382,28),('Mikelwoods',1300,960,32),('The Talon',395,1060,24)]:
     label(t, x, y, s, ital=True)
-A(f'<text x="770" y="845" text-anchor="middle" font-family="IM Fell English, serif" font-style="italic" font-size="26" fill="{INK}" stroke="#f1e4c4" stroke-width="5" paint-order="stroke">'
+A(f'<text x="770" y="845" text-anchor="middle" font-family="IM Fell English, serif" font-style="italic" font-size="26" fill="{INK}" stroke="{PARCH}" stroke-width="5" paint-order="stroke">'
   '<tspan x="770">The Great</tspan><tspan x="770" dy="30">Gash</tspan></text>')
-# title cartouche
-A(f'<g transform="translate(1000 250)" filter="url(#inkbleed)"><path d="M-230 -50 h460 q-30 50 0 100 h-460 q30 -50 0 -100 z" fill="#f1e4c4" stroke="{INK}" stroke-width="3"/>'
+A(f'<g transform="translate(1000 250)" filter="url(#quill)"><path d="M-230 -50 h460 q-30 50 0 100 h-460 q30 -50 0 -100 z" fill="{PARCH}" stroke="{INK}" stroke-width="3"/>'
   f'<path d="M-214 -38 h428 q-22 38 0 76 h-428 q22 -38 0 -76 z" fill="none" stroke="{INK}" stroke-width="1.2"/></g>')
 A(f'<text x="1000" y="270" text-anchor="middle" font-family="IM Fell English SC, serif" font-size="62" letter-spacing="6" fill="{INK}">Talus</text>')
 A('</svg>')
