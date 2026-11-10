@@ -63,3 +63,9 @@
 .rav.gold .rt{fill:#fff3c4}.rav.silver .rt{fill:#f4f6f9}
 .cl-joinbtn{border-color:var(--gold);color:var(--gold);font-weight:800;padding-inline:22px}
 .cl-room .cl-bracket{text-align:left}
+.cl-solo{background:linear-gradient(rgba(63,143,79,.12),rgba(63,143,79,.03));border:1px solid rgba(63,143,79,.55);border-radius:14px;padding:14px;display:grid;gap:10px;text-align:center}
+.cl-solo p{margin:0;color:var(--muted)}.cl-solo .cl-h{margin:0}
+.cl-free{font:800 .7rem var(--f-body);letter-spacing:.06em;text-transform:uppercase;background:#3f8f4f;color:#fff;border-radius:999px;padding:2px 8px;vertical-align:2px}
+.cl-cpu{font-weight:800;color:#9fb4c8!important;letter-spacing:.04em}
+.cl-soloend{margin:4px 0}
+.cl-bracket.solo{grid-template-columns:repeat(2,minmax(110px,1fr));overflow:visible;text-align:left}

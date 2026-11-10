@@ -21,7 +21,7 @@ import { ApiGatewayManagementApiClient, PostToConnectionCommand } from '@aws-sdk
 import { replay, accepts, HEROES } from './engine.mjs';
 import { replayBoss, acceptsBoss, waitingOn } from './boss.mjs';
 import { recordMatch } from './record.mjs';
-import { loadClimb, refresh, currentMatch, markMatch, climbResult, withClimb } from './climb.mjs';
+import { loadClimb, refresh, currentMatch, markMatch, climbResult, withClimb, pickHero, cpuInput } from './climb.mjs';
 
 const db = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const GAMES = process.env.GAMES_TABLE || 'icyn-games';
@@ -116,10 +116,20 @@ async function advance(game, p, input) {
   if (!(boss ? acceptsBoss(before.pending, p, input, game.setup.owners) : accepts(before.pending, p, input))) return 'Not your move';
   game.inputs = [...game.inputs, { kind: input.kind, [boss ? 'by' : 'p']: p, ...(input.kind === 'ability' ? { choice: input.choice } : {}),
     ...(boss && input.kind === 'ability' && Number.isInteger(input.target) ? { target: input.target } : {}) }];
+  autoCpu(game);
   const after = run(game);
   game.pendingSince = Date.now();
   if (after.result) finish(game, after.result);
   return null;
+}
+// Crit Climb vs the Computer: the referee answers every prompt that waits on the Computer's seat.
+function autoCpu(game) {
+  if (game.cpuSeat !== 0 && game.cpuSeat !== 1) return;
+  for (let n = 0; n < 200; n++) {
+    const r = run(game);
+    if (r.result || !r.pending || r.pending.p !== game.cpuSeat) return;
+    game.inputs = [...game.inputs, cpuInput(r.pending, game.cpuSeat)];
+  }
 }
 // Marks the duel done; the results are recorded only after the game saves.
 function finish(game, result) {
@@ -130,8 +140,9 @@ async function recordResults(game) {
   const result = game.finished;
   if (isBoss(game)) return recordBoss(game, result);
   // An early forfeit (before round 3) is history only, so two accounts can't farm wins.
-  const mode = result.forfeit && result.rounds < 3 ? 'online-unranked' : 'online';
-  await Promise.all(game.players.map((userId, i) => recordMatch(userId, { nickname: game.names[i] }, {
+  // Crit Climb duels against the Computer are history only, so they can't farm the leaderboard.
+  const mode = (result.forfeit && result.rounds < 3) || game.cpuSeat != null ? 'online-unranked' : 'online';
+  await Promise.all(game.players.map((userId, i) => i === game.cpuSeat ? null : recordMatch(userId, { nickname: game.names[i] }, {
     result: result.winner === i ? 'win' : 'loss', mode, forfeit: !!result.forfeit, hero: HEROES[game.setup.heroes[i]].name,
     opponentHero: HEROES[game.setup.heroes[1 - i]].name, rounds: result.rounds || 8, ko: !!result.ko,
     startingLife: game.setup.life, maxLife: result.peakMax ? result.peakMax[i] : undefined,
@@ -369,6 +380,27 @@ async function climbDuel(api, conn, connectionId, msg, fail) {
     if (!cur.ready) return fail('Your next rival is still being decided');
     const m = t.rounds[cur.r][cur.i];
     const rival = t.entrants[cur.side ? m.a : m.b];
+    if (rival.cpu && !m.gameId) {
+      // against the Computer the duel starts at once
+      const game = {
+        gameId: crypto.randomUUID(), code: newCode(), status: 'active', seed: crypto.randomBytes(16).toString('hex'),
+        setup: { heroes: [msg.hero, pickHero()], life: 100, climb: { id, r: cur.r, i: cur.i, name: t.name, rounds: t.rounds.length } },
+        players: [conn.userId, rival.u], names: [conn.name, rival.n], conns: [connectionId, null], cpuSeat: 1, pendingSince: Date.now(),
+        inputs: [], version: 0, createdAt: new Date().toISOString(), ttl: Math.floor(Date.now() / 1000) + 7 * DAY,
+      };
+      autoCpu(game);
+      const claimed = await withClimb(id, (tt) => {
+        const mm = tt.rounds?.[cur.r]?.[cur.i];
+        if (!mm || mm.w !== null) return 'This match is already decided';
+        if (mm.gameId) return 'raced';
+        Object.assign(mm, { gameId: game.gameId, code: game.code, host: cur.side, state: 'active' });
+      });
+      if (claimed.error) { if (claimed.error === 'raced') continue; return fail(claimed.error); }
+      await db.send(new PutCommand({ TableName: GAMES, Item: game }));
+      await db.send(new UpdateCommand({ TableName: CONNS, Key: { connectionId }, UpdateExpression: 'SET gameId = :g', ExpressionAttributeValues: { ':g': game.gameId } }));
+      await send(api, connectionId, stateFor(game, 0, 0));
+      return { statusCode: 200 };
+    }
 
     if (m.gameId) {
       const game = (await db.send(new GetCommand({ TableName: GAMES, Key: { gameId: m.gameId } }))).Item;

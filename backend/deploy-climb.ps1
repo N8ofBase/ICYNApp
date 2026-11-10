@@ -46,7 +46,7 @@ if ($Step -eq 1) {
 }
 
 if ($Step -eq 2) {
-  Compress-Archive -Path "$Here\api\index.mjs", "$Here\api\record.mjs", "$Here\api\unlock.mjs", "$Here\api\climb.mjs" -DestinationPath "$Here\api-climb.zip" -Force
+  Compress-Archive -Path "$Here\api\index.mjs", "$Here\api\record.mjs", "$Here\api\unlock.mjs", "$Here\api\climb.mjs", "$Here\ws\engine.mjs" -DestinationPath "$Here\api-climb.zip" -Force
   aws lambda update-function-code --function-name icyn-api --zip-file "fileb://$Here\api-climb.zip" @P | Out-Null
   aws lambda wait function-updated --function-name icyn-api @P
   $me = aws apigatewayv2 get-routes --api-id $ApiId --query "Items[?RouteKey=='GET /me'] | [0]" --output json @P | ConvertFrom-Json

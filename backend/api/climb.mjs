@@ -3,13 +3,15 @@
 // Keep backend/api/climb.mjs and backend/ws/climb.mjs identical.
 //
 // A Crit Pass holder hosts a Climb (4, 8 or 16 seats, public or private) and gets a 5 letter code. Others join
-// with the code, or from the public list if the host made it public. The host presses Begin (3 or more players):
-// the bracket is drawn at random (it shrinks to the smallest of 4/8/16 that fits; top seeds get any byes).
+// with the code, or from the public list if the host made it public. The host presses Begin (2 or more players):
+// the Computer takes every open seat and the bracket is drawn at random. Computer vs Computer matches are played
+// by the arena at once; against a player, the referee answers the Computer's prompts (random ready ability).
 // Every match is a Standard online duel (100 Life, Calamities on); each player picks any Hero per match.
 // Once both rivals of a match are known they have 10 minutes to meet in the arena: if one waits and the other
-// never comes, the one who waited climbs on; if neither comes, the higher seed does. A lobby that never begins
+// never comes, the one who waited climbs on; if neither comes, the higher seed does (the Computer always comes). A lobby that never begins
 // closes after a day. Rewards: the winner earns the gold "Crit Climb Conqueror" ring around their profile
-// picture, everyone else the silver "Crit Climb Competitor" ring (gold outranks silver for good).
+// picture, every other player the silver "Crit Climb Competitor" ring (gold outranks silver for good).
+// Climb names are checked by isProfane(). The free solo Climb (you + 3 Computers) runs in the browser only.
 //
 // Item in table icyn-climbs (key id = the join code; ttl removes it 30 days later):
 //   {id, name, size, public, host: userId, status: open|live|done|cancelled, createdAt, version, ttl,
@@ -17,6 +19,7 @@
 //    rounds: [[{a, b, w, how, due, state, gameId, code, host}]] (a/b = entrant index; w = 0 for a, 1 for b),
 //    champion, runnerUp, endedAt, awarded}
 import crypto from 'node:crypto';
+import { replay, HEROES } from './engine.mjs';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, PutCommand, ScanCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 
@@ -24,7 +27,7 @@ export const cdb = DynamoDBDocumentClient.from(new DynamoDBClient({}), { marshal
 export const CLIMBS = process.env.CLIMBS_TABLE || 'icyn-climbs';
 const PLAYERS_T = process.env.PLAYERS_TABLE || 'icyn-players';
 export const SIZES = [4, 8, 16];
-export const MIN_PLAYERS = 3;
+export const MIN_PLAYERS = 2; // real players; the Computer fills every other seat
 const MIN = 60000, HOUR = 60 * MIN, DAY = 24 * HOUR;
 export const MATCH_MS = 10 * MIN;
 const LOBBY_MS = DAY;
@@ -41,9 +44,12 @@ const winnerOf = (m) => (m.w === 0 ? m.a : m.w === 1 ? m.b : null);
 const loserOf = (m) => (m.w === 0 ? m.b : m.w === 1 ? m.a : null);
 
 // Draw the bracket from the entrants (random seeds) and start the Climb.
+export const HERO_IDS = Object.keys(HEROES);
 export function begin(t, now, rand = Math.random) {
+  if (t.entrants.length < 2) { t.status = 'cancelled'; t.note = 'Not enough Heroes joined'; t.endedAt = now; return; }
+  // N8 2026-11-10: the Computer takes every open seat, so a Climb always fills its bracket
+  for (let c = 1; t.entrants.length < t.size; c++) t.entrants.push({ u: `cpu:${c}`, n: `Computer ${c}`, cpu: true, av: '', ring: '', at: now });
   const n = t.entrants.length;
-  if (n < 2) { t.status = 'cancelled'; t.note = 'Not enough Heroes joined'; t.endedAt = now; return; }
   let size = 2;
   while (size < n) size *= 2;
   const order = t.entrants.map((e, i) => i);
@@ -70,9 +76,14 @@ export function settle(t, now) {
   let changed = false;
   t.rounds.forEach((round, r) => round.forEach((m, i) => {
     if (m.w === null && m.a !== null && m.b !== null) {
-      if (!m.due) { m.due = now + MATCH_MS; changed = true; }
-      if (now > m.due && m.state !== 'active') {
+      const ca = !!t.entrants[m.a].cpu, cb = !!t.entrants[m.b].cpu;
+      if (ca && cb) { // two Computers: the arena plays their duel at once
+        const heroes = [pickHero(), pickHero()];
+        m.w = cpuDuel(heroes).winner; m.how = 'cpu'; m.heroes = heroes; m.state = 'done'; changed = true;
+      } else if (!m.due) { m.due = now + MATCH_MS; changed = true; }
+      if (m.w === null && now > m.due && m.state !== 'active') {
         if (m.state === 'waiting' && (m.host === 0 || m.host === 1)) { m.w = m.host; m.how = 'walkover'; }
+        else if (ca || cb) { m.w = ca ? 0 : 1; m.how = 'noshow'; } // the Computer always shows up
         else { m.w = t.seeds[m.a] <= t.seeds[m.b] ? 0 : 1; m.how = 'noshow'; }
         m.state = 'done';
         changed = true;
@@ -121,9 +132,36 @@ export function applyResult(t, r, i, gameId, winnerUser, forfeit, now) {
 // Who earns which badge once a Climb is done.
 export function badgesFor(t) {
   if (t.status !== 'done') return [];
-  return t.entrants.map((e, k) => ({
-    u: e.u, k: k === t.champion ? 'conqueror' : 'competitor',
-  }));
+  return t.entrants.map((e, k) => ({ u: e.u, cpu: !!e.cpu, k: k === t.champion ? 'conqueror' : 'competitor' }))
+    .filter((b) => !b.cpu).map(({ u, k }) => ({ u, k }));
+}
+
+// The Computer: a random Hero for each match; ability picks are random among those ready.
+export const pickHero = () => HERO_IDS[crypto.randomInt(HERO_IDS.length)];
+export function cpuInput(pending, p) {
+  return { kind: pending.kind, p, ...(pending.kind === 'ability' ? { choice: pending.options[crypto.randomInt(pending.options.length)] } : {}) };
+}
+// A whole Standard duel between two Computers.
+export function cpuDuel(heroes) {
+  const seed = crypto.randomBytes(16).toString('hex'), setup = { heroes, life: 100 }, inputs = [];
+  for (let n = 0; n < 3000; n++) {
+    const r = replay(seed, setup, inputs);
+    if (r.result) return r.result;
+    inputs.push(cpuInput(r.pending, r.pending.p ?? 0));
+  }
+  return { winner: crypto.randomInt(2) };
+}
+
+// Names people choose (Climb names) must be friendly. Letters are normalised so l33t spellings are caught.
+// Long words match anywhere (so 'F u c k' and 'xXfuckXx' are caught); short ones only as whole words (so Scunthorpe, peacock and grape pass).
+const BAD_ANY = ['fuck', 'shit', 'bitch', 'nigg', 'fagg', 'whore', 'pussy', 'wank', 'bastard', 'retard', 'tranny', 'dildo', 'jizz', 'asshole', 'motherf', 'porn'];
+const BAD_WORD = ['ass', 'arse', 'dick', 'fag', 'cum', 'tit', 'tits', 'sex', 'piss', 'kys', 'stfu', 'cunt', 'cock', 'twat', 'rape', 'nazi', 'kike', 'spic', 'chink', 'dyke', 'slut', 'penis', 'vagina', 'boob', 'boobs', 'nude', 'nudes'];
+const LEET = { 0: 'o', 1: 'i', 3: 'e', 4: 'a', 5: 's', 7: 't', 8: 'b', 9: 'g', '@': 'a', $: 's', '!': 'i', '|': 'l', '+': 't' };
+export function isProfane(s) {
+  const low = String(s || '').toLowerCase().replace(/[0-9@$!|+]/g, (c) => LEET[c] || c);
+  const squashed = low.replace(/[^a-z]/g, '').replace(/(.)\1+/g, '$1');
+  const words = low.split(/[^a-z]+/).filter(Boolean).map((w) => w.replace(/(.)\1+/g, '$1'));
+  return BAD_ANY.some((b) => squashed.includes(b.replace(/(.)\1+/g, '$1'))) || words.some((w) => BAD_WORD.some((b) => w === b.replace(/(.)\1+/g, '$1') || w === b.replace(/(.)\1+/g, '$1') + 's'));
 }
 
 // Entrants are not shown publicly; a browser recognises itself by this key (same recipe in index.html).
@@ -137,9 +175,9 @@ export function view(t) {
   return {
     id: t.id, code: t.id, name: t.name, size: t.size, public: !!t.public, bracketSize: t.bracketSize || null,
     status: t.status, note: t.note || null, createdAt: t.createdAt, endedAt: t.endedAt || null, matchMinutes: MATCH_MS / MIN,
-    entrants: t.entrants.map((e, k) => ({ n: e.n, av: e.av || '', ring: e.ring || '', k: entrantKey(e.u), seed: t.seeds ? t.seeds[k] : null })),
+    entrants: t.entrants.map((e, k) => ({ n: e.n, av: e.av || '', ring: e.ring || '', k: e.cpu ? `cpu${k}` : entrantKey(e.u), cpu: !!e.cpu, seed: t.seeds ? t.seeds[k] : null })),
     rounds: (t.rounds || []).map((round) => round.map((m) => ({
-      a: m.a, b: m.b, w: m.w, how: m.how || null, due: m.due || null, state: m.state || null, host: m.host ?? null,
+      a: m.a, b: m.b, w: m.w, how: m.how || null, due: m.due || null, state: m.state || null, host: m.host ?? null, heroes: m.heroes || null,
     }))),
     champion: t.champion ?? null, runnerUp: t.runnerUp ?? null,
   };
@@ -243,6 +281,7 @@ export async function createClimb(userId, claims, player, body, unlocked) {
   const size = Number(body.size);
   if (!SIZES.includes(size)) return json(400, { error: 'Size must be 4, 8 or 16 players' });
   const me = entrantOf(userId, claims, player);
+  if (isProfane(body.name)) return json(400, { error: 'Please pick a friendlier name for your Climb' });
   const name = clean(body.name, 40) || `${me.n}'s Crit Climb`;
   const now = Date.now();
   for (let attempt = 0; attempt < 5; attempt++) {
@@ -279,7 +318,7 @@ export async function startClimb(userId, id) {
   return done(await withClimb(id, (t) => {
     if (t.host !== userId) return 'Only the host can begin the Climb';
     if (t.status !== 'open') return 'This Crit Climb is not waiting to begin';
-    if (t.entrants.length < MIN_PLAYERS) return `Wait for at least ${MIN_PLAYERS} players`;
+    if (t.entrants.length < MIN_PLAYERS) return 'Wait for at least one rival to join. The Computer fills the other seats.';
     begin(t, Date.now());
   }));
 }

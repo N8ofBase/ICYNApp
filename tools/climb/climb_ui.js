@@ -35,10 +35,11 @@ function renderClimbSetup(){SFX.music('menu');document.body.classList.remove('ar
     <details class="how"><summary>How Crit Climb works</summary><div class="lore">
      <p class="herald">“Hear ye! A Crit Climb is called! Gather your rivals, draw the bracket, and fight your way up. Lose once and your climb is over. Only one Hero stands at the top!”</p>
      <ol><li><b>Host a Climb</b> for 4, 8 or 16 players and share its code, or open it to the public so anyone can join. Joining needs the Crit Pass.</li>
-     <li><b>The host begins</b> once 3 or more Heroes have gathered. The bracket is drawn at random, and if seats are empty, the top seeds get byes.</li>
+     <li><b>The host begins</b> once a rival has joined. The Computer takes every empty seat, and the bracket is drawn at random.</li>
      <li><b>Every match is a Standard online duel</b>: 100 Life and a Calamity before every turn. Pick any Hero for each match.</li>
      <li><b>Answer the call!</b> When your rival is known, you both have 10 minutes to enter the arena. If one waits and the other never comes, the one who waited climbs on. If neither comes, the higher seed climbs on.</li>
-     <li><b>Earn your ring.</b> The winner wears the gold <b>Crit Climb Conqueror</b> ring around their profile picture. Every other climber earns the silver <b>Crit Climb Competitor</b> ring.</li></ol></div></details>
+     <li><b>Earn your ring.</b> The winner wears the gold <b>Crit Climb Conqueror</b> ring around their profile picture. Every other climber earns the silver <b>Crit Climb Competitor</b> ring.</li>
+     <li><b>Solo Climb is free.</b> Climb a 4 Hero bracket against the Computer any time. It’s good practice, though rings are only won online.</li></ol></div></details>
     <div id="climb-main"></div>
    </div>
    ${POWERED}</div>`;
@@ -63,6 +64,9 @@ function renderClimb(){const el=$('#climb-main');if(!el)return;
   const can=signedIn()&&hasArena();
   const mine=climbCodes().map(c=>CLIMB.views[c]).filter(v=>v&&meIn(v)>=0&&(v.status==='open'||v.status==='live'||v.status==='done'));
   let h='';
+  h+=`<div class="cl-solo"><h3 class="cl-h">Solo Climb <span class="cl-free">Free</span></h3><p>You and 3 Computers in a 4 Hero bracket. Win the Semifinal, then the Final.</p>
+    <div class="roster cl-roster">${ORDER.map(id=>`<button class="pick" data-solo="${id}" style="--c:${HEROES[id].color}" aria-pressed="${S.picks[0]===id}"><img src="${SEL[id]}" alt="" style="--sc:${HEROES[id].scale}"><span>${HEROES[id].name}</span></button>`).join('')}</div>
+    <button class="act begin" id="cl-solo"><span class="who">${esc(HEROES[S.picks[0]].name)} · Standard · 100 Life</span>Start a Solo Climb</button></div>`;
   if(!can){h+=unlockCard('climb')}
   else h+=`<div class="cl-host"><h3 class="cl-h">Host a Crit Climb</h3>
     <div class="opt"><span>Players</span><div class="mode" role="group" aria-label="Players">${[4,8,16].map(n=>`<button data-clsize="${n}" aria-pressed="${CLIMB.size===n}">${n}</button>`).join('')}</div></div>
@@ -75,6 +79,7 @@ function renderClimb(){const el=$('#climb-main');if(!el)return;
   const pub=(CLIMB.pub||[]).filter(v=>meIn(v)<0);
   h+=`<h3 class="cl-h">Public Crit Climbs</h3>${!CLIMB.pub?`<p class="cl-empty">${CLIMB.err?esc(CLIMB.err):'Looking for open Climbs…'}</p>`:pub.length?pub.map(climbCard).join(''):'<p class="cl-empty">No public Climbs are open right now. Host one!</p>'}`;
   el.innerHTML=h;
+  el.querySelectorAll('[data-solo]').forEach(b=>b.onclick=()=>{S.picks[0]=b.dataset.solo;renderClimb()});el.querySelector('#cl-solo').onclick=soloStart;
   if(!can){wireUnlock(el)}
   else{
     el.querySelectorAll('[data-clsize]').forEach(b=>b.onclick=()=>{CLIMB.size=+b.dataset.clsize;renderClimb()});
@@ -98,8 +103,8 @@ function renderClimbRoom(el,t){const me=meIn(t),isHost=me===0,n=t.entrants.lengt
     <div class="cl-room"><header><h3>${esc(t.name)}</h3><span class="cl-tag">${t.status==='open'?`${n}/${t.size}`:(t.bracketSize||t.size)+' bracket'} · ${t.public?'Public':'Private'}</span></header>`;
   if(t.status==='open'){
     h+=`<p>Share this code with your rivals:</p><div class="nb-code" aria-label="Climb code">${esc(t.code)}</div><div class="row"><button class="ghost" id="cl-copy">Copy code</button><button class="ghost" id="cl-link">Copy invite link</button></div>
-      <div class="cl-chips">${t.entrants.map((e,x)=>`<span class="cl-chip${x===me?' me':''}">${ringAv(e.av,22,e.n,e.ring)}${esc(e.n)}${x===0?' <small>host</small>':''}</span>`).join('')}${Array.from({length:Math.max(0,t.size-n)},()=>'<span class="cl-chip open">Open seat</span>').join('')}</div>
-      ${isHost?`<button class="act begin" id="cl-begin" ${n<3?'disabled':''}><span class="who">${n<3?'Waiting for at least 3 Heroes':n+' Heroes ready'}</span>Begin the Climb</button><div class="row"><button class="ghost" id="cl-close">Close lobby</button></div>`
+      <div class="cl-chips">${t.entrants.map((e,x)=>`<span class="cl-chip${x===me?' me':''}">${ringAv(e.av,22,e.n,e.ring)}${esc(e.n)}${x===0?' <small>host</small>':''}</span>`).join('')}${Array.from({length:Math.max(0,t.size-n)},()=>'<span class="cl-chip open">Open seat · Computer</span>').join('')}</div>
+      ${isHost?`<button class="act begin" id="cl-begin" ${n<2?'disabled':''}><span class="who">${n<2?'Waiting for a rival to join':n<t.size?`${n} Heroes · the Computer takes ${t.size-n} seat${t.size-n>1?'s':''}`:n+' Heroes ready'}</span>Begin the Climb</button><div class="row"><button class="ghost" id="cl-close">Close lobby</button></div>`
         :me>=0?`<p class="nb-wait">Waiting for ${esc(t.entrants[0].n)} to begin…</p><div class="row"><button class="ghost" id="cl-leave">Leave</button></div>`
         :n<t.size?`<button class="act" id="cl-joinhere">Join this Climb</button>`:'<p>This Climb is full.</p>'}`;
   }else if(t.status==='cancelled'){h+=`<p>${esc(t.note||'This Climb was closed.')}</p>`}
@@ -126,7 +131,7 @@ function climbMatchHTML(t){const W=CLIMB.waiting&&CLIMB.waiting.climb.id===t.cod
   if(W)return `<div class="cl-mine"><p class="ul-k">${label}</p><p>You’re in the arena. The duel begins the moment <b>${entrantName(t,rival)}</b> enters. If they don’t come in time, you climb on.</p>${clock}<p class="nb-wait">Waiting for your rival…</p>${err}</div>`;
   if(!ready)return `<div class="cl-mine"><p class="ul-k">${label}</p><p>You’re through! Your next rival is still being decided.</p></div>`;
   return `<div class="cl-mine"><p class="ul-k">${label}</p>
-    <p>Your rival: <b>${entrantName(t,rival)}</b>${m.state==='waiting'&&m.host!==side?' <span class="cl-live">is waiting in the arena!</span>':m.state==='active'?' <span class="cl-live">· your duel is under way</span>':''}</p>${clock}
+    <p>Your rival: <b>${entrantName(t,rival)}</b>${t.entrants[rival].cpu?' <small>(the Computer picks its Hero; the duel starts as soon as you enter)</small>':''}${m.state==='waiting'&&m.host!==side?' <span class="cl-live">is waiting in the arena!</span>':m.state==='active'?' <span class="cl-live">· your duel is under way</span>':''}</p>${clock}
     <div class="roster cl-roster">${ORDER.map(id=>`<button class="pick" data-clh="${id}" style="--c:${HEROES[id].color}" aria-pressed="${S.picks[0]===id}"><img src="${SEL[id]}" alt="" style="--sc:${HEROES[id].scale}"><span>${HEROES[id].name}</span></button>`).join('')}</div>
     <button class="act begin" id="cl-go" ${CLIMB.busy?'disabled':''}><span class="who">${esc(HEROES[S.picks[0]].name)} · Standard · 100 Life</span>${m.state==='active'?'Rejoin your match':'Enter your match'}</button>${err}</div>`}
 function wireClimbMatch(el,t){
@@ -134,11 +139,11 @@ function wireClimbMatch(el,t){
   const go=el.querySelector('#cl-go');if(!go)return;
   go.onclick=()=>{CLIMB.err='';CLIMB.busy=true;renderClimb();
     Promise.resolve().then(()=>ICYNOnline.climb(t.code,S.picks[0])).catch(e=>{CLIMB.err=(e&&e.message)||'Could not reach the arena'}).finally(()=>{setTimeout(()=>{CLIMB.busy=false;if(S.screen==='setup'&&S.mode==='climb')renderClimb()},1500)})}}
-function climbBracket(t,me){const R=t.rounds.length,HOW={bye:'Bye',walkover:'Walkover',noshow:'No-show · higher seed',forfeit:'Forfeit',duel:''};
+function climbBracket(t,me){const R=t.rounds.length,HOW={bye:'Bye',walkover:'Walkover',noshow:'No-show',forfeit:'Forfeit',duel:'',cpu:'Computer duel'};
   const side=(m,s,r)=>{const x=s?m.b:m.a,e=x===null?null:t.entrants[x],won=m.w===s,lost=m.w!==null&&m.w!==s;
-    return `<div class="cl-p${won?' won':''}${lost?' lost':''}${x===me&&me>=0?' me':''}">${e?ringAv(e.av,20,e.n,e.ring):''}<span>${e?esc(e.n):r===0?'Bye':'…'}</span>${e&&e.seed?`<small>${e.seed}</small>`:''}</div>`};
+    return `<div class="cl-p${won?' won':''}${lost?' lost':''}${x===me&&me>=0?' me':''}">${e?ringAv(e.av,20,e.n,e.ring):''}<span>${e?esc(e.n):r===0?'Bye':'…'}</span>${e&&e.cpu?'<small class="cl-cpu">CPU</small>':e&&e.seed?`<small>${e.seed}</small>`:''}</div>`};
   return `<div class="cl-bracket" style="--cols:${R}">${t.rounds.map((round,r)=>`<div class="cl-col"><h5>${climbRound(r,R)}</h5>${round.map(m=>{
-    const foot=m.w!==null?(HOW[m.how]||''):m.state==='active'?'<span class="cl-live">Playing now</span>':m.state==='waiting'?'One rival is waiting':m.due?'Enter by '+climbClock(m.due):'';
+    const foot=m.w!==null?(m.how==='cpu'&&m.heroes?'Computer duel · '+m.heroes.map(h=>HEROES[h]?HEROES[h].name:h).join(' vs '):HOW[m.how]||''):m.state==='active'?'<span class="cl-live">Playing now</span>':m.state==='waiting'?'One rival is waiting':m.due?'Enter by '+climbClock(m.due):'';
     return `<div class="cl-m">${side(m,0,r)}${side(m,1,r)}${foot?`<small class="cl-f">${foot}</small>`:''}</div>`}).join('')}</div>`).join('')}</div>`}
 function climbRingsHTML(bs,ring){if(!bs||!bs.length)return '';const w=bs.filter(b=>b.k==='conqueror').length,p=bs.length;
   return `<h3>Crit Climb</h3><p>${w?`<b class="cl-gold">Crit Climb Conqueror</b> · ${w} crown${w>1?'s':''} in ${p} Climb${p>1?'s':''}`:`<b class="cl-silver">Crit Climb Competitor</b> · ${p} Climb${p>1?'s':''}`}</p>
@@ -147,3 +152,24 @@ function climbRingsHTML(bs,ring){if(!bs||!bs.length)return '';const w=bs.filter(
 addEventListener('load',()=>{const c=new URLSearchParams(location.search).get('climb');if(!c||!/^[A-Za-z2-9]{5}$/.test(c))return;CLIMB.cur=c.toUpperCase();
   try{history.replaceState(null,'',location.pathname)}catch(e){}if(S.screen==='setup'){S.duelMode=S.mode==='boss'?'cpu':S.mode;S.mode='climb';renderSetup()}});
 
+
+// ---------- Solo Climb (free, in the browser): you + 3 Computers, Semifinal then Final, Standard rules ----------
+// Rings are only won online; solo duels count like any Vs Computer duel.
+const randHero=()=>ORDER[Math.floor(Math.random()*ORDER.length)];
+function soloStart(){const you=(S.me&&S.me.name)||'You';
+  S.solo={prevNoCal:S.noCal,prevLife:S.life,stage:'semi',e:[you,'Computer 1','Computer 2','Computer 3'],
+    r:[[{a:0,b:1,w:null},{a:2,b:3,w:Math.random()<.5?0:1,how:'cpu',heroes:[randHero(),randHero()]}],[{a:0,b:null,w:null}]]};
+  S.solo.r[1][0].b=S.solo.r[0][1].w===0?2:3;
+  soloDuel()}
+function soloDuel(){S.mode='cpu';S.noCal=false;S.life=100;S.picks=[S.picks[0],randHero()];startDuel()}
+function soloQuit(){if(!S.solo)return;S.noCal=S.solo.prevNoCal;S.life=S.solo.prevLife;S.solo=null}
+function soloBracketHTML(){const Q=S.solo,row=(m,s)=>{const x=s?m.b:m.a;return `<div class="cl-p${m.w===s?' won':m.w!==null?' lost':''}${x===0?' me':''}"><span>${x===null?'…':esc(Q.e[x])}</span></div>`};
+  return `<div class="cl-bracket solo" style="--cols:2">${Q.r.map((round,r)=>`<div class="cl-col"><h5>${r?'Final':'Semifinals'}</h5>${round.map(m=>`<div class="cl-m">${row(m,0)}${row(m,1)}</div>`).join('')}</div>`).join('')}</div>`}
+function soloEnd(o,w){const Q=S.solo,won=w===0,m=Q.stage==='semi'?Q.r[0][0]:Q.r[1][0];m.w=won?0:1;
+  const card=o.querySelector('.card'),btn=o.querySelector('#rematch'),nd=o.querySelector('#newd');
+  let msg;
+  if(won&&Q.stage==='semi'){Q.stage='final';msg=`<p class="cl-soloend">Semifinal won! <b>${esc(Q.e[Q.r[1][0].b])}</b> waits in the Final.</p>`;btn.textContent='On to the Final';btn.onclick=()=>{o.remove();soloDuel()}}
+  else{Q.stage='done';msg=won?'<p class="cl-soloend">You conquered the Solo Climb! Take on real rivals online to earn the gold ring.</p>':'<p class="cl-soloend">Your Solo Climb ends here. Climb again?</p>';
+    btn.textContent='Back to Crit Climb';btn.onclick=()=>{o.remove();soloQuit();S.token++;S.screen='setup';S.mode='climb';CLIMB.cur=null;renderSetup()}}
+  nd.onclick=()=>{o.remove();soloQuit();S.token++;S.screen='setup';NETUI.phase='idle';renderSetup()};
+  card.querySelector('.rec').insertAdjacentHTML('beforebegin',msg+soloBracketHTML())}

@@ -14,6 +14,7 @@ const work = path.join(NM, 'climb-test');
 fs.rmSync(work, { recursive: true, force: true });
 fs.cpSync(path.join(here, '../../backend/api'), path.join(work, 'api'), { recursive: true });
 fs.cpSync(path.join(here, '../../backend/ws'), path.join(work, 'ws'), { recursive: true });
+fs.copyFileSync(path.join(work, 'ws/engine.mjs'), path.join(work, 'api/engine.mjs')); // deploy-climb.ps1 zips it into icyn-api too
 assert.equal(fs.readFileSync(path.join(work, 'api/climb.mjs'), 'utf8'), fs.readFileSync(path.join(work, 'ws/climb.mjs'), 'utf8'), 'api/climb.mjs and ws/climb.mjs must match');
 
 const { DynamoDBDocumentClient } = await import(path.join(NM, 'node_modules/@aws-sdk/lib-dynamodb/dist-cjs/index.js'));
@@ -97,7 +98,7 @@ const ws = await import(path.join(work, 'ws/ws.mjs'));
 assert.deepEqual(climbMod.seedOrder(4), [1, 4, 2, 3]);
 assert.deepEqual(climbMod.seedOrder(8), [1, 8, 4, 5, 2, 7, 3, 6]);
 for (const n of [2, 3, 4, 5, 6, 7, 8, 9, 12, 16]) {
-  const t = { status: 'open', matchHours: 24, entrants: Array.from({ length: n }, (_, k) => ({ u: 'u' + k })) };
+  const t = { status: 'open', size: n, entrants: Array.from({ length: n }, (_, k) => ({ u: 'u' + k })) };
   climbMod.begin(t, 1000);
   const size = t.bracketSize;
   assert.ok(size >= n && size / 2 < n, `size for ${n}`);
@@ -127,8 +128,11 @@ r = await call('POST /climbs', P(1), { size: 4, public: true });
 assert.equal(r.status, 200); const id = r.body.code; assert.match(id, /^[A-Z2-9]{5}$/);
 assert.equal(r.body.entrants.length, 1, 'the host is in'); assert.equal(r.body.name, "Player1's Crit Climb");
 assert.equal((await call('POST /climbs/{id}/join', P(5), {}, id)).status, 403, 'Crit Pass needed');
+r = await call('POST /climbs/{id}/start', P(1), {}, id); assert.equal(r.status, 400, 'needs a rival');
 assert.equal((await call('POST /climbs/{id}/join', P(2), {}, id.toLowerCase())).status, 200, 'codes are not case sensitive');
-r = await call('POST /climbs/{id}/start', P(1), {}, id); assert.equal(r.status, 400, 'needs 3 players');
+assert.equal((await call('POST /climbs', P(1), { size: 4, name: 'Sh1t Kickers' })).status, 400, 'profane names are refused');
+assert.equal((await call('POST /climbs', P(1), { size: 4, name: 'F u c k' })).status, 400, 'spaced-out words too');
+assert.equal((await call('POST /climbs', P(1), { size: 4, name: 'Class Assassins of Scunthorpe' })).status, 200, 'innocent words pass');
 r = await call('POST /climbs/{id}/join', P(3), {}, id); assert.equal(r.body.entrants.length, 3);
 r = await call('POST /climbs/{id}/leave', P(3), {}, id); assert.equal(r.body.entrants.length, 2);
 await call('POST /climbs/{id}/join', P(3), {}, id); await call('POST /climbs/{id}/join', P(4), {}, id);
@@ -197,30 +201,68 @@ r = await call('GET /me', P(fa)); assert.equal(r.body.ring, 'gold');
 r = await call('GET /me', P(fb)); assert.equal(r.body.ring, 'silver');
 r = await call('GET /climbs/{id}', null, null, id); assert.equal(r.body.status, 'done'); assert.equal(r.body.champion, fin.a);
 
-// walkover: in a second Climb, one rival waits and the other never comes
-const hostK = fa === 1 ? 2 : 1, others = [1, 2, 3, 4].filter((k) => k !== hostK && k !== fa).slice(0, 1);
-r = await call('POST /climbs', P(hostK), { size: 8, public: false, name: 'Walkover Cup' });
+// play a match against the Computer: only the player ever presses
+async function playCpu(k, cid) {
+  await wsSend(k, { action: 'climb', climbId: cid, hero: 'champion' });
+  let st = last(k); assert.equal(st.type, 'state', 'vs the Computer the duel starts at once'); assert.equal(st.status, 'active');
+  assert.match(st.players[1].name, /^Computer/);
+  for (let n = 0; n < 2000; n++) {
+    st = last(k);
+    if (st.status === 'done') return st;
+    const p = st.pending;
+    assert.ok(p.p === null || p.p === st.you, 'the Computer answers its own prompts');
+    await wsSend(k, { action: 'act', gameId: st.gameId, kind: p.kind, ...(p.kind === 'ability' ? { choice: p.options[0] } : {}) });
+    if (errOf(k)) throw new Error(errOf(k));
+  }
+  throw new Error('never ended');
+}
+
+// second Climb: 3 players + the Computer in the open seat; a walkover; a match vs the Computer
+const hostK = fa === 1 ? 2 : 1, third = [1, 2, 3, 4].find((k) => k !== hostK && k !== fa);
+r = await call('POST /climbs', P(hostK), { size: 4, public: false, name: 'Walkover Cup' });
 const id2 = r.body.code;
 assert.equal((await call('GET /climbs')).body.length, 0, 'private lobbies stay off the public list');
-for (const k of [fa, ...others]) await call('POST /climbs/{id}/join', P(k), {}, id2);
+for (const k of [fa, third]) await call('POST /climbs/{id}/join', P(k), {}, id2);
 r = await call('POST /climbs/{id}/start', P(hostK), {}, id2);
-assert.equal(r.body.status, 'live'); assert.equal(r.body.bracketSize, 4, '3 players play a 4 bracket');
+assert.equal(r.body.status, 'live'); assert.equal(r.body.entrants.length, 4); assert.equal(r.body.entrants[3].cpu, true, 'the Computer takes the open seat');
 assert.equal(r.body.entrants.find((e) => e.k === climbMod.entrantKey('p' + fa)).ring, 'gold', 'rings show in later Climbs');
-const t2 = T['icyn-climbs'].get(id2);
-const real = t2.rounds[0].find((m) => m.how !== 'bye');
-assert.equal(t2.rounds[0].filter((m) => m.how === 'bye').length, 1);
+let t2 = T['icyn-climbs'].get(id2);
+const real = t2.rounds[0].find((m) => !t2.entrants[m.a].cpu && !t2.entrants[m.b].cpu);
+const vsCpu = t2.rounds[0].find((m) => m !== real);
 assert.ok(real.due - Date.now() <= 10 * 60000 && real.due - Date.now() > 9 * 60000, '10 minutes to meet');
 const waiter = entrantNo(t2, real.b);
 await wsSend(waiter, { action: 'climb', climbId: id2, hero: 'whisper' });
 assert.equal(last(waiter).type, 'created');
-T['icyn-climbs'].get(id2).rounds[0].forEach((m) => { if (m.due) m.due = Date.now() - 1; });
+const human = entrantNo(t2, t2.entrants[vsCpu.a].cpu ? vsCpu.b : vsCpu.a);
+const st2 = await playCpu(human, id2);
+const before = T['icyn-players'].get('p' + human).played;
+t2 = T['icyn-climbs'].get(id2);
+const decided = t2.rounds[0].find((m) => m.gameId === st2.gameId);
+assert.equal(decided.how, st2.result.forfeit ? 'forfeit' : 'duel');
+assert.equal(T['icyn-players'].get('p' + human).played, before, 'duels vs the Computer are not ranked');
+T['icyn-climbs'].get(id2).rounds[0].forEach((m) => { if (m.due && m.w === null) m.due = Date.now() - 1; });
 r = await call('GET /climbs/{id}', null, null, id2);
 const m2 = r.body.rounds[0].find((m) => m.how === 'walkover');
 assert.ok(m2, 'the player who waited wins by walkover'); assert.equal(m2.w, 1);
-// nobody comes to the final: higher seed takes it
 T['icyn-climbs'].get(id2).rounds[1][0].due = Date.now() - 1;
 r = await call('GET /climbs/{id}', null, null, id2);
 assert.equal(r.body.status, 'done'); assert.equal(r.body.rounds[1][0].how, 'noshow');
+assert.ok(!T['icyn-players'].has('cpu:1'), 'the Computer earns no ring');
+
+// third Climb: 2 players in 8 seats; Computer vs Computer matches play out at once; a no-show loses to the Computer
+r = await call('POST /climbs', P(3), { size: 8, public: true });
+const id3 = r.body.code; await call('POST /climbs/{id}/join', P(4), {}, id3);
+r = await call('POST /climbs/{id}/start', P(3), {}, id3);
+assert.equal(r.body.entrants.filter((e) => e.cpu).length, 6);
+const cpuMs = r.body.rounds[0].filter((m) => r.body.entrants[m.a].cpu && r.body.entrants[m.b].cpu);
+assert.ok(cpuMs.length >= 2 && cpuMs.every((m) => m.how === 'cpu' && m.w !== null && m.heroes.length === 2), 'Computer duels resolve at once');
+T['icyn-climbs'].get(id3).rounds[0].forEach((m) => { if (m.due && m.w === null) m.due = Date.now() - 1; });
+r = await call('GET /climbs/{id}', null, null, id3);
+const ns = r.body.rounds[0].filter((m) => m.how === 'noshow');
+assert.ok(ns.every((m) => r.body.entrants[m.w ? m.b : m.a].cpu), 'the Computer always shows up');
+for (let k = 0; k < 4 && r.body.status === 'live'; k++) { T['icyn-climbs'].get(id3).rounds.flat().forEach((m) => { if (m.due && m.w === null) m.due = Date.now() - 1; }); r = await call('GET /climbs/{id}', null, null, id3); }
+assert.equal(r.body.status, 'done', 'a Climb the players abandon still finishes');
+assert.ok(climbMod.isProfane('b!tch') && climbMod.isProfane('a s s') === false && climbMod.isProfane('Big Ass Cup') && !climbMod.isProfane('Bass Masters'));
 
 // the host leaving closes the lobby; a stale lobby closes after a day
 r = await call('POST /climbs', P(1), { size: 4, public: true });

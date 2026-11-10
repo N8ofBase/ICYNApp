@@ -47,6 +47,11 @@ rep("o.querySelector('#rematch').onclick=()=>{o.remove();if(S.mode==='online'){S
 rep("if(S.mode==='online'){el.innerHTML='<span>Ranked online result saved by the arena.</span>';",
     "if(S.mode==='online'){el.innerHTML=NET.climb?'<span>Ranked result saved. The Crit Climb bracket is updated.</span>':'<span>Ranked online result saved by the arena.</span>';")
 
+# Solo Climb hooks
+rep("  recordResult(w,ko,o.querySelector('#endrec'));\n}", "  recordResult(w,ko,o.querySelector('#endrec'));\n  if(S.solo&&S.mode==='cpu')soloEnd(o,w);\n}")
+rep("$('#modelbl').textContent=(", "$('#modelbl').textContent=(S.solo&&S.mode==='cpu'?'Solo Climb '+(S.solo.stage==='final'?'Final':'Semifinal')+' · ':'')+(")
+rep("function renderSetup(){SFX.music('menu');", "function renderSetup(){SFX.music('menu');soloQuit();")
+
 # rings: account chip, My Stats, leaderboard
 rep("S.owner=!!(r&&r.owner);", "S.owner=!!(r&&r.owner);S.ring=(r&&r.ring)||'';")
 rep('${avHTML(myAvatar(),26,(S.me&&S.me.name)||u.name||u.email)}', '${ringAv(myAvatar(),26,(S.me&&S.me.name)||u.name||u.email,S.ring)}')
