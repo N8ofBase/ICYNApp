@@ -21,7 +21,10 @@ CSS = r"""
 .scroll.devnote .dn-body .linkish{all:unset;cursor:pointer;color:#8f2f17;font-weight:700;text-decoration:underline;text-underline-offset:2px}
 .scroll.devnote .dn-n{font-family:var(--f-title);font-weight:700}
 .scroll.devnote .dn-sig{text-align:right;font-family:var(--f-display);font-size:1.5rem;color:#8f2f17;margin:.2em 0 .4em}
-@media (max-width:520px){.scroll.devnote .dn-body{font-size:.95rem;padding:0}}
+/* phones: an X at the top right instead of the Close button (user 2026-11-10) */
+.scroll.devnote .dn-x{display:none}
+@media (max-width:520px){.scroll.devnote .dn-body{font-size:.95rem;padding:0 0 14px}.scroll.devnote .sc-foot{display:none}
+  .scroll.devnote .dn-x{display:grid;place-items:center;position:absolute;z-index:4;top:calc(var(--fi) - 14px);right:calc(var(--fi) - 14px);width:32px;height:32px;padding:0;border-radius:50%;border:1.5px solid #a97f2a;background:#8f2f17;color:#f3ead8;font-size:1rem;font-weight:800;line-height:1;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,.35)}}
 """
 
 # An original rolled scroll with a wax seal, drawn inline.
@@ -41,10 +44,10 @@ function devNote(){
   if(document.querySelector('.scroll.devnote'))return;
   const pass=PAYWALL()?'<button class="linkish" type="button" data-dn-pass>Crit Pass</button>':'<b>Crit Pass</b>';
   const ov=document.createElement('div');ov.className='scroll-ov';
-  ov.innerHTML=`<div class="scroll devnote" role="dialog" aria-modal="true" aria-label="A Note from the Developer"><div class="rod"></div><div class="paper">
+  ov.innerHTML=`<div class="scroll devnote" role="dialog" aria-modal="true" aria-label="A Note from the Developer"><div class="rod"></div><button class="dn-x" type="button" aria-label="Close">✕</button><div class="paper">
     <div class="sc-head"><div class="k">From the Developer</div><h2>A Note from N<span class="dn-n">8</span></h2></div>
     <div class="dn-body">
-      <p>Greetings players! Thanks for trying out my game. I originally built this as a tabletop game that I created in my basement using laminated hero sheets and dry erase markers. It was inspired by my love of rolling D-20s and a battle mini-game at the Golden Saucer in OG Final Fantasy 7. I built all the rules and hero stats myself, then plugged them in to my good friend <a href="https://claude.ai" target="_blank" rel="noopener">Claude.ai</a> and we sculpted, tweaked, and deployed this live version. This is just the foundation. I have imagined a whole new universe of beings in a fantasy novel I am writing called, <i>Project Lightbringer</i>, and I want you to venture into that world by letting you create your own hero/role combinations to navigate the terrors on Talus with your trusty D-20 in: <b>Crit Quest</b>.</p>
+      <p>Greetings players! Thanks for trying out my game. I originally built this as a tabletop game that I created in my basement using laminated hero sheets and dry erase markers. It was inspired by my love of rolling D-20s and a battle mini-game at the Golden Saucer in OG Final Fantasy 7. I built all the rules and hero stats myself, then plugged them in to my good friend Claude.ai and we sculpted, tweaked, and deployed this live version. This is just the foundation. I have imagined a whole new universe of beings in a fantasy novel I am writing called, <i>Project Lightbringer</i>, and I want you to venture into that world by letting you create your own hero/role combinations to navigate the terrors on Talus with your trusty D-20 in: <b>Crit Quest</b>.</p>
       <p>That is a much bigger project, though, and I want to get local artists to help with characters and scenery. So. Please get the ${pass} and buy my boardgames @ <a href="https://beardedboardgames.com" target="_blank" rel="noopener">beardedboardgames.com</a> so we can spread the fun.</p>
       <p class="dn-sig">Love -N<span class="dn-n">8</span></p>
     </div>
@@ -53,7 +56,7 @@ function devNote(){
   let done=false;const close=async()=>{if(done)return;done=true;document.removeEventListener('keydown',key);ov.classList.add('closing');await sleep(REDUCED?50:450);ov.remove()};
   const key=e=>{if(e.key==='Escape')close()};document.addEventListener('keydown',key);
   ov.onclick=e=>{if(e.target===ov)close()};
-  ov.querySelector('#dn-ok').onclick=close;ov.querySelector('#dn-ok').focus({preventScroll:true});
+  ov.querySelector('#dn-ok').onclick=close;ov.querySelector('.dn-x').onclick=close;ov.querySelector('#dn-ok').focus({preventScroll:true});
   const pb=ov.querySelector('[data-dn-pass]');if(pb)pb.onclick=()=>{close();hasArena()?toast('You already have the Crit Pass. Thank you!'):unlockPanel('any')};
 }
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-devnote]'))devNote()});
