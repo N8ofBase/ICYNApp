@@ -11,6 +11,7 @@ frontend:
       - auth.js
       - stats.js
       - online.js
+      - lightbringer.json
       - manifest.json
       - sw.js
       - icon-192.png
