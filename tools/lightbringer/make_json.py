@@ -15,7 +15,7 @@ def load(src):
     return [p.strip() for p in raw.split('\n') if p.strip()]
 P1, P2 = load(m1), load(m2)
 
-M1, M2 = 'Mission 1 · The Universe Medallion', 'Mission 2 · Supernal Star Sphere of Strength'
+M1, M2 = 'Mission 1 · The Universe Medallion', 'Mission 2 · The Strength of Love'
 # (source, heading in the doc, title shown, part label). The opening has no heading in the doc.
 CHAPTERS = [
     (1, None, 'The Vision', 'Prologue'),
@@ -23,7 +23,7 @@ CHAPTERS = [
     (1, 'Stranger in a Strange Land', 'Stranger in a Strange Land', M1),
     (1, 'Harder Than it Looks', 'Harder Than It Looks', M1),
     (1, 'Castle Comet', 'Castle Comet', M1),
-    (2, 'The Strength of Love', 'The Strength of Love', M2),
+    (2, 'The Strength of Love', 'The Supernal Star Sphere of Strength', M2),
     (2, 'L.O.S.E.R', 'L.O.S.E.R', M2),
     (2, 'Have You Heard of Hinon? Everyone is Dying to Go There.', 'Have You Heard of Hinon? Everyone Is Dying to Go There.', M2),
     (2, 'Funny Meeting You Here', 'Funny Meeting You Here', M2),
