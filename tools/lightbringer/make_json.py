@@ -82,8 +82,20 @@ for i, (_, h, title, part) in enumerate(CHAPTERS):
     words = sum(len(re.sub('<[^>]+>', ' ', b).split()) for b in blocks)
     chapters.append({'title': title, 'part': part, 'words': words, 'html': '\n'.join(blocks)})
 
-chapters[-1]['html'] += '\n<p class="lb-tbc">To be continued… N8 is still writing this chapter.</p>'
-chapters[-1]['wip'] = True
+# Release gate (N8 2026-11-10): readers get everything through RELEASED_THROUGH, then only the title and
+# first paragraph of the next chapter as a teaser. Later chapters stay out of the JSON until released.
+RELEASED_THROUGH = 'Have You Heard of Hinon? Everyone Is Dying to Go There.'
+last = [c['title'] for c in chapters].index(RELEASED_THROUGH)
+if last + 1 < len(chapters):
+    nxt = chapters[last + 1]
+    first = nxt['html'].split('\n')[0]
+    nxt['html'] = first + '\n<p class="lb-tbc">To be continued…</p>'
+    nxt['words'] = len(re.sub('<[^>]+>', ' ', first).split())
+    nxt['teaser'] = True
+    chapters = chapters[:last + 2]
+else:
+    chapters[-1]['html'] += '\n<p class="lb-tbc">To be continued…</p>'
+
 # ---- Glossary (reference panel in the reader). Only what the book has already told the reader:
 # the print edition's glossary tables plus the Terror on Talus entries, quoted from the doc text.
 T = span(1)

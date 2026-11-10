@@ -157,7 +157,7 @@ async function lbReader(at){document.querySelector('.lbr')?.remove();
   const C=LB.chapters;
   function showToc(on){toc.hidden=!on;tb.setAttribute('aria-expanded',on);if(!on)return;let part='';
     toc.innerHTML=`<div class="lbr-toc-in"><h3>${esc(LB.title)}</h3><ol>${C.map((c,i)=>{const p=c.part!==part?`<li class="lbp">${esc(part=c.part)}</li>`:'';
-      return p+`<li><button data-i="${i}"${i===cur?' aria-current="true"':''}><span>${esc(c.title)}</span><small>${lbOpenCh(i)?Math.max(1,Math.round(c.words/230))+' min':'🔒 Crit Pass'}</small></button></li>`}).join('')}</ol></div>`;
+      return p+`<li><button data-i="${i}"${i===cur?' aria-current="true"':''}><span>${esc(c.title)}</span><small>${c.teaser?'Coming soon':lbOpenCh(i)?Math.max(1,Math.round(c.words/230))+' min':'🔒 Crit Pass'}</small></button></li>`}).join('')}</ol></div>`;
     toc.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{showToc(false);show(+b.dataset.i)});toc.querySelector('button')?.focus()}
   toc.onclick=e=>{if(e.target===toc)showToc(false)};tb.onclick=()=>showToc(toc.hidden);
   function cover(){cur=-1;const st=lbState(),go=st.c!=null&&C[st.c];
