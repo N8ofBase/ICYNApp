@@ -4,7 +4,9 @@
 import { QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { db, PLAYERS, MATCHES, RecordError, cleanName, defaultName, stats, loadPlayer, recordMatch } from './record.mjs';
 import { hasUnlock, isDeveloper, checkout, confirm, webhook, pnp, gifts, redeem, promo } from './unlock.mjs';
-import { listClimbs, getClimb, createClimb, joinClimb, leaveClimb, startClimb, ringOf } from './climb.mjs';
+import { listClimbs, getClimb, createClimb, joinClimb, leaveClimb, startClimb, ringOf, isProfane } from './climb.mjs';
+// Names other players see are kept friendly (N8 2026-11-10): new ones are refused, old ones are hidden.
+const shown = (n) => (isProfane(n) ? 'Hero' : n);
 
 const json = (statusCode, body) => ({ statusCode, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
 const bad = (msg) => json(400, { error: msg });
@@ -23,7 +25,7 @@ async function leaderboard(event) {
     ScanIndexForward: false, Limit: 100,
   }));
   return json(200, (r.Items || []).map((p, i) => ({
-    rank: i + 1, name: p.name, avatar: typeof p.prefs?.avatar === 'string' && /^(h|i):[a-z0-9-]{1,20}$/.test(p.prefs.avatar) ? p.prefs.avatar : '', wins: p.wins, losses: p.losses, draws: p.draws,
+    rank: i + 1, name: shown(p.name), avatar: typeof p.prefs?.avatar === 'string' && /^(h|i):[a-z0-9-]{1,20}$/.test(p.prefs.avatar) ? p.prefs.avatar : '', wins: p.wins, losses: p.losses, draws: p.draws,
     bestWinStreak: p.bestWinStreak, currentStreak: p.currentStreak,
     fastestWin: p.fastestWin ?? null, fastestLoss: p.fastestLoss ?? null, highestMaxLife: p.highestMaxLife || 0,
     ring: ringOf(p),
@@ -40,6 +42,7 @@ async function putMe(userId, claims, body) {
   if (body.name !== undefined) {
     const n = cleanName(body.name);
     if (!n) return bad('name must have visible characters');
+    if (isProfane(n)) return bad('Please pick a friendlier name');
     sets[0] = '#n = :n'; vals[':n'] = n; delete vals[':dn'];
   }
   if (body.prefs !== undefined) {

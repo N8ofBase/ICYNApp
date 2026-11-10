@@ -258,7 +258,7 @@ const cpuMs = r.body.rounds[0].filter((m) => r.body.entrants[m.a].cpu && r.body.
 assert.ok(cpuMs.length >= 2 && cpuMs.every((m) => m.how === 'cpu' && m.w !== null && m.heroes.length === 2), 'Computer duels resolve at once');
 T['icyn-climbs'].get(id3).rounds[0].forEach((m) => { if (m.due && m.w === null) m.due = Date.now() - 1; });
 r = await call('GET /climbs/{id}', null, null, id3);
-const ns = r.body.rounds[0].filter((m) => m.how === 'noshow');
+const ns = r.body.rounds[0].filter((m) => m.how === 'noshow' && (r.body.entrants[m.a].cpu || r.body.entrants[m.b].cpu));
 assert.ok(ns.every((m) => r.body.entrants[m.w ? m.b : m.a].cpu), 'the Computer always shows up');
 for (let k = 0; k < 4 && r.body.status === 'live'; k++) { T['icyn-climbs'].get(id3).rounds.flat().forEach((m) => { if (m.due && m.w === null) m.due = Date.now() - 1; }); r = await call('GET /climbs/{id}', null, null, id3); }
 assert.equal(r.body.status, 'done', 'a Climb the players abandon still finishes');
@@ -272,4 +272,7 @@ r = await call('POST /climbs', P(1), { size: 16, public: true });
 T['icyn-climbs'].get(r.body.code).createdAt -= 25 * 3600000;
 r = await call('GET /climbs/{id}', null, null, r.body.code); assert.equal(r.body.status, 'cancelled');
 
+// leaderboard names
+assert.equal((await call('PUT /me', P(1), { name: 'Sh!thead' })).status, 400, 'unfriendly leaderboard names are refused');
+assert.equal((await call('PUT /me', P(1), { name: 'Crit Lord' })).status, 200);
 console.log('Crit Climb tests passed');

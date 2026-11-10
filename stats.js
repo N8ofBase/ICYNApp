@@ -39,6 +39,7 @@
     recordMatch: (m) => call('POST', '/matches', m, true),
     me: () => call('GET', '/me', null, true),
     setProfile: (p) => call('PUT', '/me', p, true),
+    setName: (name) => callErr('PUT', '/me', { name }),            // -> {stats} or {error} (unfriendly names are refused)
     history: () => call('GET', '/matches', null, true),
     leaderboard: (by) => call('GET', '/leaderboard?by=' + (by === 'streak' ? 'streak' : 'wins'), null, false),
     // Beta feedback: anyone can send (signed-in players are named); only the developers group can list or update it.

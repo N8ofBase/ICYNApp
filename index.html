@@ -2118,7 +2118,7 @@ function statsPanel(tab){
       b.querySelector('#sp-news').onchange=async e=>{const on=e.target.checked,m=b.querySelector('#sp-news-st');m.textContent='Saving…';
         const cur=await ICYNStats.me();const prefs={...((cur&&cur.prefs)||me.prefs||{}),newsOptIn:on,newsOptInAt:new Date().toISOString()};const r=await ICYNStats.setProfile({prefs});if(r)me.prefs=prefs;m.textContent=r?(on?'You’re on the list':'You won’t get news emails'):'Couldn’t save. Try again';if(!r)e.target.checked=!on};
       b.insertAdjacentHTML('beforeend','<p class="sp-priv"><button class="linkish" data-priv>Privacy</button></p>');b.querySelector('[data-priv]').onclick=privacyPanel;
-      b.querySelector('#sp-av').onclick=()=>avatarPanel(()=>{if(o.isConnected)show('me')});b.querySelector('#sp-save').onclick=async()=>{const n=b.querySelector('#sp-nm').value.trim();if(!n)return;const r=await ICYNStats.setProfile({name:n});b.querySelector('#sp-save').textContent=r?'Saved':'Try again'};
+      b.querySelector('#sp-av').onclick=()=>avatarPanel(()=>{if(o.isConnected)show('me')});b.querySelector('#sp-save').onclick=async()=>{const n=b.querySelector('#sp-nm').value.trim();if(!n)return;const r=ICYNStats.setName?await ICYNStats.setName(n):await ICYNStats.setProfile({name:n});const bad=r&&r.error;b.querySelector('#sp-save').textContent=r&&!bad?'Saved':'Try again';if(bad)toast(r.error);else if(r){S.me=r.stats||S.me;renderAcct()}};
     }else{
       const r=await ICYNStats.leaderboard(t);if(!o.isConnected)return;const ps=Array.isArray(r)?r:(r&&r.players)||[];
       const me=ICYNAuth.user&&ICYNAuth.user();

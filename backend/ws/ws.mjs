@@ -21,7 +21,7 @@ import { ApiGatewayManagementApiClient, PostToConnectionCommand } from '@aws-sdk
 import { replay, accepts, HEROES } from './engine.mjs';
 import { replayBoss, acceptsBoss, waitingOn } from './boss.mjs';
 import { recordMatch } from './record.mjs';
-import { loadClimb, refresh, currentMatch, markMatch, climbResult, withClimb, pickHero, cpuInput } from './climb.mjs';
+import { loadClimb, refresh, currentMatch, markMatch, climbResult, withClimb, pickHero, cpuInput, isProfane } from './climb.mjs';
 
 const db = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const GAMES = process.env.GAMES_TABLE || 'icyn-games';
@@ -64,7 +64,7 @@ async function verifyIdToken(token) {
 }
 
 const cleanName = (s) => String(s || '').replace(/[^\p{L}\p{N} _.'-]/gu, '').trim().slice(0, 24);
-const nameOf = (c) => cleanName(c.nickname) || cleanName((c.email || '').split('@')[0]) || 'Hero';
+const nameOf = (c) => { const n = cleanName(c.nickname) || cleanName((c.email || '').split('@')[0]) || 'Hero'; return isProfane(n) ? 'Hero' : n; };
 const newCode = () => Array.from(crypto.randomBytes(5), (b) => 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[b % 31]).join('');
 
 function client(event) {

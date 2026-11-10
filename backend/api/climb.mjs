@@ -250,7 +250,7 @@ const avatarOf = (p) => (typeof p?.prefs?.avatar === 'string' && /^(h|i):[a-z0-9
 const newCode = () => Array.from(crypto.randomBytes(5), (b) => 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[b % 31]).join('');
 const done = (r) => (r.error ? json(/^No Crit Climb/.test(r.error) ? 404 : 400, { error: r.error }) : json(200, view(r.t)));
 const NEED_PASS = 'Crit Climb needs the Crit Pass. Get it on the setup screen.';
-const entrantOf = (userId, claims, player) => ({ u: userId, n: clean(player?.name, 24) || clean(claims.nickname, 24) || 'Hero', av: avatarOf(player), ring: ringOf(player), at: Date.now() });
+const entrantOf = (userId, claims, player) => ({ u: userId, n: [clean(player?.name, 24), clean(claims.nickname, 24)].find((x) => x && !isProfane(x)) || 'Hero', av: avatarOf(player), ring: ringOf(player), at: Date.now() });
 
 // GET /climbs (public): open public lobbies that still have seats, newest first.
 export async function listClimbs() {

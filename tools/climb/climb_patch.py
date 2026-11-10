@@ -61,3 +61,9 @@ rep("        ${st.currentStreak?`<div>${streakBadge(st.currentStreak)}</div>`:''
     "        ${st.currentStreak?`<div>${streakBadge(st.currentStreak)}</div>`:''}\n        ${climbRingsHTML(me.badges,me.ring)}\n")
 p.write_text(s, encoding='utf-8')
 print('patched', p)
+# leaderboard name: show why a save was refused (unfriendly names)
+s = p.read_text(encoding='utf-8')
+a = "b.querySelector('#sp-save').onclick=async()=>{const n=b.querySelector('#sp-nm').value.trim();if(!n)return;const r=await ICYNStats.setProfile({name:n});b.querySelector('#sp-save').textContent=r?'Saved':'Try again'};"
+assert s.count(a) == 1
+s = s.replace(a, "b.querySelector('#sp-save').onclick=async()=>{const n=b.querySelector('#sp-nm').value.trim();if(!n)return;const r=ICYNStats.setName?await ICYNStats.setName(n):await ICYNStats.setProfile({name:n});const bad=r&&r.error;b.querySelector('#sp-save').textContent=r&&!bad?'Saved':'Try again';if(bad)toast(r.error);else if(r){S.me=r.stats||S.me;renderAcct()}};")
+p.write_text(s, encoding='utf-8')
