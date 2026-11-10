@@ -1,0 +1,690 @@
+<title>Farluck Well Skirmish</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout: a field-journal page. The map is the hero; a parchment side panel holds the Hero card, actions and the Chronicle. Single warm daylight look (the farm at midday), deliberately one theme. */
+:root {
+  color-scheme: light;
+  --paper: #efe5cc;
+  --paper-2: #e4d6b3;
+  --ink: #2c2416;
+  --ink-soft: #5d4f37;
+  --rule: #c8b68c;
+  --ember: #b5462a;      /* Fear, damage, gremlins' mark */
+  --gold: #c9922c;       /* the Hero */
+  --sick: #7f9b2e;       /* plague gremlins */
+  --sky: #3f6f8f;        /* water, heals */
+  --grass: #b8a565;
+  --grass-2: #a8955a;
+  --display: "Alegreya SC", "Palatino Linotype", Georgia, serif;
+  --body: "Alegreya Sans", "Segoe UI", system-ui, sans-serif;
+}
+html, body { height: 100%; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 15px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px 20px; box-sizing: border-box;
+}
+h1, h2, h3 { font-family: var(--display); font-weight: 700; text-wrap: balance; margin: 0; }
+button { font: inherit; }
+.top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; margin-bottom: 10px; }
+.top h1 { font-size: 1.6rem; letter-spacing: .02em; }
+.top .sub { color: var(--ink-soft); font-size: .95rem; }
+.wrap { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
+@media (max-width: 860px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+[hidden] { display: none !important; }
+.board { align-self: start; min-width: 0; background: #d7c79c; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; position: relative; }
+.board svg { display: block; width: 100%; height: auto; touch-action: manipulation; user-select: none; }
+.status { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; padding: 8px 12px; background: var(--paper-2); border-top: 1px solid var(--rule); font-size: .92rem; min-height: 22px; }
+.status b { font-family: var(--display); }
+.order { display: flex; gap: 4px; flex-wrap: wrap; }
+.chip { padding: 1px 7px; border-radius: 10px; font-size: .78rem; border: 1px solid var(--rule); background: var(--paper); }
+.chip.now { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.chip.hero { border-color: var(--gold); }
+.chip.foe { border-color: var(--sick); }
+.side { display: grid; gap: 12px; min-width: 0; }
+.card { background: var(--paper-2); border: 1px solid var(--rule); border-radius: 6px; padding: 12px; display: grid; gap: 8px; }
+.card h2 { font-size: 1.15rem; }
+.card h3 { font-size: .95rem; color: var(--ink-soft); letter-spacing: .04em; }
+.row { display: flex; flex-wrap: wrap; gap: 6px 14px; font-variant-numeric: tabular-nums; }
+.row span b { font-weight: 700; }
+.bar { height: 10px; background: #cdbd93; border-radius: 5px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--sick); transition: width .3s; }
+.bar.hero i { background: var(--gold); }
+.acts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.acts button, .btn {
+  padding: 8px 6px; border: 1px solid var(--ink-soft); background: var(--paper); color: var(--ink); border-radius: 5px; cursor: pointer;
+  font-weight: 500; line-height: 1.15;
+}
+.acts button small { display: block; font-size: .72rem; color: var(--ink-soft); font-weight: 400; }
+.acts button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.acts button[aria-pressed="true"] small { color: var(--paper-2); }
+.acts button:disabled { opacity: .45; cursor: default; }
+.btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); padding: 9px 14px; }
+button:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+.pips { display: flex; gap: 4px; align-items: center; }
+.pip { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ink); }
+.pip.on { background: var(--gold); }
+.log { max-height: 240px; overflow-y: auto; font-size: .88rem; display: grid; gap: 3px; padding-right: 4px; }
+.log p { margin: 0; }
+.log .dmg { color: var(--ember); }
+.log .heal { color: var(--sky); }
+.log .cal { color: var(--ember); font-weight: 700; }
+.log .enh { color: #8a6416; font-weight: 700; }
+.log .sys { color: var(--ink-soft); font-style: italic; }
+.setup { display: grid; gap: 10px; }
+.choices { display: flex; flex-wrap: wrap; gap: 6px; }
+.choices button { padding: 6px 10px; border: 1px solid var(--ink-soft); background: var(--paper); border-radius: 14px; cursor: pointer; }
+.choices button[aria-pressed="true"] { background: var(--gold); border-color: #8a6416; }
+.abil { display: grid; gap: 6px; }
+.abil button { text-align: left; padding: 8px 10px; border: 1px solid var(--ink-soft); background: var(--paper); border-radius: 6px; cursor: pointer; }
+.abil button[aria-pressed="true"] { background: var(--gold); border-color: #8a6416; }
+.abil small { display: block; color: var(--ink-soft); }
+.note { font-size: .82rem; color: var(--ink-soft); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: .8rem; color: var(--ink-soft); }
+.legend i { display: inline-block; width: 11px; height: 11px; border-radius: 2px; vertical-align: -1px; margin-right: 4px; border: 1px solid #0003; }
+.banner { position: absolute; inset: 0; display: grid; place-items: center; background: #2c241699; }
+.banner div { background: var(--paper); border: 2px solid var(--ink); border-radius: 8px; padding: 18px 22px; text-align: center; display: grid; gap: 10px; max-width: 320px; }
+.banner h2 { font-size: 1.5rem; }
+.dicepop { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 4px 12px; border-radius: 14px; font-family: var(--display); font-size: 1rem; pointer-events: none; transition: opacity .4s; }
+@media (prefers-reduced-motion: reduce) { .bar i, .dicepop { transition: none; } }
+</style>
+
+<div class="top">
+  <h1>Farluck Well Skirmish</h1>
+  <span class="sub">Crit Quest hex prototype · First quest, step 5: gremlins at Cecil's well</span>
+</div>
+
+<div class="wrap">
+  <div class="board" id="board">
+    <svg id="map" viewBox="0 0 768 395" role="img" aria-label="Hex map of the well at Farluck Farm"></svg>
+    <div class="dicepop" id="dicepop" style="opacity:0"></div>
+    <div class="status"><span id="status">Choose your Hero, then press Start.</span><span class="order" id="order"></span></div>
+  </div>
+
+  <div class="side">
+    <section class="card setup" id="setup">
+      <h2>Your Hero</h2>
+      <h3>Lifeform</h3>
+      <div class="choices" id="lfChoices"></div>
+      <h3>Role</h3>
+      <div class="choices" id="roleChoices"></div>
+      <h3>First ability (pick 1 of 3)</h3>
+      <div class="abil" id="abChoices"></div>
+      <div class="row" id="preview"></div>
+      <button class="btn primary" id="startBtn" type="button">Start the fight</button>
+      <p class="note">Level 1 Hero. Rules come from the Crit Quest design plan, with the Balance test fixes.</p>
+    </section>
+
+    <section class="card" id="heroCard" hidden>
+      <h2 id="heroName">Hero</h2>
+      <div class="bar hero"><i id="heroBar"></i></div>
+      <div class="row" id="heroStats"></div>
+      <div class="row"><span>Actions</span><span class="pips" id="pips"></span><span id="heroFx" class="note"></span></div>
+      <div class="acts" id="acts"></div>
+      <p class="note" id="hint"></p>
+    </section>
+
+    <section class="card">
+      <h3>Chronicle</h3>
+      <div class="log" id="log" aria-live="polite"><p class="sys">Plague gremlins have fouled Cecil's well. Fetch the buckets and drive them off.</p></div>
+    </section>
+
+    <section class="card">
+      <h3>Reading the map</h3>
+      <div class="legend">
+        <span><i style="background:#b8a565"></i>Grass</span>
+        <span><i style="background:#4f6b3a"></i>Trees: cover +2, 2 to enter</span>
+        <span><i style="background:#c9ae74"></i>Hill: +1 to hit from above, 2 to climb</span>
+        <span><i style="background:#9c8562"></i>Dry creek: 2 to enter</span>
+        <span><i style="background:#7c7468"></i>Rocks and well: block moving and sight</span>
+        <span><i style="background:#8a6a3c"></i>Fence: blocks moving, cover +2 behind it</span>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+// ------------------------------------------------------------ rules data (from the design plan)
+const LIFEFORMS = {
+  Dimoneesh: { def: 1, E: 1 }, Leyf: { E: 1, S: 1 }, Lizerus: { def: 1, P: 1 }, Melkin: { S: 1, C: 1 }, Sapien: { P: 1, C: 1 },
+};
+const ROLES = {
+  Brawler:   { life: 40, P: 1, S: 1, main: 'P', wRange: 1, weapon: 'Fists', color: '#7a2232' },
+  Champion:  { life: 33, def: 1, P: 2, E: 1, main: 'P', wRange: 1, weapon: 'Blade', color: '#a8913a' },
+  Maverick:  { life: 30, S: 1, C: 2, main: 'C', wRange: 8, weapon: 'Stringbow', color: '#5e6a3e' },
+  'Soul Seer': { life: 30, E: 2, S: 1, main: 'E', wRange: 4, weapon: 'Staff spark', color: '#3f7480' },
+  Whisper:   { life: 30, S: 1, C: 1, dmg: 1, main: 'S', wRange: 1, weapon: 'Daggers', color: '#4a4a63' },
+};
+// Level 1 abilities, one per branch. range in hexes; self = no target.
+const ABILS = {
+  Brawler: [
+    { name: 'Suplex', branch: 'Que Bao', range: 1, stat: 'P', dmg: [1, 8], fx: { last: true }, text: '1d8+P; the foe acts last next round' },
+    { name: 'Crush', branch: 'Fury', range: 1, stat: 'P', dmg: [1, 10], text: '1d10+P' },
+    { name: 'Leap', branch: 'Iron Body', range: 1, leap: 3, stat: 'S', dmg: [1, 6], text: 'Jump up to 3 hexes to a foe, then 1d6+S' },
+  ],
+  Champion: [
+    { name: 'Overpower', branch: 'Honor', range: 1, stat: 'P', dmg: [1, 8], fx: { knock: 1 }, text: '1d8+P and knock the foe back 1 hex' },
+    { name: 'Radiant Strike', branch: 'Sacred', range: 4, stat: 'E', dmg: [1, 10], orHeal: true, text: '1d10+E at range 4, or tap yourself to heal the same' },
+    { name: 'Refresh', branch: 'Oath', self: true, heal: [2, 6, 'C'], text: 'Heal yourself 2d6+C' },
+  ],
+  Maverick: [
+    { name: 'Pierce', branch: 'Sharpsight', range: 8, stat: 'P', dmg: [1, 8], fx: { weak: [1, 2] }, text: 'Stringbow 1d8+P; the foe deals 1 less for 2 rounds' },
+    { name: 'Discourage', branch: 'Trickster', range: 4, stat: 'C', fx: { hit: [-2, 2] }, text: 'Charm roll; the foe is -2 to hit for 2 rounds' },
+    { name: 'Poison', branch: 'Wayfinder', range: 4, stat: 'C', fx: { dot: [2, 3] }, text: 'Charm roll; the foe loses 2 Life a turn for 3 turns' },
+  ],
+  'Soul Seer': [
+    { name: 'Soul Syphon', branch: 'Mender', range: 4, stat: 'E', dmg: [1, 8], selfHeal: [1, 6], text: '1d8+E and you heal 1d6' },
+    { name: 'Psylance', branch: 'Sound', range: 4, stat: 'C', dmg: [1, 8], text: 'A piercing tone, 1d8+C' },
+    { name: 'Thorns', branch: 'Nature', self: true, thorns: [1, 6, 2], text: 'For 2 rounds, foes that hit you take 1d6' },
+  ],
+  Whisper: [
+    { name: 'Double Strike', branch: 'Wind', range: 1, stat: 'S', dmg: [1, 6], hits: 2, text: 'Two quick hits of 1d6+S' },
+    { name: 'Darkness', branch: 'Shadow', range: 4, stat: 'E', dmg: [1, 6], fx: { weak: [2, 2] }, selfDef: [2, 2], text: '1d6; the foe deals 2 less and you get +2 Defense, 2 rounds' },
+    { name: 'Heartbreak', branch: 'Heart', range: 4, stat: 'C', dmg: [1, 8], fx: { hit: [-1, 2] }, text: '1d8+C; the foe is -1 to all rolls for 2 rounds' },
+  ],
+};
+const TERRORS = {
+  gremlin: { name: 'Plague Gremlin', life: 8, def: 10, toHit: 2, S: 1, move: 3, bite: [1, 6], spit: [1, 4], spitRange: 3, plague: 0.3 },
+  spitter: { name: 'Gremlin Spitter', life: 8, def: 11, toHit: 2, S: 2, move: 3, spit: [1, 6], spitRange: 4, keepAway: 3 },
+};
+
+// ------------------------------------------------------------ map
+// . grass  T trees  H hill  C dry creek  R rocks  W well  F fence  h house  g garden
+const MAP = [
+  'hhh..TT....T..R',
+  'hh....T..TT.RR.',
+  'h..F.....T.....',
+  '...F.HH.....W..',
+  'g..F.HH.C......',
+  'gg.F...CC...T..',
+  'gg....C...R.TT.',
+  '.....C....R....',
+  '..T.C.........T',
+  '.TTC....HH...TT',
+];
+const COLS = MAP[0].length, ROWS = MAP.length;
+const TER = {
+  '.': { cost: 1, fill: '#b8a565' }, g: { cost: 1, fill: '#9b8a4e' }, T: { cost: 2, cover: true, fill: '#a8955a' },
+  H: { cost: 2, high: true, fill: '#c9ae74' }, C: { cost: 2, fill: '#9c8562' },
+  R: { block: true, sight: true, fill: '#a8955a' }, W: { block: true, sight: true, fill: '#b8a565' },
+  F: { block: true, lowCover: true, fill: '#b8a565' }, h: { block: true, sight: true, fill: '#8d7a52' },
+};
+const ter = (c, r) => TER[MAP[r][c]];
+const S = 30, W = S * 1.5, Hh = Math.sqrt(3) * S * 0.62; // flat-top hexes squashed for a 3/4 view
+const OX = 40, OY = 46;
+function center(c, r) { return [OX + c * W, OY + r * Hh + (c & 1 ? Hh / 2 : 0)]; }
+function toCube(c, r) { const x = c, z = r - (c - (c & 1)) / 2; return [x, -x - z, z]; }
+function fromCube(x, y, z) { return [x, z + (x - (x & 1)) / 2]; }
+function dist(a, b) { const A = toCube(...a), B = toCube(...b); return Math.max(Math.abs(A[0] - B[0]), Math.abs(A[1] - B[1]), Math.abs(A[2] - B[2])); }
+const DIRS = [[[+1, 0], [+1, -1], [0, -1], [-1, -1], [-1, 0], [0, +1]], [[+1, +1], [+1, 0], [0, -1], [-1, 0], [-1, +1], [0, +1]]];
+function neighbors(c, r) { return DIRS[c & 1].map(([dc, dr]) => [c + dc, r + dr]).filter(([x, y]) => x >= 0 && y >= 0 && x < COLS && y < ROWS); }
+function cubeRound(x, y, z) {
+  let rx = Math.round(x), ry = Math.round(y), rz = Math.round(z);
+  const dx = Math.abs(rx - x), dy = Math.abs(ry - y), dz = Math.abs(rz - z);
+  if (dx > dy && dx > dz) rx = -ry - rz; else if (dy > dz) ry = -rx - rz; else rz = -rx - ry;
+  return [rx, ry, rz];
+}
+function line(a, b) {
+  const n = dist(a, b), A = toCube(...a), B = toCube(...b), out = [];
+  for (let i = 0; i <= n; i++) {
+    const t = n ? i / n : 0;
+    out.push(fromCube(...cubeRound(A[0] + (B[0] - A[0]) * t + 1e-6, A[1] + (B[1] - A[1]) * t + 1e-6, A[2] + (B[2] - A[2]) * t - 2e-6)));
+  }
+  return out;
+}
+function sight(a, b) { // returns {ok, cover}
+  const L = line(a, b); let cover = false;
+  for (let i = 1; i < L.length - 1; i++) {
+    const t = ter(...L[i]);
+    if (t.sight) return { ok: false };
+    if ((t.lowCover || t.cover) && dist(L[i], b) === 1) cover = true;
+  }
+  if (ter(...b).cover) cover = true;
+  return { ok: true, cover: cover && dist(a, b) > 1 };
+}
+
+// ------------------------------------------------------------ state
+const G = { lf: 'Sapien', role: 'Champion', ab: 0, units: [], round: 0, order: [], turn: 0, mode: null, over: false, zone: {} };
+const rng = n => 1 + Math.floor(Math.random() * n);
+const roll = (n, s) => { let t = 0; for (let i = 0; i < n; i++) t += rng(s); return t; };
+const key = (c, r) => c + ',' + r;
+const occupied = (c, r, except) => G.units.find(u => u.alive && u !== except && u.c === c && u.r === r);
+const hero = () => G.units[0];
+const foes = () => G.units.filter(u => u.foe && u.alive);
+const stat = (u, k) => Math.max(0, (u.st[k] || 0) + (u.fx.charmDown && k === 'C' ? -u.fx.charmDown : 0));
+
+function makeHero() {
+  const R = ROLES[G.role], L = LIFEFORMS[G.lf], st = { P: 0, E: 0, S: 0, C: 0 };
+  for (const k in st) st[k] = (R[k] || 0) + (L[k] || 0);
+  const ab = ABILS[G.role][G.ab];
+  return { id: 'hero', name: `${G.lf} ${G.role}`, hero: true, alive: true, c: 1, r: 4, life: R.life, max: R.life, def: 10 + (L.def || 0) + (R.def || 0),
+    st, main: R.main, wRange: R.wRange, weapon: R.weapon, dmgBonus: R.dmg || 0, ab, cd: 0, soup: 2, fx: {}, color: R.color };
+}
+function makeFoe(t, c, r, tag) { const T = TERRORS[t]; return { id: t + tag, name: T.name + (tag ? ' ' + tag : ''), foe: true, kind: t, T, alive: true, c, r, life: T.life, max: T.life, def: T.def, st: { S: T.S, C: 0 }, fx: {} }; }
+
+// ------------------------------------------------------------ setup UI
+const $ = id => document.getElementById(id);
+function renderSetup() {
+  $('lfChoices').innerHTML = Object.keys(LIFEFORMS).map(k => `<button type="button" aria-pressed="${k === G.lf}" data-lf="${k}">${k}</button>`).join('');
+  $('roleChoices').innerHTML = Object.keys(ROLES).map(k => `<button type="button" aria-pressed="${k === G.role}" data-role="${k}">${k}</button>`).join('');
+  $('abChoices').innerHTML = ABILS[G.role].map((a, i) => `<button type="button" aria-pressed="${i === G.ab}" data-ab="${i}"><b>${a.name}</b> · ${a.branch}<small>${a.text}${a.range ? ` · range ${a.range}` : ''}</small></button>`).join('');
+  const h = makeHero();
+  $('preview').innerHTML = `<span>Life <b>${h.max}</b></span><span>Defense <b>${h.def}</b></span>` + ['P', 'E', 'S', 'C'].map(k => `<span>${({ P: 'Power', E: 'Energy', S: 'Speed', C: 'Charm' })[k]} <b>${h.st[k]}</b></span>`).join('') + `<span>${h.weapon}, range ${h.wRange}</span>`;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.lf) { G.lf = b.dataset.lf; renderSetup(); }
+  if (b.dataset.role) { G.role = b.dataset.role; G.ab = 0; renderSetup(); }
+  if (b.dataset.ab) { G.ab = +b.dataset.ab; renderSetup(); }
+});
+$('startBtn').addEventListener('click', start);
+
+// ------------------------------------------------------------ log, dice
+function log(msg, cls = '') { const p = document.createElement('p'); p.className = cls; p.textContent = msg; $('log').prepend(p); }
+let popT; function pop(txt) { const d = $('dicepop'); d.textContent = txt; d.style.opacity = 1; clearTimeout(popT); popT = setTimeout(() => d.style.opacity = 0, 1300); }
+const sleep = ms => new Promise(r => setTimeout(r, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : ms));
+
+// ------------------------------------------------------------ the d20, Calamities and Enhancements
+function d20(u) {
+  let r = rng(20);
+  if (r === 1 && u.hero && u.fx.reroll) { u.fx.reroll--; log('Lucky Star: you reroll the 1.', 'enh'); r = rng(20); }
+  if (u.fx.curse) { u.fx.curse = false; if (r >= 2 && r <= 9) { log(`Die Curse turns your ${r} into a 1.`, 'cal'); r = 1; } }
+  if (u.fx.bless) { u.fx.bless = false; if (r >= 11 && r <= 19) { log(`Die Blessing turns your ${r} into a 20.`, 'enh'); r = 20; } }
+  return r;
+}
+function personalCalamity(u) {
+  const n = rng(12);
+  const T = {
+    1: ['Die Curse', 'your next D20 counts any 2 to 9 as a 1', () => u.fx.curse = true],
+    2: ['Butterfingers', 'you drop your weapon; your next Attack costs both actions', () => u.fx.dropped = true],
+    3: ['Twisted Ankle', 'Move -2 for the rest of the fight', () => u.fx.ankle = 2],
+    4: ['Shaken', '-2 Charm for the rest of the fight', () => u.fx.charmDown = 2],
+    5: ['Winded', 'you lose your next action', () => u.fx.winded = 1],
+    6: ['Off Balance', 'you fall prone: foes get +2 to hit you until your next turn', () => u.fx.exposed = 1],
+    7: ['Tangled Gear', 'your ability rests 2 more rounds', () => u.cd = Math.max(u.cd, 2)],
+    8: ['Wild Swing', 'the miss rattles you, but nothing else', () => {}],
+    9: ['Fear Whisper', 'the Fear grows: zone hazards hit on 1 to 5 now', () => G.zone.fear = true],
+    10: ['Spilled Pack', 'you lose a bowl of soup', () => u.soup = Math.max(0, u.soup - 1)],
+    11: ['Exposed', 'the next attack on you gets +2', () => u.fx.exposed = 1],
+    12: ['Bucket on the Head', '-2 to hit on your next turn', () => u.fx.hitDown = 2],
+  }[n];
+  T[2](); log(`Calamity ${n}: ${T[0]}. ${T[1][0].toUpperCase() + T[1].slice(1)}.`, 'cal');
+}
+function enhancement(u) {
+  const n = rng(12);
+  const T = {
+    1: ['Second Wind', () => healUnit(u, roll(1, 6) + stat(u, 'E'))], 2: ['Fleet Foot: Move +2 this fight', () => u.fx.fleet = 2],
+    3: ['Keen Edge: +1 damage die this fight', () => u.fx.keen = 1], 4: ['Steady Heart: +2 Charm this fight', () => u.st.C += 2],
+    5: ['Stone Skin: Defense +1 this fight', () => u.def++], 6: ['Clear Mind: your ability is ready', () => u.cd = 0],
+    7: ['Rally: +1 to hit this fight', () => u.fx.hitUp = 1], 8: ['Far Sight: ranges +2 this fight', () => u.fx.far = 2],
+    9: ['Lucky Star: one free reroll of a 1', () => u.fx.reroll = (u.fx.reroll || 0) + 1], 10: ['Light Step: rough ground costs 1 for you', () => u.fx.light = true],
+    11: ['Second Breath: +1 action this turn', () => u.actions++], 12: ['Die Blessing: your next D20 counts 11 to 19 as a 20', () => u.fx.bless = true],
+  }[n];
+  T[1](); log(`Enhancement ${n}: ${T[0]}.`, 'enh');
+}
+
+// ------------------------------------------------------------ combat
+function hurt(u, n, src) {
+  if (n <= 0 || !u.alive) return;
+  if (u.hero && u.fx.defend) { n = Math.max(0, n - 1); u.fx.defend = false; }
+  u.life = Math.max(0, u.life - n);
+  if (u.life === 0) { u.alive = false; log(`${u.name} ${u.hero ? 'falls' : 'is driven off'}.`, u.hero ? 'cal' : 'sys'); }
+  if (src && u.fx.thorns && u.alive !== undefined && src.alive) { const t = roll(1, 6); hurt(src, t); log(`Thorns sting ${src.name} for ${t}.`, 'dmg'); }
+}
+function healUnit(u, n) { if (G.zone.dry) { log('Dry Spell: no healing this round.', 'sys'); return; } const before = u.life; u.life = Math.min(u.max, u.life + n); log(`${u.name} heals ${u.life - before}.`, 'heal'); }
+function flanked(t, att) { // foes on opposite sides of the target
+  const adj = foes().filter(f => f !== t && dist([f.c, f.r], [t.c, t.r]) === 1);
+  if (!att.foe || adj.length < 2) return false;
+  const N = neighbors(t.c, t.r).map(([c, r]) => key(c, r));
+  const idx = adj.map(f => N.indexOf(key(f.c, f.r)));
+  return idx.some(i => idx.includes((i + 3) % 6));
+}
+// one to-hit roll. Returns {hit, crit, roll, total, need, mods}
+function attackRoll(att, tgt, statKey) {
+  const r = d20(att);
+  const L = sight([att.c, att.r], [tgt.c, tgt.r]);
+  let mods = 0; const why = [];
+  if (statKey) mods += stat(att, statKey);
+  if (att.T) mods += att.T.toHit;
+  if (ter(att.c, att.r).high && !ter(tgt.c, tgt.r).high) { mods += 1; why.push('high ground +1'); }
+  if (att.fx.hitDown) { mods -= att.fx.hitDown; why.push(`-${att.fx.hitDown}`); }
+  if (att.fx.hit) { mods += att.fx.hit[0]; }
+  if (att.fx.hitUp) mods += att.fx.hitUp;
+  if (att.hero && G.zone.dust) { mods -= 1; why.push('Dust Devil -1'); }
+  if (flanked(tgt, att)) { mods += 2; why.push('flanking +2'); }
+  let def = tgt.def + (tgt.fx.def ? tgt.fx.def[0] : 0);
+  if (L.cover) { def += 2; why.push('cover +2'); }
+  if (tgt.fx.exposed) { def -= 2; why.push('exposed'); }
+  const total = r + mods;
+  const crit = r === 20, hit = r !== 1 && (crit || total > def);
+  return { hit, crit, roll: r, total, def, why };
+}
+function hitChance(att, tgt, statKey) { // for the hover readout
+  const L = sight([att.c, att.r], [tgt.c, tgt.r]);
+  let mods = statKey ? stat(att, statKey) : 0;
+  if (ter(att.c, att.r).high && !ter(tgt.c, tgt.r).high) mods += 1;
+  if (att.fx.hitDown) mods -= att.fx.hitDown;
+  if (att.fx.hit) mods += att.fx.hit[0];
+  if (att.fx.hitUp) mods += att.fx.hitUp;
+  let def = tgt.def + (tgt.fx.def ? tgt.fx.def[0] : 0) + (L.cover ? 2 : 0) - (tgt.fx.exposed ? 2 : 0);
+  const p = Math.min(19, Math.max(1, 20 - (def - mods))) / 20; // 2..19 succeed range, 1 always misses, 20 always hits
+  return { p, cover: L.cover, high: ter(att.c, att.r).high && !ter(tgt.c, tgt.r).high };
+}
+async function strike(att, tgt, { dice, statKey, label, hits = 1 }) {
+  let any = false;
+  for (let i = 0; i < hits && tgt.alive; i++) {
+    const R = attackRoll(att, tgt, statKey);
+    pop(`${att.hero ? 'You' : att.name} roll ${R.roll}`);
+    if (R.roll === 1) { log(`${att.name}: ${label} rolls a 1 and misses.`, 'cal'); if (att.hero) personalCalamity(att); continue; }
+    if (!R.hit) { log(`${att.name}: ${label} misses (${R.total} vs ${R.def}${R.why.length ? ', ' + R.why.join(', ') : ''}).`); continue; }
+    any = true;
+    let n = dice[0] + (att.fx.keen || 0); if (R.crit) n *= 2;
+    let dmg = roll(n, dice[1]) + (statKey && !(att.hero && att.fx.dropped) ? stat(att, statKey) : 0) + (att.dmgBonus || 0) - (att.fx.weak ? att.fx.weak[0] : 0);
+    dmg = Math.max(1, dmg);
+    log(`${att.name}: ${label} ${R.crit ? 'CRITS' : 'hits'} ${tgt.name} for ${dmg}${R.why.length ? ' (' + R.why.join(', ') + ')' : ''}.`, 'dmg');
+    if (R.crit && att.hero) enhancement(att);
+    hurt(tgt, dmg, att);
+    await sleep(250);
+  }
+  return any;
+}
+
+// ------------------------------------------------------------ the round
+async function start() {
+  G.units = [makeHero(), makeFoe('gremlin', 10, 2, 'A'), makeFoe('gremlin', 11, 5, 'B'), makeFoe('spitter', 12, 8, '')];
+  G.round = 0; G.over = false; G.zone = {};
+  $('setup').hidden = true; $('heroCard').hidden = false;
+  $('log').innerHTML = '';
+  log('The buckets lie by the well. Two plague gremlins circle it, and a spitter lurks in the trees by the creek.', 'sys');
+  draw(); await nextRound();
+}
+async function nextRound() {
+  if (checkEnd()) return;
+  G.round++;
+  G.zone = { fear: G.zone.fear };
+  const hz = rng(20);
+  if (hz <= (G.zone.fear ? 5 : 3)) {
+    const n = rng(6);
+    const H = {
+      1: ['Dust Devil', 'you are -1 to hit this round', () => G.zone.dust = true],
+      2: ['Ooze Rain', 'spit rains from the trees: 1d4 unless you are in cover', () => { const h = hero(); if (!ter(h.c, h.r).cover) { const d = roll(1, 4); hurt(h, d); log(`Ooze Rain hits you for ${d}.`, 'dmg'); } else log('Your tree cover keeps the ooze off.', 'sys'); }],
+      3: ['Dry Spell', 'no healing this round', () => G.zone.dry = true],
+      4: ['Thorny Brush', 'Move -1 this round', () => G.zone.thorny = true],
+      5: ['Rotting Stench', '-1 Charm this round', () => G.zone.stench = true],
+      6: ['Die Death', "everyone's next D20 counts any 2 to 9 as a 1", () => G.units.forEach(u => u.fx.curse = true)],
+    }[n];
+    log(`Zone hazard (rolled ${hz}): ${H[0]}, ${H[1]}.`, 'cal'); H[2]();
+  }
+  // Speed order
+  G.order = G.units.filter(u => u.alive).map(u => ({ u, s: rng(20) + (u.st.S || 0) - (u.fx.last ? 30 : 0) + Math.random() }))
+    .sort((a, b) => b.s - a.s).map(x => x.u);
+  G.order.forEach(u => u.fx.last = false);
+  log(`Round ${G.round}: ${G.order.map(u => u.hero ? 'you' : u.name).join(', then ')}.`, 'sys');
+  G.turn = -1; await nextTurn();
+}
+async function nextTurn() {
+  if (checkEnd()) return;
+  G.turn++;
+  if (G.turn >= G.order.length) return nextRound();
+  const u = G.order[G.turn];
+  if (!u.alive) return nextTurn();
+  // start of turn
+  if (u.fx.dot) { hurt(u, u.fx.dot[0]); log(`Poison: ${u.name} loses ${u.fx.dot[0]}.`, 'dmg'); if (--u.fx.dot[1] <= 0) delete u.fx.dot; if (!u.alive) { draw(); return nextTurn(); } }
+  if (u.plague) { hurt(u, 1); log('Plagued: you lose 1 Life.', 'dmg'); u.plague--; if (!u.alive) { draw(); return nextTurn(); } }
+  if (u.hero) { u.actions = 2; u.moved = 0; u.fx.exposed = 0; if (u.fx.winded) { u.actions--; u.fx.winded = 0; log('Winded: you lose an action.', 'cal'); } G.mode = null; draw(); return; }
+  draw(); await sleep(350); await foeTurn(u); endOfTurn(u); draw(); await sleep(200); return nextTurn();
+}
+function endOfTurn(u) {
+  for (const k of ['hit', 'weak', 'def']) if (u.fx[k]) { if (--u.fx[k][1] <= 0) delete u.fx[k]; }
+  if (u.fx.thorns && --u.fx.thorns <= 0) delete u.fx.thorns;
+  if (u.hero) { if (u.cd > 0) u.cd--; u.fx.hitDown = 0; u.fx.dropped = false; }
+}
+function checkEnd() {
+  if (G.over) return true;
+  const h = hero();
+  if (!h.alive) { G.over = true; banner('Knocked out', 'The Icosa link pulls you back to the Crystal clearing. The gremlins still hold the well.'); return true; }
+  if (!foes().length) { G.over = true; banner('The well is clear', `You drove off every gremlin in ${G.round} rounds with ${h.life} of ${h.max} Life left. Cecil's buckets are yours to carry home.`); return true; }
+  return false;
+}
+function banner(title, text) {
+  draw();
+  const b = document.createElement('div'); b.className = 'banner';
+  b.innerHTML = `<div><h2>${title}</h2><p>${text}</p><button class="btn primary" type="button" id="againBtn">Play again</button><button class="btn" type="button" id="newBtn">Change Hero</button></div>`;
+  $('board').appendChild(b);
+  $('againBtn').onclick = () => { b.remove(); start(); };
+  $('newBtn').onclick = () => { b.remove(); $('setup').hidden = false; $('heroCard').hidden = true; G.units = []; draw(); $('status').textContent = 'Choose your Hero, then press Start.'; };
+}
+
+// ------------------------------------------------------------ hero actions
+function moveRange(u) { return 3 + stat(u, 'S') + (u.fx.fleet || 0) - (u.fx.ankle || 0) - (G.zone.thorny ? 1 : 0); }
+function reachable(u, budget) { // Dijkstra on move cost
+  const best = new Map([[key(u.c, u.r), 0]]), prev = new Map(), q = [[0, u.c, u.r]];
+  while (q.length) {
+    q.sort((a, b) => a[0] - b[0]); const [d, c, r] = q.shift();
+    for (const [nc, nr] of neighbors(c, r)) {
+      const t = ter(nc, nr); if (t.block || occupied(nc, nr, u)) continue;
+      const step = u.fx.light ? 1 : t.cost; const nd = d + step;
+      if (nd > budget) continue;
+      if (nd < (best.get(key(nc, nr)) ?? 99)) { best.set(key(nc, nr), nd); prev.set(key(nc, nr), key(c, r)); q.push([nd, nc, nr]); }
+    }
+  }
+  best.delete(key(u.c, u.r)); return { best, prev };
+}
+function heroRange(kind) { const h = hero(); const far = h.fx.far || 0; return kind === 'attack' ? h.wRange + (h.wRange > 1 ? far : 0) : (h.ab.leap ? h.ab.leap + 1 : (h.ab.range || 0) + ((h.ab.range || 0) > 1 ? far : 0)); }
+function targetsFor(kind) {
+  const h = hero(), R = heroRange(kind);
+  return foes().filter(f => { const d = dist([h.c, h.r], [f.c, f.r]); if (d > R) return false; if (kind === 'ability' && h.ab.leap) return leapSpot(f) !== null; return d === 1 || sight([h.c, h.r], [f.c, f.r]).ok; });
+}
+function leapSpot(f) {
+  const h = hero(); let best = null;
+  for (const [c, r] of neighbors(f.c, f.r)) { const t = ter(c, r); if (t.block || occupied(c, r, h)) continue; const d = dist([h.c, h.r], [c, r]); if (d <= h.ab.leap && (!best || d < best[2])) best = [c, r, d]; }
+  return best;
+}
+function setMode(m) { G.mode = G.mode === m ? null : m; draw(); }
+async function spend(n = 1) { const h = hero(); h.actions -= n; h.fx.dropped = h.fx.dropped && n < 2; draw(); if (checkEnd()) return; if (h.actions <= 0) { endOfTurn(h); G.mode = null; await sleep(250); nextTurn(); } }
+
+async function heroClickHex(c, r) {
+  const h = hero(); if (!isHeroTurn()) return;
+  const f = occupied(c, r);
+  if (G.mode === 'move') {
+    const { best, prev } = reachable(h, moveRange(h)); if (!best.has(key(c, r))) return;
+    const path = []; let k = key(c, r); while (k && k !== key(h.c, h.r)) { path.unshift(k.split(',').map(Number)); k = prev.get(k); }
+    G.mode = null;
+    for (const [pc, pr] of path) { h.c = pc; h.r = pr; draw(); await sleep(90); }
+    log(`You move ${path.length} hex${path.length > 1 ? 'es' : ''}${ter(c, r).cover ? ' into the trees (cover)' : ter(c, r).high ? ' up onto the hill' : ''}.`);
+    return spend();
+  }
+  if (G.mode === 'attack' && f && f.foe && targetsFor('attack').includes(f)) {
+    G.mode = null;
+    const cost = h.fx.dropped ? 2 : 1;
+    if (cost === 2) log('You scoop up your weapon as you swing.', 'sys');
+    await strike(h, f, { dice: [1, 6], statKey: h.main, label: h.weapon });
+    return spend(Math.min(cost, h.actions));
+  }
+  if (G.mode === 'ability') {
+    const a = h.ab;
+    if (a.orHeal && f === h) { G.mode = null; healUnit(h, roll(1, 10) + stat(h, 'E')); h.cd = 2; log('Radiant Strike turned inward.', 'heal'); return spend(); }
+    if (!(f && f.foe && targetsFor('ability').includes(f))) return;
+    G.mode = null; h.cd = 2;
+    if (a.leap) { const s = leapSpot(f); h.c = s[0]; h.r = s[1]; draw(); log('You Leap across the field!'); await sleep(200); }
+    let hit;
+    if (a.dmg) hit = await strike(h, f, { dice: a.dmg, statKey: a.stat, label: a.name, hits: a.hits || 1 });
+    else { const R = attackRoll(h, f, a.stat); pop(`You roll ${R.roll}`); hit = R.hit; log(`${a.name} ${hit ? 'lands on' : 'misses'} ${f.name}${hit ? '' : ` (${R.total} vs ${R.def})`}.`, hit ? 'dmg' : ''); if (R.roll === 1) personalCalamity(h); }
+    if (hit && f.alive && a.fx) {
+      if (a.fx.last) { f.fx.last = true; log(`${f.name} will act last next round.`); }
+      if (a.fx.weak) f.fx.weak = [...a.fx.weak];
+      if (a.fx.hit) f.fx.hit = [...a.fx.hit];
+      if (a.fx.dot) f.fx.dot = [...a.fx.dot];
+      if (a.fx.knock) knockBack(h, f);
+    }
+    if (a.selfHeal) healUnit(h, roll(...a.selfHeal));
+    if (a.selfDef) h.fx.def = [...a.selfDef];
+    return spend();
+  }
+}
+function knockBack(from, f) {
+  const N = neighbors(f.c, f.r).filter(([c, r]) => dist([from.c, from.r], [c, r]) === 2 && !ter(c, r).block && !occupied(c, r));
+  if (N.length) { [f.c, f.r] = N[0]; log(`${f.name} is knocked back.`); } else log(`${f.name} slams into something solid and can't be pushed.`);
+}
+async function heroSelf(what) {
+  const h = hero(); if (!isHeroTurn()) return;
+  if (what === 'soup') { if (!h.soup) return; h.soup--; healUnit(h, roll(2, 6)); log(`You gulp a bowl of charbean soup (${h.soup} left).`, 'heal'); if (h.plague) { h.plague = 0; } return spend(); }
+  if (what === 'defend') { h.fx.defend = true; log('You brace: the next hit on you does 1 less.'); return spend(); }
+  if (what === 'end') { endOfTurn(h); G.mode = null; return nextTurn(); }
+  if (what === 'selfAbility') {
+    const a = h.ab; h.cd = 2;
+    if (a.heal) healUnit(h, roll(a.heal[0], a.heal[1]) + stat(h, a.heal[2]));
+    if (a.thorns) { h.fx.thorns = 3; log('Thorny vines curl around you for 2 rounds.'); }
+    return spend();
+  }
+}
+const isHeroTurn = () => !G.over && G.order[G.turn] === hero() && hero().alive && hero().actions > 0;
+
+// ------------------------------------------------------------ foe AI
+async function foeTurn(f) {
+  const h = hero(); if (!h.alive) return;
+  if (f.life <= f.max / 4) { // flee
+    const away = reachable(f, f.T.move).best; let far = null;
+    for (const k of away.keys()) { const p = k.split(',').map(Number); if (!far || dist(p, [h.c, h.r]) > dist(far, [h.c, h.r])) far = p; }
+    if (far) [f.c, f.r] = far;
+    f.alive = false; f.fled = true; log(`${f.name} flees into the brush, squealing.`, 'sys'); return;
+  }
+  for (let act = 0; act < 2 && h.alive && f.alive; act++) {
+    const d = dist([f.c, f.r], [h.c, h.r]);
+    const L = sight([f.c, f.r], [h.c, h.r]);
+    if (f.kind === 'gremlin' && d === 1) { await bite(f, h); continue; }
+    if (f.kind === 'spitter' && d <= f.T.spitRange && L.ok && d >= 2) { await spit(f, h); continue; }
+    if (f.kind === 'spitter' && d < f.T.keepAway && act === 0) { stepAway(f, h); continue; }
+    if (f.kind === 'gremlin' && d <= f.T.spitRange && L.ok && act === 1 && d > 1) { await spit(f, h); continue; }
+    if (act === 0 || f.kind === 'gremlin') { stepToward(f, h); await sleep(150); draw(); continue; }
+  }
+}
+async function bite(f, h) { const hit = await strike(f, h, { dice: f.T.bite, label: 'Bite' }); if (hit && f.T.plague && Math.random() < f.T.plague && h.alive) { h.plague = 3; log('The bite festers: you are Plagued (1 Life a turn for 3 turns, soup cures it).', 'cal'); } }
+async function spit(f, h) { await strike(f, h, { dice: f.T.spit, label: 'Ooze Spit' }); }
+function stepToward(f, h) {
+  const { best, prev } = reachable(f, f.T.move); let pick = null, pd = 99;
+  for (const k of best.keys()) {
+    const p = k.split(',').map(Number); const d = dist(p, [h.c, h.r]);
+    const want = f.kind === 'spitter' ? Math.abs(d - 3) + (sight(p, [h.c, h.r]).ok ? 0 : 5) : d;
+    if (want < pd) { pd = want; pick = p; }
+  }
+  if (pick) { [f.c, f.r] = pick; }
+}
+function stepAway(f, h) {
+  const { best } = reachable(f, f.T.move); let pick = null, pd = -1;
+  for (const k of best.keys()) { const p = k.split(',').map(Number); const d = dist(p, [h.c, h.r]); const s = (d >= 3 && d <= 4 && sight(p, [h.c, h.r]).ok) ? 10 : d; if (s > pd) { pd = s; pick = p; } }
+  if (pick) { [f.c, f.r] = pick; log(`${f.name} skitters back into the trees.`); }
+}
+
+// ------------------------------------------------------------ drawing
+const svg = $('map'); const NS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs, parent = svg) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; }
+function hexPts(x, y, s = S) { const p = []; for (let i = 0; i < 6; i++) { const a = Math.PI / 180 * 60 * i; p.push([x + s * Math.cos(a), y + s * Math.sin(a) * 0.62]); } return p.map(q => q.join(',')).join(' '); }
+let hoverHex = null;
+function draw() {
+  svg.innerHTML = '';
+  el('rect', { x: 0, y: 0, width: 768, height: 395, fill: '#cdbb8a' });
+  const h = G.units.length ? hero() : null;
+  const myTurn = h && isHeroTurn();
+  const reach = myTurn && G.mode === 'move' ? reachable(h, moveRange(h)).best : null;
+  const tgts = myTurn && (G.mode === 'attack' || G.mode === 'ability') ? targetsFor(G.mode) : [];
+  // ground
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    const [x, y] = center(c, r), t = ter(c, r), lift = t.high ? 7 : 0;
+    if (t.high) el('polygon', { points: hexPts(x, y + 2), fill: '#a48a55' });
+    el('polygon', { points: hexPts(x, y - lift), fill: t.fill, stroke: '#00000022', 'stroke-width': 1 });
+    if (MAP[r][c] === 'C') el('path', { d: `M${x - 18} ${y - 2} q9 -5 18 0 t18 0`, stroke: '#7d6747', 'stroke-width': 2, fill: 'none', opacity: .7 });
+    if (MAP[r][c] === 'g') for (let i = -1; i <= 1; i++) el('line', { x1: x - 16, y1: y + i * 6, x2: x + 16, y2: y + i * 6, stroke: '#6f7d35', 'stroke-width': 3, 'stroke-linecap': 'round' });
+    if (reach && reach.has(key(c, r))) el('polygon', { points: hexPts(x, y - lift, S - 3), fill: '#ffffff55', stroke: '#2c2416', 'stroke-width': 1.5, 'stroke-dasharray': '3 3' });
+    const hit = el('polygon', { points: hexPts(x, y - lift), fill: 'transparent', 'data-c': c, 'data-r': r, style: 'cursor:pointer' });
+    hit.addEventListener('click', () => heroClickHex(c, r));
+    hit.addEventListener('mouseenter', () => { hoverHex = [c, r]; readout(); });
+  }
+  // props and units, back to front
+  const items = [];
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if ('TRWFh'.includes(MAP[r][c])) items.push({ c, r, prop: MAP[r][c] });
+  G.units.filter(u => u.alive).forEach(u => items.push({ c: u.c, r: u.r, unit: u }));
+  items.sort((a, b) => center(a.c, a.r)[1] - center(b.c, b.r)[1]);
+  for (const it of items) {
+    const [x, y0] = center(it.c, it.r), y = y0 - (ter(it.c, it.r).high ? 7 : 0);
+    if (it.prop === 'T') { el('ellipse', { cx: x + 4, cy: y + 6, rx: 20, ry: 7, fill: '#00000026' }); el('rect', { x: x - 3, y: y - 14, width: 6, height: 18, fill: '#5b4026' }); el('circle', { cx: x, cy: y - 24, r: 17, fill: '#4f6b3a' }); el('circle', { cx: x - 7, cy: y - 29, r: 9, fill: '#5f7d45' }); }
+    if (it.prop === 'R') { el('path', { d: `M${x - 20} ${y + 6} L${x - 14} ${y - 14} L${x + 2} ${y - 20} L${x + 18} ${y - 8} L${x + 20} ${y + 6} Z`, fill: '#7c7468' }); el('path', { d: `M${x - 14} ${y - 14} L${x + 2} ${y - 20} L${x + 18} ${y - 8} L${x} ${y - 6} Z`, fill: '#958c7e' }); }
+    if (it.prop === 'W') { el('ellipse', { cx: x, cy: y + 2, rx: 18, ry: 8, fill: '#6a6156' }); el('rect', { x: x - 18, y: y - 12, width: 36, height: 14, fill: '#8a8070' }); el('ellipse', { cx: x, cy: y - 12, rx: 18, ry: 7, fill: '#4b5f6b' }); el('ellipse', { cx: x, cy: y - 12, rx: 13, ry: 4, fill: '#7a8f4a', opacity: .8 }); el('line', { x1: x - 14, y1: y - 12, x2: x - 14, y2: y - 36, stroke: '#5b4026', 'stroke-width': 3 }); el('line', { x1: x + 14, y1: y - 12, x2: x + 14, y2: y - 36, stroke: '#5b4026', 'stroke-width': 3 }); el('path', { d: `M${x - 22} ${y - 34} L${x} ${y - 46} L${x + 22} ${y - 34} Z`, fill: '#7a4b2a' }); }
+    if (it.prop === 'F') { for (const dx of [-14, 0, 14]) el('rect', { x: x + dx - 2, y: y - 16, width: 4, height: 20, fill: '#8a6a3c' }); el('rect', { x: x - 18, y: y - 12, width: 36, height: 3, fill: '#8a6a3c' }); el('rect', { x: x - 18, y: y - 4, width: 36, height: 3, fill: '#8a6a3c' }); }
+    if (it.prop === 'h') { el('rect', { x: x - 22, y: y - 22, width: 44, height: 26, fill: '#a07f52' }); el('path', { d: `M${x - 26} ${y - 20} L${x} ${y - 38} L${x + 26} ${y - 20} Z`, fill: '#6e4a2c' }); }
+    if (it.unit) drawUnit(it.unit, x, y, tgts.includes(it.unit), it.unit === G.order[G.turn]);
+  }
+  hud();
+}
+function drawUnit(u, x, y, targetable, active) {
+  el('ellipse', { cx: x, cy: y + 4, rx: 16, ry: 6, fill: '#00000033' });
+  if (active) el('ellipse', { cx: x, cy: y + 4, rx: 21, ry: 9, fill: 'none', stroke: u.hero ? '#c9922c' : '#b5462a', 'stroke-width': 2.5 });
+  if (targetable) el('ellipse', { cx: x, cy: y - 12, rx: 22, ry: 22, fill: 'none', stroke: '#b5462a', 'stroke-width': 3, 'stroke-dasharray': '5 3' });
+  const g = el('g', { style: 'cursor:pointer' });
+  if (u.hero) {
+    el('path', { d: `M${x - 13} ${y + 2} Q${x - 15} ${y - 22} ${x} ${y - 30} Q${x + 15} ${y - 22} ${x + 13} ${y + 2} Z`, fill: u.color, stroke: '#2c2416', 'stroke-width': 1.5 }, g);
+    el('circle', { cx: x, cy: y - 30, r: 9, fill: '#e7c27a', stroke: '#2c2416', 'stroke-width': 1.5 }, g);
+    const t = el('text', { x, y: y - 8, 'text-anchor': 'middle', 'font-family': 'Alegreya SC, Georgia, serif', 'font-size': 13, 'font-weight': 700, fill: '#fff' }, g); t.textContent = G.role[0];
+  } else {
+    const col = u.kind === 'spitter' ? '#6b7f2a' : '#7f9b2e';
+    el('path', { d: `M${x - 12} ${y + 2} Q${x - 14} ${y - 16} ${x} ${y - 18} Q${x + 14} ${y - 16} ${x + 12} ${y + 2} Z`, fill: col, stroke: '#2c2416', 'stroke-width': 1.5 }, g);
+    el('path', { d: `M${x - 9} ${y - 16} L${x - 15} ${y - 26} L${x - 3} ${y - 18} M${x + 9} ${y - 16} L${x + 15} ${y - 26} L${x + 3} ${y - 18}`, fill: col, stroke: '#2c2416', 'stroke-width': 1.2 }, g);
+    el('circle', { cx: x - 4, cy: y - 10, r: 2, fill: '#e8d84a' }, g); el('circle', { cx: x + 4, cy: y - 10, r: 2, fill: '#e8d84a' }, g);
+    if (u.kind === 'spitter') el('circle', { cx: x, cy: y - 4, r: 3, fill: '#b9cf4f' }, g);
+  }
+  g.addEventListener('click', () => heroClickHex(u.c, u.r));
+  g.addEventListener('mouseenter', () => { hoverHex = [u.c, u.r]; readout(); });
+  // life bar
+  const w = 30, top = u.hero ? y - 46 : y - 34;
+  el('rect', { x: x - w / 2, y: top, width: w, height: 5, rx: 2, fill: '#2c241699' });
+  el('rect', { x: x - w / 2, y: top, width: w * u.life / u.max, height: 5, rx: 2, fill: u.hero ? '#c9922c' : '#b5462a' });
+}
+function readout() {
+  const h = G.units.length ? hero() : null; if (!h || !hoverHex || !isHeroTurn()) return;
+  const [c, r] = hoverHex; const f = occupied(c, r);
+  if ((G.mode === 'attack' || G.mode === 'ability') && f && f.foe) {
+    const sk = G.mode === 'attack' ? h.main : h.ab.stat;
+    const d = dist([h.c, h.r], [c, r]); const L = sight([h.c, h.r], [c, r]);
+    if (!targetsFor(G.mode).includes(f)) { $('hint').textContent = !L.ok && d > 1 ? `${f.name}: no line of sight.` : `${f.name}: out of range (${d} hexes).`; return; }
+    const H = hitChance(h, f, sk);
+    $('hint').textContent = `${f.name}: ${Math.round(H.p * 100)}% to hit${H.cover ? ', it has cover +2' : ''}${H.high ? ', you have high ground +1' : ''}. ${f.life}/${f.max} Life.`;
+  } else if (G.mode === 'move') {
+    const R = reachable(h, moveRange(h)).best.get(key(c, r));
+    $('hint').textContent = R ? `Move here for ${R} of your ${moveRange(h)} movement.` : 'You can’t reach that hex this action.';
+  }
+}
+function hud() {
+  const h = G.units.length ? hero() : null;
+  $('order').innerHTML = G.order.filter(u => u.alive).map(u => `<span class="chip ${u.hero ? 'hero' : 'foe'} ${u === G.order[G.turn] ? 'now' : ''}">${u.hero ? 'You' : u.name}</span>`).join('');
+  if (!h) return;
+  $('heroName').textContent = `${h.name} · Level 1`;
+  $('heroBar').style.width = (100 * h.life / h.max) + '%';
+  $('heroStats').innerHTML = `<span>Life <b>${h.life}/${h.max}</b></span><span>Defense <b>${h.def + (h.fx.def ? h.fx.def[0] : 0)}</b></span>` + ['P', 'E', 'S', 'C'].map(k => `<span>${k} <b>${stat(h, k)}</b></span>`).join('') + `<span>Move <b>${moveRange(h)}</b></span>`;
+  $('pips').innerHTML = [0, 1].map(i => `<span class="pip ${i < (h.actions || 0) && isHeroTurn() ? 'on' : ''}"></span>`).join('');
+  const fx = []; if (h.plague) fx.push('Plagued'); if (h.fx.curse) fx.push('Die Curse'); if (h.fx.defend) fx.push('Braced'); if (h.fx.thorns) fx.push('Thorns'); if (h.fx.ankle) fx.push('Twisted Ankle'); if (h.fx.charmDown) fx.push('Shaken');
+  $('heroFx').textContent = fx.join(' · ');
+  const my = isHeroTurn(), a = h.ab;
+  const abLabel = a.self ? 'on yourself' : a.leap ? 'jump 3 + strike' : `range ${a.range}`;
+  $('acts').innerHTML = `
+    <button type="button" data-act="move" aria-pressed="${G.mode === 'move'}" ${my ? '' : 'disabled'}>Move<small>${moveRange(h)} hexes</small></button>
+    <button type="button" data-act="attack" aria-pressed="${G.mode === 'attack'}" ${my && targetsFor('attack').length ? '' : 'disabled'}>Attack<small>${h.weapon}, range ${h.wRange}</small></button>
+    <button type="button" data-act="ability" aria-pressed="${G.mode === 'ability'}" ${my && !h.cd && (a.self || a.orHeal || targetsFor('ability').length) ? '' : 'disabled'}>${a.name}<small>${h.cd ? 'resting ' + h.cd + ' rd' : abLabel}</small></button>
+    <button type="button" data-act="soup" ${my && h.soup ? '' : 'disabled'}>Soup<small>heal 2d6 · ${h.soup} left</small></button>
+    <button type="button" data-act="defend" ${my ? '' : 'disabled'}>Defend<small>next hit -1</small></button>
+    <button type="button" data-act="end" ${my ? '' : 'disabled'}>End turn<small>${h.actions || 0} left</small></button>`;
+  $('acts').querySelectorAll('button').forEach(b => b.onclick = () => {
+    const act = b.dataset.act;
+    if (act === 'move' || act === 'attack') setMode(act);
+    else if (act === 'ability') { if (a.self) heroSelf('selfAbility'); else setMode('ability'); }
+    else heroSelf(act);
+  });
+  const now = G.order[G.turn];
+  $('status').innerHTML = G.over ? 'The fight is over.' : my
+    ? `<b>Round ${G.round}</b> Your turn · ${h.actions} action${h.actions === 1 ? '' : 's'} left${G.mode ? ` · ${{ move: 'tap a lit hex to move', attack: 'tap a circled foe to attack', ability: a.orHeal ? 'tap a circled foe, or yourself to heal' : 'tap a circled foe' }[G.mode]}` : ''}`
+    : `<b>Round ${G.round}</b> ${now ? now.name + ' is acting…' : ''}`;
+  if (!G.mode) $('hint').textContent = my ? 'Each turn you get 2 actions: move twice, or move and act. Hover a foe in Attack mode to see your odds.' : '';
+}
+renderSetup(); draw();
+</script>
