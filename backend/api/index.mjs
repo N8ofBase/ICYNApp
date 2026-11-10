@@ -4,6 +4,7 @@
 import { QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { db, PLAYERS, MATCHES, RecordError, cleanName, defaultName, stats, loadPlayer, recordMatch } from './record.mjs';
 import { hasUnlock, isDeveloper, checkout, confirm, webhook, pnp, gifts, redeem, promo } from './unlock.mjs';
+import { listClimbs, getClimb, createClimb, joinClimb, leaveClimb, ownerAction } from './climb.mjs';
 
 const json = (statusCode, body) => ({ statusCode, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
 const bad = (msg) => json(400, { error: msg });
@@ -25,12 +26,13 @@ async function leaderboard(event) {
     rank: i + 1, name: p.name, avatar: typeof p.prefs?.avatar === 'string' && /^(h|i):[a-z0-9-]{1,20}$/.test(p.prefs.avatar) ? p.prefs.avatar : '', wins: p.wins, losses: p.losses, draws: p.draws,
     bestWinStreak: p.bestWinStreak, currentStreak: p.currentStreak,
     fastestWin: p.fastestWin ?? null, fastestLoss: p.fastestLoss ?? null, highestMaxLife: p.highestMaxLife || 0,
+    crowns: p.climbWins || 0,
   })));
 }
 
 async function getMe(userId, claims) {
   const p = await loadPlayer(userId, claims);
-  return json(200, { stats: stats(p), prefs: p.prefs || {}, unlocked: hasUnlock(p, claims), passVia: p.unlock?.via || null, owner: isDeveloper(claims) });
+  return json(200, { stats: stats(p), prefs: p.prefs || {}, unlocked: hasUnlock(p, claims), passVia: p.unlock?.via || null, owner: isDeveloper(claims), badges: p.badges || [] });
 }
 
 async function putMe(userId, claims, body) {
@@ -120,6 +122,10 @@ export const handler = async (event) => {
     const route = event.routeKey;
     if (route === 'GET /leaderboard') return await leaderboard(event);
     if (route === 'POST /square/webhook') return await webhook(event);
+    // Crit Climb tournaments (climb.mjs)
+    const climbId = event.pathParameters?.id;
+    if (route === 'GET /climbs') return await listClimbs();
+    if (route === 'GET /climbs/{id}') return await getClimb(climbId);
 
     const claims = event.requestContext?.authorizer?.jwt?.claims;
     if (!claims?.sub) return json(401, { error: 'sign in required' });
@@ -138,6 +144,11 @@ export const handler = async (event) => {
     if (route === 'POST /checkout/confirm') return await confirm(userId, claims, await loadPlayer(userId, claims));
     if (route === 'POST /gift/redeem') return await redeem(userId, claims, await loadPlayer(userId, claims), body);
     if (route === 'POST /gifts/promo') return await promo(userId, claims, body);
+    if (route === 'POST /climbs') return await createClimb(userId, claims, body, isDeveloper(claims));
+    if (route === 'POST /climbs/{id}/join') { const p = await loadPlayer(userId, claims); return await joinClimb(userId, claims, p, climbId, hasUnlock(p, claims)); }
+    if (route === 'POST /climbs/{id}/leave') return await leaveClimb(userId, climbId);
+    const ownerRoute = /^POST \/climbs\/\{id\}\/(start|cancel|decide)$/.exec(route);
+    if (ownerRoute) return await ownerAction(isDeveloper(claims), climbId, ownerRoute[1], body);
     return json(404, { error: 'not found' });
   } catch (e) {
     console.error(e);

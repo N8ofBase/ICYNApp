@@ -1,0 +1,45 @@
+/* Crit Climb tournaments */
+.climb{display:flex;flex-direction:column;gap:14px;max-width:820px;margin:0 auto;width:100%}
+.climb .how{max-width:none;width:100%;box-sizing:border-box}
+.cl-mine{display:grid;gap:10px;text-align:center;padding:16px;border:1px solid rgba(224,184,98,.55);border-radius:14px;background:linear-gradient(rgba(224,184,98,.12),rgba(224,184,98,.03))}
+.cl-mine p{margin:0}.cl-mine .ul-k{font-family:var(--f-title);color:var(--gold);font-size:1.15rem}
+.cl-mine .row,.cl-card .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center}
+.cl-due{color:var(--muted);font-size:.9rem}
+.cl-roster .pick img{max-height:64px}
+.cl-live{color:#7ee08f;font-weight:700}
+.cl-owner{background:var(--stone);border:1px dashed rgba(224,184,98,.5);border-radius:12px;padding:10px 14px}
+.cl-owner summary{cursor:pointer;font-weight:700;color:var(--gold)}
+.cl-owner[open]{display:grid;gap:10px}
+.cl-owner label{display:grid;gap:4px;font-size:.88rem;color:var(--muted)}
+.cl-owner input,.cl-owner select{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--night);color:var(--text);min-width:0}
+.cl-owner .opt{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cl-list{display:grid;gap:10px}
+.cl-h{margin:6px 0 0;font-family:var(--f-title);color:var(--gold);font-size:1rem}
+.cl-empty{text-align:center;color:var(--muted)}
+.cl-card{background:var(--stone);border:1px solid var(--line);border-left:4px solid var(--gold-deep);border-radius:12px;padding:12px 14px;display:grid;gap:8px;min-width:0}
+.cl-card.live{border-left-color:#3f8f4f}.cl-card.cancelled{opacity:.6;border-left-color:var(--line)}
+.cl-card header{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.cl-card h4{margin:0;font-family:var(--f-title);font-size:1.05rem;overflow-wrap:anywhere}
+.cl-tag{flex:none;font-size:.72rem;font-weight:800;padding:2px 8px;border-radius:999px;border:1px solid rgba(224,184,98,.5);color:var(--gold)}
+.cl-line{margin:0;font-size:.9rem;color:var(--muted)}.cl-line b{color:var(--text)}
+.cl-crown svg,.cl-bi svg{width:18px;height:18px;vertical-align:-3px}
+.cl-in{font-weight:700;color:#7ee08f}
+.cl-chips{display:flex;flex-wrap:wrap;gap:6px}
+.cl-chip{display:inline-flex;align-items:center;gap:5px;font-size:.8rem;padding:2px 8px 2px 2px;border-radius:999px;background:var(--stone-2);border:1px solid var(--line);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cl-chip.me{border-color:var(--gold)}.cl-chip.open{padding:2px 8px;opacity:.55;font-style:italic}
+.cl-bracket{display:grid;grid-template-columns:repeat(var(--cols),minmax(150px,1fr));gap:12px;overflow-x:auto;padding:4px 2px 8px;-webkit-overflow-scrolling:touch}
+.cl-col{display:flex;flex-direction:column;justify-content:space-around;gap:10px;min-width:0}
+.cl-col h5{margin:0;text-align:center;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}
+.cl-m{background:var(--night);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.cl-p{display:flex;align-items:center;gap:6px;padding:4px 8px;font-size:.84rem;min-width:0}
+.cl-p+.cl-p{border-top:1px solid var(--line)}
+.cl-p>span:not(.av){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cl-p small{color:var(--muted);font-size:.68rem}
+.cl-p.won{font-weight:800;color:var(--gold)}.cl-p.lost{opacity:.5;text-decoration:line-through}
+.cl-p.me{background:rgba(224,184,98,.12)}
+.cl-f{display:block;padding:2px 8px 4px;color:var(--muted);font-size:.7rem}
+.cl-judge{display:flex;flex-direction:column;padding:0 8px 4px;font-size:.72rem;align-items:flex-start}
+.cl-bsum{display:flex;flex-wrap:wrap;gap:8px}
+.cl-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 6px;border-radius:999px;background:var(--stone-2);border:1px solid var(--line);font-size:.85rem}
+.cl-badge svg{width:22px;height:22px}.cl-badge.champion{border-color:var(--gold)}
+.crowns{display:inline-flex;align-items:center;gap:1px;font-size:.7rem;color:var(--gold);font-weight:800}.crowns svg{width:16px;height:16px}

@@ -1,6 +1,7 @@
 // Saves, streaks and leaderboards for I Crit You Not! (needs auth.js loaded first).
 // Exposes window.ICYNStats: recordMatch(m), me(), setProfile(p), history(), leaderboard(by),
-// feedback(f), feedbackList(status), feedbackSet(id, status), checkout(gift), confirmCheckout(), pnpFiles(), gifts(), redeemGift(code).
+// feedback(f), feedbackList(status), feedbackSet(id, status), checkout(gift), confirmCheckout(), pnpFiles(), gifts(), redeemGift(code),
+// climbs(), climbCreate(c), climbJoin(id), climbLeave(id), climbStart(id), climbCancel(id), climbDecide(id, r, i, w).
 // Every call resolves to null instead of throwing when the player is offline
 // or signed out, so guest play never breaks.
 (function () {
@@ -54,5 +55,13 @@
     promoCodes: (count, note) => callErr('POST', '/gifts/promo', { count, note }), // owner only -> {codes, note} or {error}
     confirmCheckout: () => call('POST', '/checkout/confirm', {}, true), // -> {unlocked}; checks the player's last Square order
     pnpFiles: () => call('GET', '/pnp', null, true),                 // -> {files:[{name, url}]}
+    // Crit Climb tournaments: anyone can see them; joining needs the Crit Pass; create/start/cancel/decide are owner only.
+    climbs: () => call('GET', '/climbs', null, false),               // -> [{id, name, size, status, startsAt, entrants, rounds, ...}]
+    climbCreate: (c) => callErr('POST', '/climbs', c),               // c = {name, size: 4|8|16, startsAt (ms), matchHours}
+    climbJoin: (id) => callErr('POST', '/climbs/' + encodeURIComponent(id) + '/join', {}),
+    climbLeave: (id) => callErr('POST', '/climbs/' + encodeURIComponent(id) + '/leave', {}),
+    climbStart: (id) => callErr('POST', '/climbs/' + encodeURIComponent(id) + '/start', {}),
+    climbCancel: (id) => callErr('POST', '/climbs/' + encodeURIComponent(id) + '/cancel', {}),
+    climbDecide: (id, r, i, w) => callErr('POST', '/climbs/' + encodeURIComponent(id) + '/decide', { r, i, w }),
   };
 })();

@@ -1,6 +1,6 @@
 // Online duels for I Crit You Not! (needs auth.js; the server referees every roll).
 // window.ICYNOnline: connect(), create(hero, life, easy), join(code, hero), resume(gameId),
-// act(kind, choice), nudge(), forfeit(), onState(fn), onError(fn), close().
+// act(kind, choice), nudge(), forfeit(), onState(fn), onError(fn), close(), climb(climbId, hero).
 // Starvos co-op: createBoss(), joinBoss(code), claim(hero), release(hero), start(), leave(), forfeit(all).
 // Hero ids: brawler, champion, maverick, soulseer, whisper.
 (function () {
@@ -22,7 +22,7 @@
       s.onmessage = (m) => {
         let msg; try { msg = JSON.parse(m.data); } catch (e) { return; }
         if (msg.type === 'error') return errorFns.forEach((fn) => fn(msg.error, msg));
-        if (msg.type === 'created') { game = { gameId: msg.gameId, code: msg.code, status: 'waiting', mode: msg.mode }; remember(); }
+        if (msg.type === 'created') { game = { gameId: msg.gameId, code: msg.code, status: 'waiting', mode: msg.mode, climb: msg.climb || null }; remember(); }
         if (msg.type === 'state') {
           events = msg.since === 0 ? msg.events : events.slice(0, msg.since).concat(msg.events);
           game = { ...msg, events };
@@ -43,6 +43,8 @@
     connect,
     create: (hero, life, easy) => send({ action: 'create', hero, life, ...(easy ? { easy: true } : {}) }),
     join: (code, hero) => send({ action: 'join', code: String(code).trim().toUpperCase(), hero }),
+    // Crit Climb: enter your current bracket match (creates it, or joins the duel your rival is waiting in)
+    climb: (climbId, hero) => send({ action: 'climb', climbId, hero }),
     resume,
     // A duel left open in this browser, to offer "Rejoin your duel".
     savedGame() { try { return localStorage.getItem(GAME_KEY); } catch (e) { return null; } },

@@ -49,3 +49,21 @@ the Starvos Catastrophe and the Print & Play PDFs. Developers group members alwa
   `SQUARE_WEBHOOK_SIGNATURE_KEY`, `SQUARE_WEBHOOK_URL`, `PNP_BUCKET` (default icyn-premium-files).
 - Square webhook subscription: URL `https://r9s8gd8duk.execute-api.us-east-1.amazonaws.com/square/webhook`, events `payment.created`, `payment.updated`.
 - Deploy: `deploy-unlock.ps1 -Step 1..4`. Rollback: previous zips `function-starvos.zip` (icyn-api) and `ws-v3.zip` (icyn-ws).
+
+## Crit Climb tournaments (2026-11-10)
+
+Scheduled single-elimination brackets of 4, 8 or 16 players (`api/climb.mjs`, identical copy in `ws/climb.mjs`).
+Table `icyn-climbs` (key `id`, on-demand). The owner (developers group) schedules one; anyone with the Crit Pass signs up
+until the start time; the first read after the start time draws a random bracket (shrinks to the smallest of 2/4/8/16 that
+fits; top seeds get byes; fewer than 2 entrants = cancelled). Every match is a Standard online duel (100 Life, Calamities on),
+any Hero per match. A match has `matchHours` once both rivals are known: after that, a player waiting in the arena wins by
+walkover, otherwise the higher seed advances; the owner can also decide a match. Climb duels still count as ranked online duels.
+Badges go on the player item (`badges: [{k: champion|finalist|climber, id, name, size, at}]`, champions also `climbWins`);
+`GET /me` returns `badges`, `GET /leaderboard` returns `crowns`.
+
+- `GET /climbs`, `GET /climbs/{id}` (public). Entrants are shown as `{n, av, k, seed}` where `k` = first 16 hex of sha256(`icyn-climb:<sub>`).
+- `POST /climbs` (owner) `{name, size, startsAt (ms), matchHours: 1|2|4|12|24|48|72}`; `POST /climbs/{id}/join|leave` (JWT; join needs the Crit Pass);
+  `POST /climbs/{id}/start|cancel|decide {r, i, w}` (owner).
+- WebSocket `{action:'climb', climbId, hero}`: the first rival creates the duel and waits, the second joins it; nobody else can join by code.
+  When the duel ends, `recordResults` moves the winner up the bracket and the final awards the badges.
+- Deploy: `deploy-climb.ps1 -Step 1..4`. Test without AWS: `NM=<folder with @aws-sdk node_modules> node tools/climb/test-climb.mjs`.

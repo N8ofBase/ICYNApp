@@ -10,6 +10,7 @@
 //   {action:'act', gameId, kind, choice?}    {type:'state', ...} to both players
 //   {action:'nudge', gameId}                 auto-plays a prompt left waiting > 45 s
 //   {action:'forfeit', gameId}               {type:'state', ...} with result
+//   {action:'climb', climbId, hero}          enters your Crit Climb match: creates its duel or joins the one your rival made
 //                                            {type:'error', error}
 // state = {type, gameId, code, status, you, players:[{name, hero}], since,
 //          events (from index `since`), eventCount, pending, result}
@@ -20,6 +21,7 @@ import { ApiGatewayManagementApiClient, PostToConnectionCommand } from '@aws-sdk
 import { replay, accepts, HEROES } from './engine.mjs';
 import { replayBoss, acceptsBoss, waitingOn } from './boss.mjs';
 import { recordMatch } from './record.mjs';
+import { loadClimb, refresh, currentMatch, markMatch, climbResult, withClimb } from './climb.mjs';
 
 const db = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const GAMES = process.env.GAMES_TABLE || 'icyn-games';
@@ -93,7 +95,7 @@ function stateFor(game, you, since = 0) {
     type: 'state', gameId: game.gameId, code: game.code, status: game.status, you,
     players: game.players.map((u, i) => ({ name: game.names[i] || null, hero: game.setup.heroes[i] || null })),
     since: from, events: r.events.slice(from), eventCount: r.events.length,
-    pending: r.pending, pendingSince: game.pendingSince || null,
+    pending: r.pending, pendingSince: game.pendingSince || null, climb: game.setup.climb || null,
     result: game.forfeit ? { winner: 1 - game.forfeit.by, forfeit: true } : r.result,
   };
 }
@@ -135,6 +137,8 @@ async function recordResults(game) {
     startingLife: game.setup.life, maxLife: result.peakMax ? result.peakMax[i] : undefined,
     gameMode: game.setup.easy ? 'easy' : 'standard',
   }).catch((e) => console.error('record', e))));
+  // A Crit Climb match moves the winner up the bracket (after the stats save, so badges never race it).
+  if (game.setup.climb) await climbResult(game, result).catch((e) => console.error('climb', e));
 }
 
 // Starvos battles count toward each player's Starvos stats (player.sv), not the duel rankings.
@@ -187,7 +191,8 @@ export async function handler(event) {
   try { msg = JSON.parse(event.body || '{}'); } catch (e) { await send(api, connectionId, { type: 'error', error: 'Bad JSON' }); return { statusCode: 400 }; }
   const fail = async (error) => { await send(api, connectionId, { type: 'error', error, action: msg.action }); return { statusCode: 200 }; };
 
-  if (msg.action === 'create' && !(await unlocked(conn))) return fail(NEED_UNLOCK);
+  if ((msg.action === 'create' || msg.action === 'climb') && !(await unlocked(conn))) return fail(msg.action === 'climb' ? 'Crit Climb needs the Crit Pass.' : NEED_UNLOCK);
+  if (msg.action === 'climb') return climbDuel(api, conn, connectionId, msg, fail);
   if (msg.action === 'create' && msg.mode === 'boss') {
     const heroes = [...new Set([].concat(msg.heroes || msg.hero || []))].filter((h) => HEROES[h]);
     const game = {
@@ -225,6 +230,7 @@ export async function handler(event) {
       const q = await db.send(new QueryCommand({ TableName: GAMES, IndexName: 'byCode', KeyConditionExpression: 'code = :c', ExpressionAttributeValues: { ':c': String(msg.code || '').toUpperCase() } }));
       game = q.Items && q.Items[0] && (await db.send(new GetCommand({ TableName: GAMES, Key: { gameId: q.Items[0].gameId } }))).Item;
       if (!game) return fail('No duel with that code');
+      if (game.setup.climb && !game.players.includes(conn.userId)) return fail('That is a Crit Climb match. Enter it from the Crit Climb screen.');
     } else {
       game = (await db.send(new GetCommand({ TableName: GAMES, Key: { gameId: String(msg.gameId || '') } }))).Item;
       if (!game) return fail('Duel not found');
@@ -342,4 +348,75 @@ export async function handler(event) {
     return { statusCode: 200 };
   }
   return fail('Busy, please try again');
+}
+
+// ---------- Crit Climb: enter your bracket match (climb.mjs keeps the bracket) ----------
+// The first rival to arrive creates a Standard duel (100 Life, Calamities on) and waits in it;
+// the second joins it. Nobody else can join, even with the code.
+async function climbDuel(api, conn, connectionId, msg, fail) {
+  if (!HEROES[msg.hero]) return fail('Pick a Hero');
+  const id = String(msg.climbId || '');
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const t = await loadClimb(id);
+    if (!t) return fail('No such Crit Climb');
+    refresh(t, Date.now());
+    if (t.status === 'open') return fail('The Crit Climb has not begun yet');
+    if (t.status !== 'live') return fail('This Crit Climb is over');
+    const me = t.entrants.findIndex((e) => e.u === conn.userId);
+    if (me < 0) return fail('You are not in this Crit Climb');
+    const cur = currentMatch(t, me);
+    if (!cur) return fail('Your climb is over. Watch the bracket to see who takes the crown!');
+    if (!cur.ready) return fail('Your next rival is still being decided');
+    const m = t.rounds[cur.r][cur.i];
+    const rival = t.entrants[cur.side ? m.a : m.b];
+
+    if (m.gameId) {
+      const game = (await db.send(new GetCommand({ TableName: GAMES, Key: { gameId: m.gameId } }))).Item;
+      if (game && game.players.includes(conn.userId)) {
+        // back to a duel you are already in
+        const you = game.players.indexOf(conn.userId), prev = game.version;
+        game.conns[you] = connectionId;
+        try { await saveGame(game, prev); } catch (e) { if (e.name === 'ConditionalCheckFailedException') continue; throw e; }
+        await db.send(new UpdateCommand({ TableName: CONNS, Key: { connectionId }, UpdateExpression: 'SET gameId = :g', ExpressionAttributeValues: { ':g': game.gameId } }));
+        if (game.status === 'waiting') await send(api, connectionId, { type: 'created', gameId: game.gameId, code: game.code, climb: game.setup.climb });
+        else await send(api, connectionId, stateFor(game, you, 0));
+        return { statusCode: 200 };
+      }
+      if (game && game.status === 'waiting') {
+        const prev = game.version;
+        game.players[1] = conn.userId; game.names[1] = conn.name; game.setup.heroes[1] = msg.hero;
+        game.conns[1] = connectionId; game.status = 'active'; game.pendingSince = Date.now();
+        try { await saveGame(game, prev); } catch (e) { if (e.name === 'ConditionalCheckFailedException') continue; throw e; }
+        await markMatch(id, cur.r, cur.i, game.gameId, { state: 'active' });
+        await db.send(new UpdateCommand({ TableName: CONNS, Key: { connectionId }, UpdateExpression: 'SET gameId = :g', ExpressionAttributeValues: { ':g': game.gameId } }));
+        await broadcast(api, game);
+        return { statusCode: 200 };
+      }
+      if (game && game.status === 'active') return fail('Your match is already under way on another device');
+      // the old duel is gone (expired): make a new one below
+    }
+
+    const game = {
+      gameId: crypto.randomUUID(), code: newCode(), status: 'waiting', seed: crypto.randomBytes(16).toString('hex'),
+      setup: { heroes: [msg.hero, null], life: 100, climb: { id, r: cur.r, i: cur.i, name: t.name, rounds: t.rounds.length } },
+      players: [conn.userId, null], names: [conn.name, null], conns: [connectionId, null], climbRival: rival.u,
+      inputs: [], version: 0, createdAt: new Date().toISOString(), ttl: Math.floor(Date.now() / 1000) + 7 * DAY,
+    };
+    await db.send(new PutCommand({ TableName: GAMES, Item: game }));
+    const claimed = await withClimb(id, (tt) => {
+      const mm = tt.rounds?.[cur.r]?.[cur.i];
+      if (!mm || mm.w !== null) return 'This match is already decided';
+      if (mm.gameId && mm.gameId !== m.gameId) return 'raced';
+      Object.assign(mm, { gameId: game.gameId, code: game.code, host: cur.side, state: 'waiting' });
+    });
+    if (claimed.error) {
+      await db.send(new DeleteCommand({ TableName: GAMES, Key: { gameId: game.gameId } }));
+      if (claimed.error === 'raced') continue; // your rival arrived first: join theirs
+      return fail(claimed.error);
+    }
+    await db.send(new UpdateCommand({ TableName: CONNS, Key: { connectionId }, UpdateExpression: 'SET gameId = :g', ExpressionAttributeValues: { ':g': game.gameId } }));
+    await send(api, connectionId, { type: 'created', gameId: game.gameId, code: game.code, climb: game.setup.climb });
+    return { statusCode: 200 };
+  }
+  return fail('The arena is busy. Please try again.');
 }
