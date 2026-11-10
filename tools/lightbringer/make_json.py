@@ -1,44 +1,55 @@
-# Turns the "Project Lightbringer Edit" doc text (exported from Google Drive as plain text,
-# one paragraph per non-empty line) into lightbringer.json for the in-game reader.
-# Usage: python3 tools/lightbringer/make_json.py tools/lightbringer/source.txt lightbringer.json
-# Chapter starts are found by their heading lines, so later edits to the doc keep working
+# Builds lightbringer.json for the in-game reader from two plain-text Google Drive exports
+# (one paragraph per non-empty line):
+#   mission1.txt = "Project Lightbringer Edit"  (Prologue, Terror on Talus, Mission 1 up to Castle Comet)
+#   mission2.txt = "PLMission2"                 (Mission 2, still being written)
+# Usage: python3 tools/lightbringer/make_json.py tools/lightbringer/mission1.txt tools/lightbringer/mission2.txt lightbringer.json
+# Chapter starts are found by their heading lines, so later edits to the docs keep working
 # as long as the headings stay the same.
 import json, re, sys, html
 
-src, out = sys.argv[1], sys.argv[2]
-raw = open(src, encoding='utf-8').read()
-for a, b in (('\\!', '!'), ('\\.', '.'), ('\\~', '~'), ('\\-', '-'), ('\\*', '*')):
-    raw = raw.replace(a, b)
-paras = [p.strip() for p in raw.split('\n') if p.strip()]
+m1, m2, out = sys.argv[1], sys.argv[2], sys.argv[3]
+def load(src):
+    raw = open(src, encoding='utf-8').read()
+    for a, b in (('\\!', '!'), ('\\.', '.'), ('\\~', '~'), ('\\-', '-'), ('\\*', '*')):
+        raw = raw.replace(a, b)
+    return [p.strip() for p in raw.split('\n') if p.strip()]
+P1, P2 = load(m1), load(m2)
 
-# (heading in the doc, title shown, part label). The opening has no heading in the doc.
+M1, M2 = 'Mission 1 · The Universe Medallion', 'Mission 2 · Supernal Star Sphere of Strength'
+# (source, heading in the doc, title shown, part label). The opening has no heading in the doc.
 CHAPTERS = [
-    (None, 'The Vision', 'Prologue'),
-    ('Terror on Talus', 'Terror on Talus', 'The Knowledge Beacon'),
-    ('Stranger in a Strange Land', 'Stranger in a Strange Land', 'Mission 1 · The Universe Medallion'),
-    ('Harder Than it Looks', 'Harder Than It Looks', 'Mission 1 · The Universe Medallion'),
-    ('Castle Comet', 'Castle Comet', 'Mission 1 · The Universe Medallion'),
-    ('The Strength of Love', 'The Strength of Love', 'Mission 1 · The Universe Medallion'),
-    ('L.O.S.E.R', 'L.O.S.E.R', 'Mission 1 · The Universe Medallion'),
-    ('Have You Heard of Hinon? Everyone is Dying to Go There.', 'Have You Heard of Hinon? Everyone Is Dying to Go There.', 'Mission 1 · The Universe Medallion'),
-    ('Funny Meeting You Here', 'Funny Meeting You Here', 'Mission 1 · The Universe Medallion'),
+    (1, None, 'The Vision', 'Prologue'),
+    (1, 'Terror on Talus', 'Terror on Talus', 'The Knowledge Beacon'),
+    (1, 'Stranger in a Strange Land', 'Stranger in a Strange Land', M1),
+    (1, 'Harder Than it Looks', 'Harder Than It Looks', M1),
+    (1, 'Castle Comet', 'Castle Comet', M1),
+    (2, 'The Strength of Love', 'The Strength of Love', M2),
+    (2, 'L.O.S.E.R', 'L.O.S.E.R', M2),
+    (2, 'Have You Heard of Hinon? Everyone is Dying to Go There.', 'Have You Heard of Hinon? Everyone Is Dying to Go There.', M2),
+    (2, 'Funny Meeting You Here', 'Funny Meeting You Here', M2),
+    (2, 'Kilnor’s Coronation', 'Kilnor’s Coronation', M2),
+    (2, 'The Blightbringer', 'The Blightbringer', M2),
 ]
+M1_END = 'The Strength of Love'     # Mission 1 doc still holds older drafts of Mission 2; stop there
 SKIP = {'Mission 1', 'The Universe Medallion'}          # part headings, shown as the chapter's part label
 SUBHEADS = {'Time', 'Colors', 'Distance', 'Weight', 'Celestial Hierarchy of the Nebrom System'}
-VERSE_INTRO = ('titled Creator’s Creed', 'titled Psalm of the Lightbringer')
+VERSE_INTRO = ('titled Creator’s Creed', 'titled Psalm of the Lightbringer', "words of the Creator's Creed", 'words of the Creator’s Creed')
 
-starts = [0]
-for h, _, _ in CHAPTERS[1:]:
-    starts.append(paras.index(h))
-starts.append(len(paras))
+SRC = {1: P1[:P1.index(M1_END)], 2: P2}
+def span(i):
+    src, h = CHAPTERS[i][0], CHAPTERS[i][1]
+    paras = SRC[src]
+    a = paras.index(h) + 1 if h else 0
+    nxt = [paras.index(c[1]) for c in CHAPTERS[i + 1:] if c[0] == src]
+    return paras[a: nxt[0] if nxt else len(paras)]
 
 e = html.escape
 def unit_line(p):   # "1 sectick = 3 seconds" / "Rojed = Red"
     return ' = ' in p and len(p) < 70
 
 chapters = []
-for i, (h, title, part) in enumerate(CHAPTERS):
-    body = paras[starts[i] + (1 if h else 0): starts[i + 1]]
+for i, (_, h, title, part) in enumerate(CHAPTERS):
+    body = span(i)
     blocks, j = [], 0
     while j < len(body):
         p = body[j]
@@ -71,7 +82,8 @@ for i, (h, title, part) in enumerate(CHAPTERS):
     words = sum(len(re.sub('<[^>]+>', ' ', b).split()) for b in blocks)
     chapters.append({'title': title, 'part': part, 'words': words, 'html': '\n'.join(blocks)})
 
-chapters[-1]['html'] += '\n<p class="lb-tbc">To be continued…</p>'
+chapters[-1]['html'] += '\n<p class="lb-tbc">To be continued… N8 is still writing this chapter.</p>'
+chapters[-1]['wip'] = True
 data = {'title': 'Project Lightbringer', 'subtitle': 'Terror on Talus', 'author': 'N8', 'chapters': chapters}
 json.dump(data, open(out, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 for c in chapters:
