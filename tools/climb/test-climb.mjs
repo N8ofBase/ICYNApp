@@ -198,11 +198,12 @@ r = await call('GET /me', P(fb)); assert.equal(r.body.ring, 'silver');
 r = await call('GET /climbs/{id}', null, null, id); assert.equal(r.body.status, 'done'); assert.equal(r.body.champion, fin.a);
 
 // walkover: in a second Climb, one rival waits and the other never comes
-r = await call('POST /climbs', P(2), { size: 8, public: false, name: 'Walkover Cup' });
+const hostK = fa === 1 ? 2 : 1, others = [1, 2, 3, 4].filter((k) => k !== hostK && k !== fa).slice(0, 1);
+r = await call('POST /climbs', P(hostK), { size: 8, public: false, name: 'Walkover Cup' });
 const id2 = r.body.code;
 assert.equal((await call('GET /climbs')).body.length, 0, 'private lobbies stay off the public list');
-for (const k of [1, 3]) await call('POST /climbs/{id}/join', P(k), {}, id2);
-r = await call('POST /climbs/{id}/start', P(2), {}, id2);
+for (const k of [fa, ...others]) await call('POST /climbs/{id}/join', P(k), {}, id2);
+r = await call('POST /climbs/{id}/start', P(hostK), {}, id2);
 assert.equal(r.body.status, 'live'); assert.equal(r.body.bracketSize, 4, '3 players play a 4 bracket');
 assert.equal(r.body.entrants.find((e) => e.k === climbMod.entrantKey('p' + fa)).ring, 'gold', 'rings show in later Climbs');
 const t2 = T['icyn-climbs'].get(id2);
