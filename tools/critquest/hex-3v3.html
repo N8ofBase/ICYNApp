@@ -121,7 +121,7 @@ button:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
 
 <!-- ======================= setup -->
 <section id="setupView">
-  <p class="lead">Build three Light Keepers for a sparring bout on the Castle Comet. Each Hero follows <b>one branch</b> of their Role and picks 1 of 3 similar abilities at level 1 and again at level 3. Heroes from different branches can join their abilities into <b>Combos</b>.</p>
+  <p class="lead">Build three Light Keepers for a sparring bout on the Castle Comet. Each Hero follows <b>one Focus</b> of their Role and picks 1 of 3 similar abilities at level 1 and again at level 3. Heroes with different Focuses can join their abilities into <b>Combos</b>.</p>
   <div class="builders" id="builders"></div>
   <div class="setupFoot">
     <section class="card"><h3>Combos your team can make</h3><div id="myCombos"></div></section>
@@ -449,7 +449,7 @@ function builderHTML(sp, i) {
     <h2>Hero ${i + 1}: ${sp.lf} ${sp.role}</h2>
     <h3>Lifeform</h3>${chips('lf', Object.keys(LIFEFORMS))}
     <h3>Role</h3>${chips('role', Object.keys(ROLES))}
-    <h3>Branch</h3>${chips('branch', R.branches)}
+    <h3>Focus</h3>${chips('branch', R.branches)}
     <h3>Level 1 ability · pick 1 of 3</h3><div class="abil">${abList(1)}</div>
     <h3>Level 3 ability · pick 1 of 3</h3><div class="abil">${abList(3)}</div>
     <h3>Level 2 · +1 to</h3>${chips('l2', ['P', 'E', 'S', 'C'], k => STATN[k])}
@@ -468,7 +468,7 @@ function renderSetup() {
   $('builders').innerHTML = G.team.map(builderHTML).join('');
   const mine = teamCombos(G.team);
   $('myCombos').innerHTML = mine.length ? mine.map(({ C, i, j }) => `<p class="combo-line"><b>${C.name}</b> · Hero ${i + 1} + Hero ${j + 1} (${C.pair.join(' + ')})<br><span class="note">${C.t}</span></p>`).join('')
-    : '<p class="note">No Combos yet. Combos need two Heroes from different branches whose abilities pair up (any version counts), for example a Champion of Honor (Shield Slam) with a Soul Seer of Nature (Thorns).</p>';
+    : '<p class="note">No Combos yet. Combos need two Heroes with different Focuses whose abilities pair up (any version counts), for example a Champion of Honor (Shield Slam) with a Soul Seer of Nature (Thorns).</p>';
   $('rivalPreview').innerHTML = G.rivals.map(sp => `<div class="rv"><b>${sp.lf} ${sp.role}</b> · ${sp.branch}<small>${abOf(sp, 1).name}, ${abOf(sp, 3).name}</small></div>`).join('')
     + `<p class="note">Their Combos: ${teamCombos(G.rivals).map(x => x.C.name).join(', ') || 'none'}</p>`;
 }

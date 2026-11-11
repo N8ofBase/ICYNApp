@@ -6,7 +6,7 @@ Nothing here is used by the live game.
 - `data.mjs`: Lifeforms, Roles, all 90 abilities (Recommendation column of the Ability trees tab) as plain data, plus the Farluck Farm terrors.
 - `sim.mjs`: Hero builder (stats, Life, focused builds with weaving and Empower, 4-ability loadout) and the fight engine (Speed order, d20 to hit, crits, personal Calamities, battle Enhancements, Inspire/Cleanse, zone hazards).
 - `run.mjs`: reports.
-  - Hero vs Hero round robin: 75 Heroes (5 Lifeforms x 5 Roles x 3 focus branches) at levels 1, 3, 5, 10, 15 and 20.
+  - Hero vs Hero round robin: 75 Heroes (5 Lifeforms x 5 Roles x 3 Focuses (formerly branches)) at levels 1, 3, 5, 10, 15 and 20.
   - Level gauntlets against a made-up raider and beast pack.
   - The Farluck Farm fights.
 
