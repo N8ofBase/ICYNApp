@@ -1,7 +1,7 @@
 <title>Castle Comet</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Alegreya+Sans:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Alegreya+SC:wght@500;700&family=Alegreya:ital,wght@0,400;0,600;1,400&family=Alegreya+Sans:wght@400;500;700&display=swap">
 <style>
 /* Layout: the Comet seen from above. A 20-sided Welcome Hall sits in the middle, the 20 Corridor doors ring it,
    and each room, NPC dialog and minigame opens over the ring. One night-sky look on purpose (the Comet is in space). */
@@ -81,21 +81,35 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--comet)
 .btn.primary:hover { filter: brightness(1.08); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 
-/* dialog window */
+/* dialog window: the shared Crit Quest parchment box (headshot, nameplate, line, numbered answers, Style tags, checks) */
 .dlgBack { position: fixed; inset: 0; z-index: 20; background: rgba(6, 8, 18, .55); display: flex; align-items: flex-end; justify-content: center;
   padding: 0 max(12px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
-.dlg { width: min(760px, 100%); background: linear-gradient(180deg, #1d2343, #151a32); border: 2px solid var(--comet); border-radius: 10px;
-  box-shadow: 0 10px 40px rgba(0,0,0,.6); display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 14px; padding: 14px; }
-@media (max-width: 480px) { .dlg { grid-template-columns: 64px minmax(0, 1fr); gap: 10px; padding: 12px; } }
-.dlg .portrait { width: 100%; aspect-ratio: 1; max-width: 100%; }
-.dlg .who { font-family: var(--display); color: var(--comet); font-size: 1.15rem; }
-.dlg .who small { font-family: var(--body); color: var(--soft); font-size: .8rem; margin-left: 6px; }
-.dlg .line { margin: 4px 0 10px; line-height: 1.45; min-height: 3em; cursor: pointer; }
-.dlg .choices { display: grid; gap: 6px; }
-.dlg .choices button { text-align: left; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--stone); cursor: pointer; display: flex; gap: 8px; }
-.dlg .choices button:hover, .dlg .choices button:focus-visible { border-color: var(--comet); background: #303762; }
-.dlg .choices kbd { font-family: var(--display); color: var(--comet); min-width: 1.2em; }
-.portrait { border-radius: 50%; display: block; }
+.dlg { --parch: #f3e6c8; --parch2: #e6d3a8; --pink: #2b1d10; --pink2: #5a4630; --edge: #8a6a3a; --pgold: #c99a3c; --phover: #fff4d8; --paccent: #7a2e1c;
+  --serious: #35577a; --silly: #8a5a12; --shy: #5d6e45; --smug: #6e3f73; --ok: #3d6b35; --bad: #8a2f22;
+  position: relative; width: min(760px, 100%); background: linear-gradient(var(--parch), var(--parch2)); color: var(--pink); font-family: "Alegreya", Georgia, serif;
+  border: 3px solid var(--edge); border-radius: 12px; box-shadow: 0 0 0 2px #2b1d10, 0 10px 30px rgba(0,0,0,.6); padding: 14px 16px 12px; }
+.dlg .head { display: flex; gap: 12px; align-items: flex-start; }
+.dlg .pic { flex: 0 0 auto; width: 84px; height: 84px; border-radius: 10px; border: 2px solid var(--pgold); background: #201810; overflow: hidden; }
+.dlg .pic svg { width: 100%; height: 100%; display: block; }
+.dlg .plate { font-family: "Alegreya SC", Georgia, serif; font-weight: 700; font-size: 18px; color: var(--paccent); margin: 0 0 2px; }
+.dlg .plate small { font-weight: 500; font-size: 13px; color: var(--pink2); margin-left: 6px; }
+.dlg .line { font-size: 17px; line-height: 1.45; min-height: 3.2em; margin: 0; cursor: pointer; }
+.dlg .line em { color: var(--pink2); }
+.dlg .choices { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 4px; }
+.dlg .choices button { width: 100%; text-align: left; font: inherit; font-size: 16px; color: var(--pink); background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 7px 10px; cursor: pointer; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.dlg .choices button:hover, .dlg .choices button:focus-visible { background: var(--phover); border-color: var(--edge); outline: none; }
+.dlg .k { font-family: "Alegreya SC", Georgia, serif; color: var(--pink2); min-width: 1.2em; }
+.dlg .ans { flex: 1; min-width: 0; }
+.dlg .stag { font-family: "Alegreya SC", Georgia, serif; font-size: 12px; border: 1px solid currentColor; border-radius: 999px; padding: 0 7px; white-space: nowrap; }
+.t-Serious { color: var(--serious); } .t-Silly { color: var(--silly); } .t-Shy { color: var(--shy); } .t-Smug { color: var(--smug); }
+.dlg .check { font-size: 12px; color: var(--paccent); font-family: "Alegreya SC", Georgia, serif; white-space: nowrap; }
+.dlg .roll { margin-top: 8px; font-family: "Alegreya SC", Georgia, serif; font-size: 15px; min-height: 0; }
+.dlg .roll.ok { color: var(--ok); } .dlg .roll.bad { color: var(--bad); }
+.dlg .more { position: absolute; right: 14px; bottom: 8px; font-size: 13px; color: var(--pink2); }
+@media (max-width: 560px) { .dlg .pic { width: 62px; height: 62px; } .dlg .line { font-size: 16px; } .dlg .choices button { font-size: 15px; } }
+.styleChip { padding: 3px 9px; border: 1px solid var(--comet); border-radius: 12px; background: var(--hall); font-size: .85rem; color: var(--comet); cursor: pointer; }
+.journal { margin: 0; padding-left: 18px; color: var(--soft); font-size: .9rem; display: grid; gap: 4px; }
+.warm { color: var(--leaf); font-size: .85rem; }
 
 /* minigames */
 .game { display: grid; gap: 12px; }
@@ -140,7 +154,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--comet)
 .timer { height: 8px; border-radius: 4px; background: var(--stone); overflow: hidden; }
 .timer i { display: block; height: 100%; background: var(--comet); }
 .flash { min-height: 1.4em; color: var(--comet); }
-.toast { position: fixed; z-index: 30; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--comet); color: var(--void);
+.toast { position: fixed; z-index: 30; left: 50%; transform: translateX(-50%); top: calc(16px + env(safe-area-inset-top, 0px)); background: var(--comet); color: var(--void);
   padding: 8px 16px; border-radius: 18px; font-weight: 700; box-shadow: 0 4px 20px rgba(0,0,0,.5); max-width: calc(100% - 32px); text-align: center; }
 </style>
 
@@ -151,18 +165,19 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--comet)
       <h1>Castle Comet</h1>
       <div class="sub">Home of the Light Keepers. Prototype hub with three Corridor minigames.</div>
     </div>
-    <div class="pouch" id="pouch" aria-label="Your pouch"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"><button type="button" class="styleChip" id="styleChip">Choose a Style</button><div class="pouch" id="pouch" aria-label="Your pouch"></div></div>
   </header>
   <section id="view"></section>
 </main>
 <div class="dlgBack" id="dlgBack" hidden>
-  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlgWho">
-    <div id="dlgPic"></div>
-    <div style="min-width:0">
-      <div class="who" id="dlgWho"></div>
-      <p class="line" id="dlgLine" aria-live="polite"></p>
-      <div class="choices" id="dlgChoices"></div>
+  <div class="dlg" id="dlgBox" role="dialog" aria-modal="true" aria-labelledby="dlgWho">
+    <div class="head">
+      <div class="pic" id="dlgPic"></div>
+      <div style="flex:1;min-width:0"><p class="plate" id="dlgWho"></p><p class="line" id="dlgLine" aria-live="polite"></p></div>
     </div>
+    <ul class="choices" id="dlgChoices"></ul>
+    <div class="roll" id="dlgRoll"></div>
+    <div class="more" id="dlgMore" hidden></div>
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
@@ -175,7 +190,7 @@ const d20 = () => 1 + Math.floor(Math.random() * 20);
 const pick = a => a[Math.floor(Math.random() * a.length)];
 
 /* ---------- saved pouch (per browser only) */
-const START = { coins: 10, ore: 2, scrap: 0, lyr: 0, sapphire: 0, shards: 0, gear: [], met: {} };
+const START = { coins: 10, ore: 2, scrap: 0, lyr: 0, sapphire: 0, shards: 0, gear: [], met: {}, style: null, warm: {}, clues: [] };
 let S;
 try { S = Object.assign({}, START, JSON.parse(localStorage.getItem("cq-comet") || "{}")); } catch (e) { S = Object.assign({}, START); }
 function save() { try { localStorage.setItem("cq-comet", JSON.stringify(S)); } catch (e) {} renderPouch(); }
@@ -184,24 +199,41 @@ function renderPouch() {
   $("#pouch").innerHTML = items.map(([k, v]) => `<span>${k} <b>${v}</b></span>`).join("");
 }
 let toastT;
-function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600); }
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 3400); }
 
-/* ---------- people */
+/* ---------- people (Bruxanna, Wexler and the narrator crystal use the shared dialog faces) */
+const SHARED_FACES = {
+  bruxanna: `<svg viewBox="0 0 84 84"><rect width="84" height="84" fill="#2d2440"/><circle cx="42" cy="42" r="36" fill="#f6e7b0" opacity=".18"/><path d="M14 84c4-18 14-26 28-26s24 8 28 26z" fill="#6a3d8f"/><path d="M30 60l12 10 12-10" fill="none" stroke="#e8c260" stroke-width="3"/><ellipse cx="42" cy="38" rx="15" ry="18" fill="#d9a57c"/><path d="M26 36c0-14 7-22 16-22s16 8 16 22c-4-7-9-10-16-10s-12 3-16 10z" fill="#3b2316"/><path d="M28 20l4-9 5 7 5-9 5 9 5-7 4 9z" fill="#e8c260"/><circle cx="36" cy="38" r="2" fill="#2b1d10"/><circle cx="48" cy="38" r="2" fill="#2b1d10"/><path d="M36 47q6 4 12 0" stroke="#7a3a2a" stroke-width="2" fill="none"/></svg>`,
+  wexler: `<svg viewBox="0 0 84 84"><rect width="84" height="84" fill="#223040"/><path d="M12 84c4-18 15-25 30-25s26 7 30 25z" fill="#2f5d6e"/><ellipse cx="42" cy="40" rx="14" ry="17" fill="#e3b892"/><path d="M27 32c2-12 9-17 15-17s14 5 15 17c-3-3-6-4-8-4l-3-6-4 6-4-6-3 6c-3 0-6 1-8 4z" fill="#c9c2b0"/><circle cx="36" cy="40" r="5" fill="none" stroke="#c99a3c" stroke-width="2"/><circle cx="48" cy="40" r="5" fill="none" stroke="#c99a3c" stroke-width="2"/><line x1="41" y1="40" x2="43" y2="40" stroke="#c99a3c" stroke-width="2"/><circle cx="36" cy="40" r="1.6" fill="#2b1d10"/><circle cx="48" cy="40" r="1.6" fill="#2b1d10"/><path d="M37 50q5 -3 10 1" stroke="#7a3a2a" stroke-width="2" fill="none"/><rect x="56" y="56" width="16" height="20" rx="2" fill="#efe0b8" transform="rotate(12 64 66)"/></svg>`,
+  narrator: `<svg viewBox="0 0 84 84"><rect width="84" height="84" fill="#1d2633"/><polygon points="42,12 62,36 54,74 30,74 22,36" fill="#bfe4ff" stroke="#fff" stroke-width="1.5"/></svg>`
+};
 const PEOPLE = {
   bruxanna: { name: "Bruxanna Barr", role: "Keeper of the Comet", hue: "#f0c04f", letter: "B" },
-  wexler:   { name: "Wexler", role: "Portal to Talus", hue: "#82cbd9", letter: "W" },
+  wexler:   { name: "Wexler", role: "Scholar (mostly)", hue: "#82cbd9", letter: "W" },
   treywind: { name: "Treywind", role: "Training Ground", hue: "#8fc274", letter: "T" },
   georgia:  { name: "Georgia", role: "The Forge", hue: "#e2714b", letter: "G" },
   shnee:    { name: "Shnee", role: "Scrap Yard", hue: "#c9a36b", letter: "S" },
   tata:     { name: "Tata", role: "The Tavern", hue: "#c58bd8", letter: "T" },
-  you:      { name: "Your Barracks", role: "Home", hue: "#a8a6bd", letter: "⌂" }
+  you:      { name: "Your Barracks", role: "Home", hue: "#a8a6bd", letter: "⌂" },
+  narrator: { name: "", role: "", hue: "#82cbd9", letter: "" }
 };
+/* What warming someone up gives you, once. */
+const PERKS = {
+  georgia: "Georgia adds +2 to your Forge quality checks.",
+  shnee: "Shnee gives you 1 extra dig in the Scrap Yard.",
+  tata: "Tata adds +1 coin to every order you serve.",
+  bruxanna: "Bruxanna slips you 5 Icosa Coins.",
+  wexler: "Wexler will share his notes with you.",
+  treywind: "Treywind will remember your stance at the Training Ground."
+};
+const HERO_CHARM = 2; // mock Hero's Charm until the Hero builder is joined in
 let picN = 0;
 function portrait(id, size) {
+  if (SHARED_FACES[id]) return `<div style="width:${size}px;height:${size}px;border-radius:12px;overflow:hidden;border:2px solid #c99a3c">${SHARED_FACES[id]}</div>`;
   const p = PEOPLE[id], g = "pg" + (picN++);
   return `<svg class="portrait" viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="${p.name}">
     <defs><radialGradient id="${g}" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="${p.hue}"/><stop offset="1" stop-color="#171c35"/></radialGradient></defs>
-    <circle cx="50" cy="50" r="48" fill="url(#${g})" stroke="${p.hue}" stroke-width="3"/>
+    <rect width="100" height="100" rx="12" fill="url(#${g})" stroke="${p.hue}" stroke-width="4"/>
     <text x="50" y="54" text-anchor="middle" dominant-baseline="central" font-family="Marcellus, Georgia, serif" font-size="46" fill="#0c0f1f">${p.letter}</text></svg>`;
 }
 
@@ -229,86 +261,238 @@ const CORRIDORS = [
   [20, "Crit Crafter", null, "Build your own quests (much later)."]
 ].map(([n, name, who, text, open, game]) => ({ n, name, who, text, open: !!open, game }));
 
-/* ---------- dialog trees */
+/* ---------- dialog trees, in the shared format.
+   Each answer: t (text), go (next node, "play:<game>", "go:<corridor>" or "close"),
+   s (Style: only shown if your Hero has that Style), works (beings it warms up),
+   check (Charm DC: D20 + Charm, changes the reply, never blocks) with fail (node on a miss), clue (Journal entry). */
 const TALK = {
+  narrator: {
+    q1: { t: "Before you open your eyes, the light asks you three things. A stranger on the road looks lost. What do you do?", c: [
+      { t: "Walk over and show them the way.", vote: "Serious", go: "q2" },
+      { t: "Make a joke so they feel less lost.", vote: "Silly", go: "q2" },
+      { t: "Point the way quietly, and smile.", vote: "Shy", go: "q2" },
+      { t: "Tell them they're lucky you came along.", vote: "Smug", go: "q2" } ] },
+    q2: { t: "Someone thanks you in front of a whole crowd.", c: [
+      { t: "Nod. It was the right thing to do.", vote: "Serious", go: "q3" },
+      { t: "Take a big, silly bow.", vote: "Silly", go: "q3" },
+      { t: "Turn red and look at your feet.", vote: "Shy", go: "q3" },
+      { t: "Wave to them. You did do well.", vote: "Smug", go: "q3" } ] },
+    q3: { t: "It is the night before a hard day. How do you spend it?", c: [
+      { t: "Check your gear twice.", vote: "Serious", go: "result" },
+      { t: "Tell stories until everyone laughs.", vote: "Silly", go: "result" },
+      { t: "Find a quiet spot under the stars.", vote: "Shy", go: "result" },
+      { t: "Sleep well. You've got this.", vote: "Smug", go: "result" } ] },
+    change: { t: "Choose your Style. It adds one bonus answer to every talk, and some beings like it more than others.", styles: true }
+  },
   bruxanna: {
-    start: { t: "Welcome home, Light Keeper. You look rested. The Comet suits you.", c: [["Where am I, really?", "where"], ["What should I do first?", "first"], ["Thank you, Bruxanna.", "bye"]] },
-    where: { t: "The Castle Comet. Twenty Corridors, and each one opens as Talus needs it. Your kindness at the end of your first life is what brought you here.", c: [["And what now?", "first"], ["I'd like to look around.", "bye"]] },
-    first: { t: "Earn a few Icosa Coins at Tata's, find ore in Shnee's yard, and let Georgia teach you the Forge. Then Wexler can send you down to Farluck Farm.", c: [["I'll start with the Tavern.", "go:6"], ["Show me the Forge.", "go:8"], ["I'll find my own way.", "bye"]] },
-    bye: { t: "Go gently. The Comet is always here when you need to come back.", c: [] }
+    start: { t: "Welcome home, Light Keeper. You look rested. The Comet suits you.", c: [
+      { t: "Where am I, really?", go: "where" },
+      { t: "What should I do first?", go: "first" },
+      { t: "Thank you for bringing me here. I'm ready to listen.", s: "Serious", go: "warmS", works: ["bruxanna"] },
+      { t: "Do the twenty Corridors come with a map, or do I just guess?", s: "Silly", go: "warmJ", works: ["bruxanna"] },
+      { t: "(Give a small wave and stay close to the crystal.)", s: "Shy", go: "shy" },
+      { t: "A castle all for me? You shouldn't have.", s: "Smug", go: "smug" } ] },
+    where: { t: "The Castle Comet. Twenty Corridors, and each one opens as Talus needs it. Your kindness at the end of your first life is what brought you here.", next: "first" },
+    warmS: { t: "<em>(She nods, pleased.)</em> Then here is my first lesson: help is a circle. Take these coins and pass the kindness on.", next: "first" },
+    warmJ: { t: "<em>(She laughs.)</em> You guess, and the castle helps. Here, a few coins for the Tavern, on me.", next: "first" },
+    shy: { t: "<em>(She waves back gently.)</em> No one here will rush you. The crystal hums softer when you are near it, did you notice?", next: "first" },
+    smug: { t: "It's for everyone, dear. But I'll let you have the good chair.", next: "first" },
+    first: { t: "Earn a few Icosa Coins at Tata's, find ore in Shnee's yard, and let Georgia teach you the Forge. Then Wexler can send you down to Farluck Farm.", c: [
+      { t: "I'll start with the Tavern.", go: "go:6" },
+      { t: "Show me the Forge.", go: "go:8" },
+      { t: "I'll find my own way.", go: "bye" } ] },
+    bye: { t: "Go gently. The Comet is always here when you need to come back." }
   },
   wexler: {
-    start: { t: "Ah! A Light Keeper! So, the crystal, right, it takes you down, but also sideways, and a little bit... forward? Time-wise. It's very simple.", c: [["That did not sound simple.", "simple"], ["Can I go to Farluck Farm?", "farm"]] },
-    simple: { t: "It is simple. Explaining it is the hard part. I'll stay in your head while you're down there. Politely! I'll knock first.", c: [["Can I go to Farluck Farm?", "farm"], ["Maybe later.", "bye"]] },
-    farm: { t: "Cecil's farm needs help, water and food both. The quest isn't ready in this prototype, so practice here first. The crystal will hum when it is.", c: [["I'll get ready.", "bye"]] },
-    bye: { t: "Mind the step! There isn't one, but mind it anyway.", c: [] }
+    start: { t: "Ah! A Light Keeper! So, the crystal, right, it takes you down, but also sideways, and a little bit... forward? Time-wise. It's very simple.", c: [
+      { t: "That did not sound simple.", go: "simple" },
+      { t: "Can I see your notes?", check: 12, go: "notesOk", fail: "notesNo" },
+      { t: "Can I go to Farluck Farm?", go: "farm" },
+      { t: "One step at a time, Wexler. Start with the crystal.", s: "Serious", go: "simple" },
+      { t: "Sideways? Do I need to pack a sideways sandwich?", s: "Silly", go: "silly" },
+      { t: "You're doing great, Wexler. Really.", s: "Shy", go: "kind", works: ["wexler"] },
+      { t: "I could explain it better, but go on.", s: "Smug", go: "smug" } ] },
+    simple: { t: "It is simple. Explaining it is the hard part. I'll stay in your head while you're down there. Politely! I'll knock first.", next: "farm" },
+    silly: { t: "<em>(He checks his notes, seriously.)</em> ...No. Probably not. Bring a regular one.", next: "farm" },
+    smug: { t: "<em>(He shrinks a little and tucks his notes away.)</em> Right. Well. The crystal, then.", next: "farm" },
+    kind: { t: "<em>(He brightens.)</em> Oh! Nobody says that. Here, a copy of my page: something is hammering under the hill near Farluck Farm.", clue: "Wexler's page: something is hammering under the hill near Farluck Farm.", next: "farm" },
+    notesOk: { t: "Oh! Well, since you asked so nicely. <em>(He shows you a page.)</em> Cloak marks on the fence posts near Farluck Farm. I don't like it.", clue: "Wexler's notes: cloak marks on the fence posts near Farluck Farm.", next: "farm" },
+    notesNo: { t: "Ah, no, no, they're, um, private. And smudged. Bruxanna will tell you the important bits.", next: "farm" },
+    farm: { t: "Cecil's farm needs help, water and food both. That quest isn't open in this prototype yet. The crystal will hum when it is.", c: [
+      { t: "I'll get ready.", go: "bye" } ] },
+    bye: { t: "Mind the step! There isn't one, but mind it anyway." }
   },
   treywind: {
-    start: { t: "Good stance. Here you can learn new abilities and Empower the ones you have. Every odd level, a new pick.", c: [["How do I get stronger?", "strong"], ["Can I spar?", "spar"], ["Later, Treywind.", "bye"]] },
-    strong: { t: "Quests give experience. Even levels raise a stat, odd levels give an ability. Bring four abilities into each quest, chosen right here.", c: [["Can I spar?", "spar"], ["Got it.", "bye"]] },
-    spar: { t: "The practice grid is being built in another wing. Soon you'll move, strike twice, and use one ability each round.", c: [["I'll be ready.", "bye"]] },
-    bye: { t: "Breathe, step, strike. In that order.", c: [] }
+    start: { t: "Good stance. Here you learn new abilities and Empower the ones you have. Every odd level, a new pick.", c: [
+      { t: "How do I get stronger?", go: "strong" },
+      { t: "Can I spar?", go: "spar" },
+      { t: "Teach me properly. I want to protect people.", s: "Serious", go: "warm", works: ["treywind"] },
+      { t: "Is my stance good, or am I just standing?", s: "Silly", go: "silly" },
+      { t: "(Copy his stance quietly from the side.)", s: "Shy", go: "shy", works: ["treywind"] },
+      { t: "I was born with good stance.", s: "Smug", go: "smug" } ] },
+    strong: { t: "Quests give experience. Even levels raise a stat, odd levels give an ability. You bring four abilities into each quest, chosen right here.", next: "spar" },
+    warm: { t: "<em>(He straightens.)</em> That's the right reason. Come back after your first quest and we'll start.", next: "spar" },
+    silly: { t: "Both, honestly. Feet a little wider. There. Now it's a stance.", next: "spar" },
+    shy: { t: "<em>(He notices and nods.)</em> Good eyes. Most people talk first. You watched.", next: "spar" },
+    smug: { t: "Then you'll have no trouble falling down gracefully.", next: "spar" },
+    spar: { t: "The practice grid is being built in another wing. Soon you'll move, strike twice, and use one ability each round.", c: [ { t: "I'll be ready.", go: "bye" } ] },
+    bye: { t: "Breathe, step, strike. In that order." }
   },
   georgia: {
-    start: { t: "Heat's up. Strike when the glow sits in the gold band, three times. Hit the bright middle and the metal sings.", c: [["Let's forge something.", "play:forge"], ["What do I need?", "need"], ["Just looking.", "bye"]] },
-    need: { t: "One Ore per piece. No Ore? Shnee's yard has plenty, if you know how to listen.", c: [["Let's forge something.", "play:forge"], ["To the Scrap Yard, then.", "go:7"]] },
-    bye: { t: "Come back when your hands are itching.", c: [] }
+    start: { t: "Heat's up. Strike when the glow sits in the gold band, three times. Hit the bright middle and the metal sings.", c: [
+      { t: "Let's forge something.", go: "play:forge" },
+      { t: "What do I need?", go: "need" },
+      { t: "Show me how you hold the hammer. I want to do this right.", s: "Serious", go: "warm", works: ["georgia"] },
+      { t: "Does the metal sing in tune, or just loudly?", s: "Silly", go: "silly" },
+      { t: "(Hand her the tongs before she asks.)", s: "Shy", go: "shy", works: ["georgia"] },
+      { t: "I'll make a masterwork on my first try. Watch.", s: "Smug", go: "smug" } ] },
+    need: { t: "One Ore per piece. No Ore? Shnee's yard has plenty, if you know how to listen.", c: [
+      { t: "Let's forge something.", go: "play:forge" },
+      { t: "To the Scrap Yard, then.", go: "go:7" } ] },
+    warm: { t: "<em>(She moves your grip down the handle.)</em> There. Now your arm does half the work. You'll strike truer from now on.", next: "need" },
+    shy: { t: "<em>(She raises an eyebrow and smiles.)</em> Quiet hands, good hands. Stay a while.", next: "need" },
+    silly: { t: "Loudly. Always loudly.", next: "need" },
+    smug: { t: "<em>(She snorts.)</em> Everyone says that. Go on, then.", next: "need" },
+    bye: { t: "Come back when your hands are itching." }
   },
   shnee: {
-    start: { t: "Dig where you like. I'll tell you how close you are. Three dots, cold. A question mark, warmer. Three bangs, right next to it!", c: [["Let me dig.", "play:dig"], ["What's down there?", "what"], ["Maybe later.", "bye"]] },
-    what: { t: "Ore, scrap, Lyr Dust, sometimes Sapphire Dust. Once, a Crit Shard. A D20 decides what the ground gives you.", c: [["Let me dig.", "play:dig"]] },
-    bye: { t: "The ground's not going anywhere.", c: [] }
+    start: { t: "Dig where you like. I'll tell you how close you are. Three dots, cold. A question mark, warmer. Three bangs, right next to it!", c: [
+      { t: "Let me dig.", go: "play:dig" },
+      { t: "Any tips? I'll split what I find.", check: 12, go: "tipOk", fail: "tipNo" },
+      { t: "Where did all this scrap come from?", s: "Serious", go: "serious" },
+      { t: "Three bangs! Can I shout them too?", s: "Silly", go: "silly", works: ["shnee"] },
+      { t: "(Pick up a shovel and wait to be told where.)", s: "Shy", go: "shy" },
+      { t: "I'll find the best stuff. I always do.", s: "Smug", go: "smug", works: ["shnee"] } ] },
+    tipOk: { t: "<em>(Shnee leans in.)</em> Dig the middle first. Here, take this Ore for being polite.", next: "dig" },
+    tipNo: { t: "Tips? The tip is: dig. Ha!", next: "dig" },
+    serious: { t: "Falls off Talus, mostly, when the Comet passes close. Every bolt has a story.", next: "dig" },
+    silly: { t: "<em>(Shnee cackles.)</em> Yes! Loud as you like. You can have an extra dig, for spirit.", next: "dig" },
+    shy: { t: "Ha, a quiet one. Anywhere you like, friend. The ground doesn't bite.", next: "dig" },
+    smug: { t: "Ooh, a challenge! I like you. An extra dig, then. Prove it.", next: "dig" },
+    dig: { t: "Ore, scrap, Lyr Dust, sometimes Sapphire Dust. Once, a Crit Shard. A D20 decides what the ground gives you.", c: [ { t: "Let me dig.", go: "play:dig" }, { t: "Maybe later.", go: "bye" } ] },
+    bye: { t: "The ground's not going anywhere." }
   },
   tata: {
-    start: { t: "Busy night! Orders come in, you mix them in the right order. Twenty seconds on the sand glass. Ready?", c: [["Pour me in.", "play:tavern"], ["What's on the shelf?", "shelf"], ["Not tonight.", "bye"]] },
-    shelf: { t: "Jeewa juice, Flash Water, charbean, honeycomb, mint and a pinch of star salt. Three coins for every order served right.", c: [["Pour me in.", "play:tavern"]] },
-    bye: { t: "Your stool will be waiting.", c: [] }
+    start: { t: "Busy night! Orders come in, you mix them in the right order. Twenty seconds on the sand glass. Ready?", c: [
+      { t: "Pour me in.", go: "play:tavern" },
+      { t: "What's on the shelf?", go: "shelf" },
+      { t: "I'll work hard. Tell me what matters most.", s: "Serious", go: "serious" },
+      { t: "Can I name a brew after myself?", s: "Silly", go: "silly", works: ["tata"] },
+      { t: "(Start wiping down the counter.)", s: "Shy", go: "shy" },
+      { t: "Your best server just walked in.", s: "Smug", go: "smug", works: ["tata"] } ] },
+    shelf: { t: "Jeewa juice, Flash Water, charbean, honeycomb, mint and a pinch of star salt. Three coins for every order served right.", c: [ { t: "Pour me in.", go: "play:tavern" }, { t: "Not tonight.", go: "bye" } ] },
+    serious: { t: "Order matters most. Get it right, then get it fast.", next: "shelf" },
+    silly: { t: "<em>(Tata laughs out loud.)</em> Serve well tonight and I'll think about it. I'll add a coin to every order, too.", next: "shelf" },
+    shy: { t: "Oh! Thank you, love. That counter hasn't shone in weeks.", next: "shelf" },
+    smug: { t: "<em>(Tata grins.)</em> Big words! I like big words. An extra coin an order if you back them up.", next: "shelf" },
+    bye: { t: "Your stool will be waiting." }
   },
   you: {
-    start: { t: "Your room on the Comet. A cot, a chest and a tall mirror. Your gear rests here.", c: [["Open the chest.", "chest"], ["Leave.", "bye"]] },
-    chest: { t: "", c: [["Close it.", "bye"]] },
-    bye: { t: "", c: [] }
+    start: { t: "Your room on the Comet. A cot, a chest and a tall mirror. Your gear rests here.", c: [
+      { t: "Open the chest.", go: "chest" },
+      { t: "Look in the mirror.", go: "mirror" },
+      { t: "Leave.", go: "close" } ] },
+    chest: { t: "", c: [ { t: "Close it.", go: "close" } ] },
+    mirror: { t: "", c: [ { t: "Change my Style.", go: "restyle" }, { t: "Leave it be.", go: "close" } ] }
   }
 };
 
-/* ---------- dialog window (headshot, line, 2 to 4 answers) */
-let typing = null;
-function openTalk(id, node = "start") {
-  const tree = TALK[id], nd = tree[node];
-  if (!nd || (!nd.t && !nd.c.length)) { closeTalk(); return; }
+/* ---------- dialog engine (shared Crit Quest format) */
+let typing = null, full = "", node = null, nodeWho = null, shown = [], afterStyle = null, votes = [];
+const STYLES = ["Serious", "Silly", "Shy", "Smug"];
+function openTalk(id, key = "start") {
+  if (!S.style && id !== "narrator") { afterStyle = [id, key]; votes = []; id = "narrator"; key = "q1"; }
+  let nd = TALK[id][key];
+  if (id === "narrator" && key === "result") {
+    const count = {}; votes.forEach(v => count[v] = (count[v] || 0) + 1);
+    const win = votes.reduce((a, v) => count[v] > (count[a] || 0) ? v : a, votes[0] || "Serious");
+    nd = { t: `Your answers say your Style is <b>${win}</b>. You can keep it or choose another.`, styles: true, keep: win };
+  }
+  if (!nd) return closeTalk();
+  node = nd; nodeWho = id;
   let text = nd.t;
-  if (id === "you" && node === "chest") text = S.gear.length ? "Inside: " + S.gear.join(", ") + "." : "The chest is empty. Georgia's Forge can fill it.";
+  if (id === "you" && key === "chest") text = S.gear.length ? "Inside: " + S.gear.join(", ") + "." : "The chest is empty. Georgia's Forge can fill it.";
+  if (id === "you" && key === "mirror") text = `You see a Light Keeper with a <b>${S.style}</b> Style looking back.`;
+  if (nd.clue) addClue(nd.clue);
   S.met[id] = true;
-  $("#dlgPic").innerHTML = portrait(id, 96);
-  $("#dlgWho").innerHTML = `${PEOPLE[id].name}<small>${PEOPLE[id].role}</small>`;
-  const line = $("#dlgLine"), box = $("#dlgChoices");
-  box.innerHTML = "";
-  const choices = nd.c.length ? nd.c : [["Goodbye.", "close"]];
-  const showChoices = () => {
-    box.innerHTML = choices.map((c, i) => `<button type="button" data-next="${c[1]}"><kbd>${i + 1}</kbd><span>${c[0]}</span></button>`).join("");
-    box.querySelector("button").focus();
-  };
-  clearInterval(typing);
+  const p = PEOPLE[id];
+  $("#dlgPic").innerHTML = SHARED_FACES[id] || portrait(id, "100%");
+  $("#dlgWho").innerHTML = p.name ? `${p.name}<small>${p.role}</small>` : "";
+  $("#dlgChoices").innerHTML = ""; $("#dlgRoll").textContent = ""; $("#dlgRoll").className = "roll"; $("#dlgMore").hidden = true;
   $("#dlgBack").hidden = false;
-  if (reduce) { line.textContent = text; showChoices(); return; }
-  let i = 0; line.textContent = "";
-  typing = setInterval(() => { i += 2; line.textContent = text.slice(0, i); if (i >= text.length) { clearInterval(typing); typing = null; showChoices(); } }, 22);
-  line.onclick = () => { if (typing) { clearInterval(typing); typing = null; line.textContent = text; showChoices(); } };
-  box.onclick = e => { const b = e.target.closest("button"); if (b) answer(id, b.dataset.next); };
+  type(text);
 }
-function answer(id, next) {
-  if (next === "close") return closeTalk();
-  if (next.startsWith("play:")) { closeTalk(); return startGame(next.slice(5)); }
-  if (next.startsWith("go:")) { closeTalk(); return showRoom(+next.slice(3)); }
-  openTalk(id, next);
+function type(html) {
+  full = html; const el = $("#dlgLine"); clearInterval(typing);
+  if (reduce) { el.innerHTML = html; return done(); }
+  let i = 0; el.innerHTML = "";
+  typing = setInterval(() => {
+    i += 2; const lt = html.lastIndexOf("<", i), gt = html.lastIndexOf(">", i); if (lt > gt) i = html.indexOf(">", i) + 1;
+    el.innerHTML = html.slice(0, i);
+    if (i >= html.length) { clearInterval(typing); typing = null; done(); }
+  }, 22);
 }
-function closeTalk() { clearInterval(typing); typing = null; $("#dlgBack").hidden = true; }
+function finishTyping() { if (!typing) return false; clearInterval(typing); typing = null; $("#dlgLine").innerHTML = full; done(); return true; }
+function addBtn(html, fn) { const li = document.createElement("li"), b = document.createElement("button"); b.type = "button"; b.innerHTML = html; b.onclick = fn; li.appendChild(b); $("#dlgChoices").appendChild(li); }
+function done() {
+  const box = $("#dlgChoices");
+  if (node.styles) {
+    shown = (node.keep ? [node.keep, ...STYLES.filter(x => x !== node.keep)] : STYLES).map(st => ({ st }));
+    const blurb = { Serious: "steady, few words", Silly: "jokes, makes friends fast", Shy: "quiet, notices things", Smug: "confident, secretly kind" };
+    shown.forEach((o, n) => addBtn(`<span class="k">${n + 1}.</span><span class="ans">${node.keep ? (n ? "Change to " : "Keep ") : ""}${o.st} <em style="color:var(--pink2)">${blurb[o.st]}</em></span><span class="stag t-${o.st}">Style</span>`, () => chooseStyle(o.st)));
+  } else if (node.c) {
+    shown = node.c.filter(c => !c.s || c.s === S.style);
+    shown.forEach((c, n) => addBtn(`<span class="k">${n + 1}.</span><span class="ans">${c.t}</span>${c.s ? `<span class="stag t-${c.s}">${c.s}</span>` : ""}${c.check ? `<span class="check">Charm ${c.check}</span>` : ""}`, () => pickAnswer(c)));
+  } else { shown = []; $("#dlgMore").hidden = false; $("#dlgMore").textContent = node.next ? "▼ tap to continue" : "▼ tap to close"; return; }
+  const f = box.querySelector("button"); if (f) f.focus({ preventScroll: true });
+}
+function chooseStyle(st) {
+  S.style = st; save(); renderStyle();
+  toast(`Your Style: ${st}. You get a bonus ${st} answer in each talk.`);
+  if (afterStyle) { const [id, key] = afterStyle; afterStyle = null; openTalk(id, key); } else closeTalk();
+}
+function warmUp(who) {
+  if (S.warm[who]) return;
+  S.warm[who] = true;
+  if (who === "bruxanna") S.coins += 5;
+  save();
+  toast(`${PEOPLE[who].name} warmed to you. ${PERKS[who]}`);
+}
+function pickAnswer(c) {
+  if (c.vote) votes.push(c.vote);
+  if (c.clue) addClue(c.clue);
+  if (c.works) c.works.forEach(warmUp);
+  if (c.check) {
+    const d = d20(), tot = d + HERO_CHARM, ok = tot >= c.check;
+    $("#dlgChoices").innerHTML = "";
+    const r = $("#dlgRoll"); r.textContent = `Charm check: rolled ${d} + ${HERO_CHARM} Charm = ${tot} vs ${c.check}. ${ok ? "Success!" : "Not this time."}`; r.className = "roll " + (ok ? "ok" : "bad");
+    if (ok && nodeWho === "shnee") { S.ore++; save(); }
+    setTimeout(() => route(ok ? c.go : c.fail), 1300); return;
+  }
+  route(c.go);
+}
+function route(go) {
+  if (go === "close") return closeTalk();
+  if (go === "restyle") { afterStyle = null; return openTalk("narrator", "change"); }
+  if (go.startsWith("play:")) { closeTalk(); return startGame(go.slice(5)); }
+  if (go.startsWith("go:")) { closeTalk(); return showRoom(+go.slice(3)); }
+  openTalk(nodeWho, go);
+}
+function advance() {
+  if (finishTyping()) return;
+  if (node.c || node.styles) return;
+  if (node.next) openTalk(nodeWho, node.next); else closeTalk();
+}
+function closeTalk() { clearInterval(typing); typing = null; const was = !$("#dlgBack").hidden; $("#dlgBack").hidden = true; if (was && $("#hallBtn")) showHub(); }
+function addClue(c) { if (!S.clues.includes(c)) { S.clues.push(c); save(); toast("New Journal clue"); } }
+function renderStyle() { const el = $("#styleChip"); if (el) el.textContent = S.style ? "Style: " + S.style : "Choose a Style"; }
+$("#dlgBox").addEventListener("click", e => { if (!e.target.closest("button")) advance(); });
 document.addEventListener("keydown", e => {
   if ($("#dlgBack").hidden) return;
   if (e.key === "Escape") return closeTalk();
-  const n = +e.key; const bs = $("#dlgChoices").querySelectorAll("button");
-  if (n >= 1 && n <= bs.length) { e.preventDefault(); bs[n - 1].click(); }
-  else if ((e.key === " " || e.key === "Enter") && typing) { e.preventDefault(); $("#dlgLine").onclick(); }
+  if (e.key === " " || e.key === "Enter") { if (!e.target.closest || !e.target.closest(".choices")) { e.preventDefault(); advance(); } return; }
+  const n = parseInt(e.key, 10);
+  if (!typing && n >= 1 && n <= shown.length) { e.preventDefault(); const o = shown[n - 1]; o.st ? chooseStyle(o.st) : pickAnswer(o); }
 });
 
 /* ---------- hub ring */
@@ -338,6 +522,9 @@ function showHub(sel) {
       <div class="eyebrow">Open Corridors</div>
       <div class="doorList">${open.map(c => `<button type="button" data-n="${c.n}"><span class="n">${c.n}</span><span>${c.name}<br><small>${c.who ? PEOPLE[c.who].name : ""}</small></span>${c.game ? '<span class="tag">Minigame</span>' : ""}</button>`).join("")}</div>
       <p class="locked" id="lockNote">Dim doors open as the story goes on. Tap one to see what waits behind it.</p>
+      <div class="eyebrow">Journal</div>
+      ${S.clues.length ? `<ul class="journal">${S.clues.map(c => `<li>${c}</li>`).join("")}</ul>` : '<p class="note">No clues yet. Some answers add one.</p>'}
+      ${Object.keys(S.warm).length ? `<div class="eyebrow">Warmed to you</div><p class="warm">${Object.keys(S.warm).map(w => PEOPLE[w].name).join(", ")}</p>` : ""}
     </div></div>`;
   const go = n => { const c = CORRIDORS[n - 1]; if (c.open) showRoom(n); else { $("#lockNote").innerHTML = `<b>${c.n}. ${c.name}</b> opens later in the story. ${c.text}`; } };
   $("#view").querySelectorAll("[data-n]").forEach(el => {
@@ -357,7 +544,7 @@ function showRoom(n) {
   const c = CORRIDORS[n - 1], who = c.who;
   $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Corridor ${c.n}</div>
     <div class="room">${portrait(who, 120)}
-      <div style="display:grid;gap:10px;min-width:0"><h2>${c.name}</h2><p>${c.text}</p>
+      <div style="display:grid;gap:10px;min-width:0"><h2>${c.name}</h2><p>${c.text}</p>${S.warm[who] ? `<p class="warm">${PERKS[who]}</p>` : ""}
         <div class="btns">
           <button class="btn ${c.game ? "" : "primary"}" type="button" id="talk">${who === "you" ? "Look around" : "Talk to " + PEOPLE[who].name}</button>
           ${c.game ? `<button class="btn primary" type="button" id="play">${GAME_NAME[c.game]}</button>` : ""}
@@ -410,7 +597,7 @@ function forge() {
     $("#strikes").innerHTML = strikes.map((s, i) => `<span class="${s}">Strike ${i + 1}: ${s}</span>`).join("");
     if (strikes.length < 3) { speed += 0.2; place(); return; }
     cancelAnimationFrame(raf); $("#strike").disabled = true;
-    const bonus = strikes.reduce((a, s) => a + (s === "perfect" ? 3 : s === "good" ? 1 : 0), 0), roll = d20();
+    const bonus = strikes.reduce((a, s) => a + (s === "perfect" ? 3 : s === "good" ? 1 : 0), 0) + (S.warm.georgia ? 2 : 0), roll = d20();
     $("#res").innerHTML = `<span id="die"></span><p id="out">Quality check: D20 + ${bonus} from your strikes...</p>`;
     rollAnim($("#die"), roll, () => {
       const total = roll + bonus;
@@ -429,7 +616,7 @@ function forge() {
 
 /* Scrap Yard: hot and cold digging on a hex patch, then a D20 for the find */
 function dig() {
-  const COLS = 7, ROWS = 5, DIGS = 6, size = 34, w = Math.sqrt(3) * size;
+  const COLS = 7, ROWS = 5, DIGS = S.warm.shnee ? 7 : 6, size = 34, w = Math.sqrt(3) * size;
   const target = [Math.floor(Math.random() * COLS), Math.floor(Math.random() * ROWS)];
   const cube = (c, r) => { const q = c - (r - (r & 1)) / 2; return [q, r, -q - r]; };
   const dist = (a, b) => { const A = cube(...a), B = cube(...b); return Math.max(Math.abs(A[0] - B[0]), Math.abs(A[1] - B[1]), Math.abs(A[2] - B[2])); };
@@ -483,7 +670,7 @@ function tavern() {
   const sw = i => `<span class="sw" style="background:${ING[i][1]}"></span>`;
   let order = [], at = 0, served = 0, running = false, endAt = 0;
   gameShell(6, "Tavern rush", `
-    <p class="note">Tap the ingredients in the order shown. Serve as many orders as you can before the 20-second sand glass runs out. 3 Icosa Coins per order.</p>
+    <p class="note">Tap the ingredients in the order shown. Serve as many orders as you can before the 20-second sand glass runs out. ${S.warm.tata ? 4 : 3} Icosa Coins per order.</p>
     <div class="timer" aria-hidden="true"><i id="glass" style="width:100%"></i></div>
     <div class="stat">Served: <b id="served">0</b> &nbsp; Time: <b id="secs">20.0</b>s</div>
     <div><div class="eyebrow" id="guest">Press Open the bar to start</div><div class="order" id="order"></div></div>
@@ -501,7 +688,7 @@ function tavern() {
   const end = () => {
     running = false; timers.forEach(clearInterval); timers = [];
     $("#shelf").querySelectorAll("button").forEach(b => b.disabled = true);
-    const coins = served * 3; S.coins += coins; save();
+    const coins = served * (S.warm.tata ? 4 : 3); S.coins += coins; save();
     $("#guest").textContent = "Last call!"; $("#order").innerHTML = ""; $("#flash").textContent = "";
     $("#res").innerHTML = `<p>You served <b>${served}</b> ${served === 1 ? "order" : "orders"} and earned <b>${coins} Icosa Coins</b>. ${served >= 6 ? "Tata wants to hire you full time." : served >= 3 ? "Tata nods, impressed." : "Tata laughs and says you'll get faster."}</p>`;
     const b = $("#openBar"); b.textContent = "Another night"; b.disabled = false;
@@ -515,7 +702,7 @@ function tavern() {
   };
   $("#shelf").onclick = e => {
     const b = e.target.closest("button"); if (!b || !running) return;
-    if (+b.dataset.i === order[at]) { at++; if (at >= order.length) { served++; $("#served").textContent = served; $("#flash").textContent = "Served! +3 coins"; newOrder(); } else drawOrder(); }
+    if (+b.dataset.i === order[at]) { at++; if (at >= order.length) { served++; $("#served").textContent = served; $("#flash").textContent = `Served! +${S.warm.tata ? 4 : 3} coins`; newOrder(); } else drawOrder(); }
     else { at = 0; drawOrder(); $("#flash").textContent = "Oops, that spilled. Start the order again."; endAt -= 1000; }
   };
 }
@@ -529,5 +716,7 @@ function tavern() {
 })();
 
 renderPouch();
+renderStyle();
+$("#styleChip").onclick = () => { afterStyle = null; votes = []; openTalk("narrator", S.style ? "change" : "q1"); };
 showHub();
 </script>
