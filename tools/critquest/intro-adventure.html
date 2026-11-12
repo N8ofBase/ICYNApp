@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edge of the Wood</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#1c1712; --parch:#f3e6c8; --parch2:#e6d3a8; --ink:#2b1d10; --ink2:#5a4630;
+  --edge:#8a6a3a; --gold:#c99a3c; --hover:#fff4d8; --accent:#7a2e1c; --bar:#2b2219; --barInk:#f3e6c8;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --parch:#3a2f22; --parch2:#2f261b; --ink:#f1e4c6; --ink2:#c9b38a; --edge:#a9844a; --hover:#4a3c2b; --accent:#e08a6a; }
+}
+:root[data-theme="dark"]{ --parch:#3a2f22; --parch2:#2f261b; --ink:#f1e4c6; --ink2:#c9b38a; --edge:#a9844a; --hover:#4a3c2b; --accent:#e08a6a; }
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;overflow-x:hidden}
+.wrap{max-width:980px;margin:0 auto;padding:10px 16px 24px}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;color:var(--barInk);font-family:"Alegreya SC",serif}
+.top h1{font-size:19px;margin:4px 0}
+.top span{font-size:14px;opacity:.8}
+.stage{position:relative;width:100%;aspect-ratio:16/9;border:3px solid var(--edge);border-radius:10px;overflow:hidden;background:#000;box-shadow:0 0 0 2px #000}
+.stage svg{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer}
+.hot{cursor:pointer}
+.hot:hover .hl, .hot:focus .hl{stroke:#ffe9a8;stroke-width:3;stroke-dasharray:6 4}
+.label{position:absolute;left:50%;top:8px;transform:translateX(-50%);background:rgba(0,0,0,.55);color:#f3e6c8;font-family:"Alegreya SC",serif;padding:2px 10px;border-radius:6px;font-size:15px;pointer-events:none;white-space:nowrap}
+.fade{position:absolute;inset:0;background:#fff7dc;opacity:0;pointer-events:none;transition:opacity 2.2s}
+.fade.on{opacity:1}
+.bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.bar button,.inv button{font:inherit;font-family:"Alegreya SC",serif;font-size:15px;background:var(--bar);color:var(--barInk);border:1px solid var(--gold);border-radius:7px;padding:5px 12px;cursor:pointer}
+.bar button[aria-pressed="true"]{background:var(--gold);color:#2b1d10}
+.inv{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.inv button[aria-pressed="true"]{outline:2px solid #ffe9a8}
+.narr{margin-top:8px;min-height:2.8em;color:#efe1bf;font-size:16px;line-height:1.4}
+.narr em{color:#d9c08a}
+.box{display:none;margin-top:8px;background:linear-gradient(var(--parch),var(--parch2));border:3px solid var(--edge);border-radius:12px;padding:12px 14px;box-shadow:0 0 0 2px #000}
+.box.on{display:block}
+.head{display:flex;gap:12px;align-items:flex-start}
+.portrait{flex:0 0 auto;width:70px;height:70px;border-radius:10px;border:2px solid var(--gold);background:#201810;overflow:hidden}
+.portrait svg{width:100%;height:100%}
+.plate{font-family:"Alegreya SC",serif;font-weight:700;font-size:17px;color:var(--accent);margin:0 0 2px}
+.say{margin:0;font-size:16px;line-height:1.45}
+.choices{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:4px}
+.choices button{width:100%;text-align:left;font:inherit;font-size:16px;color:var(--ink);background:transparent;border:1px solid transparent;border-radius:8px;padding:6px 10px;cursor:pointer;display:flex;gap:8px}
+.choices button:hover,.choices button:focus-visible{background:var(--hover);border-color:var(--edge);outline:none}
+.k{font-family:"Alegreya SC",serif;color:var(--ink2)}
+.notes{margin-top:14px;color:#cdbb95;font-size:14px;line-height:1.45}
+.notes b{font-family:"Alegreya SC",serif;color:#f3e6c8}
+@media (max-width:560px){ .portrait{width:54px;height:54px} .bar button,.inv button{font-size:14px;padding:5px 9px} .label{font-size:13px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><h1>Create Your Past · Maverick</h1><span id="where"></span></div>
+  <div class="stage" id="stage">
+    <svg id="svg" viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice" aria-label="Scene"></svg>
+    <div class="label" id="label" hidden></div>
+    <div class="fade" id="fade"></div>
+  </div>
+  <div class="bar" id="verbs"></div>
+  <div class="narr" id="narr" aria-live="polite"></div>
+  <div class="box" id="box" role="dialog">
+    <div class="head"><div class="portrait" id="portrait"></div>
+      <div style="flex:1;min-width:0"><p class="plate" id="plate"></p><p class="say" id="say"></p></div></div>
+    <ul class="choices" id="choices"></ul>
+  </div>
+  <div class="notes">
+    <b>How to play:</b> pick an action, then tap something in the scene. Tap the ground to walk. With Walk on, tapping something does the obvious thing (look, or go that way). Items work too: pick the knife, then tap what you want to use it on.<br>
+    <b>About this mockup:</b> it's an original, painted-screen adventure scene built from the Maverick intro. Four answers quietly count toward your Style, and the last one counts double. Art is simple placeholder shapes.
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const SVGNS="http://www.w3.org/2000/svg";
+const VERBS=["Walk","Look","Use","Talk","Take"];
+let verb="Walk", item=null, busy=false, scene=null, flags={}, tally={}, order=[], inv=["Stringbow","Hunting knife"];
+
+/* ---------- hero ---------- */
+const hero={x:150,y:430,tx:150,ty:430,face:1,step:0,el:null,cb:null};
+function heroSVG(){
+  return `<g id="heroInner">
+   <ellipse cx="0" cy="0" rx="22" ry="7" fill="rgba(0,0,0,.35)"/>
+   <g id="legs"><rect id="legL" x="-9" y="-30" width="7" height="30" rx="3" fill="#4a3a26"/><rect id="legR" x="2" y="-30" width="7" height="30" rx="3" fill="#4a3a26"/></g>
+   <path d="M-16 -30 Q-18 -68 0 -74 Q18 -68 16 -30 Z" fill="#3f6b45"/>
+   <path d="M-16 -30 L-20 -12 L-4 -24 Z" fill="#335a3a"/>
+   <circle cx="0" cy="-84" r="12" fill="#7fa36a"/>
+   <path d="M-12 -86 Q0 -104 12 -86 Q6 -92 0 -92 Q-6 -92 -12 -86Z" fill="#2f4d32"/>
+   <circle cx="5" cy="-85" r="2" fill="#1b140c"/>
+   <path d="M18 -86 Q34 -56 18 -24" fill="none" stroke="#8a5a2a" stroke-width="3"/>
+   <line x1="18" y1="-86" x2="18" y2="-24" stroke="#e8dcc0" stroke-width="1"/>
+  </g>`;
+}
+function placeHero(){
+  const s=0.75+(hero.y-330)/190*0.45;
+  hero.el.setAttribute("transform",`translate(${hero.x} ${hero.y}) scale(${hero.face*s} ${s})`);
+  const sw=Math.sin(hero.step)*5;
+  const L=hero.el.querySelector("#legL"),R=hero.el.querySelector("#legR");
+  if(L){L.setAttribute("transform",`translate(0 ${-Math.max(0,sw)})`);R.setAttribute("transform",`translate(0 ${-Math.max(0,-sw)})`);}
+}
+function walkTo(x,y,cb){
+  const b=scene.bounds; hero.tx=Math.max(b[0],Math.min(b[2],x)); hero.ty=Math.max(b[1],Math.min(b[3],y)); hero.cb=cb||null;
+}
+let last=performance.now();
+function tick(t){
+  const dt=Math.min(.05,(t-last)/1000); last=t;
+  if(hero.el){
+    const dx=hero.tx-hero.x, dy=hero.ty-hero.y, d=Math.hypot(dx,dy);
+    if(d>2){ const sp=220*dt; hero.x+=dx/d*Math.min(sp,d); hero.y+=dy/d*Math.min(sp,d); if(Math.abs(dx)>1) hero.face=dx>0?1:-1; hero.step+=dt*14; placeHero(); }
+    else if(hero.cb){ const c=hero.cb; hero.cb=null; hero.step=0; placeHero(); c(); }
+  }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+/* ---------- scenes (original placeholder art) ---------- */
+const SCENES={
+  edge:{
+    name:"Forest edge above Farluck Farm", bounds:[40,360,920,515], start:[130,450],
+    art:()=>`
+      <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2b46b"/><stop offset=".55" stop-color="#e6895a"/><stop offset="1" stop-color="#7a4a44"/></linearGradient></defs>
+      <rect width="960" height="540" fill="url(#sky)"/>
+      <circle cx="760" cy="120" r="46" fill="#ffe2a0" opacity=".85"/>
+      <path d="M0 300 Q160 250 330 280 T660 270 T960 290 V540 H0Z" fill="#6f7a4a"/>
+      <path d="M0 330 Q240 300 480 320 T960 320 V540 H0Z" fill="#5b6a3c"/>
+      <g opacity=".9"><rect x="140" y="285" width="70" height="40" fill="#a3753f"/><path d="M130 287 L175 262 L220 287Z" fill="#7a3a24"/><rect x="185" y="300" width="12" height="25" fill="#3b2a1a"/>
+      <path d="M200 262 q-6 -20 6 -34 q-10 -18 2 -32" fill="none" stroke="#efe6d6" stroke-width="5" opacity=".6"/>
+      <path d="M40 330 h300 v6 h-300z M60 342 h260 v6 h-260z" fill="#c9b86a" opacity=".7"/></g>
+      <path d="M0 360 Q300 340 520 360 T960 355 V540 H0Z" fill="#4b5530"/>
+      <path d="M0 400 Q480 380 960 400 V540 H0Z" fill="#3e4a28"/>
+      ${tree(60,380,"#2f5a2c")}${tree(330,370,"#7a6a3a",true)}${tree(560,375,"#806b3e",true)}${tree(880,385,"#2f5a2c")}
+      <path d="M600 470 q20 -6 40 0 M650 486 q20 -6 40 0 M700 470 q20 -6 40 0" stroke="#2a2015" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M900 330 L960 300 V540 H900Z" fill="#33401f" opacity=".8"/>`,
+    hot:[
+      {id:"farm",name:"Farluck Farm, far below",shape:`<rect x="30" y="250" width="320" height="110" fill="transparent"/>`,stand:[200,420],
+        Look:()=>{ say("Far below, smoke curls from Cecil's chimney at Farluck Farm. The fields look thirsty for this time of year."); if(!flags.mood){flags.mood=1; ask("Narrator","Watching the farm, a thought comes to you.",[
+          ["Somebody should find out why the land is so dry.","Serious"],
+          ["If Cecil's stew is dry too, I'm moving out.","Silly"],
+          ["(You wish you could help, but you'd never knock.)","Shy"],
+          ["Lucky for them, the best hunter on the hill is on duty.","Smug"]]);} }},
+      {id:"tree",name:"Wilting tree",shape:`<rect x="300" y="200" width="70" height="180" fill="transparent"/>`,stand:[350,440],
+        Look:()=>say("Its leaves are curled and grey. Something is drinking the life out of this hill."),
+        Use:()=>{ say("You climb up into the branches, the way Leyf do, and look east. A red shimmer flickers between the rocks, like heat over a fire."); flags.shimmer=1; },
+        Take:()=>say("You pinch a grey leaf. It crumbles to dust and smells faintly of rot.")},
+      {id:"tracks",name:"Geev tracks",shape:`<rect x="590" y="455" width="160" height="45" fill="transparent"/>`,stand:[620,470],
+        Look:()=>{ say("Fresh geev tracks, heading east into the rocks. Supper is close."); if(!flags.hunt){flags.hunt=1; ask("Narrator","How do you follow the tracks?",[
+          ["Slow and careful. One step at a time.","Serious"],
+          ["Hop from print to print like a game.","Silly"],
+          ["Keep low and quiet, near the ferns.","Shy"],
+          ["Don't need them. I can smell where it went.","Smug"]]);} }},
+      {id:"east",name:"Path east, into the rocks",shape:`<rect x="880" y="300" width="80" height="230" fill="transparent"/>`,stand:[930,440],exit:"rock"}
+    ]
+  },
+  rock:{
+    name:"The red rock face", bounds:[40,370,900,515], start:[60,450],
+    art:()=>`
+      <rect width="960" height="540" fill="#c8835a"/>
+      <path d="M0 0 H960 V250 Q700 230 480 260 T0 240Z" fill="#e6a46e"/>
+      <path d="M520 360 L560 120 L650 70 L780 90 L860 160 L900 360Z" fill="#6b5a4c"/>
+      <path d="M560 120 L650 70 L700 140 L610 190Z" fill="#7c6a5a"/>
+      <g id="hole" opacity="${flags.melted?1:0}"><path d="M640 360 Q650 230 710 220 Q770 230 780 360Z" fill="#2a0d08"/><path d="M640 360 Q650 230 710 220 Q770 230 780 360" fill="none" stroke="#ff6a2a" stroke-width="6" opacity=".9"/></g>
+      <path d="M0 360 Q480 340 960 360 V540 H0Z" fill="#4a4a2a"/>
+      <path d="M0 410 Q480 395 960 410 V540 H0Z" fill="#3e3f24"/>
+      ${fern(110,420)}${fern(170,440)}${fern(80,470)}
+      ${tree(300,375,"#806b3e",true)}
+      <g id="snare"><path d="M470 470 L520 420 L530 470" fill="none" stroke="#6a4a2a" stroke-width="4"/></g>
+      <g id="geev" transform="translate(${flags.freed?1200:500} 470)">${geev(flags.caught&&!flags.freed)}</g>
+      <g id="cloaks" opacity="${flags.cloaks&&!flags.done?1:0}">${cloak(690,370)}${cloak(735,375)}${cloak(780,368)}</g>`,
+    hot:[
+      {id:"west",name:"Back west",shape:`<rect x="0" y="300" width="50" height="230" fill="transparent"/>`,stand:[40,450],exit:"edge"},
+      {id:"rockface",name:"Rock face",shape:`<path d="M520 360 L560 120 L650 70 L780 90 L860 160 L900 360Z" fill="transparent"/>`,stand:[640,430],
+        Look:()=>say(flags.melted?"Where the rock was, there's a dark tunnel. From deep under the hill comes a soft, steady hammering.":"Old red stone, warm to look at. Oddly warm."),
+        Use:()=>say(flags.melted?"The edge still glows. You keep your hands to yourself.":"You lay a palm on it. It's hot, like a hearthstone."),
+        Talk:()=>say(flags.melted?"\"Hello down there?\" The hammering stops for a breath, then starts again.":"Rocks are poor listeners.")},
+      {id:"geevH",name:"Geev",shape:`<rect x="440" y="400" width="130" height="90" fill="transparent"/>`,stand:[420,470],
+        any:(v,it)=>{
+          if(!flags.caught) return say("The geev is grazing, ears twitching. Your stringbow is ready.");
+          if(flags.freed) return say("It's gone, and good.");
+          if(it==="Stringbow") return say("Not now. It's caught and frightened.");
+          freeGeev(v,it);
+        }},
+      {id:"ferns",name:"Ferns",shape:`<rect x="50" y="380" width="180" height="110" fill="transparent"/>`,stand:[150,470],
+        Look:()=>say("Thick ferns. A good place to stay out of sight."),Take:()=>say("You pick a fern frond and tuck it behind your ear. Very stylish.")}
+    ],
+    enter:()=>{ if(flags.caught) return; busy=true;
+      say("You line up your stringbow on the geev...");
+      setTimeout(()=>{ const h=$("hole"); flags.melted=1; h.style.transition="opacity 1.4s"; h.setAttribute("opacity",1);
+        say("...and the rock face glows red and melts away! The geev bolts, straight into an old snare.");
+        const g=$("geev"); flags.caught=1; g.innerHTML=geev(true); busy=false; },1300);
+    }
+  }
+};
+function tree(x,y,c,wilt){ return `<rect x="${x-6}" y="${y-140}" width="12" height="140" fill="#3b2a1a"/>`+
+  (wilt? `<path d="M${x} ${y-140} q-40 10 -46 50 M${x} ${y-120} q40 10 44 52 M${x} ${y-100} q-30 20 -30 50" stroke="${c}" stroke-width="10" fill="none" stroke-linecap="round"/>`
+       : `<circle cx="${x}" cy="${y-150}" r="46" fill="${c}"/><circle cx="${x-30}" cy="${y-120}" r="32" fill="${c}"/><circle cx="${x+30}" cy="${y-118}" r="34" fill="${c}"/>`); }
+function fern(x,y){ return `<path d="M${x} ${y} q-30 -40 -50 -46 M${x} ${y} q-6 -50 4 -70 M${x} ${y} q30 -36 50 -40" stroke="#3f6b2f" stroke-width="7" fill="none" stroke-linecap="round"/>`; }
+function geev(caught){ return `<ellipse cx="0" cy="0" rx="26" ry="6" fill="rgba(0,0,0,.3)"/>
+  <rect x="-22" y="-26" width="5" height="26" fill="#6b4a2a"/><rect x="14" y="-26" width="5" height="26" fill="#6b4a2a" ${caught?'transform="rotate(-25 16 -26)"':''}/>
+  <ellipse cx="0" cy="-34" rx="30" ry="14" fill="#a87a4a"/><circle cx="30" cy="-48" r="10" fill="#a87a4a"/>
+  <path d="M30 -58 l-6 -16 M34 -58 l6 -16" stroke="#e9dcc0" stroke-width="3"/><circle cx="34" cy="-49" r="2" fill="#1b140c"/>
+  ${caught?'<path d="M10 -4 Q20 -18 30 -4" stroke="#c9b28a" stroke-width="3" fill="none"/>':''}`; }
+function cloak(x,y){ return `<path d="M${x-16} ${y} Q${x-18} ${y-70} ${x} ${y-80} Q${x+18} ${y-70} ${x+16} ${y}Z" fill="#7a1414"/><path d="M${x-9} ${y-66} Q${x} ${y-84} ${x+9} ${y-66}Z" fill="#2a0606"/>`; }
+
+/* ---------- scene setup ---------- */
+function load(id,fromExit){
+  scene=SCENES[id]; $("where").textContent=scene.name;
+  const s=$("svg"); s.innerHTML=scene.art();
+  scene.hot.forEach(h=>{ const g=document.createElementNS(SVGNS,"g"); g.setAttribute("class","hot"); g.setAttribute("tabindex","0"); g.setAttribute("role","button"); g.setAttribute("aria-label",h.name);
+    g.innerHTML=h.shape.replace("fill=\"transparent\"","fill=\"transparent\" class=\"hl\" stroke=\"transparent\"");
+    g.addEventListener("click",e=>{e.stopPropagation(); act(h);});
+    g.addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();act(h);} });
+    g.addEventListener("mouseenter",()=>showLabel(h)); g.addEventListener("mouseleave",()=>$("label").hidden=true);
+    s.appendChild(g); });
+  const hg=document.createElementNS(SVGNS,"g"); hg.innerHTML=heroSVG(); s.appendChild(hg); hero.el=hg;
+  hero.x=hero.tx=scene.start[0]; hero.y=hero.ty=scene.start[1]; hero.face=1; hero.cb=null; placeHero();
+  if(scene.enter) scene.enter();
+}
+function showLabel(h){ const l=$("label"); l.textContent=(item?`Use ${item} on `:(verb==="Walk"?"":verb+" "))+h.name; l.hidden=false; }
+$("svg").addEventListener("click",e=>{
+  if(busy||$("box").classList.contains("on")) return;
+  const s=$("svg"), pt=s.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY; const p=pt.matrixTransform(s.getScreenCTM().inverse());
+  walkTo(p.x,p.y);
+});
+function act(h){
+  if(busy||$("box").classList.contains("on")) return;
+  const v=verb, it=item; setItem(null);
+  walkTo(h.stand[0],h.stand[1],()=>{
+    if(h.exit && (v==="Walk")) return load(h.exit);
+    if(h.any) return h.any(v,it);
+    if(it) return say(`Using the ${it.toLowerCase()} on that doesn't do anything useful.`);
+    const f=h[v==="Walk"?"Look":v];
+    if(f) f(); else say(v==="Talk"?"It doesn't answer.":v==="Take"?"You can't take that.":v==="Use"?"Nothing happens.":"Nothing special.");
+  });
+}
+
+/* ---------- story beats ---------- */
+function freeGeev(v,it){
+  ask("Narrator","The geev thrashes in the snare, eyes wide.",[
+    ["Cut it free. Quick and clean.","Serious",()=>flags.how="cut"],
+    ["\"Shh, shh. Nobody's eating anybody today. Probably.\"","Silly",()=>flags.how="calm"],
+    ["(Kneel, and hum low until it stops shaking.)","Shy",()=>flags.how="calm"],
+    ["\"Hold still. I'm extremely good at this.\"","Smug",()=>flags.how="cut"]],()=>{
+      say(flags.how==="calm"?"It settles under your hand. You ease the loop off its leg with your hunting knife.":"One stroke of your hunting knife and the snare falls loose.");
+      setTimeout(cloaksAppear,1400);
+    });
+}
+function cloaksAppear(){
+  flags.cloaks=1; const c=$("cloaks"); c.style.transition="opacity 1.2s"; c.setAttribute("opacity",1);
+  say("Figures in dark red cloaks step out of the glowing tunnel. Their hoods turn toward the geev, and toward you.");
+  setTimeout(()=>ask("Narrator","The geev is free but frozen. The cloaks are coming.",[
+    ["Loose a stringbow shot into the stone above them to cover the geev.","Serious",()=>flags.end="shot"],
+    ["\"Over here, red hoods! Bet you can't catch me!\"","Silly",()=>flags.end="shot"],
+    ["(Slip into the ferns, and with a soft click of your tongue, send the geev running.)","Shy",()=>flags.end="hide"],
+    ["Shoot the rock above them. One arrow, perfect. Obviously.","Smug",()=>flags.end="shot"]],ending,2),1500);
+}
+function ending(){
+  flags.freed=1; const g=$("geev"); g.style.transition="transform 1.6s"; g.setAttribute("transform","translate(1200 440)");
+  say(flags.end==="hide"?"The geev leaps away free. The cloaks pass the ferns... then stop. The rock face crumbles in a rush of red dust.":"Your arrow strikes true and stone rains down between them and the geev, which leaps away free. The rock face crumbles in a rush of red dust.");
+  busy=true;
+  setTimeout(()=>{ say("The forest goes quiet and golden around you. It doesn't hurt. A light grows, warm as a hearth..."); $("fade").classList.add("on"); },2600);
+  setTimeout(()=>{ const best=pickStyle(); flags.done=1;
+    ask("Narrator",`You open your eyes on the Castle Comet. Bruxanna leans over you: "From how you lived, I'd say you're ${best}."`,[["Begin again","",()=>location.reload()]]); },6000);
+}
+function pickStyle(){ const all=["Serious","Silly","Shy","Smug"]; let best=order[order.length-1]||"Serious";
+  all.forEach(s=>{ if((tally[s]||0)>(tally[best]||0)) best=s; }); return best; }
+
+/* ---------- ui ---------- */
+function say(t){ $("narr").innerHTML=t; }
+const FACE={Narrator:`<svg viewBox="0 0 70 70"><rect width="70" height="70" fill="#1d2633"/><polygon points="35,8 54,30 47,62 23,62 16,30" fill="#bfe4ff" stroke="#fff" stroke-width="1.5"/></svg>`};
+function ask(who,text,opts,after,weight){
+  const box=$("box"); box.classList.add("on"); $("portrait").innerHTML=FACE[who]||FACE.Narrator; $("plate").textContent=who==="Narrator"?"":who; $("say").innerHTML=text;
+  const ul=$("choices"); ul.innerHTML="";
+  opts.forEach((o,i)=>{ const li=document.createElement("li"), b=document.createElement("button"); b.type="button";
+    b.innerHTML=`<span class="k">${i+1}.</span><span>${o[0]}</span>`;
+    b.onclick=()=>{ if(o[1]){ tally[o[1]]=(tally[o[1]]||0)+(weight||1); order.push(o[1]); } box.classList.remove("on"); if(o[2]) o[2](); if(after) after(); };
+    li.appendChild(b); ul.appendChild(li); });
+  ul.querySelector("button").focus({preventScroll:true});
+}
+function setItem(it){ item=it; document.querySelectorAll(".inv button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.it===it)); }
+function buildBar(){
+  const bar=$("verbs"); bar.innerHTML="";
+  VERBS.forEach(v=>{ const b=document.createElement("button"); b.type="button"; b.textContent=v; b.setAttribute("aria-pressed",v===verb);
+    b.onclick=()=>{ verb=v; setItem(null); bar.querySelectorAll(":scope > button").forEach(x=>x.setAttribute("aria-pressed",x.textContent===v)); }; bar.appendChild(b); });
+  const inv=document.createElement("div"); inv.className="inv";
+  inv_items().forEach(it=>{ const b=document.createElement("button"); b.type="button"; b.dataset.it=it; b.textContent=it; b.setAttribute("aria-pressed","false");
+    b.onclick=()=>setItem(item===it?null:it); inv.appendChild(b); });
+  bar.appendChild(inv);
+}
+function inv_items(){ return inv; }
+document.addEventListener("keydown",e=>{
+  if(!$("box").classList.contains("on")) return; const n=parseInt(e.key,10); const bs=$("choices").querySelectorAll("button"); if(n>=1&&n<=bs.length) bs[n-1].click();
+});
+buildBar(); load("edge");
+say("<em>Your first life.</em> Evening at the edge of the forest above Farluck Farm. You're tracking a geev for supper. Try looking at the farm, and find the tracks.");
+</script>
+</body>
+</html>

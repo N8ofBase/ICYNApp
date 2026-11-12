@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crit Quest Dialog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#2a2118; --hall1:#5b4a36; --hall2:#2c2219;
+  --parch:#f3e6c8; --parch2:#e6d3a8; --ink:#2b1d10; --ink2:#5a4630;
+  --edge:#8a6a3a; --gold:#c99a3c; --hover:#fff4d8; --accent:#7a2e1c;
+  --serious:#35577a; --silly:#8a5a12; --shy:#5d6e45; --smug:#6e3f73;
+  --ok:#3d6b35; --bad:#8a2f22;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --parch:#3a2f22; --parch2:#2f261b; --ink:#f1e4c6; --ink2:#c9b38a;
+    --edge:#a9844a; --hover:#4a3c2b; --accent:#e08a6a;
+    --serious:#8fb3dc; --silly:#e2b35c; --shy:#a9c08a; --smug:#cf9ad6; --ok:#8ccf7d; --bad:#ef8e7c;
+  }
+}
+:root[data-theme="dark"]{
+  --parch:#3a2f22; --parch2:#2f261b; --ink:#f1e4c6; --ink2:#c9b38a;
+  --edge:#a9844a; --hover:#4a3c2b; --accent:#e08a6a;
+  --serious:#8fb3dc; --silly:#e2b35c; --shy:#a9c08a; --smug:#cf9ad6; --ok:#8ccf7d; --bad:#ef8e7c;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;overflow-x:hidden}
+.scene{position:relative;min-height:100vh;display:flex;flex-direction:column;
+  background:radial-gradient(ellipse at 50% 20%,#f7e9b8 0%,#d9b86a 14%,var(--hall1) 42%,var(--hall2) 100%)}
+.top{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;color:#f3e6c8;font-family:"Alegreya SC",serif;gap:8px;flex-wrap:wrap}
+.top h1{font-size:18px;margin:0;letter-spacing:.04em}
+.top .loc{font-size:14px;opacity:.85}
+.top button{font:inherit;font-size:13px;background:rgba(0,0,0,.35);color:#f3e6c8;border:1px solid #c99a3c;border-radius:6px;padding:4px 10px;cursor:pointer}
+/* hall silhouette */
+.hall{flex:1;position:relative;min-height:220px}
+.pillar{position:absolute;bottom:0;width:7%;max-width:60px;height:78%;background:linear-gradient(90deg,#3a2d20,#6e5a40 50%,#3a2d20);border-radius:4px 4px 0 0;opacity:.8}
+.crystal{position:absolute;left:50%;bottom:18%;transform:translateX(-50%);width:70px;height:90px}
+.crystal polygon{fill:#bfe4ff;stroke:#fff;stroke-width:1.5;opacity:.9}
+.glow{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(190,228,255,.55),transparent 65%);animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.5}}
+/* dialog */
+.dock{padding:0 16px 16px;display:flex;justify-content:center}
+.box{width:100%;max-width:760px;background:linear-gradient(var(--parch),var(--parch2));border:3px solid var(--edge);border-radius:12px;
+  box-shadow:0 0 0 2px #2b1d10,0 10px 30px rgba(0,0,0,.5);padding:14px 16px 12px;position:relative}
+.head{display:flex;gap:12px;align-items:flex-start}
+.portrait{flex:0 0 auto;width:84px;height:84px;border-radius:10px;border:2px solid var(--gold);background:#201810;overflow:hidden;box-shadow:inset 0 0 12px rgba(0,0,0,.6)}
+.portrait svg{width:100%;height:100%;display:block}
+.plate{font-family:"Alegreya SC",serif;font-weight:700;font-size:18px;color:var(--accent);margin:0 0 2px}
+.plate small{font-weight:500;font-size:13px;color:var(--ink2);margin-left:6px}
+.say{font-size:17px;line-height:1.45;min-height:3.2em;margin:0}
+.say em{color:var(--ink2)}
+.more{position:absolute;right:14px;bottom:8px;font-size:13px;color:var(--ink2);animation:bob 1s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(3px)}}
+.choices{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}
+.choices button{width:100%;text-align:left;font:inherit;font-size:16px;color:var(--ink);background:transparent;border:1px solid transparent;border-radius:8px;padding:7px 10px;cursor:pointer;display:flex;gap:8px;align-items:baseline}
+.choices button:hover,.choices button:focus-visible{background:var(--hover);border-color:var(--edge);outline:none}
+.choices .k{font-family:"Alegreya SC",serif;color:var(--ink2);min-width:1.2em}
+.tag{font-family:"Alegreya SC",serif;font-size:12px;border:1px solid currentColor;border-radius:999px;padding:0 7px;white-space:nowrap}
+.t-Serious{color:var(--serious)} .t-Silly{color:var(--silly)} .t-Shy{color:var(--shy)} .t-Smug{color:var(--smug)}
+.check{font-size:12px;color:var(--accent);font-family:"Alegreya SC",serif;white-space:nowrap}
+.roll{margin-top:8px;font-family:"Alegreya SC",serif;font-size:15px}
+.roll.ok{color:var(--ok)} .roll.bad{color:var(--bad)}
+.toast{position:fixed;left:50%;top:70px;transform:translate(-50%,-20px);opacity:0;transition:.4s;background:linear-gradient(var(--parch),var(--parch2));border:2px solid var(--gold);border-radius:10px;padding:10px 18px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:5;max-width:calc(100% - 32px)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast b{font-family:"Alegreya SC",serif;color:var(--accent);display:block;font-size:17px}
+.toast span{font-size:14px;color:var(--ink2)}
+.legend{max-width:760px;margin:0 auto;padding:0 16px 20px;color:#e9dab8;font-size:14px;line-height:1.45}
+.legend h2{font-family:"Alegreya SC",serif;font-size:16px;margin:4px 0 6px;color:#f3e6c8}
+.legend ul{margin:0;padding-left:18px}
+.notes{position:absolute;right:16px;top:56px;background:rgba(0,0,0,.45);color:#f3e6c8;border:1px solid #c99a3c;border-radius:8px;padding:6px 10px;font-size:13px;max-width:220px}
+.notes b{font-family:"Alegreya SC",serif}
+@media (max-width:560px){
+  .portrait{width:62px;height:62px}
+  .say{font-size:16px}
+  .choices button{font-size:15px;flex-wrap:wrap}
+  .notes{position:static;margin:0 16px 8px;max-width:none}
+}
+</style>
+</head>
+<body>
+<div class="scene">
+  <div class="top">
+    <h1>Crit Quest · Dialog mockup</h1>
+    <span class="loc">Castle Comet · The Waking Hall <span id="style" style="margin-left:8px;color:#e8c260"></span></span>
+    <button id="restart" type="button">Start over</button>
+  </div>
+  <div class="hall" aria-hidden="true">
+    <div class="pillar" style="left:6%"></div><div class="pillar" style="left:22%;height:70%"></div>
+    <div class="pillar" style="right:22%;height:70%"></div><div class="pillar" style="right:6%"></div>
+    <div class="glow"></div>
+    <svg class="crystal" viewBox="0 0 70 90"><polygon points="35,2 62,30 52,84 18,84 8,30"/><polygon points="35,2 44,30 35,84 26,30" style="fill:#e6f5ff;opacity:.7"/></svg>
+  </div>
+  <div class="notes" id="notes"><b>Journal</b><div id="journal">Nothing yet.</div></div>
+  <div class="dock">
+    <div class="box" role="dialog" aria-live="polite">
+      <div class="head">
+        <div class="portrait" id="portrait"></div>
+        <div style="flex:1;min-width:0">
+          <p class="plate" id="plate"></p>
+          <p class="say" id="say"></p>
+        </div>
+      </div>
+      <ul class="choices" id="choices"></ul>
+      <div class="roll" id="roll"></div>
+      <div class="more" id="more" hidden>▼ tap to continue</div>
+    </div>
+  </div>
+  <div class="legend">
+    <h2>How this guides the player</h2>
+    <ul>
+      <li>Tap or press Space to finish a line; pick answers by tapping or pressing 1 to 4.</li>
+      <li>Your first answers to Bruxanna and Wexler quietly set your Style (Serious, Silly, Shy or Smug). When you build your new self, you can keep that Style or change it.</li>
+      <li>After that, every talk adds one bonus answer in your Style, marked with its tag.</li>
+      <li>Style answers work on some beings and not others. When one works, that being warms to you, and you may get a clue, a better price or a favor later. Try Restart with each Style to compare.</li>
+      <li>Some answers show a check, like <b>Charm 12</b>. You roll D20 + Charm, and the result changes the reply, never blocks the story.</li>
+      <li>Important clues go into the Journal, and the scene ends with a quest pop-up so the player always knows what's next.</li>
+    </ul>
+  </div>
+</div>
+<div class="toast" id="toast"><b id="toastT"></b><span id="toastS"></span></div>
+
+<script>
+const FACES={
+  Bruxanna:`<svg viewBox="0 0 84 84"><rect width="84" height="84" fill="#2d2440"/><circle cx="42" cy="42" r="36" fill="#f6e7b0" opacity=".18"/><path d="M14 84c4-18 14-26 28-26s24 8 28 26z" fill="#6a3d8f"/><path d="M30 60l12 10 12-10" fill="none" stroke="#e8c260" stroke-width="3"/><ellipse cx="42" cy="38" rx="15" ry="18" fill="#d9a57c"/><path d="M26 36c0-14 7-22 16-22s16 8 16 22c-4-7-9-10-16-10s-12 3-16 10z" fill="#3b2316"/><path d="M28 20l4-9 5 7 5-9 5 9 5-7 4 9z" fill="#e8c260"/><circle cx="36" cy="38" r="2" fill="#2b1d10"/><circle cx="48" cy="38" r="2" fill="#2b1d10"/><path d="M36 47q6 4 12 0" stroke="#7a3a2a" stroke-width="2" fill="none"/></svg>`,
+  Wexler:`<svg viewBox="0 0 84 84"><rect width="84" height="84" fill="#223040"/><path d="M12 84c4-18 15-25 30-25s26 7 30 25z" fill="#2f5d6e"/><ellipse cx="42" cy="40" rx="14" ry="17" fill="#e3b892"/><path d="M27 32c2-12 9-17 15-17s14 5 15 17c-3-3-6-4-8-4l-3-6-4 6-4-6-3 6c-3 0-6 1-8 4z" fill="#c9c2b0"/><circle cx="36" cy="40" r="5" fill="none" stroke="#c99a3c" stroke-width="2"/><circle cx="48" cy="40" r="5" fill="none" stroke="#c99a3c" stroke-width="2"/><line x1="41" y1="40" x2="43" y2="40" stroke="#c99a3c" stroke-width="2"/><circle cx="36" cy="40" r="1.6" fill="#2b1d10"/><circle cx="48" cy="40" r="1.6" fill="#2b1d10"/><path d="M37 50q5 -3 10 1" stroke="#7a3a2a" stroke-width="2" fill="none"/><rect x="56" y="56" width="16" height="20" rx="2" fill="#efe0b8" transform="rotate(12 64 66)"/></svg>`,
+  You:`<svg viewBox="0 0 84 84"><rect width="84" height="84" fill="#2b2418"/><circle cx="42" cy="34" r="14" fill="#bfa77a"/><path d="M14 84c4-18 14-28 28-28s24 10 28 28z" fill="#8a6a3a"/><text x="42" y="40" text-anchor="middle" font-size="16" font-family="Alegreya SC" fill="#2b1d10">?</text></svg>`,
+  Narrator:`<svg viewBox="0 0 84 84"><rect width="84" height="84" fill="#1d2633"/><polygon points="42,12 62,36 54,74 30,74 22,36" fill="#bfe4ff" stroke="#fff" stroke-width="1.5"/></svg>`
+};
+const TITLES={Bruxanna:"Keeper of Castle Comet",Wexler:"Scholar (mostly)",Narrator:"",You:"Light Keeper"};
+const CHARM=2; // the mock Hero's Charm
+
+// Script. Plain answers have no Style. Each Style answer only shows if the player picked that Style,
+// and "works" lists the beings it works on (they warm to you).
+let STYLE=null, tally={}, order=[];
+const S={
+  build:{who:"Bruxanna",text:"Before you go down, choose who you'll be this time. From how you've spoken so far, I'd guess you are...",styles:true},
+  start:{who:"Narrator",text:"Warm light. Stone under your hands. Somewhere above, a bell rings once and keeps humming.",next:"brux1"},
+  brux1:{who:"Bruxanna",opening:true,text:"There you are. Easy now, the floor is older than it looks. Welcome to Castle Comet, Light Keeper.",choices:[
+    {t:"Where am I? What happened to me?",s:"Serious",go:"bruxSerious",works:["Bruxanna"]},
+    {t:"Is this the part where I get a free breakfast?",s:"Silly",go:"bruxSilly",works:["Bruxanna"]},
+    {t:"(Give a small, nervous wave.)",s:"Shy",go:"bruxShy"},
+    {t:"Light Keeper. I knew I was important.",s:"Smug",go:"bruxSmug"}]},
+  bruxWait:{who:"Bruxanna",text:"Take your time. Most folk come back a little quiet. Wexler, would you explain?",next:"wex1"},
+  bruxSerious:{who:"Bruxanna",text:"<em>(She nods, pleased.)</em> Straight to it. Good. Then listen to Wexler, and try to forgive how he says it.",next:"wex1"},
+  bruxSilly:{who:"Bruxanna",text:"<em>(She laughs, surprised.)</em> Breakfast after, I promise. First, someone wants to explain things. Wexler?",next:"wex1"},
+  bruxShy:{who:"Bruxanna",text:"<em>(She waves back gently.)</em> No one here will rush you. Wexler, would you?",next:"wex1"},
+  bruxSmug:{who:"Bruxanna",text:"Everyone is, here. That's rather the point. Wexler, explain before it goes to their head.",next:"wex1"},
+  wex1:{who:"Wexler",opening:true,text:"Ah! Yes. Right. So. You, er, passed on. The Legion of Starvos. Very sorry. But your kindness, well, it counted. It brought you here. Mostly. I have notes somewhere...",choices:[
+    {t:"Slow down. Tell me about the Legion.",s:"Serious",go:"wexLegion",clue:"The Legion of Starvos ended your first life."},
+    {t:"Are the notes the smudged part, or is that lunch?",s:"Silly",go:"wexLunch"},
+    {t:"You're doing great, Wexler. Really.",s:"Shy",go:"wexKind",works:["Wexler"]},
+    {t:"Hand me those notes. I'll read them myself.",s:"Smug",check:12,go:"wexNotesOk",fail:"wexSmug"}]},
+  wexLegion:{who:"Wexler",text:"Cloaked ones. They burn what grows. You stood in their way, and that's why Bruxanna chose you.",next:"build"},
+  wexNotesOk:{who:"Wexler",text:"Oh! Well, since you asked so nicely. <em>(He hands you a torn page.)</em> Hammering under a hill near Farluck Farm. Cloak marks on the fence posts. I don't like it.",next:"build",clue:"Torn page: hammering under the hill near Farluck Farm; cloak marks on fences."},
+  wexNotesNo:{who:"Wexler",text:"Ah, no, no, they're, um, private. And smudged. Bruxanna will tell you the important bits.",next:"build"},
+  wexLunch:{who:"Wexler",text:"<em>(He squints at the page.)</em> ...Both, honestly. But here, under the jam: hammering under the hill near Farluck Farm.",next:"build",clue:"Torn page: hammering under the hill near Farluck Farm."},
+  wexKind:{who:"Wexler",text:"<em>(He brightens.)</em> Oh! Nobody says that. Here, take this, it's only a torn page but it matters. Something is hammering under the hill near Farluck Farm, and there are cloak marks on the fences.",next:"build",clue:"Torn page: hammering under the hill near Farluck Farm; cloak marks on fences."},
+  wexSmug:{who:"Wexler",text:"<em>(He shrinks a little and tucks the notes away.)</em> Right. Well. Bruxanna can tell you the rest.",next:"build"},
+  brux2:{who:"Bruxanna",text:"Good. Now step through the Icosa Crystal. It will set you near Farluck Farm, at the crystal clearing.",choices:[
+    {t:"I'm ready. Let's go.",go:"end"},
+    {t:"What if I'm not strong enough?",go:"bruxComfort"},
+    {t:"I'll keep them safe. You have my word.",s:"Serious",go:"bruxWord",works:["Bruxanna"]},
+    {t:"Does the crystal have a return policy?",s:"Silly",go:"bruxJoke",works:["Bruxanna"]},
+    {t:"Could I... come back and visit?",s:"Shy",go:"bruxJoke"},
+    {t:"Try not to miss me too much.",s:"Smug",go:"bruxSmug2"}]},
+  bruxWord:{who:"Bruxanna",text:"<em>(She rests a hand on your shoulder.)</em> I believe you. Come back to me in one piece.",next:"end"},
+  bruxJoke:{who:"Bruxanna",text:"It always brings you home. That's the only policy that matters. Go on.",next:"end"},
+  bruxSmug2:{who:"Bruxanna",text:"<em>(She rolls her eyes, but smiles.)</em> I'll manage. Go on.",next:"end"},
+  bruxComfort:{who:"Bruxanna",text:"Strength isn't what got you here. Kindness did. You'll find the rest along the way. Go on, Light Keeper.",next:"end"},
+  end:{who:"Narrator",text:"The crystal hums louder. Light folds around you like a cloak, and the hall fades to the smell of fields.",next:null,quest:true}
+};
+
+const $=id=>document.getElementById(id);
+let node,typing=null,full="",clues=[],likes={};
+function setJournal(){ $("journal").innerHTML = clues.length? clues.map(c=>"• "+c).join("<br>") : "Nothing yet."; }
+function show(id){
+  node=S[id]; $("choices").innerHTML=""; $("roll").textContent=""; $("roll").className="roll"; $("more").hidden=true;
+  $("portrait").innerHTML=FACES[node.who]; const tt=TITLES[node.who];
+  $("plate").innerHTML = node.who==="Narrator"?"":node.who+(tt?`<small>${tt}</small>`:"");
+  if(node.clue && !clues.includes(node.clue)){clues.push(node.clue);setJournal();}
+  type(node.text);
+}
+function type(html){
+  full=html; const el=$("say"); el.innerHTML=""; let i=0; const plain=html;
+  clearInterval(typing);
+  typing=setInterval(()=>{
+    i++; if(plain[i-1]==="<"){ i=plain.indexOf(">",i)+1; }
+    el.innerHTML=plain.slice(0,i);
+    if(i>=plain.length){clearInterval(typing);typing=null;done();}
+  },18);
+}
+function finishTyping(){ if(typing){clearInterval(typing);typing=null;$("say").innerHTML=full;done();return true;} return false; }
+function addBtn(html,fn){const li=document.createElement("li");const b=document.createElement("button");b.type="button";b.innerHTML=html;b.onclick=fn;li.appendChild(b);$("choices").appendChild(li);}
+let shown=[];
+function done(){
+  if(node.styles){
+    const all=["Serious","Silly","Shy","Smug"];
+    let best=order[0]||"Serious"; all.forEach(st=>{ if((tally[st]||0)>(tally[best]||0)) best=st; });
+    $("say").innerHTML=full+` <b class="t-${best}">${best}.</b>`;
+    shown=[best,...all.filter(x=>x!==best)].map(st=>({st}));
+    shown.forEach((o,n)=>addBtn(`<span class="k">${n+1}.</span><span style="flex:1">${n?"Change to "+o.st:"Keep "+o.st+" (from your answers)"}</span><span class="tag t-${o.st}">Style</span>`,()=>chooseStyle(o.st)));
+  } else if(node.choices){
+    shown=node.opening? node.choices.slice() : node.choices.filter(c=>!c.s||c.s===STYLE);
+    shown.forEach((c,n)=>{
+      const extra=(c.s&&!node.opening)?` <span class="tag t-${c.s}">${c.s}</span>`:"";
+      const chk=c.check?` <span class="check">Charm ${c.check}</span>`:"";
+      addBtn(`<span class="k">${n+1}.</span><span style="flex:1">${c.t}</span>${extra}${chk}`,()=>pick(c));
+    });
+  } else { shown=[]; $("more").hidden=false; return; }
+  const f=$("choices").querySelector("button"); if(f) f.focus({preventScroll:true});
+}
+function chooseStyle(st){ STYLE=st; $("style").textContent="Style: "+st; toast("Your Style: "+st,"You get a bonus "+st+" answer in each talk."); show("brux2"); }
+function pick(c){
+  if(node.opening&&c.s){ tally[c.s]=(tally[c.s]||0)+1; if(!order.includes(c.s)) order.push(c.s); }
+  if(c.clue && !clues.includes(c.clue)){clues.push(c.clue);setJournal();}
+  if(c.works){c.works.forEach(w=>likes[w]=(likes[w]||0)+1); toast(`${c.works.join(" and ")} warmed to you`,`${c.s} works on ${c.works.join(" and ")}.`);}
+  if(c.check){
+    const d=1+Math.floor(Math.random()*20), tot=d+CHARM, ok=tot>=c.check;
+    $("choices").innerHTML="";
+    const r=$("roll"); r.textContent=`Charm check: rolled ${d} + ${CHARM} Charm = ${tot} vs ${c.check} · ${ok?"Success":"Not this time"}`; r.className="roll "+(ok?"ok":"bad");
+    setTimeout(()=>show(ok?c.go:c.fail),1300); return;
+  }
+  show(c.go);
+}
+function advance(){
+  if(finishTyping()) return;
+  if(node.choices) return;
+  if(node.next) show(node.next);
+  else if(node.quest){ toast("New quest: Farluck Farm","Find out what's hammering under the hill."); $("more").hidden=true; }
+}
+let tt;
+function toast(t,s){ $("toastT").textContent=t; $("toastS").textContent=s; const el=$("toast"); el.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>el.classList.remove("show"),2600); }
+document.querySelector(".box").addEventListener("click",e=>{ if(!e.target.closest("button")) advance(); });
+document.addEventListener("keydown",e=>{
+  if(e.key===" "||e.key==="Enter"){ if(!e.target.closest||!e.target.closest(".choices")){e.preventDefault();advance();} }
+  const n=parseInt(e.key,10); if(!typing&&n>=1&&n<=shown.length){ const o=shown[n-1]; o.st?chooseStyle(o.st):pick(o); }
+});
+$("restart").onclick=()=>{clues=[];likes={};STYLE=null;tally={};order=[];$("style").textContent="";setJournal();show("start");};
+show("start");
+</script>
+</body>
+</html>
