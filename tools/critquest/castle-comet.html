@@ -918,7 +918,7 @@ function showTrip(msg = "") {
   if (!t) {
     const dest = TIERS[Math.max(1, Math.min(S.tier, TIERS.length - 1))];
     $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Teleportation Station</div><h2>${S.mission ? "Mission: " + S.mission : "Go down to Talus (demo)"}</h2>
-      <p class="note" style="max-width:62ch">${S.mission ? "Help Cecil save his crops from the plague gremlins, and find out what is hammering under the hill. The full mission is the next thing to build; for now this short trip shows what you carry and what comes home." : "Quests aren't built yet. This short demo trip shows what you carry and what comes home."}</p>
+      <p class="note" style="max-width:62ch">${S.mission ? "Help the farmer save the crops from the plague gremlins, and find out what is hammering under the hill. The full mission is the next thing to build; for now this short trip shows what you carry and what comes home." : "Quests aren't built yet. This short demo trip shows what you carry and what comes home."}</p>
       <div class="eyebrow">Your loadout</div>${loadoutCard()}
       ${S.dropped ? `<p class="warn">Your Pack is still lying in ${S.dropped.where}, where you were knocked out. You can go back for it once.</p>` : ""}
       <div class="btns"><button class="btn primary" type="button" id="go">Step into the crystals: ${dest.region}</button>
@@ -1135,7 +1135,7 @@ TALK.past = {
     "Return the purse to the traveler first.", "Hand the traveler their purse with a bow. \"You dropped your jingle.\"", "Slip the purse back into the traveler's bag unseen.", "Keep the purse for now and follow the cloaks.", "Whisper3") },
   Whisper3: { t: "The cloaks spot the traveler.", c: V(
     "Draw them away down the alley.", "Knock over a stack of pots and run, yelling.", "Slip the traveler out the back way.", "\"Over here, slowpokes!\"", "WhisperEnd") },
-  WhisperEnd: { t: "The traveler escapes, calling back that they must warn their friend Cecil upriver. The cloaks close in, the lanterns blur, and a soft wind carries you away...", clue: "From your past life: the traveler you saved went to warn Cecil upriver.", next: "future" }
+  WhisperEnd: { t: "The traveler escapes, calling back that they must warn a farm upriver. The cloaks close in, the lanterns blur, and a soft wind carries you away...", clue: "From your past life: the traveler you saved went to warn a farm upriver.", next: "future" }
 };
 PEOPLE.past = { name: "", role: "", hue: "#82cbd9", letter: "" };
 const INTRO_TITLE = { Brawler: ["The Harvest Bout", "Hinon"], Champion: ["The Empty Lectern", "Hinon"], Maverick: ["The Edge of the Wood", "The forest above Farluck Farm"], "Soul Seer": ["The Quiet Creek", "The forest above Farluck Farm"], Whisper: ["The Quiet Alley", "Umatu"] };
@@ -1179,7 +1179,7 @@ Object.assign(TALK.bruxanna, {
   wakeNod: { face: "wexler", t: "<em>(He nods back, and something in his face softens.)</em> Good. Then you already understand.", next: "wake5" },
   wake5: { t: "You go back down to Talus and help! Stand against the Legion, help the folk of Talus, and clear the way for the Lightbringer. But first, the best part: you get to choose your new self. Go look in the long mirror!", c: [
     { t: "Look in the long mirror.", go: "avatar" } ] },
-  mission1: { t: "Look at you! A brand new {ROLE}. I left a starter weapon and some cloth armor in your chest. And just in time: Wexler says Farluck Farm needs help right away. Cecil's crops are failing. The Training Ground is just down the hall if you'd like to practice with Treywind first.", c: [
+  mission1: { t: "Look at you! A brand new {ROLE}. I left a starter weapon and some cloth armor in your chest. And just in time: Wexler says Farluck Farm needs help right away. The farmer's crops are failing. The Training Ground is just down the hall if you'd like to practice with Treywind first.", c: [
     { t: "Go see Wexler. Farluck Farm can't wait.", go: "talk:wexler:mission" },
     { t: "Train with Treywind first.", go: "room:training" },
     { t: "I'll look around first.", go: "close" } ] },
@@ -1195,7 +1195,7 @@ TALK.boutique = {
   coins: { face: "bruxanna", t: "Looks only! Dice, decorations, the fun stuff. Never power. You earn them helping out around the castle and on Talus.", c: [ { t: "Show me the dice.", go: "close" } ] }
 };
 Object.assign(TALK.wexler, {
-  mission: { t: "Farluck Farm, below the forest. Cecil's crops are failing, plague gremlins are in the fields, and something is hammering under the hill. Help Cecil. The first fights there are gentle ones, a good place to learn. When you're done, come home through any Icosa Crystal.", c: [
+  mission: { t: "Farluck Farm, below the forest. The crops are failing, plague gremlins are in the fields, and something is hammering under the hill. Help the farmer. The first fights there are gentle ones, a good place to learn. When you're done, come home through any Icosa Crystal.", c: [
     { t: "Send me down.", go: "trip" },
     { t: "Not yet.", go: "close" } ] }
 });
@@ -1622,7 +1622,7 @@ function kitchen() {
   const have = Object.entries(S.crops).filter(([k, v]) => v > 0).map(([k, v]) => `${CROP[k].name} ${v}`).join(", ") || "no crops yet";
   gameShell("kitchen", "Cook a dish", `
     <p class="note">You have: ${have}. Pick a recipe.</p>
-    <div class="recipes">${RECIPES.map(r => r.cecil && !(S.recipes || []).includes(r.id) ? `<button type="button" disabled><b>Cecil's recipe</b><small>Cecil of Farluck Farm knows this one</small></button>` : !Object.keys(r.needs).every(known) ? `<button type="button" disabled><b>Unknown recipe</b><small>Needs ingredients from ${TIERS[Math.max(...Object.keys(r.needs).map(k => tierOf(k).tier))].region}</small></button>` : `<button type="button" data-r="${r.id}" ${can(r) ? "" : "disabled"}><b>${r.name}</b><span class="need">${Object.entries(r.needs).map(([k, v]) => `<span class="${C(k) >= v ? "" : "short"}"><img class="mini" src="${iconOf(k)}" alt="">${v} ${CROP[k].name}</span>`).join("")}</span><small>${r.effect}</small></button>`).join("")}</div>
+    <div class="recipes">${RECIPES.map(r => r.cecil && !(S.recipes || []).includes(r.id) ? `<button type="button" disabled><b>${S.farluckDone ? "Cecil's recipe" : "A farmer's recipe"}</b><small>${S.farluckDone ? "Cecil of Farluck Farm knows this one" : "Someone on Farluck Farm knows this one"}</small></button>` : !Object.keys(r.needs).every(known) ? `<button type="button" disabled><b>Unknown recipe</b><small>Needs ingredients from ${TIERS[Math.max(...Object.keys(r.needs).map(k => tierOf(k).tier))].region}</small></button>` : `<button type="button" data-r="${r.id}" ${can(r) ? "" : "disabled"}><b>${r.name}</b><span class="need">${Object.entries(r.needs).map(([k, v]) => `<span class="${C(k) >= v ? "" : "short"}"><img class="mini" src="${iconOf(k)}" alt="">${v} ${CROP[k].name}</span>`).join("")}</span><small>${r.effect}</small></button>`).join("")}</div>
     ${RECIPES.some(can) ? "" : '<p class="note">Nothing to cook yet. Grow some crops on the Farm first.</p>'}
     <div id="cook"></div>`);
   $("#view").querySelectorAll("[data-r]").forEach(b => b.onclick = () => cook(RECIPES.find(r => r.id === b.dataset.r)));
