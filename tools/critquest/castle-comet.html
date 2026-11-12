@@ -331,7 +331,7 @@ const itemName = k => MATS[k] || (CROP[k] && CROP[k].name) || k;
 const iconOf = k => ICON[itemName(k)] || "";
 const START = { day: 1, tier: 0, shards: 0, mats: {},
   seeds: {}, crops: {}, dishes: [],
-  built: { barracks: true, scrap: true }, plots: [], buckets: 3, met: {}, style: null, warm: {}, clues: [],
+  built: { barracks: true, scrap: true, training: true }, plots: [], buckets: 3, met: {}, style: null, warm: {}, clues: [],
   phase: "past", hero: {}, coins: 0, dice: { body: "gold", num: "dark", finish: "plain", own: [] }, sections: {}, trained: false, gear: [] };
 let S;
 try { S = Object.assign(structuredClone(START), JSON.parse(localStorage.getItem("cq-comet-v6") || "{}")); } catch (e) { S = structuredClone(START); }
@@ -387,7 +387,7 @@ const ROOMS = [
   { id: "scrap", name: "Scrap Yard", who: "shnee", text: "The crumbling outer wall of the castle. Shnee digs through the fallen stone for anything still useful.", game: "dig" },
   { id: "farm", name: "Farm", who: "faux", text: "Soil plots beside a little stream, open to the sky. Grow real food, so nobody has to eat nutrient paste again.", game: "farm", cost: { stone: 4, wood: 2 } },
   { id: "kitchen", name: "Kitchen", who: "bruxanna", talk: "kitchen", text: "A warm hearth and a big pot. Cook what you grow into dishes that heal and help you on Talus.", game: "kitchen", cost: { stone: 3, wood: 3, taroil: 1 }, needs: "farm" },
-  { id: "training", name: "Training Ground", who: "treywind", text: "A sandy yard ringed with practice dummies and straw bales. Treywind teaches every new Light Keeper how to battle.", locked: "The old training yard is buried under rubble. The castle will form it once the Farm and Kitchen are built." },
+  { id: "training", name: "Training Ground", who: "treywind", text: "A sandy yard ringed with practice dummies and straw bales. Treywind teaches every new Light Keeper how to battle, and you can come back to practice any time." },
   { id: "open2", name: "Open plot", section: true, text: "An empty stretch of comet rock. Once the Kitchen is built, you choose which section of the castle to build here." },
   { id: "open3", name: "Open plot", section: true, text: "An empty stretch of comet rock. Once the Kitchen is built, you choose which section of the castle to build here." },
   { id: "open4", name: "Open plot", section: true, text: "An empty stretch of comet rock. Once the Kitchen is built, you choose which section of the castle to build here." }
@@ -462,7 +462,7 @@ const TALK = {
     notesNo: { t: "My notes are private. And smudged. Mostly with paste.", next: "talus" },
     silly: { t: "<em>(He frowns at the crystals.)</em> ...I'll add it to the list.", next: "talus" },
     smug: { t: "<em>(He rubs his brow just below one horn.)</em> You are welcome to try. From a distance.", next: "talus" },
-    talus: { t: "Farluck Farm needs help. Build up the castle and let Treywind train you first. A Light Keeper should not go down hungry, or clumsy.", c: [ { t: "I'll get to work.", go: "bye" }, { t: "I'm trained. Send me down.", go: "mission" } ] },
+    talus: { t: "Farluck Farm needs help, and it cannot wait for the castle to be finished.", c: [ { t: "Tell me about it.", go: "mission" }, { t: "Soon.", go: "bye" } ] },
     bye: { t: "Mind the crystals. They are more sensitive than they look." }
   },
   shnee: {
@@ -514,6 +514,7 @@ const STYLES = ["Serious", "Silly", "Shy", "Smug"];
 function openTalk(id, key = "start") {
   if (!S.style && id !== "narrator" && id !== "past") { afterStyle = [id, key]; votes = []; id = "narrator"; key = "q1"; }
   let nd = TALK[id][key];
+  if (nd && nd.pre) { const k2 = nd.pre(); if (k2) { key = k2; nd = TALK[id][k2]; } }
   if (id === "narrator" && key === "result") {
     const count = {}; votes.forEach(v => count[v] = (count[v] || 0) + 1);
     const win = votes.reduce((a, v) => count[v] > (count[a] || 0) ? v : a, votes[0] || "Serious");
@@ -648,10 +649,10 @@ function sidePanel() {
     </div>`;
 }
 function nextStep() {
+  if (!S.farluckDone) return S.trip ? "Finish your trip to Farluck Farm: head back down from the Courtyard." : "Farluck Farm needs help. Talk to Wexler in the Courtyard. Treywind's Training Ground is open if you want practice first.";
   if (!S.built.farm) return canAfford(room("farm").cost) ? "You have enough to build the Farm. Walk to its plot and open the doors." : "Salvage in the Scrap Yard with Shnee, then build the Farm (4 Stone, 2 Wood).";
   if (!S.built.kitchen) return canAfford(room("kitchen").cost) ? "Build the Kitchen next to the Farm." : "Keep salvaging and farming, then build the Kitchen (3 Stone, 3 Wood, 1 Tar Oil).";
-  if (!S.trained) return "The Training Ground has formed. See Treywind to learn how to battle.";
-  return "Begin the Farluck Farm mission with Wexler in the Courtyard. Open plots: choose which sections to build.";
+  return "Choose which sections to build on the open plots. Cook Cecil's Char Bean Soup in the Kitchen, and practice with Treywind any time.";
 }
 function satchel() {
   const tile = (k, n, label) => known(k)
@@ -840,8 +841,8 @@ function showCourtyard() {
   stopGame();
   $("#view").innerHTML = `<div class="panel"><div class="eyebrow">The heart of the castle</div>
     <div class="room">${portrait("wexler", 120)}<div style="display:grid;gap:10px;min-width:0"><h2>Courtyard</h2>
-      <p>An open courtyard on the pale gray rock of the comet, with the Nebrom system hanging overhead. In the middle, a circle of blue crystals hums: the Teleportation Station.</p>${S.trained ? "" : '<p class="note">Wexler won\'t send anyone down before Treywind has trained them.</p>'}
-      <div class="btns"><button class="btn primary" type="button" id="tb">Talk to Bruxanna</button><button class="btn" type="button" id="tw">Talk to Wexler</button>${S.trained ? `<button class="btn primary" type="button" id="tdown">${S.trip ? "Back down to Farluck Farm" : "Begin the Farluck Farm mission"}</button>` : ""}<button class="btn" type="button" id="back">Back to the castle</button></div>
+      <p>An open courtyard on the pale gray rock of the comet, with the Nebrom system hanging overhead. In the middle, a circle of blue crystals hums: the Teleportation Station.</p>
+      <div class="btns"><button class="btn primary" type="button" id="tb">Talk to Bruxanna</button><button class="btn" type="button" id="tw">Talk to Wexler</button><button class="btn primary" type="button" id="tdown">${S.trip ? "Back down to " + S.trip.where : S.farluckDone ? "Go back down to Talus" : "Begin the Farluck Farm mission"}</button><button class="btn" type="button" id="back">Back to the castle</button></div>
     </div></div></div>`;
   $("#tb").onclick = () => openTalk("bruxanna"); $("#tw").onclick = () => openTalk("wexler"); if ($("#tdown")) $("#tdown").onclick = () => S.trip ? showTrip() : openTalk("wexler", "mission"); $("#back").onclick = showHub;
 }
@@ -922,7 +923,7 @@ function showTrip(msg = "") {
       ${S.dropped ? `<p class="warn">Your Pack is still lying in ${S.dropped.where}, where you were knocked out. You can go back for it once.</p>` : ""}
       <div class="btns"><button class="btn primary" type="button" id="go">Step into the crystals: ${dest.region}</button>
         <button class="btn" type="button" id="lo">Change loadout in the Barracks</button><button class="btn" type="button" id="back">Back to the Courtyard</button></div></div>`;
-    $("#go").onclick = () => { if (S.tier < dest.tier) discover(dest.tier); S.trip = { where: dest.region, tier: dest.tier }; S.pack = []; save(); showTrip(`The crystals hum, the courtyard folds away, and you step out in ${dest.region} with an empty Pack.`); };
+    $("#go").onclick = () => { if (S.tier < dest.tier) discover(dest.tier); S.trip = { where: dest.region, tier: dest.tier }; S.pack = []; save(); showTrip(S.mission && !S.farluckDone ? `The crystals hum, the courtyard folds away, and you step out at the crystal clearing above Farluck Farm. An old farmer in a patched hat waves you down. "A Light Keeper? Oh, thank the stars. I'm Cecil. The gremlins are in the gorgrain again..."` : `The crystals hum, the courtyard folds away, and you step out in ${dest.region} with an empty Pack.`); };
     $("#lo").onclick = showLoadout; $("#back").onclick = showCourtyard;
     return;
   }
@@ -953,9 +954,17 @@ function showTrip(msg = "") {
   $("#home").onclick = () => {
     const got = S.pack.map(sl => `${sl.n} ${itemName(sl.k)}`);
     S.pack.forEach(sl => { if (CROP[sl.k]) S.crops[sl.k] = C(sl.k) + sl.n; else addM(sl.k, sl.n); });
-    S.pack = []; S.trip = null; save();
-    toast(got.length ? "Back on the Comet. Unpacked: " + got.join(", ") : "Back on the Comet with an empty Pack.");
+    S.pack = []; S.trip = null;
+    const firstFarluck = S.mission === "Farluck Farm" && !S.farluckDone;
+    if (firstFarluck) {
+      S.farluckDone = true; S.seeds.gorgrain = SD("gorgrain") + 3; S.seeds.charbean = SD("charbean") + 3;
+      S.dishes.push("Cecil's Char Bean Soup", "Cecil's Char Bean Soup"); S.recipes = [...(S.recipes || []), "soup"];
+      addClue("Cecil's recipe card: Char Bean Soup, the way his family makes it.");
+    }
+    save();
+    toast(firstFarluck ? "Cecil's thank-you gifts: 3 Gorgrain seeds, 3 Char Bean seeds, 2 bowls of his Char Bean Soup, and his recipe card." : got.length ? "Back on the Comet. Unpacked: " + got.join(", ") : "Back on the Comet with an empty Pack.");
     showCourtyard();
+    if (firstFarluck) openTalk("bruxanna", "salvage1");
   };
   $("#ko").onclick = () => {
     const lostOld = !!S.dropped; // knocked out again before going back: the old Pack is gone
@@ -1170,7 +1179,11 @@ Object.assign(TALK.bruxanna, {
   wakeNod: { face: "wexler", t: "<em>(He nods back, and something in his face softens.)</em> Good. Then you already understand.", next: "wake5" },
   wake5: { t: "You go back down to Talus and help! Stand against the Legion, help the folk of Talus, and clear the way for the Lightbringer. But first, the best part: you get to choose your new self. Go look in the long mirror!", c: [
     { t: "Look in the long mirror.", go: "avatar" } ] },
-  salvage1: { t: "Look at you! A brand new {ROLE}. Now, about the castle... most of it fell down on the trip over. Shnee is out in the Scrap Yard. Salvage stone, wood and tar oil, and the castle can form a Farm. Then a Kitchen! Real food!", c: [
+  mission1: { t: "Look at you! A brand new {ROLE}. I left a starter weapon and some cloth armor in your chest. And just in time: Wexler says Farluck Farm needs help right away. Cecil's crops are failing. The Training Ground is just down the hall if you'd like to practice with Treywind first.", c: [
+    { t: "Go see Wexler. Farluck Farm can't wait.", go: "talk:wexler:mission" },
+    { t: "Train with Treywind first.", go: "room:training" },
+    { t: "I'll look around first.", go: "close" } ] },
+  salvage1: { t: "You're back! And look at all that: seeds, food and Cecil's own recipe! We can't grow or cook anything yet, though. Most of the castle fell down on the trip over. Salvage stone, wood and tar oil with Shnee in the Scrap Yard, and the castle can form a Farm. Then a Kitchen!", c: [
     { t: "To the Scrap Yard.", go: "room:scrap" },
     { t: "I'll look around first.", go: "close" } ] }
 
@@ -1182,7 +1195,7 @@ TALK.boutique = {
   coins: { face: "bruxanna", t: "Looks only! Dice, decorations, the fun stuff. Never power. You earn them helping out around the castle and on Talus.", c: [ { t: "Show me the dice.", go: "close" } ] }
 };
 Object.assign(TALK.wexler, {
-  mission: { t: "Farluck Farm, below the forest. Cecil's crops are failing, plague gremlins are in the fields, and something is hammering under the hill. Help Cecil. When you're done, come home through any Icosa Crystal.", c: [
+  mission: { t: "Farluck Farm, below the forest. Cecil's crops are failing, plague gremlins are in the fields, and something is hammering under the hill. Help Cecil. The first fights there are gentle ones, a good place to learn. When you're done, come home through any Icosa Crystal.", c: [
     { t: "Send me down.", go: "trip" },
     { t: "Not yet.", go: "close" } ] }
 });
@@ -1192,7 +1205,7 @@ PEOPLE.tata = { name: "Tata", role: "Tavern", hue: "#c9a36b", letter: "T" };
 PEOPLE.meya = { name: "Meya", role: "Mystic", hue: "#9a5ad0", letter: "M" };
 PEOPLE.sloan = { name: "Sloan", role: "Spiritual", hue: "#82cbd9", letter: "S" };
 TALK.treywind = {
-  start: { t: "You may think this is fun, or cool, but this is serious. Talus is hurting! If the Legion calls Starvos down, worlds will burn. Are you ready? COME AT ME THEN!", c: [
+  start: { pre: () => S.farluckDone && !S.met.treyCecil ? (S.met.treyCecil = true, "cecil") : null, t: "You may think this is fun, or cool, but this is serious. Talus is hurting! If the Legion calls Starvos down, worlds will burn. Are you ready? COME AT ME THEN!", c: [
     { t: "I'm ready.", go: "rack" },
     { t: "How does a fight work?", go: "how" },
     { t: "Let's do this properly.", s: "Serious", go: "rack" },
@@ -1203,7 +1216,8 @@ TALK.treywind = {
   hug: { t: "<em>(He stares.)</em> ...After. Maybe. Weapon first!", next: "rack" },
   smug: { t: "HA! I like you. I'm still going to knock you over.", next: "rack" },
   rack: { t: "Georgia left a rack of training weapons. Pick one that fits your role, and take some cloth armor.", c: [ { t: "Go to the weapon rack.", go: "weapons" } ] },
-  done: { t: "Sweet Sassy Mollassy, you do pack a wallop! We may give the Legion some trouble after all. Go see Wexler at the Teleportation Station. Farluck Farm needs you.", c: [ { t: "To the Courtyard.", go: "yard" }, { t: "Again!", go: "battle" } ] }
+  done: { t: "Sweet Sassy Mollassy, you do pack a wallop! We may give the Legion some trouble after all. Come back any time you want to practice.", c: [ { t: "To the Courtyard.", go: "yard" }, { t: "Again!", go: "battle" } ] },
+  cecil: { t: "You went to Farluck Farm? How is Cecil? <em>(He looks away for a moment.)</em> We were friends, before. Tell him Treywind says hello. He'll know what it means.", clue: "Treywind knew Cecil of Farluck Farm, before.", c: [ { t: "I will.", go: "start" } ] }
 };
 TALK.georgia = { start: { t: "Howdy, newbie. Welcome to the heat. I am Georgia, and this is the Georgia Forge. You will treat her well. It is not complicated: you bring material, you smash material, you get shiny new thing. Simple. You try.", c: [ { t: "Show me what I can make.", go: "close" } ] } };
 TALK.tata = { start: { t: "A customer! Or a new worker? Either way, grab an apron. Brews must be made in under 20 seconds, and the stage is open for anyone brave enough to perform.", c: [ { t: "I'll help out.", go: "close" } ] } };
@@ -1265,7 +1279,10 @@ function showAvatar(first = false, h0 = null) {
   });
   $("#become").onclick = () => {
     Object.assign(S.hero, h); S.style = h.style; save(); renderStyle();
-    if (first) { S.phase = "castle"; save(); showBarracks(); openTalk("bruxanna", "salvage1"); }
+    if (first) {
+      if (!S.loadout.weapon) { const w = FORGE.find(g => g.slot === "weapon" && g.roles.includes(h.role)); S.gear.push(w.id, "clotharmor"); S.loadout.weapon = w.id; S.loadout.armor = "clotharmor"; }
+      S.phase = "castle"; save(); showBarracks(); openTalk("bruxanna", "mission1");
+    }
     else { $("#avMsg").textContent = "Saved."; }
   };
   if ($("#back")) $("#back").onclick = showBarracks;
@@ -1443,11 +1460,11 @@ function showBuild(r) {
   if ($("#toScrap")) $("#toScrap").onclick = () => showRoom("scrap");
   $("#build").onclick = () => {
     Object.entries(r.cost).forEach(([k, v]) => addM(k, -v));
-    S.built[r.id] = true; if (r.id === "kitchen") S.built.training = true; save();
+    S.built[r.id] = true; save();
     $("#build").disabled = true;
     $("#res").innerHTML = `<p>You set the ${Object.keys(r.cost).map(k => MATS[k].toLowerCase()).join(", ").replace(/, ([^,]*)$/, " and $1")} at the doors and pull them open. The bare stone shimmers, and the ${r.name} forms in front of you.</p><button class="btn primary" type="button" id="enter">Step inside</button>`;
     $("#enter").onclick = () => showRoom(r.id);
-    toast(r.id === "kitchen" ? "The Kitchen is built! The castle shudders, and the Training Ground forms too." : `The ${r.name} is built!`);
+    toast(`The ${r.name} is built!`);
   };
 }
 
@@ -1595,17 +1612,17 @@ function farm() {
 /* Kitchen: pick a recipe, keep the heat in the green band, stir on cue, then a D20 taste check */
 const RECIPES = [ // placeholder recipes from N8's plants; effects to be tuned
   { id: "porridge", name: "Gorgrain Porridge", needs: { gorgrain: 2 }, effect: "restores 1D6 Life on Talus" },
-  { id: "soup", name: "Char Bean Soup", needs: { charbean: 2, gorgrain: 1 }, effect: "restores 2D6 Life on Talus" },
+  { id: "soup", name: "Char Bean Soup", cecil: true, needs: { charbean: 2, gorgrain: 1 }, effect: "restores 2D6 Life on Talus" },
   { id: "tart", name: "Jeewa Tart", needs: { jeewa: 2, gorgrain: 1 }, effect: "+1 Speed for your next battle" },
   { id: "cooler", name: "Meloon Cooler", needs: { meloon: 1, pinclover: 1 }, effect: "+1 Defense for your next battle" },
   { id: "stew", name: "Hearty Comet Stew", needs: { quobulb: 1, snarproot: 1, charbean: 2, halowart: 1 }, effect: "+3 Max Life for your next quest" }
 ];
 function kitchen() {
-  const can = r => Object.entries(r.needs).every(([k, v]) => C(k) >= v);
+  const can = r => (!r.cecil || (S.recipes || []).includes(r.id)) && Object.entries(r.needs).every(([k, v]) => C(k) >= v);
   const have = Object.entries(S.crops).filter(([k, v]) => v > 0).map(([k, v]) => `${CROP[k].name} ${v}`).join(", ") || "no crops yet";
   gameShell("kitchen", "Cook a dish", `
     <p class="note">You have: ${have}. Pick a recipe.</p>
-    <div class="recipes">${RECIPES.map(r => !Object.keys(r.needs).every(known) ? `<button type="button" disabled><b>Unknown recipe</b><small>Needs ingredients from ${TIERS[Math.max(...Object.keys(r.needs).map(k => tierOf(k).tier))].region}</small></button>` : `<button type="button" data-r="${r.id}" ${can(r) ? "" : "disabled"}><b>${r.name}</b><span class="need">${Object.entries(r.needs).map(([k, v]) => `<span class="${C(k) >= v ? "" : "short"}"><img class="mini" src="${iconOf(k)}" alt="">${v} ${CROP[k].name}</span>`).join("")}</span><small>${r.effect}</small></button>`).join("")}</div>
+    <div class="recipes">${RECIPES.map(r => r.cecil && !(S.recipes || []).includes(r.id) ? `<button type="button" disabled><b>Cecil's recipe</b><small>Cecil of Farluck Farm knows this one</small></button>` : !Object.keys(r.needs).every(known) ? `<button type="button" disabled><b>Unknown recipe</b><small>Needs ingredients from ${TIERS[Math.max(...Object.keys(r.needs).map(k => tierOf(k).tier))].region}</small></button>` : `<button type="button" data-r="${r.id}" ${can(r) ? "" : "disabled"}><b>${r.name}</b><span class="need">${Object.entries(r.needs).map(([k, v]) => `<span class="${C(k) >= v ? "" : "short"}"><img class="mini" src="${iconOf(k)}" alt="">${v} ${CROP[k].name}</span>`).join("")}</span><small>${r.effect}</small></button>`).join("")}</div>
     ${RECIPES.some(can) ? "" : '<p class="note">Nothing to cook yet. Grow some crops on the Farm first.</p>'}
     <div id="cook"></div>`);
   $("#view").querySelectorAll("[data-r]").forEach(b => b.onclick = () => cook(RECIPES.find(r => r.id === b.dataset.r)));
