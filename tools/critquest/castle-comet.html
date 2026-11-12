@@ -115,6 +115,64 @@ img.mini { width: 20px; height: 20px; vertical-align: -5px; margin-right: 4px; o
 .slot.empty { background: var(--hall); border: 1px dashed var(--line); color: var(--soft); min-height: 66px; align-content: center; }
 .packSlots { padding: 6px 0 12px; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); }
 .warn { color: var(--ember); }
+.title { padding: 22px; } .title.center { text-align: center; justify-items: center; }
+.big { font-family: var(--display); font-size: clamp(1.9rem, 5vw, 2.8rem); color: var(--comet); margin: 0; font-weight: 400; }
+.sub2 { font-family: var(--display); font-weight: 400; font-size: 1.3rem; margin: 0; color: var(--frost); }
+.lead { max-width: 62ch; line-height: 1.5; margin: 0; }
+.pickGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.pickGrid.sm { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); }
+.pickGrid.feat { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.pickCard { text-align: left; display: grid; gap: 3px; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--line); background: var(--stone); color: var(--ink); cursor: pointer; font: inherit; }
+.pickCard small { color: var(--soft); font-size: .8rem; line-height: 1.3; }
+.pickCard.on { border-color: var(--comet); box-shadow: inset 0 0 0 1px var(--comet); background: #2f2a3c; }
+.pickCard:hover { border-color: var(--soft); }
+.eyebrow small { text-transform: none; letter-spacing: 0; margin-left: 6px; color: var(--soft); font-size: .8rem; }
+.avatar { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 16px; align-items: start; }
+.avForm { display: grid; gap: 10px; min-width: 0; }
+.avSheet { position: sticky; top: 12px; display: grid; gap: 8px; justify-items: start; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--void); }
+.avSheet h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 1.3rem; }
+.avSheet p { margin: 0; }
+@media (max-width: 760px) { .avatar { grid-template-columns: minmax(0, 1fr); } .avSheet { position: static; } }
+.d20.big { width: 84px; height: 84px; font-size: 2rem; }
+.statGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 14px; font-size: .9rem; color: var(--soft); width: 100%; }
+.statGrid b { color: var(--ink); }
+.focusGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+.focusGrid > div { display: grid; gap: 6px; align-content: start; }
+.fname { font-family: var(--display); color: var(--frost); }
+.diceRow { display: flex; flex-wrap: wrap; gap: 6px; }
+.diceRow .brk { flex-basis: 100%; height: 0; }
+.chip2 { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 16px; border: 1px solid var(--line); background: var(--stone); color: var(--ink); font: inherit; font-size: .85rem; cursor: pointer; }
+.chip2.on { border-color: var(--comet); box-shadow: inset 0 0 0 1px var(--comet); }
+.chip2.lock { opacity: .75; border-style: dashed; }
+.chip2 small { color: var(--comet); }
+.sw { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 4px; font-style: normal; font-size: 9px; font-weight: 700; }
+.tableWrap { overflow-x: auto; }
+.ctable { border-collapse: collapse; width: 100%; font-size: .9rem; min-width: 520px; }
+.ctable th, .ctable td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.ctable th { color: var(--soft); font-weight: 500; font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; }
+.ctable td.ok { color: var(--leaf); } .ctable td.pickme { color: var(--comet); }
+.secGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.secCard { display: grid; gap: 8px; align-content: start; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--stone); }
+.secCard small { color: var(--soft); }
+.slot .ico { font-size: 1.4rem; line-height: 1.4; }
+.bstats { display: flex; flex-wrap: wrap; gap: 6px 18px; font-variant-numeric: tabular-nums; color: var(--soft); }
+.bstats b { color: var(--ink); }
+.bwrap { position: relative; max-width: 640px; width: 100%; }
+.bwrap svg { width: 100%; height: auto; display: block; touch-action: manipulation; }
+.hex.bale { fill: #5a4a2a; cursor: default; }
+.hex.lit { fill: #2f4a3a; stroke: var(--leaf); }
+.tokT { font-family: var(--display); font-size: 20px; fill: #fff; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.turnPop { position: absolute; z-index: 5; transform: translate(-50%, 34px); width: 220px; display: grid; gap: 3px; padding: 8px; border-radius: 10px;
+  background: #f3e6c8; color: #2b1d10; border: 2px solid #c99a3c; box-shadow: 0 8px 24px rgba(0,0,0,.5); }
+.turnPop .popHead { font-family: "Alegreya SC", Georgia, serif; font-weight: 700; color: #7a2e1c; font-size: .95rem; }
+.turnPop button { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; text-align: left; font: inherit; font-size: .92rem; color: #2b1d10; background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 4px 7px; cursor: pointer; }
+.turnPop button:hover:not(:disabled) { background: #fff4d8; border-color: #8a6a3a; }
+.turnPop button:disabled { opacity: .45; cursor: default; }
+.turnPop small { color: #5a4630; font-size: .78rem; }
+@media (max-width: 560px) { .turnPop { position: static; transform: none; width: auto; margin-top: 8px; } }
+.nextStep { border: 1px solid var(--comet); border-radius: 8px; padding: 10px 12px; background: #2a2540; }
+.nextStep b { color: var(--comet); }
+
 
 /* room */
 .room { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; align-items: start; }
@@ -272,15 +330,17 @@ const itemName = k => MATS[k] || (CROP[k] && CROP[k].name) || k;
 const iconOf = k => ICON[itemName(k)] || "";
 const START = { day: 1, tier: 0, shards: 0, mats: {},
   seeds: {}, crops: {}, dishes: [],
-  built: { barracks: true, scrap: true }, plots: [], buckets: 3, met: {}, style: null, warm: {}, clues: [] };
+  built: { barracks: true, scrap: true }, plots: [], buckets: 3, met: {}, style: null, warm: {}, clues: [],
+  phase: "past", hero: {}, coins: 0, dice: { body: "gold", num: "dark", finish: "plain", own: [] }, sections: {}, trained: false, gear: [] };
 let S;
-try { S = Object.assign(structuredClone(START), JSON.parse(localStorage.getItem("cq-comet-v5") || "{}")); } catch (e) { S = structuredClone(START); }
-function save() { try { localStorage.setItem("cq-comet-v5", JSON.stringify(S)); } catch (e) {} renderPouch(); }
+try { S = Object.assign(structuredClone(START), JSON.parse(localStorage.getItem("cq-comet-v6") || "{}")); } catch (e) { S = structuredClone(START); }
+function save() { try { localStorage.setItem("cq-comet-v6", JSON.stringify(S)); } catch (e) {} renderPouch(); }
 const M = k => S.mats[k] || 0, addM = (k, n) => { S.mats[k] = M(k) + n; };
 const C = k => S.crops[k] || 0, SD = k => S.seeds[k] || 0;
 function renderPouch() {
   const crops = Object.values(S.crops).reduce((x, y) => x + y, 0);
   const items = [["Day", S.day, ""], ["Stone", M("stone"), "stone"], ["Wood", M("wood"), "wood"], ["Tar Oil", M("taroil"), "taroil"], ["Crops", crops, ""], ["Dishes", S.dishes.length, ""]];
+  items.push(["Icosa Coins", S.coins || 0, ""]);
   if (S.shards) items.push(["Crit Shards", S.shards, ""]);
   $("#pouch").innerHTML = items.map(([k, v, ic]) => `<span>${ic ? `<img class="mini" src="${iconOf(ic)}" alt="">` : ""}${k} <b>${v}</b></span>`).join("");
 }
@@ -308,7 +368,6 @@ const PERKS = {
   shnee: "Shnee gives you 1 extra dig in the Scrap Yard.",
   faux: "Faux adds +2 to every harvest roll."
 };
-const HERO_CHARM = 2; // mock Hero's Charm until the Hero builder is joined in
 let picN = 0;
 function portrait(id, size) {
   if (SHARED_FACES[id]) return `<div style="width:${size}px;height:${size}px;border-radius:12px;overflow:hidden;border:2px solid #c99a3c">${SHARED_FACES[id]}</div>`;
@@ -327,12 +386,12 @@ const ROOMS = [
   { id: "scrap", name: "Scrap Yard", who: "shnee", text: "The crumbling outer wall of the castle. Shnee digs through the fallen stone for anything still useful.", game: "dig" },
   { id: "farm", name: "Farm", who: "faux", text: "Soil plots beside a little stream, open to the sky. Grow real food, so nobody has to eat nutrient paste again.", game: "farm", cost: { stone: 4, wood: 2 } },
   { id: "kitchen", name: "Kitchen", who: "bruxanna", talk: "kitchen", text: "A warm hearth and a big pot. Cook what you grow into dishes that heal and help you on Talus.", game: "kitchen", cost: { stone: 3, wood: 3, taroil: 1 }, needs: "farm" },
-  { id: "open1", name: "Open plot", text: "An empty stretch of comet rock. More rooms come with the story." },
-  { id: "open2", name: "Open plot", text: "An empty stretch of comet rock. More rooms come with the story." },
-  { id: "open3", name: "Open plot", text: "An empty stretch of comet rock. More rooms come with the story." },
-  { id: "open4", name: "Open plot", text: "An empty stretch of comet rock. More rooms come with the story." }
+  { id: "training", name: "Training Ground", who: "treywind", text: "A sandy yard ringed with practice dummies and straw bales. Treywind teaches every new Light Keeper how to battle.", locked: "The old training yard is buried under rubble. The castle will form it once the Farm and Kitchen are built." },
+  { id: "open2", name: "Open plot", section: true, text: "An empty stretch of comet rock. Once the Kitchen is built, you choose which section of the castle to build here." },
+  { id: "open3", name: "Open plot", section: true, text: "An empty stretch of comet rock. Once the Kitchen is built, you choose which section of the castle to build here." },
+  { id: "open4", name: "Open plot", section: true, text: "An empty stretch of comet rock. Once the Kitchen is built, you choose which section of the castle to build here." }
 ];
-const room = id => ROOMS.find(r => r.id === id);
+const room = id => { const r = ROOMS.find(x => x.id === id); return r && r.section && S.sections[id] ? { ...r, ...SECTIONS[S.sections[id]], id } : r; };
 const canAfford = c => Object.entries(c).every(([k, v]) => M(k) >= v);
 
 /* ---------- dialog trees, in the shared format.
@@ -402,7 +461,7 @@ const TALK = {
     notesNo: { t: "My notes are private. And smudged. Mostly with paste.", next: "talus" },
     silly: { t: "<em>(He frowns at the crystals.)</em> ...I'll add it to the list.", next: "talus" },
     smug: { t: "<em>(He rubs his brow just below one horn.)</em> You are welcome to try. From a distance.", next: "talus" },
-    talus: { t: "Farluck Farm needs help, but the quest isn't open in this prototype yet. Build up the castle first. A Light Keeper should not go down hungry.", c: [ { t: "I'll get to work.", go: "bye" } ] },
+    talus: { t: "Farluck Farm needs help. Build up the castle and let Treywind train you first. A Light Keeper should not go down hungry, or clumsy.", c: [ { t: "I'll get to work.", go: "bye" }, { t: "I'm trained. Send me down.", go: "mission" } ] },
     bye: { t: "Mind the crystals. They are more sensitive than they look." }
   },
   shnee: {
@@ -452,7 +511,7 @@ const TALK = {
 let typing = null, full = "", node = null, nodeWho = null, shown = [], afterStyle = null, votes = [];
 const STYLES = ["Serious", "Silly", "Shy", "Smug"];
 function openTalk(id, key = "start") {
-  if (!S.style && id !== "narrator") { afterStyle = [id, key]; votes = []; id = "narrator"; key = "q1"; }
+  if (!S.style && id !== "narrator" && id !== "past") { afterStyle = [id, key]; votes = []; id = "narrator"; key = "q1"; }
   let nd = TALK[id][key];
   if (id === "narrator" && key === "result") {
     const count = {}; votes.forEach(v => count[v] = (count[v] || 0) + 1);
@@ -461,12 +520,12 @@ function openTalk(id, key = "start") {
   }
   if (!nd) return closeTalk();
   node = nd; nodeWho = id;
-  let text = nd.t;
+  let text = nd.t.replace(/\{ROLE\}/g, S.hero.role || "Light Keeper").replace("{LF}", S.hero.lf ? LIFEFORMS[S.hero.lf].line : "");
   if (id === "you" && key === "chest") text = S.dishes.length ? "Inside: " + S.dishes.join(", ") + "." : "The chest is empty. Dishes from the Kitchen will go here.";
   if (id === "you" && key === "mirror") text = `You see a Light Keeper with a <b>${S.style}</b> Style looking back.`;
   if (nd.clue) addClue(nd.clue);
   S.met[id] = true;
-  const face = id === "kitchen" ? "bruxanna" : id, p = PEOPLE[face];
+  const face = nd.face || (id === "kitchen" ? "bruxanna" : id === "past" ? "narrator" : id), p = PEOPLE[face];
   $("#dlgPic").innerHTML = SHARED_FACES[face] || portrait(face, "100%");
   $("#dlgWho").innerHTML = p.name ? `${p.name}<small>${id === "kitchen" ? "Kitchen" : p.role}</small>` : "";
   $("#dlgChoices").innerHTML = ""; $("#dlgRoll").textContent = ""; $("#dlgRoll").className = "roll"; $("#dlgMore").hidden = true;
@@ -513,9 +572,9 @@ function pickAnswer(c) {
   if (c.clue) addClue(c.clue);
   if (c.works) c.works.forEach(warmUp);
   if (c.check) {
-    const d = d20(), tot = d + HERO_CHARM, ok = tot >= c.check;
+    const ch = heroCharm(), d = d20(), tot = d + ch, ok = tot >= c.check;
     $("#dlgChoices").innerHTML = "";
-    const r = $("#dlgRoll"); r.textContent = `Charm check: rolled ${d} + ${HERO_CHARM} Charm = ${tot} vs ${c.check}. ${ok ? "Success!" : "Not this time."}`; r.className = "roll " + (ok ? "ok" : "bad");
+    const r = $("#dlgRoll"); r.textContent = `Charm check: rolled ${d} + ${ch} Charm = ${tot} vs ${c.check}. ${ok ? "Success!" : "Not this time."}`; r.className = "roll " + (ok ? "ok" : "bad");
     if (ok && nodeWho === "shnee") { addM("stone", 2); save(); }
     setTimeout(() => route(ok ? c.go : c.fail), 1300); return;
   }
@@ -525,7 +584,9 @@ function route(go) {
   if (go === "close") return closeTalk();
   if (go === "restyle") { afterStyle = null; return openTalk("narrator", "change"); }
   if (go === "rest") { closeTalk(); return rest(); }
-  if (go.startsWith("talk:")) return openTalk(go.slice(5));
+  const special = { future: showFuture, avatar: () => showAvatar(true), weapons: showRack, battle, yard: showCourtyard, trip: () => { S.mission = "Farluck Farm"; save(); showTrip(); } };
+  if (special[go]) { closeTalk(); return special[go](); }
+  if (go.startsWith("talk:")) { const [, who, key] = go.split(":"); return openTalk(who, key || "start"); }
   if (go.startsWith("play:")) { closeTalk(); return startGame(go.slice(5)); }
   if (go.startsWith("room:")) { closeTalk(); return showRoom(go.slice(5)); }
   openTalk(nodeWho, go);
@@ -533,7 +594,7 @@ function route(go) {
 function advance() {
   if (finishTyping()) return;
   if (node.c || node.styles) return;
-  if (node.next) openTalk(nodeWho, node.next); else closeTalk();
+  if (node.next) route(node.next); else closeTalk();
 }
 function closeTalk() { clearInterval(typing); typing = null; const was = !$("#dlgBack").hidden; $("#dlgBack").hidden = true; if (was && $("#hubOn")) showHub(); }
 function addClue(c) { if (!S.clues.includes(c)) { S.clues.push(c); save(); toast("New clue in your Journal"); } }
@@ -558,7 +619,7 @@ function rest() {
 }
 
 /* ---------- hub: the Courtyard in the middle, plots in a ring */
-function plotState(r) { if (S.built[r.id]) return "built"; if (r.cost && (!r.needs || S.built[r.needs])) return "buildable"; return "open"; }
+function plotState(r) { if (S.built[r.id]) return "built"; if (r.section) return S.built.kitchen ? "buildable" : "open"; if (r.cost && (!r.needs || S.built[r.needs])) return "buildable"; return "open"; }
 let hubView = "hall";
 try { hubView = localStorage.getItem("cq-comet-view") || "hall"; } catch (e) {}
 function setView(v) { hubView = v; try { localStorage.setItem("cq-comet-view", v); } catch (e) {} showHub(); }
@@ -571,11 +632,12 @@ function viewToggle() {
 function sidePanel() {
   const built = ROOMS.filter(r => plotState(r) === "built"), toBuild = ROOMS.filter(r => plotState(r) === "buildable");
   return `<div class="panel">
+      <div class="nextStep"><b>Next:</b> ${nextStep()}</div>
       <div class="eyebrow">Rooms</div>
       <div class="roomList">
         <button type="button" data-yard="1"><span>Courtyard<br><small>Bruxanna and Wexler, at the Teleportation Station</small></span></button>
-        ${built.map(r => `<button type="button" data-id="${r.id}"><span>${r.name}<br><small>${r.who === "you" ? "Rest, your chest, the mirror" : PEOPLE[r.who].name}</small></span>${r.game ? '<span class="tag">Minigame</span>' : ""}</button>`).join("")}
-        ${toBuild.map(r => `<button type="button" data-id="${r.id}"><span>${r.name}<br><small>Ready to build</small></span><span class="tag dim">Build</span></button>`).join("")}
+        ${built.map(r => `<button type="button" data-id="${r.id}"><span>${r.name}<br><small>${r.who === "you" ? "Bed, chest, table, mirror, loadout" : PEOPLE[r.who].name}</small></span>${r.game ? '<span class="tag">Minigame</span>' : ""}</button>`).join("")}
+        ${toBuild.map(r => `<button type="button" data-id="${r.id}"><span>${r.section ? "Open plot" : r.name}<br><small>${r.section ? "Choose what to build" : "Ready to build"}</small></span><span class="tag dim">Build</span></button>`).join("")}
       </div>
       <p class="note" id="plotNote">Open plots wait for new rooms as the story goes on.</p>
       ${satchel()}
@@ -583,6 +645,12 @@ function sidePanel() {
       ${S.clues.length ? `<ul class="journal">${S.clues.map(c => `<li>${c}</li>`).join("")}</ul>` : '<p class="note">No clues yet. Some answers add one.</p>'}
       ${Object.keys(S.warm).length ? `<div class="eyebrow">Warmed to you</div><p class="warm">${Object.keys(S.warm).map(w => PEOPLE[w].name).join(", ")}</p>` : ""}
     </div>`;
+}
+function nextStep() {
+  if (!S.built.farm) return canAfford(room("farm").cost) ? "You have enough to build the Farm. Walk to its plot and open the doors." : "Salvage in the Scrap Yard with Shnee, then build the Farm (4 Stone, 2 Wood).";
+  if (!S.built.kitchen) return canAfford(room("kitchen").cost) ? "Build the Kitchen next to the Farm." : "Keep salvaging and farming, then build the Kitchen (3 Stone, 3 Wood, 1 Tar Oil).";
+  if (!S.trained) return "The Training Ground has formed. See Treywind to learn how to battle.";
+  return "Begin the Farluck Farm mission with Wexler in the Courtyard. Open plots: choose which sections to build.";
 }
 function satchel() {
   const tile = (k, n, label) => known(k)
@@ -604,7 +672,7 @@ function satchel() {
       <button type="button" class="btn" id="demoAll">Unlock everything and fill the satchel</button>
       <button type="button" class="btn" id="demoReset">Start over</button></div></div>`;
 }
-function goPlot(id) { const r = room(id), st = plotState(r); if (st === "open") { $("#plotNote").textContent = r.cost ? `${r.name}: build the ${room(r.needs).name} first.` : r.text; return false; } showRoom(id); return true; }
+function goPlot(id) { const r = room(id), st = plotState(r); if (st === "open") { $("#plotNote").textContent = r.cost ? `${r.name}: build the ${room(r.needs).name} first.` : r.locked || r.text; return false; } showRoom(id); return true; }
 function discover(t) {
   const tierInfo = TIERS[t]; S.tier = Math.max(S.tier, t);
   tierInfo.items.forEach(k => { if (CROP[k]) S.seeds[k] = SD(k) + 2; else addM(k, 2); });
@@ -613,7 +681,7 @@ function discover(t) {
 function wirePanel() {
   if ($("#demoNext")) $("#demoNext").onclick = () => { discover(S.tier + 1); showHub(); };
   $("#demoAll").onclick = () => { for (let t = S.tier + 1; t < TIERS.length; t++) discover(t); Object.keys(CROP).forEach(k => { S.seeds[k] = SD(k) + 3; S.crops[k] = C(k) + 3; }); Object.keys(MATS).forEach(k => addM(k, 5)); save(); showHub(); };
-  $("#demoReset").onclick = () => { const keep = { style: S.style, met: S.met }; S = Object.assign(structuredClone(START), keep); invInit(); hallX = null; save(); showHub(); };
+  $("#demoReset").onclick = () => { S = structuredClone(START); invInit(); hallX = null; votes = []; save(); renderStyle(); showPast(); };
   $("#view").querySelectorAll(".panel [data-id]").forEach(el => el.addEventListener("click", () => goPlot(el.dataset.id)));
   $("[data-yard]").addEventListener("click", showCourtyard);
   $("#view").querySelectorAll("[data-view]").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
@@ -655,7 +723,7 @@ function showRing() {
 }
 
 /* Hall view: walk left and right along the castle's main hall. Doors open off it; the Courtyard arch is in the middle. */
-const HALL_ORDER = ["open1", "barracks", "scrap", "yard", "farm", "kitchen", "open2", "open3", "open4"];
+const HALL_ORDER = ["training", "barracks", "scrap", "yard", "farm", "kitchen", "open2", "open3", "open4"];
 const HALL_GAP = 280, HALL_START = 220, FLOOR = 330;
 let hallX = null;
 function hallSpot(id) { return HALL_START + HALL_ORDER.indexOf(id) * HALL_GAP; }
@@ -685,7 +753,7 @@ function hallDoor(id) {
       <rect x="${x - 70}" y="72" width="140" height="28" rx="4" fill="#2a2540" stroke="#c99a3c"/><text x="${x}" y="91" class="sign">${r.name}</text>`;
   else if (st === "buildable") body = `<path d="${arch}" fill="#1d2240" stroke="#f0c04f" stroke-width="2.5" stroke-dasharray="8 6"/>
       <path d="M${x - 50} ${FLOOR} L${x + 50} 180 M${x + 50} ${FLOOR} L${x - 50} 180 M${x - 55} 250 H${x + 55}" stroke="#6d5a2e" stroke-width="4"/>
-      <rect x="${x - 70}" y="72" width="140" height="28" rx="4" fill="#2a2540" stroke="#f0c04f" stroke-dasharray="4 3"/><text x="${x}" y="91" class="sign">Build: ${r.name}</text>`;
+      <rect x="${x - 70}" y="72" width="140" height="28" rx="4" fill="#2a2540" stroke="#f0c04f" stroke-dasharray="4 3"/><text x="${x}" y="91" class="sign">${r.section ? "Build: you choose" : "Build: " + r.name}</text>`;
   else body = `<path d="${arch}" fill="#171b33" stroke="#3b4370" stroke-width="2" stroke-dasharray="6 6"/><text x="${x}" y="250" class="signSub">Open plot</text>`;
   const npc = st === "built" ? (id === "scrap" ? figure("shnee", x + 96, true) : id === "farm" ? figure("faux", x + 96, true) : "") : "";
   return `<g data-door="${id}" class="hdoor">${body}${npc}</g>`;
@@ -722,11 +790,11 @@ function showHall() {
   const svg = $("#hall"), hero = $("#hero"), body = $("#heroBody"), prompt = $("#prompt");
   let dir = 0, face = 1, target = null, near = null, last = performance.now(), t0 = last;
   const nearDoor = () => { let best = null; HALL_ORDER.forEach(id => { const d = Math.abs(hallSpot(id) - hallX); if (d < 80 && (!best || d < best.d)) best = { id, d }; }); return best && best.id; };
-  const labelFor = id => id === "yard" ? "Courtyard" : (() => { const r = room(id), st = plotState(r); return st === "built" ? r.name : st === "buildable" ? "Build the " + r.name : "Open plot"; })();
+  const labelFor = id => id === "yard" ? "Courtyard" : (() => { const r = room(id), st = plotState(r); return st === "built" ? r.name : st === "buildable" ? (r.section ? "Choose what to build" : "Build the " + r.name) : r.id === "training" ? "Training Ground (rubble)" : "Open plot"; })();
   const enter = id => {
     if (!id) return;
     if (id === "yard") { stopGame(); return showCourtyard(); }
-    const r = room(id); if (plotState(r) === "open") { $("#plotNote").textContent = r.cost ? `${r.name}: build the ${room(r.needs).name} first.` : r.text; return; }
+    const r = room(id); if (plotState(r) === "open") { $("#plotNote").textContent = r.cost ? `${r.name}: build the ${room(r.needs).name} first.` : r.locked || r.text; return; }
     stopGame(); showRoom(id);
   };
   const step = t => {
@@ -771,20 +839,19 @@ function showCourtyard() {
   stopGame();
   $("#view").innerHTML = `<div class="panel"><div class="eyebrow">The heart of the castle</div>
     <div class="room">${portrait("wexler", 120)}<div style="display:grid;gap:10px;min-width:0"><h2>Courtyard</h2>
-      <p>An open courtyard on the pale gray rock of the comet, with the Nebrom system hanging overhead. In the middle, a circle of blue crystals hums: the Teleportation Station.</p>
-      <div class="btns"><button class="btn primary" type="button" id="tb">Talk to Bruxanna</button><button class="btn" type="button" id="tw">Talk to Wexler</button><button class="btn primary" type="button" id="tdown">${S.trip ? "Back down to Talus (demo)" : "Go down to Talus (demo)"}</button><button class="btn" type="button" id="back">Back to the castle</button></div>
+      <p>An open courtyard on the pale gray rock of the comet, with the Nebrom system hanging overhead. In the middle, a circle of blue crystals hums: the Teleportation Station.</p>${S.trained ? "" : '<p class="note">Wexler won\'t send anyone down before Treywind has trained them.</p>'}
+      <div class="btns"><button class="btn primary" type="button" id="tb">Talk to Bruxanna</button><button class="btn" type="button" id="tw">Talk to Wexler</button>${S.trained ? `<button class="btn primary" type="button" id="tdown">${S.trip ? "Back down to Farluck Farm" : "Begin the Farluck Farm mission"}</button>` : ""}<button class="btn" type="button" id="back">Back to the castle</button></div>
     </div></div></div>`;
-  $("#tb").onclick = () => openTalk("bruxanna"); $("#tw").onclick = () => openTalk("wexler"); $("#tdown").onclick = () => showTrip(); $("#back").onclick = showHub;
+  $("#tb").onclick = () => openTalk("bruxanna"); $("#tw").onclick = () => openTalk("wexler"); if ($("#tdown")) $("#tdown").onclick = () => S.trip ? showTrip() : openTalk("wexler", "mission"); $("#back").onclick = showHub;
 }
 
 /* ---------- inventory (N8 2026-11-12): loadout = 1 Weapon, 1 Armor, 2 Ready slots (stacks of up to 3).
    The Pack holds what you find on Talus: 8 slots, stacks of 10. It comes home through any Icosa Crystal.
    Knocked out: you keep your loadout; the Pack stays where you fell and can be recovered once. */
 const PACK_SLOTS = 8, PACK_STACK = 10, READY_STACK = 3;
-const GEAR = { blade: { name: "Worn Training Blade", slot: "weapon" }, vest: { name: "Padded Vest", slot: "armor" } }; // placeholders until the Forge and Trades
 function invInit() {
-  if (!S.gear || !Array.isArray(S.gear) || typeof S.gear[0] === "string") S.gear = ["blade", "vest"];
-  if (!S.loadout) S.loadout = { weapon: "blade", armor: "vest", ready: [null, null] };
+  if (!Array.isArray(S.gear)) S.gear = [];
+  if (!S.loadout) S.loadout = { weapon: null, armor: null, ready: [null, null] };
   if (!S.pack) S.pack = [];
 }
 const dishCount = name => S.dishes.filter(d => d === name).length;
@@ -816,7 +883,7 @@ function showLoadout() {
   // put Ready items back in the chest while choosing, so the lists show everything you own
   L.ready.forEach(r => { if (r) for (let i = 0; i < r.n; i++) S.dishes.push(r.name); }); L.ready = [null, null];
   const names = [...new Set(S.dishes)];
-  const gearOpts = slot => S.gear.filter(g => GEAR[g].slot === slot).map(g => `<option value="${g}" ${L[slot] === g ? "selected" : ""}>${GEAR[g].name}</option>`).join("");
+  const gearOpts = slot => `<option value="">None</option>` + S.gear.filter(g => GEAR[g].slot === slot).map(g => `<option value="${g}" ${L[slot] === g ? "selected" : ""}>${GEAR[g].name} (${gearLine(GEAR[g])})</option>`).join("");
   const readyOpts = `<option value="">Empty</option>` + names.map(n => `<option value="${n}">${n} (${dishCount(n)} in your chest)</option>`).join("");
   $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Barracks</div><h2>Your loadout</h2>
     <p class="note" style="max-width:62ch">This is everything you take down to Talus, plus an empty Pack for what you find. Weapon and armor stay equipped. Ready items are used up: free in the field, 1 action in combat.</p>
@@ -830,7 +897,7 @@ function showLoadout() {
     <div class="btns"><button class="btn primary" type="button" id="saveLoad">Save loadout</button><button class="btn" type="button" id="back">Back to the Barracks</button></div>
     <p class="note" id="loadMsg"></p></div>`;
   const saveIt = () => {
-    L.weapon = $("#lw").value; L.armor = $("#la").value;
+    L.weapon = $("#lw").value || null; L.armor = $("#la").value || null;
     [["#r1", "#n1"], ["#r2", "#n2"]].forEach(([r, n], i) => {
       const name = $(r).value; if (!name) return;
       const take = Math.min(+$(n).value, READY_STACK, dishCount(name)); if (!take) return;
@@ -848,8 +915,8 @@ function showTrip(msg = "") {
   const t = S.trip, L = S.loadout;
   if (!t) {
     const dest = TIERS[Math.max(1, Math.min(S.tier, TIERS.length - 1))];
-    $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Teleportation Station</div><h2>Go down to Talus (demo)</h2>
-      <p class="note" style="max-width:62ch">Quests aren't built yet. This short demo trip shows what you carry and what comes home.</p>
+    $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Teleportation Station</div><h2>${S.mission ? "Mission: " + S.mission : "Go down to Talus (demo)"}</h2>
+      <p class="note" style="max-width:62ch">${S.mission ? "Help Cecil save his crops from the plague gremlins, and find out what is hammering under the hill. The full mission is the next thing to build; for now this short trip shows what you carry and what comes home." : "Quests aren't built yet. This short demo trip shows what you carry and what comes home."}</p>
       <div class="eyebrow">Your loadout</div>${loadoutCard()}
       ${S.dropped ? `<p class="warn">Your Pack is still lying in ${S.dropped.where}, where you were knocked out. You can go back for it once.</p>` : ""}
       <div class="btns"><button class="btn primary" type="button" id="go">Step into the crystals: ${dest.region}</button>
@@ -859,7 +926,7 @@ function showTrip(msg = "") {
     return;
   }
   const findable = TIERS.filter(x => x.tier <= t.tier).flatMap(x => x.items).filter(k => !["stone", "wood"].includes(k));
-  $("#view").innerHTML = `<div class="panel"><div class="eyebrow">On Talus, demo</div><h2>${t.where}</h2>
+  $("#view").innerHTML = `<div class="panel"><div class="eyebrow">${S.mission ? "Mission: " + S.mission + " (prototype)" : "On Talus, demo"}</div><h2>${t.where}</h2>
     ${msg ? `<p>${msg}</p>` : ""}
     <div class="eyebrow">Loadout</div>${loadoutCard()}
     <div class="eyebrow">Pack: ${S.pack.length} of ${PACK_SLOTS} slots, stacks of ${PACK_STACK}</div>${packGrid(S.pack)}
@@ -898,11 +965,560 @@ function showTrip(msg = "") {
   };
 }
 
+/* ==========================================================================
+   GAME START (N8 2026-11-12):
+   Create Your Past (Lifeform + Role, then a Role intro whose answers set your Style)
+   > Castle Comet: Create Your Future (Bruxanna and Wexler wake you in the Barracks)
+   > the long mirror: Lifeform, Role, Style, Feature, Ability, Crit Dice
+   > salvage, then build the Farm and Kitchen > Training Ground with Treywind > Farluck Farm mission.
+   Barracks, Corridors, Forge weapons and Treywind's lines adapted from the 2021 Game Bible,
+   with Project Lightbringer names (Legion of Starvos, Light Keepers, Castle Comet).
+   ========================================================================== */
+const STATN = { P: "Power", E: "Energy", S: "Speed", C: "Charm" };
+const LIFEFORMS = {
+  Sapien:    { b: { P: 1, C: 1 }, t: "Steady and adaptable.", line: "You keep your footing while everyone else stumbles." },
+  Lizerus:   { b: { def: 1, P: 1 }, t: "Big, tough-skinned and passionate.", line: "You feel the heat in the stone before anyone else does." },
+  Leyf:      { b: { E: 1, S: 1 }, t: "Quick and light on their feet.", line: "You hop up onto a ledge for a better look." },
+  Dimoneesh: { b: { def: 1, E: 1 }, t: "Calm, thoughtful, hard to knock over.", line: "You sense the calm drain out of the air." },
+  Melkin:    { b: { S: 1, C: 1 }, t: "Small, cheery and clever with their hands.", line: "You squeeze through a gap no one else could fit through." }
+};
+const ROLES = {
+  Brawler:     { life: 40, b: { P: 1, S: 1 }, main: "P", hue: "#b24a5a", t: "Up close, with fists and grit." },
+  Champion:    { life: 33, b: { P: 2, E: 1, def: 1 }, main: "P", hue: "#c9a93a", t: "Shield up, protecting everyone." },
+  Maverick:    { life: 30, b: { S: 1, C: 2 }, main: "C", hue: "#8a9a5a", t: "A stringbow, sharp eyes and tricks." },
+  "Soul Seer": { life: 30, b: { E: 2, S: 1 }, main: "E", hue: "#4fa3b3", t: "Song, nature and mending." },
+  Whisper:     { life: 30, b: { S: 1, C: 1 }, dmg: 1, main: "S", hue: "#8a84b8", t: "Quiet, quick, and hard to catch." }
+};
+/* Level 1 abilities: N8's approved picks (tab "Updated abilities"), 2 per Focus. */
+const L1 = {"Brawler":{"Que Bao":[{"name":"Suplex","range":1,"stat":"P","dmg":[1,8],"on":{"last":1},"t":"Slam the foe down: 1d8+P, and it acts last next round."},{"name":"Body Slam","range":1,"stat":"P","dmg":[1,10],"t":"A plain, heavy slam: 1d10+P."}],"Fury":[{"name":"Hammer Fist","range":1,"stat":"P","dmg":[1,8],"critMin":18,"t":"1d8+P that crits on 18 to 20."},{"name":"Rushing Crush","range":1,"stat":"S","dmg":[2,6],"self":{"def":[-2,1]},"t":"2d6+S, but you are -2 Defense until your next turn."}],"Bedrock":[{"name":"Sky Crash","leap":4,"stat":"S","dmg":[1,4],"on":{"hit":[-1,1]},"t":"Jump up to 4 hexes to a foe, then 1d4+S; it is -1 to hit on its next turn."},{"name":"Jump Punch","leap":2,"stat":"P","dmg":[1,8],"t":"Jump up to 2 hexes to a foe, then 1d8+P."}]},"Champion":{"Honor":[{"name":"Mighty Strike","range":1,"stat":"P","dmg":[1,10],"t":"A two-handed swing: 1d10+P."},{"name":"Guard Strike","range":1,"stat":"P","dmg":[1,6],"self":{"defUp":[1,1]},"t":"1d6+P, and you get +1 Defense until your next turn."}],"Sacred":[{"name":"Holy Spark","range":4,"stat":"E","dmg":[1,8],"on":{"hit":[-1,1]},"t":"1d8+E at range 4; the foe is -1 to hit for 1 round."},{"name":"Mending Light","kind":"ally","range":4,"self":{"heal":[2,6,"E"]},"t":"Heal an ally (or yourself) within 4 for 2d6+E."}],"Oath":[{"name":"Refresh","kind":"ally","range":2,"self":{"heal":[2,6,"C"]},"t":"Heal an ally (or yourself) within 2 for 2d6+C."},{"name":"Vigor","kind":"self","self":{"defUp":[1,2],"hitUp":[1,2]},"t":"+1 Defense and +1 to hit for 2 rounds."}]},"Maverick":{"Sharpsight":[{"name":"Long Shot","range":10,"stat":"C","dmg":[1,8],"noCover":true,"t":"Stringbow 1d8+C out to 10 hexes, ignoring cover."},{"name":"Pierce","range":8,"stat":"C","dmg":[1,6],"on":{"root":1},"t":"Stringbow 1d6+C; the foe can’t move on its next turn."}],"Trickster":[{"name":"Mock","range":4,"stat":"C","on":{"charm":[-2,2],"hit":[-1,2]},"t":"Charm roll at range 4: the foe is -2 Charm and -1 to hit for 2 rounds."},{"name":"Sly Shot","range":8,"stat":"C","dmg":[1,6],"on":{"hit":[-1,2]},"t":"Stringbow 1d6+C; the foe is -1 to hit for 2 rounds."}],"Wayfinder":[{"name":"Venom Shot","range":8,"stat":"E","dmg":[1,6],"on":{"dot":[1,3]},"t":"Stringbow 1d6+E; the foe loses 1 Life a turn for 3 turns."},{"name":"Numbing Dart","range":4,"stat":"C","on":{"move":[-2,2],"slow":[2,2]},"t":"Charm roll at range 4: the foe is Move -2 and Speed -2 for 2 rounds."}]},"Soul Seer":{"Mender":[{"name":"Life Thread","range":4,"stat":"E","dmg":[1,6],"mendAlly":[1,6],"t":"1d6+E at range 4, and your most hurt ally within 4 heals 1d6 if it hits."},{"name":"Wither Touch","range":2,"stat":"E","dmg":[1,10],"t":"1d10+E to a foe within 2."}],"Sound":[{"name":"Shriek","range":4,"stat":"E","dmg":[1,6],"on":{"last":1},"t":"1d6+E at range 4; the foe acts last next round."},{"name":"Rumble","range":2,"stat":"P","dmg":[1,10],"t":"A low, heavy tone: 1d10+P at range 2."}],"Nature":[{"name":"Bramble Shield","kind":"ally","range":4,"self":{"thorns":2},"t":"For 2 rounds, foes that hit an ally (or you) within 4 take 1d6."},{"name":"Thorn Shot","range":4,"stat":"S","dmg":[1,6],"on":{"move":[-1,2]},"t":"1d6+S at range 4; the foe is Move -1 for 2 rounds."}]},"Whisper":{"Wind":[{"name":"Double Strike","range":1,"stat":"S","dmg":[1,4],"hits":2,"t":"Two quick hits of 1d4+S."},{"name":"Speed Strike","range":1,"stat":"S","dmg":[1,6],"self":{"moveNow":2},"t":"1d6+S, and you get +2 Move for the rest of this turn."}],"Shadow":[{"name":"Shade","kind":"self","self":{"defUp":[3,2]},"t":"Wrap yourself in shadow: +3 Defense for 2 rounds."},{"name":"Shadow Stab","range":1,"stat":"E","dmg":[1,8],"allyBonus":2,"t":"1d8+E, and +2 to hit if one of your allies is next to the foe."}],"Blade":[{"name":"Weak Spot","range":4,"stat":"C","dmg":[1,4],"on":{"mark":2,"def":[-1,2]},"t":"Charm roll at range 4: 1d4+C, and the foe is Marked and -1 Defense for 2 rounds."},{"name":"Throwing Knife","range":4,"stat":"P","dmg":[1,8],"critMin":19,"t":"1d8+P at range 4; crits on 19 to 20."}]}};
+/* Features: +2 on matching rolls, and one action per fight (design doc). fx = how the training fight uses it. */
+const FEATURES = {
+  Agile: ["Tumble", "Move through foes' hexes this turn", "move"], "Battle Master": ["Call the Order", "Swap your place in the Speed order with an ally's", "hit"],
+  Charismatic: ["Banter", "A foe must target you next and is -1 to hit", "foe"], Deadeye: ["Called Shot", "On a hit the foe is slowed or disarmed", "hit"],
+  Empath: ["Read Intent", "See what a foe will do next turn", "hit"], Mystical: ["Sense Fear", "Learn a foe's Fear level and spot hidden traps", "hit"],
+  Organic: ["Herbal Poultice", "Heal 1d6 and cure poison", "heal"], Protector: ["Intercept", "Take a hit meant for an ally beside you", "def"],
+  Powerful: ["Smash", "Break cover, a door or a weapon", "foe"], Wise: ["Plan Ahead", "Save a reroll for later in the fight", "hit"],
+  Collector: ["Pilfer", "Grab an item from a foe beside you", "foe"], Mysterious: ["Vanish", "Disappear until your next turn", "def"],
+  Perceptive: ["Spot Weakness", "Your crits hit on 19 or 20 against one foe", "hit"], Lucky: ["Fate's Favor", "Reroll any one die", "hit"],
+  Gentle: ["Calm Words", "+2 to Inspire or Cleanse; a calm foe lowers its weapon", "foe"], Hardy: ["Shrug It Off", "Cancel a personal Calamity", "def"],
+  Brave: ["Stand Firm", "Ignore a Fear Wave this round", "def"], Crafty: ["Quick Fix", "Repair a Broken weapon, or set a simple snare", "foe"],
+  "Beast Friend": ["Soothe", "A beast stops attacking for 1 round", "foe"], Pathfinder: ["Trailblaze", "Ignore rough ground and spot hidden paths", "move"]
+};
+/* The Forge (Game Bible table). Bible roles mapped to the new ones; metal = any Ore, cloth = Skin. A = Power, M = Energy. */
+const FORGE = [
+  { id: "axe", name: "Axe", slot: "weapon", roles: ["Champion", "Maverick", "Whisper"], cost: { ore: 3, wood: 1, skin: 1 }, dice: [1, 4], stat: "P", range: 1 },
+  { id: "axe2", name: "Two-Handed Axe", slot: "weapon", roles: ["Champion", "Maverick"], cost: { ore: 4, wood: 1, skin: 1 }, dice: [2, 4], stat: "P", range: 1 },
+  { id: "bonedagger", name: "Bone Dagger", slot: "weapon", roles: ["Champion", "Soul Seer", "Whisper"], cost: { bone: 1, wood: 1 }, dice: [1, 4], stat: "C", range: 1 },
+  { id: "boneblade", name: "Bone Blade", slot: "weapon", roles: ["Champion", "Whisper"], cost: { bone: 2, wood: 1, skin: 1 }, dice: [1, 6], stat: "C", range: 1 },
+  { id: "bow", name: "Stringbow", slot: "weapon", roles: ["Champion", "Maverick", "Whisper", "Soul Seer"], cost: { wood: 2, skin: 1 }, dice: [1, 6], stat: "S", range: 8 },
+  { id: "dagger", name: "Dagger", slot: "weapon", roles: ["Champion", "Soul Seer", "Whisper"], cost: { ore: 1, wood: 1 }, dice: [1, 4], stat: "S", range: 1 },
+  { id: "gauntlets", name: "Gauntlets", slot: "weapon", roles: ["Champion", "Brawler"], cost: { skin: 2, ore: 1 }, dice: [1, 6], stat: "P", range: 1 },
+  { id: "hammer", name: "Hammer", slot: "weapon", roles: ["Champion", "Maverick"], cost: { stone: 2, skin: 1 }, dice: [1, 6], stat: "E", range: 1 },
+  { id: "hammer2", name: "Two-Handed Hammer", slot: "weapon", roles: ["Champion", "Maverick"], cost: { stone: 3, ore: 1, skin: 1 }, dice: [2, 4], stat: "P", range: 1 },
+  { id: "sling", name: "Sling", slot: "weapon", roles: ["Champion", "Maverick"], cost: { skin: 2, stone: 1 }, dice: [1, 6], stat: "S", range: 4 },
+  { id: "knives", name: "Throwing Knives", slot: "weapon", roles: ["Champion", "Maverick", "Whisper"], cost: { ore: 1, skin: 1 }, dice: [1, 4], stat: "S", range: 4 },
+  { id: "staff", name: "Staff", slot: "weapon", roles: ["Champion", "Soul Seer", "Whisper"], cost: { wood: 3, stone: 1 }, dice: [1, 6], stat: "E", range: 4 },
+  { id: "sword", name: "Sword", slot: "weapon", roles: ["Champion", "Whisper"], cost: { ore: 1, wood: 1, skin: 1 }, dice: [1, 6], stat: "P", range: 1 },
+  { id: "sword2", name: "Two-Handed Sword", slot: "weapon", roles: ["Champion", "Maverick"], cost: { ore: 2, wood: 1, skin: 1 }, dice: [2, 4], stat: "P", range: 1 },
+  { id: "flute", name: "Flute", slot: "weapon", roles: ["Soul Seer"], cost: { wood: 2, bone: 1 }, dice: [1, 6], stat: "C", range: 4 },
+  { id: "lute", name: "Lute", slot: "weapon", roles: ["Soul Seer"], cost: { wood: 3, ore: 1 }, dice: [1, 6], stat: "C", range: 4 },
+  { id: "ocarina", name: "Ocarina", slot: "weapon", roles: ["Soul Seer"], cost: { stone: 1, bone: 1 }, dice: [1, 4], stat: "C", range: 4, def: 1 },
+  { id: "violin", name: "Violin", slot: "weapon", roles: ["Soul Seer"], cost: { wood: 2, bone: 1, skin: 1 }, dice: [1, 4], stat: "C", range: 4, def: 1 },
+  { id: "bonearmor", name: "Bone Armor", slot: "armor", roles: ["Champion", "Brawler", "Maverick", "Whisper"], cost: { bone: 4, skin: 3 }, def: 2 },
+  { id: "clotharmor", name: "Cloth Armor", slot: "armor", roles: Object.keys(ROLES), cost: { skin: 4 }, def: 1, spd: 1 },
+  { id: "metalarmor", name: "Metal Armor", slot: "armor", roles: ["Champion", "Whisper"], cost: { ore: 4, skin: 4 }, def: 3, spd: -1 },
+  { id: "woodarmor", name: "Wood Armor", slot: "armor", roles: ["Champion", "Brawler", "Maverick", "Whisper"], cost: { wood: 4, skin: 3 }, def: 2 },
+  { id: "shield", name: "Shield", slot: "armor", roles: ["Champion"], cost: { ore: 2, wood: 2, skin: 1 }, def: 1 }
+];
+const GEAR = Object.fromEntries(FORGE.map(g => [g.id, g]));
+const gearLine = g => g.slot === "weapon" ? `${g.dice[0]}d${g.dice[1]} + ${STATN[g.stat]}, range ${g.range}${g.def ? `, +${g.def} Defense` : ""}` : `+${g.def} Defense${g.spd ? `, ${g.spd > 0 ? "+" : ""}${g.spd} Speed` : ""}`;
+const oreTotal = () => COLORS.reduce((n, c) => n + M("ore" + c), 0);
+const costHave = k => k === "ore" ? oreTotal() : M(k);
+const costName = k => k === "ore" ? "Ore (any color)" : MATS[k];
+/* Crit Dice: a few free styles; the rest cost Icosa Coins at Bruxanna's Barracks Boutique. Looks only, never power. */
+const DICE = {
+  body: { gold: ["Comet Gold", "#f0c04f", 0], bone: ["Bone White", "#e9e0c8", 0], night: ["Night Blue", "#4a5aa8", 0],
+    Abluza: ["Abluza Crystal", "#3f8fd9", 15], Anildigo: ["Anildigo Crystal", "#5a4fc0", 15], Grerde: ["Grerde Crystal", "#4fae5a", 15], Norangia: ["Norangia Crystal", "#e88a3a", 15],
+    Rojed: ["Rojed Crystal", "#d0453a", 15], Verado: ["Verado Crystal", "#9a5ad0", 15], Yemillow: ["Yemillow Crystal", "#e8cf3a", 15] },
+  num: { dark: ["Dark numbers", "#0c0f1f", 0], light: ["Light numbers", "#fffaf0", 0], gilt: ["Gilded numbers", "#ffd76a", 8] },
+  finish: { plain: ["Plain", 0], marbled: ["Marbled", 10], starlit: ["Starlit", 20] }
+};
+function diceCSS(d = S.dice) {
+  const b = DICE.body[d.body][1], n = DICE.num[d.num][1];
+  const bg = d.finish === "marbled" ? `linear-gradient(135deg, ${b} 0 30%, #fff8 38%, ${b} 46% 70%, #0003 78%, ${b} 86%)`
+    : d.finish === "starlit" ? `radial-gradient(circle at 30% 30%, #fff 0 2%, transparent 3%), radial-gradient(circle at 70% 60%, #fff 0 1.5%, transparent 2.5%), radial-gradient(circle at 45% 80%, #fff 0 1.5%, transparent 2.5%), radial-gradient(circle at 50% 40%, ${b}, #0c0f1f 130%)` : b;
+  return `background:${bg};color:${n}`;
+}
+const owns = (part, key) => DICE[part][key][DICE[part][key].length - 1] === 0 || S.dice.own.includes(part + ":" + key);
+
+/* ---------- hero numbers */
+function heroStats(h = S.hero) {
+  const st = { P: 0, E: 0, S: 0, C: 0, def: 10, dmg: 0 };
+  const add = b => Object.entries(b || {}).forEach(([k, v]) => st[k] = (st[k] || 0) + v);
+  add(LIFEFORMS[h.lf].b); add(ROLES[h.role].b); if (ROLES[h.role].dmg) st.dmg += ROLES[h.role].dmg;
+  return { ...st, life: ROLES[h.role].life };
+}
+const heroCharm = () => S.hero && S.hero.role ? heroStats().C : 2;
+const abilityOf = (h = S.hero) => { const f = L1[h.role][h.focus] || Object.values(L1[h.role])[0]; return f[h.ab] || f[0]; };
+
+/* ---------- Create Your Past */
+function showPast(lf = S.hero.lf || "Sapien", role = S.hero.role || "Brawler") {
+  stopGame();
+  const card = (group, name, info, on) => `<button type="button" class="pickCard ${on ? "on" : ""}" data-${group}="${name}" aria-pressed="${on}"><b>${name}</b><small>${info}</small></button>`;
+  const bon = b => Object.entries(b).map(([k, v]) => `${k === "def" ? "Defense" : STATN[k]} +${v}`).join(", ");
+  $("#view").innerHTML = `<div class="panel title"><div class="eyebrow">Part one</div><h2 class="big">Create Your Past</h2>
+    <p class="lead">Before the Comet, you lived on Talus. Choose who you were, then live the last day of that life. How you answer shapes your Style.</p>
+    <div class="eyebrow">Lifeform</div><div class="pickGrid">${Object.entries(LIFEFORMS).map(([n, L]) => card("lf", n, `${L.t}<br>${bon(L.b)}`, n === lf)).join("")}</div>
+    <div class="eyebrow">Role</div><div class="pickGrid">${Object.entries(ROLES).map(([n, R]) => card("role", n, `${R.t}<br>Life ${R.life}, ${bon(R.b)}`, n === role)).join("")}</div>
+    <div class="btns"><button class="btn primary" type="button" id="live">Live your last day as a ${lf} ${role}</button>
+      <button class="btn" type="button" id="skip">Skip to the castle (demo)</button></div></div>`;
+  $("#view").querySelectorAll("[data-lf]").forEach(b => b.onclick = () => showPast(b.dataset.lf, role));
+  $("#view").querySelectorAll("[data-role]").forEach(b => b.onclick = () => showPast(lf, b.dataset.role));
+  $("#live").onclick = () => {
+    S.hero = { ...S.hero, lf, role, past: { lf, role } }; save(); votes = [];
+    const [name, place] = INTRO_TITLE[role];
+    $("#view").innerHTML = `<div class="panel title center"><div class="eyebrow">Your last day on Talus</div><h2 class="big">${name}</h2><h3 class="sub2">${place}</h3>
+      <p class="lead">You are a ${lf} ${role}. This is the last day of your first life.</p></div>`;
+    openTalk("past", role + "1");
+  };
+  $("#skip").onclick = () => { S.hero = { ...S.hero, lf, role, past: { lf, role } }; S.style = S.style || "Serious"; S.hero.style = S.style; S.phase = "avatar"; save(); renderStyle(); showAvatar(true); };
+}
+/* Role intros (design doc tab "Role intros"): gentle, near Farluck Farm, each ends protecting someone. Answers vote for a Style. */
+const V = (Serious, Silly, Shy, Smug, go) => [
+  { t: Serious, vote: "Serious", go }, { t: Silly, vote: "Silly", go }, { t: Shy, vote: "Shy", go }, { t: Smug, vote: "Smug", go }];
+TALK.past = {
+  Brawler1: { t: "The Hinon harvest festival. You close out a friendly bout in the ring, and the crowd roars as your rival lies flat on the straw.", c: V(
+    "Help them up and shake their hand.", "Flop down beside them and wave to the crowd.", "Offer a hand, then slip out of the spotlight.", "Flex once for the crowd, then help them up.", "Brawler2") },
+  Brawler2: { t: "Later, carrying a basket of jeewa past the riverside grain store, you see its stone wall glow red and melt away. {LF} A small child stands frozen beside it, and a cold wave of Fear rolls out toward them.", c: V(
+    "Step between the child and the wave. \"Stay behind me.\"", "Scoop the child up. \"Up you go! Wheee!\"", "Take the child's hand and lead them away without a word.", "Step in front. \"Fear? Please. I've seen scarier pies.\"", "Brawler3") },
+  Brawler3: { t: "The shadow pours out of the wall and the wave rises higher. The child is still too close.", c: V(
+    "Brace and hold your ground.", "Roar like a festival bear to scatter it.", "Shield the child and keep perfectly still.", "Roar. Loudly. Magnificently.", "BrawlerEnd") },
+  BrawlerEnd: { t: "The child gets clear and runs into their parent's arms. The Fear wave reaches you instead, and the noise of the festival fades into a warm hush. A light grows...", next: "future" },
+
+  Champion1: { t: "Night watch at the mayor's hall in Hinon. Your post, your promise. Then you hear a soft metallic hammering somewhere below.", c: V(
+    "Check every door, one by one.", "Knock on the floor. \"Hello? Wrong address?\"", "Follow the sound quietly.", "Draw your blade. Whoever it is picked the wrong hall.", "Champion2") },
+  Champion2: { t: "Behind a moved bookshelf, a hidden stair leads down to an empty lectern, as if a book was just taken. {LF} Three figures in dark red cloaks are leaving through a wall that glows like lava.", c: V(
+    "\"Stop. In the name of the mayor.\"", "\"Excuse me, you forgot to sign the book out!\"", "Stay in the shadows and follow them.", "\"Leaving so soon? I was just getting started.\"", "Champion3") },
+  Champion3: { t: "The wall begins to close on the mayor's frightened clerk, who followed you down.", c: V(
+    "Hold it open with your shield.", "Wedge the lectern in the gap. Lecterns are strong, right?", "Pull the clerk free and push them behind you.", "Hold it open one-handed. Easy.", "ChampionEnd") },
+  ChampionEnd: { t: "The clerk tumbles to safety, clutching a torn page with a symbol of five crystals in a ring. The glowing wall closes around you, and its heat turns to a soft golden light...", clue: "From your past life: a torn page with five crystals in a ring.", next: "future" },
+
+  Maverick1: { t: "The edge of the forest above Farluck Farm. You track a deerlike geev for the evening meal, stringbow ready. The trees here are wilting, and the ground smells of rot.", c: V(
+    "Kneel and study the rot.", "Sniff the air. \"Phew. Somebody forgot to bathe.\"", "Slow your breathing and keep tracking.", "\"Rot or no rot, I never miss.\"", "Maverick2") },
+  Maverick2: { t: "As you line up your shot, a rock face turns red and melts away. {LF} The frightened geev bolts straight into an old snare.", c: V(
+    "Free the geev, fast and careful.", "\"Easy, buddy. Who put a snare in a scary forest?\"", "Calm it first with a slow, low voice.", "\"Hold still. I'm the best rescue you'll get.\"", "Maverick3") },
+  Maverick3: { t: "Cloaked figures step out of the glow, right toward the geev.", c: V(
+    "Loose a shot into the stone above them to cover its escape.", "Make the loudest bird call you know.", "Hide in the ferns and draw them away with a thrown stone.", "One shot, perfectly placed. Watch this.", "MaverickEnd") },
+  MaverickEnd: { t: "The geev leaps away free. The rock face crumbles in a rush of red dust, and the forest goes quiet and golden around you...", next: "future" },
+
+  "Soul Seer1": { t: "You rest in the sun beside the creek that runs down to Farluck Farm, singing along with the water the way you always do.", c: V(
+    "Listen closely to the water's song.", "Sing louder. The creek likes harmonies.", "Hum softly with your eyes closed.", "Sing your best song. The creek is lucky to hear it.", "Soul Seer2") },
+  "Soul Seer2": { t: "Mid-song, the creek goes quiet. Upstream, the water is sinking into stones that glow red. {LF} A family of creek voles is trapped on a drying rock.", c: V(
+    "Carry the voles to safe water.", "\"Who wants a ride? Everybody in!\"", "Hum to calm them so they come to you.", "\"Don't worry. You've got me.\"", "Soul Seer3") },
+  "Soul Seer3": { t: "The stones grow hotter. Something is hammering deep under the hill.", c: V(
+    "Place your hand on the stones and pour your calm into them.", "Tell the stones a joke to cool them down.", "Listen closely to learn where the water is going.", "Lay both hands on the stones. They'll listen to you.", "Soul SeerEnd") },
+  "Soul SeerEnd": { t: "The voles reach the water. You give the stones all the calm you have, and you hear the hammering under the hill as your own song fades into light...", clue: "From your past life: something hammering deep under the hill by Farluck Farm.", next: "future" },
+
+  Whisper1: { t: "Late in the lantern alleys of Umatu. You walk home lightly and quietly, as always, and spot a coin purse dropped by a sleepy traveler.", c: V(
+    "Pick it up to return it.", "Juggle it once, then go to return it.", "Tuck it away safely and look for the owner.", "Pocket it. For safekeeping. Probably.", "Whisper2") },
+  Whisper2: { t: "Deeper in the alley, a group in dark red cloaks faces a charred rock wall. {LF} One lays a hand on it, and it glows and melts away.", c: V(
+    "Return the purse to the traveler first.", "Hand the traveler their purse with a bow. \"You dropped your jingle.\"", "Slip the purse back into the traveler's bag unseen.", "Keep the purse for now and follow the cloaks.", "Whisper3") },
+  Whisper3: { t: "The cloaks spot the traveler.", c: V(
+    "Draw them away down the alley.", "Knock over a stack of pots and run, yelling.", "Slip the traveler out the back way.", "\"Over here, slowpokes!\"", "WhisperEnd") },
+  WhisperEnd: { t: "The traveler escapes, calling back that they must warn their friend Cecil upriver. The cloaks close in, the lanterns blur, and a soft wind carries you away...", clue: "From your past life: the traveler you saved went to warn Cecil upriver.", next: "future" }
+};
+PEOPLE.past = { name: "", role: "", hue: "#82cbd9", letter: "" };
+const INTRO_TITLE = { Brawler: ["The Harvest Bout", "Hinon"], Champion: ["The Empty Lectern", "Hinon"], Maverick: ["The Edge of the Wood", "The forest above Farluck Farm"], "Soul Seer": ["The Quiet Creek", "The forest above Farluck Farm"], Whisper: ["The Quiet Alley", "Umatu"] };
+function styleFromVotes() {
+  const count = {}, last = {}; votes.forEach((v, i) => { count[v] = (count[v] || 0) + 1; last[v] = i; });
+  return Object.keys(count).sort((a, b) => count[b] - count[a] || last[b] - last[a])[0] || "Serious";
+}
+function showFuture() {
+  stopGame();
+  S.style = styleFromVotes(); S.hero.style = S.style; S.hero.votes = votes.slice(); save(); renderStyle();
+  $("#view").innerHTML = `<div class="panel title center"><div class="eyebrow">Part two</div><h2 class="big">Castle Comet</h2><h3 class="sub2">Create Your Future</h3>
+    <p class="lead">Warm light. Then stone under your back, and the smell of old wood. Somebody nearby is trying very hard to whisper.</p>
+    <div class="btns" style="justify-content:center"><button class="btn primary" type="button" id="wake">Open your eyes</button></div></div>`;
+  $("#wake").onclick = () => { S.phase = "wake"; save(); showBarracks(); openTalk("bruxanna", "wake1"); };
+}
+
+/* ---------- waking in the Barracks (Game Bible's Barracks welcome, told the Lightbringer way) */
+Object.assign(TALK.bruxanna, {
+  wake1: { t: "Welcome, {ROLE}! Welcome to the Castle Comet! Oh, you must be SO confused.", c: [
+    { t: "Where am I?", go: "wake2" },
+    { t: "Did I... pass on?", go: "wakeGone" },
+    { t: "Tell me what happened. All of it.", s: "Serious", go: "wakeS", works: ["bruxanna"] },
+    { t: "Is this the afterlife? It smells like paste.", s: "Silly", go: "wakeJ", works: ["bruxanna"] },
+    { t: "(Sit up slowly and look around the room.)", s: "Shy", go: "wake2" },
+    { t: "I knew I'd end up somewhere nice.", s: "Smug", go: "wakeM" } ] },
+  wakeGone: { t: "You did. Gently, I promise. You were helping someone at the very end, and that is exactly why you're here.", next: "wake2" },
+  wakeS: { t: "<em>(She takes a big breath.)</em> All of it. Right. I like you already.", next: "wake2" },
+  wakeJ: { t: "<em>(She gasps.)</em> It DOES! We live on nutrient paste. You and I are going to fix that. Here, take my secret jar of tar oil.", next: "wake2" },
+  wakeM: { t: "Ooh! Well, it WILL be nice. Once we fix it. Mostly.", next: "wake2" },
+  wake2: { t: "I'm Bruxanna Barr, Bastion of luck and light and founder of the Castle Comet welcoming committee, so... Welcome! This is the Barracks: your bed, your storage chest, a table and chair, and that long mirror. The room formed itself from your memories when you opened the doors.", next: "wake3" },
+  wake3: { face: "wexler", t: "Allow me. I am Wexler Krosh Creadus, Perfector of Wisdom. The figures in the red cloaks... we do not know whom they serve. But the Fear that found you came from the Legion of Starvos. They want the death dragon to burn Talus away.", next: "wake4" },
+  wake4: { face: "wexler", t: "The laws of the universe will not let the Celestials reach down and fix it. Free will must stay free. So the Comet circles Talus and gathers those who passed on doing good. We call you Light Keepers.", c: [
+    { t: "What does a Light Keeper do?", go: "wake5" },
+    { t: "Why me?", go: "wakeWhy" },
+    { t: "Then I'll keep the light. Point me at the work.", s: "Serious", go: "wake5", works: ["wexler"] },
+    { t: "Do Light Keepers get snacks?", s: "Silly", go: "wakeSnack" },
+    { t: "(Nod quietly. You already know you want to go back.)", s: "Shy", go: "wakeNod", works: ["wexler"] },
+    { t: "Light Keeper. It suits me.", s: "Smug", go: "wake5" } ] },
+  wakeWhy: { face: "wexler", t: "Your kindness at the end. The Comet notices that kind of thing.", next: "wake5" },
+  wakeSnack: { face: "wexler", t: "<em>(He looks at Bruxanna. She looks at the floor.)</em> ...Not yet.", next: "wake5" },
+  wakeNod: { face: "wexler", t: "<em>(He nods back, and something in his face softens.)</em> Good. Then you already understand.", next: "wake5" },
+  wake5: { t: "You go back down to Talus and help! Stand against the Legion, help the folk of Talus, and clear the way for the Lightbringer. But first, the best part: you get to choose your new self. Go look in the long mirror!", c: [
+    { t: "Look in the long mirror.", go: "avatar" } ] },
+  salvage1: { t: "Look at you! A brand new {ROLE}. Now, about the castle... most of it fell down on the trip over. Shnee is out in the Scrap Yard. Salvage stone, wood and tar oil, and the castle can form a Farm. Then a Kitchen! Real food!", c: [
+    { t: "To the Scrap Yard.", go: "room:scrap" },
+    { t: "I'll look around first.", go: "close" } ] }
+
+});
+TALK.boutique = {
+  start: { face: "bruxanna", t: "You made it! Lovely. Welcome to my shop. Your Crit Dice connect your soul to the Comet. Sometimes you Crit, sometimes you Fail, and every choice rides on the roll. So it might as well look fabulous!", c: [
+    { t: "Show me the dice.", go: "close" },
+    { t: "What are Icosa Coins for?", go: "coins" } ] },
+  coins: { face: "bruxanna", t: "Looks only! Dice, decorations, the fun stuff. Never power. You earn them helping out around the castle and on Talus.", c: [ { t: "Show me the dice.", go: "close" } ] }
+};
+Object.assign(TALK.wexler, {
+  mission: { t: "Farluck Farm, below the forest. Cecil's crops are failing, plague gremlins are in the fields, and something is hammering under the hill. Help Cecil. When you're done, come home through any Icosa Crystal.", c: [
+    { t: "Send me down.", go: "trip" },
+    { t: "Not yet.", go: "close" } ] }
+});
+PEOPLE.treywind = { name: "Treywind", role: "Training Ground", hue: "#e2714b", letter: "T" };
+PEOPLE.georgia = { name: "Georgia", role: "Forge", hue: "#c96b3a", letter: "G" };
+PEOPLE.tata = { name: "Tata", role: "Tavern", hue: "#c9a36b", letter: "T" };
+PEOPLE.meya = { name: "Meya", role: "Mystic", hue: "#9a5ad0", letter: "M" };
+PEOPLE.sloan = { name: "Sloan", role: "Spiritual", hue: "#82cbd9", letter: "S" };
+TALK.treywind = {
+  start: { t: "You may think this is fun, or cool, but this is serious. Talus is hurting! If the Legion calls Starvos down, worlds will burn. Are you ready? COME AT ME THEN!", c: [
+    { t: "I'm ready.", go: "rack" },
+    { t: "How does a fight work?", go: "how" },
+    { t: "Let's do this properly.", s: "Serious", go: "rack" },
+    { t: "Can we hug it out instead?", s: "Silly", go: "hug" },
+    { t: "(Pick up a practice weapon and wait.)", s: "Shy", go: "rack" },
+    { t: "Try to keep up.", s: "Smug", go: "smug" } ] },
+  how: { t: "Everyone rolls D20 plus Speed to see who goes first. On your turn you get a free Move and 2 actions: attack, use your ability (once a round), use your Feature (once a fight), a Ready item, or Defend.", next: "rack" },
+  hug: { t: "<em>(He stares.)</em> ...After. Maybe. Weapon first!", next: "rack" },
+  smug: { t: "HA! I like you. I'm still going to knock you over.", next: "rack" },
+  rack: { t: "Georgia left a rack of training weapons. Pick one that fits your role, and take some cloth armor.", c: [ { t: "Go to the weapon rack.", go: "weapons" } ] },
+  done: { t: "Sweet Sassy Mollassy, you do pack a wallop! We may give the Legion some trouble after all. Go see Wexler at the Teleportation Station. Farluck Farm needs you.", c: [ { t: "To the Courtyard.", go: "yard" }, { t: "Again!", go: "battle" } ] }
+};
+TALK.georgia = { start: { t: "Howdy, newbie. Welcome to the heat. I am Georgia, and this is the Georgia Forge. You will treat her well. It is not complicated: you bring material, you smash material, you get shiny new thing. Simple. You try.", c: [ { t: "Show me what I can make.", go: "close" } ] } };
+TALK.tata = { start: { t: "A customer! Or a new worker? Either way, grab an apron. Brews must be made in under 20 seconds, and the stage is open for anyone brave enough to perform.", c: [ { t: "I'll help out.", go: "close" } ] } };
+TALK.meya = { start: { t: "Ah. You have the look of someone who wants their sword to glow. Bring me a hunk of the material it is made from, Lyr Dust, and some enhanced water, and we will talk.", c: [ { t: "I'll come back with all that.", go: "close" } ] } };
+TALK.sloan = { start: { t: "Breathe in. Breathe out. Talus is loud, and the Comet is quiet. Trace the healing symbols with me, and burn a little incense, and your worries get smaller.", c: [ { t: "Thank you, Sloan.", go: "close" } ] } };
+
+/* ---------- the long mirror: build your new self */
+function showAvatar(first = false, h0 = null) {
+  stopGame();
+  const h = h0 || { lf: S.hero.lf, role: S.hero.role, style: S.hero.style || S.style || "Serious", feature: S.hero.feature || "Lucky", focus: S.hero.focus, ab: S.hero.ab || 0 };
+  if (!L1[h.role][h.focus]) { h.focus = Object.keys(L1[h.role])[0]; h.ab = 0; }
+  const d = { ...S.dice, own: S.dice.own };
+  const st = heroStats(h), ab = abilityOf(h);
+  const card = (grp, val, title, info, on, extra = "") => `<button type="button" class="pickCard ${on ? "on" : ""}" data-g="${grp}" data-v="${val}" aria-pressed="${on}" ${extra}><b>${title}</b><small>${info}</small></button>`;
+  const bon = b => Object.entries(b).map(([k, v]) => `${k === "def" ? "Defense" : STATN[k]} +${v}`).join(", ");
+  const past = S.hero.past || {};
+  const diceOpt = (part, key) => { const o = DICE[part][key], price = o[o.length - 1], have = owns(part, key), on = S.dice[part] === key;
+    const sw = part === "body" ? `<i class="sw" style="background:${o[1]}"></i>` : part === "num" ? `<i class="sw" style="background:#3b4370;color:${o[1]}">20</i>` : "";
+    return `<button type="button" class="chip2 ${on ? "on" : ""} ${have ? "" : "lock"}" data-dice="${part}:${key}" aria-pressed="${on}">${sw}${o[0]}${have ? "" : ` <small>${price} coins</small>`}</button>`; };
+  $("#view").innerHTML = `<div class="panel"><div class="eyebrow">The Barracks, the long mirror</div><h2>${first ? "Choose your new self" : "Your reflection"}</h2>
+    <p class="note" style="max-width:66ch">${first ? `Your first life is filled in. Change anything you like: this is your new, enhanced self.` : "Change your look and your choices any time you're in the Barracks."}</p>
+    <div class="avatar">
+      <div class="avForm">
+        <div class="eyebrow">Lifeform ${past.lf ? `<small>first life: ${past.lf}</small>` : ""}</div><div class="pickGrid sm">${Object.entries(LIFEFORMS).map(([n, L]) => card("lf", n, n, bon(L.b), h.lf === n)).join("")}</div>
+        <div class="eyebrow">Role ${past.role ? `<small>first life: ${past.role}</small>` : ""}</div><div class="pickGrid sm">${Object.entries(ROLES).map(([n, R]) => card("role", n, n, `Life ${R.life}`, h.role === n)).join("")}</div>
+        <div class="eyebrow">Style ${S.hero.votes ? `<small>your answers chose ${S.style}</small>` : ""}</div><div class="pickGrid sm">${STYLES.map(n => card("style", n, n, { Serious: "steady, few words", Silly: "jokes, makes friends fast", Shy: "quiet, notices things", Smug: "confident, secretly kind" }[n], h.style === n)).join("")}</div>
+        <div class="eyebrow">Feature <small>+2 on matching rolls, and one action per fight</small></div><div class="pickGrid feat">${Object.entries(FEATURES).map(([n, f]) => card("feature", n, n, `${f[0]}: ${f[1]}`, h.feature === n)).join("")}</div>
+        <div class="eyebrow">First ability <small>pick 1 from your Role's Focuses</small></div>
+        <div class="focusGrid">${Object.entries(L1[h.role]).map(([fo, list]) => `<div><div class="fname">${fo}</div>${list.map((a, i) => card("ab", fo + "|" + i, a.name, a.t, h.focus === fo && h.ab === i)).join("")}</div>`).join("")}</div>
+        <div class="eyebrow">Crit Dice <small>${S.built.boutique || Object.values(S.sections || {}).includes("boutique") ? `${S.coins} Icosa Coins. Locked styles can be bought here.` : "More styles at the Barracks Boutique, once it's built"}</small></div>
+        <div class="diceRow">${["body", "num", "finish"].map(p => Object.keys(DICE[p]).map(k => diceOpt(p, k)).join("")).join('<span class="brk"></span>')}</div>
+      </div>
+      <aside class="avSheet">
+        <span class="d20 big" style="${diceCSS()}">20</span>
+        <h3>${h.lf} ${h.role}</h3><p class="note">${h.style} Style, ${h.feature}</p>
+        <div class="statGrid"><span>Life <b>${st.life}</b></span><span>Defense <b>${st.def}</b></span>${Object.keys(STATN).map(k => `<span>${STATN[k]} <b>${st[k]}</b></span>`).join("")}${st.dmg ? `<span>Damage <b>+${st.dmg}</b></span>` : ""}</div>
+        <p class="note"><b>${ab.name}</b> (${h.focus}): ${ab.t}</p>
+        <p class="note"><b>${FEATURES[h.feature][0]}</b>: ${FEATURES[h.feature][1]}.</p>
+        <button class="btn primary" type="button" id="become">${first ? "Become this Light Keeper" : "Save"}</button>
+        ${first ? "" : '<button class="btn" type="button" id="back">Back to the Barracks</button>'}
+        <p class="note" id="avMsg"></p>
+      </aside>
+    </div></div>`;
+  $("#view").querySelectorAll("[data-g]").forEach(b => b.onclick = () => {
+    const g = b.dataset.g, v = b.dataset.v, n = { ...h };
+    if (g === "ab") { const [fo, i] = v.split("|"); n.focus = fo; n.ab = +i; } else n[g] = v;
+    if (g === "role") { n.focus = Object.keys(L1[v])[0]; n.ab = 0; }
+    showAvatar(first, n);
+  });
+  $("#view").querySelectorAll("[data-dice]").forEach(b => b.onclick = () => {
+    const [p, k] = b.dataset.dice.split(":"), o = DICE[p][k], price = o[o.length - 1];
+    if (!owns(p, k)) {
+      const shop = Object.values(S.sections || {}).includes("boutique");
+      if (!shop) { $("#avMsg").textContent = `${o[0]} costs ${price} Icosa Coins at the Barracks Boutique. Build it on an open plot to shop there.`; return; }
+      if (S.coins < price) { $("#avMsg").textContent = `${o[0]} costs ${price} Icosa Coins. You have ${S.coins}.`; return; }
+      S.coins -= price; S.dice.own.push(p + ":" + k); toast(`Bought ${o[0]} for ${price} Icosa Coins.`);
+    }
+    S.dice[p] = k; save(); showAvatar(first, h);
+  });
+  $("#become").onclick = () => {
+    Object.assign(S.hero, h); S.style = h.style; save(); renderStyle();
+    if (first) { S.phase = "castle"; save(); showBarracks(); openTalk("bruxanna", "salvage1"); }
+    else { $("#avMsg").textContent = "Saved."; }
+  };
+  if ($("#back")) $("#back").onclick = showBarracks;
+}
+
+/* ---------- the Barracks (Game Bible: bed, storage chest, table, chair, long mirror) */
+const CORRIDORS = [
+  ["Teleportation Station", "Wexler", "Go down to Talus on missions. Wexler stays in touch while you're there.", () => "Built"],
+  ["Barracks", "You", "Home: rest, storage, change your look, set your loadout.", () => "Built"],
+  ["Barracks Boutique", "Bruxanna", "Crit Dice styles and castle decorations, for Icosa Coins.", () => secState("boutique")],
+  ["Farm", "Faux", "Plant seeds on hex plots by the stream; a D20 for each harvest.", () => S.built.farm ? "Built" : "Salvage first"],
+  ["Kitchen", "Bruxanna", "Cook food that heals and helps on Talus.", () => S.built.kitchen ? "Built" : "After the Farm"],
+  ["Tavern", "Tata", "Mix brews in under 20 seconds, or perform a show, for Icosa Coins.", () => secState("tavern")],
+  ["Scrap Yard", "Shnee", "Hot-and-cold digging, then a D20 for what you find.", () => "Built"],
+  ["Forge", "Georgia", "Craft weapons and armor: Metal Melting, Bone Bender, Stone Shaper, Wood Weaving.", () => secState("forge")],
+  ["Training Ground", "Treywind", "Learn to battle; later, upgrade your abilities.", () => S.built.training ? "Built" : "After the Kitchen"],
+  ["Mystic", "Meya", "Enchant weapons and armor, and brew potions.", () => secState("mystic")],
+  ["Spiritual", "Sloan", "Meditate and burn incense for bonuses.", () => secState("spiritual")],
+  ["Mission Map", "Wexler", "Choose Story, Recon, Forage or Battle missions.", () => "With missions"],
+  ["Commons, party halls, Colosseum, Crit Crafter", "", "Meet other players, group quests, sparring, make your own stories.", () => "With online play"]
+];
+function secState(k) { return Object.values(S.sections || {}).includes(k) ? "Built" : S.built.kitchen ? "You choose" : "After the Kitchen"; }
+function showBarracks(view = "") {
+  stopGame();
+  const R = S.hero.role || "Light Keeper";
+  const gear = (S.gear || []).map(g => GEAR[g] ? GEAR[g].name : g);
+  let extra = "";
+  if (view === "chest") {
+    const things = [...gear.map(n => ["gear", n]), ...S.dishes.map(n => ["dish", n])];
+    let cells = ""; for (let i = 0; i < 20; i++) { const t = things[i]; cells += t ? `<div class="slot"><span class="ico">${t[0] === "gear" ? "⚔" : "🍲"}</span><span>${t[1]}</span></div>` : `<div class="slot empty"><span>Empty</span></div>`; }
+    extra = `<div class="eyebrow">Storage chest: 20 spaces</div><div class="slots packSlots">${cells}</div>${things.length > 20 ? `<p class="warn">${things.length - 20} more things are piled on top. The Boutique could add a bigger chest later.</p>` : ""}<p class="note">Materials and seeds are in your satchel on the castle screen.</p>`;
+  }
+  if (view === "table") extra = `<div class="eyebrow">Plans on the table: the Corridors of the Castle Comet</div>
+    <div class="tableWrap"><table class="ctable"><thead><tr><th>Corridor</th><th>Keeper</th><th>What you do there</th><th>Status</th></tr></thead><tbody>
+    ${CORRIDORS.map(([n, w, t, s]) => { const v = s(); return `<tr><td>${n}</td><td>${w}</td><td>${t}</td><td class="${v === "Built" ? "ok" : v === "You choose" ? "pickme" : ""}">${v}</td></tr>`; }).join("")}</tbody></table></div>
+    <p class="note">From Bruxanna's plans (the 2021 Game Bible). On the Comet you choose which sections to build on the open plots, once the Kitchen is up.</p>`;
+  $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Castle Comet</div>
+    <div class="room">${portrait("you", 120)}<div style="display:grid;gap:10px;min-width:0"><h2>Barracks</h2>
+      <p>Your room, fashioned like a ${R}'s quarters: a bed, a storage chest, a table and chair, and a long mirror. Off the common room, the long wooden table where the custodians eat their paste.</p>
+      <div class="btns">
+        <button class="btn primary" type="button" id="rest">Sleep in your bed</button>
+        <button class="btn" type="button" id="chest">Open your chest</button>
+        <button class="btn" type="button" id="table">Sit at the table</button>
+        <button class="btn" type="button" id="mirror">Look in the long mirror</button>
+        <button class="btn" type="button" id="loadoutBtn">Set your loadout</button>
+        <button class="btn" type="button" id="back">Back to the castle</button>
+      </div></div></div>${extra}</div>`;
+  $("#rest").onclick = rest; $("#chest").onclick = () => showBarracks(view === "chest" ? "" : "chest");
+  $("#table").onclick = () => showBarracks(view === "table" ? "" : "table");
+  $("#mirror").onclick = () => showAvatar(false); $("#loadoutBtn").onclick = showLoadout; $("#back").onclick = showHub;
+}
+
+/* ---------- sections you choose to build on the open plots (instead of picking a Trade) */
+const SECTIONS = {
+  boutique: { name: "Barracks Boutique", who: "bruxanna", talk: "boutique", cost: { stone: 3, wood: 2, taroil: 1 }, text: "Bruxanna's shop. Pick new Crit Dice styles and, later, decorate the Comet. Paid in Icosa Coins." },
+  forge: { name: "Forge", who: "georgia", cost: { stone: 5, wood: 2, taroil: 2 }, text: "Georgia's Forge. Smash materials into weapons and armor." },
+  tavern: { name: "Tavern", who: "tata", cost: { wood: 4, stone: 2, taroil: 1 }, text: "Tata's Tavern. Brew drinks and perform for the castle, for Icosa Coins." },
+  mystic: { name: "Mystic", who: "meya", cost: { stone: 3, wood: 3, taroil: 2 }, text: "Meya enchants weapons and armor and brews potions." },
+  spiritual: { name: "Spiritual Room", who: "sloan", cost: { wood: 3, stone: 2, taroil: 1 }, text: "Sloan's quiet room. Meditate and burn incense for bonuses." }
+};
+function showChoose(r) {
+  stopGame();
+  const taken = Object.values(S.sections || {});
+  const opts = Object.entries(SECTIONS).filter(([k]) => !taken.includes(k));
+  $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Open plot</div><h2>Choose what to build here</h2>
+    <p class="note" style="max-width:62ch">The castle forms whatever you bring it the makings for. Pick a section. There are more sections than open plots for now, so choose what you want first.</p>
+    <div class="secGrid">${opts.map(([k, s]) => { const ok = canAfford(s.cost); return `<div class="secCard"><b>${s.name}</b> <small>${PEOPLE[s.who].name}</small><p class="note">${s.text}</p>
+      <div class="cost">${Object.entries(s.cost).map(([m, v]) => `<span class="${M(m) >= v ? "ok" : "short"}"><img class="mini" src="${iconOf(m)}" alt="">${MATS[m]} ${Math.min(M(m), v)}/${v}</span>`).join("")}</div>
+      <button class="btn ${ok ? "primary" : ""}" type="button" data-sec="${k}" ${ok ? "" : "disabled"}>Build the ${s.name}</button></div>`; }).join("") || '<p class="note">Every section is built. More come with the story.</p>'}</div>
+    <div class="btns"><button class="btn" type="button" id="toScrap">Go to the Scrap Yard</button><button class="btn" type="button" id="back">Back to the castle</button></div></div>`;
+  $("#back").onclick = showHub; $("#toScrap").onclick = () => showRoom("scrap");
+  $("#view").querySelectorAll("[data-sec]").forEach(b => b.onclick = () => {
+    const s = SECTIONS[b.dataset.sec]; Object.entries(s.cost).forEach(([m, v]) => addM(m, -v));
+    S.sections[r.id] = b.dataset.sec; S.built[r.id] = true; save(); toast(`The ${s.name} is built!`); showRoom(r.id);
+  });
+}
+function showSection(r) {
+  stopGame();
+  const k = S.sections[r.id], s = SECTIONS[k];
+  let body = "";
+  if (k === "forge") {
+    const mine = FORGE.filter(g => g.roles.includes(S.hero.role));
+    body = `<div class="eyebrow">What Georgia can make for a ${S.hero.role} <small>metal = any Ore, cloth = Skin</small></div><div class="tableWrap"><table class="ctable"><thead><tr><th>Item</th><th>Needs</th><th>Does</th><th></th></tr></thead><tbody>
+      ${mine.map(g => { const ok = Object.entries(g.cost).every(([m, v]) => costHave(m) >= v), have = S.gear.includes(g.id);
+        return `<tr><td>${g.name}</td><td>${Object.entries(g.cost).map(([m, v]) => `${v} ${costName(m)}`).join(", ")}</td><td>${gearLine(g)}</td><td>${have ? "Owned" : `<button class="btn" type="button" data-make="${g.id}" ${ok ? "" : "disabled"}>Make</button>`}</td></tr>`; }).join("")}</tbody></table></div>`;
+  }
+  if (k === "tavern") body = `<p class="note">Tata's brew and stage minigames come next. For now you can help wipe the tables once a day.</p><button class="btn" type="button" id="shift" ${S.tavernDay === S.day ? "disabled" : ""}>Help out for a shift (+4 Icosa Coins)</button>`;
+  if (k === "boutique") body = `<p class="note">You have <b>${S.coins}</b> Icosa Coins. Pick and buy Crit Dice styles at the long mirror; Bruxanna delivers.</p><button class="btn primary" type="button" id="dice">Choose your Crit Dice</button>`;
+  if (k === "mystic" || k === "spiritual") body = `<p class="note">${s.name} minigames come later. ${PEOPLE[s.who].name} is settling in.</p>`;
+  $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Castle Comet</div><div class="room">${portrait(s.who, 120)}<div style="display:grid;gap:10px;min-width:0"><h2>${s.name}</h2><p>${s.text}</p>
+    <div class="btns"><button class="btn" type="button" id="talk">Talk to ${PEOPLE[s.who].name}</button><button class="btn" type="button" id="back">Back to the castle</button></div></div></div>${body}<p class="note" id="secMsg"></p></div>`;
+  $("#talk").onclick = () => openTalk(s.talk || s.who); $("#back").onclick = showHub;
+  if ($("#shift")) $("#shift").onclick = () => { S.tavernDay = S.day; S.coins += 4; save(); toast("Tata pays you 4 Icosa Coins. \"Come back tomorrow!\""); showSection(r); };
+  if ($("#dice")) $("#dice").onclick = () => showAvatar(false);
+  $("#view").querySelectorAll("[data-make]").forEach(b => b.onclick = () => {
+    const g = GEAR[b.dataset.make];
+    Object.entries(g.cost).forEach(([m, v]) => { if (m !== "ore") return addM(m, -v); let need = v; COLORS.forEach(c => { const t = Math.min(need, M("ore" + c)); addM("ore" + c, -t); need -= t; }); });
+    S.gear.push(g.id); save(); toast(`Georgia hands you a shiny new ${g.name}. "Simple."`); showSection(r);
+  });
+  const tk = s.talk || s.who; if (!S.met[tk]) openTalk(tk);
+}
+
+/* ---------- Training Ground: the weapon rack, then a first practice battle with Treywind */
+function showRack() {
+  stopGame();
+  const list = FORGE.filter(g => g.slot === "weapon" && g.roles.includes(S.hero.role));
+  $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Training Ground</div><h2>The weapon rack</h2>
+    <p class="note" style="max-width:62ch">Georgia's training weapons, from the Forge list. These fit a ${S.hero.role}. You keep the one you pick, plus a set of Cloth Armor.</p>
+    <div class="secGrid">${list.map(g => `<div class="secCard"><b>${g.name}</b><p class="note">${gearLine(g)}</p><button class="btn primary" type="button" data-w="${g.id}">Take the ${g.name}</button></div>`).join("")}</div>
+    <div class="btns"><button class="btn" type="button" id="back">Back</button></div></div>`;
+  $("#back").onclick = () => showRoom("training");
+  $("#view").querySelectorAll("[data-w]").forEach(b => b.onclick = () => {
+    const w = b.dataset.w; if (!S.gear.includes(w)) S.gear.push(w); if (!S.gear.includes("clotharmor")) S.gear.push("clotharmor");
+    S.loadout.weapon = w; S.loadout.armor = S.loadout.armor || "clotharmor"; save(); battle();
+  });
+}
+function battle() {
+  stopGame();
+  const COLS = 9, ROWS = 5, size = 32, w = Math.sqrt(3) * size;
+  const cube = (c, r) => { const q = c - (r - (r & 1)) / 2; return [q, r, -q - r]; };
+  const dist = (a, b) => { const A = cube(...a), B = cube(...b); return Math.max(Math.abs(A[0] - B[0]), Math.abs(A[1] - B[1]), Math.abs(A[2] - B[2])); };
+  const xy = (c, r) => [w * (c + 0.5 * (r & 1)) + w / 2 + 6, size * 1.5 * r + size + 6];
+  const W = w * (COLS + 0.5) + 12, H = size * 1.5 * (ROWS - 1) + size * 2 + 12;
+  const BLOCK = new Set(["4,1", "4,3", "2,0", "6,4"]);
+  const st = heroStats(), wpn = GEAR[S.loadout.weapon] || { name: "Fists", dice: [1, 4], stat: "P", range: 1 }, arm = GEAR[S.loadout.armor];
+  const hero = { name: "You", c: 1, r: 2, max: st.life, life: st.life, def: st.def + (arm ? arm.def : 0) + (wpn.def || 0), st: { ...st, S: st.S + (arm && arm.spd || 0) }, fx: {} };
+  const trey = { name: "Treywind", c: 7, r: 2, max: 26, life: 26, def: 11, st: { P: 1, S: 1 }, fx: {} };
+  const ab = abilityOf(), feat = FEATURES[S.hero.feature];
+  let turn = null, acts = 0, moved = false, abUsed = false, featUsed = false, mode = null, over = false, round = 0;
+  const log = [];
+  const say = s => { log.unshift(s); $("#blog").innerHTML = log.slice(0, 8).map(x => `<li>${x}</li>`).join(""); };
+  const roll = (n, d) => { let t = 0; for (let i = 0; i < n; i++) t += 1 + Math.floor(Math.random() * d); return t; };
+  const occ = (c, r) => (hero.c === c && hero.r === r) || (trey.c === c && trey.r === r);
+  const moveRange = u => Math.max(1, 3 + (u.st.S || 0) + (u.fx.moveNow || 0) - (u.fx.moveDown ? 2 : 0));
+  const reach = (u, n) => { const seen = new Map([[u.c + "," + u.r, 0]]), q = [[u.c, u.r]];
+    while (q.length) { const [c, r] = q.shift(), d0 = seen.get(c + "," + r); if (d0 >= n) continue;
+      for (let cc = c - 1; cc <= c + 1; cc++) for (let rr = r - 1; rr <= r + 1; rr++) { if (cc < 0 || rr < 0 || cc >= COLS || rr >= ROWS || dist([c, r], [cc, rr]) !== 1) continue; const k = cc + "," + rr;
+        if (seen.has(k) || BLOCK.has(k) || occ(cc, rr)) continue; seen.set(k, d0 + 1); q.push([cc, rr]); } }
+    seen.delete(u.c + "," + u.r); return seen; };
+  const gap = () => dist([hero.c, hero.r], [trey.c, trey.r]);
+  gameShell("training", "Practice battle: Treywind", `
+    <p class="note">Learn to battle. Each round both sides roll D20 + Speed; higher goes first. On your turn: a free Move and 2 actions. To hit: D20 + your stat vs the foe's Defense.</p>
+    <div class="bstats"><span><b>You</b> <span id="hL"></span> Life, Defense ${hero.def}</span><span><b>Treywind</b> <span id="tL"></span> Life, Defense ${trey.def}</span><span id="bRound"></span></div>
+    <div class="bwrap" id="bwrap"><svg viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}" id="board" aria-label="Training ground hex map"></svg><div class="turnPop" id="pop" hidden></div></div>
+    <div class="result" id="bres"></div>
+    <div class="eyebrow">Chronicle</div><ul class="journal" id="blog"></ul>`);
+  const draw = () => {
+    const rr = mode === "move" && turn === "hero" ? reach(hero, moveRange(hero)) : new Map();
+    let s = "";
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) { const [x, y] = xy(c, r), k = c + "," + r;
+      s += `<polygon class="hex ${BLOCK.has(k) ? "bale" : ""} ${rr.has(k) ? "lit" : ""}" data-c="${c}" data-r="${r}" points="${hexPts(x, y, size)}"/>`;
+      if (BLOCK.has(k)) s += `<text class="hexT" x="${x}" y="${y}">▦</text>`; }
+    const tok = (u, col, letter) => { const [x, y] = xy(u.c, u.r); return `<g class="tok"><circle cx="${x}" cy="${y}" r="${size * .62}" fill="${col}" stroke="#ede7d6" stroke-width="2"/><text x="${x}" y="${y + 1}" class="tokT">${letter}</text>
+      <rect x="${x - 22}" y="${y + size * .7}" width="44" height="5" fill="#0c0f1f"/><rect x="${x - 22}" y="${y + size * .7}" width="${44 * Math.max(0, u.life) / u.max}" height="5" fill="${u === hero ? "#8fc274" : "#e2714b"}"/></g>`; };
+    s += tok(hero, ROLES[S.hero.role].hue, S.hero.lf[0]) + tok(trey, "#7a3a22", "T");
+    $("#board").innerHTML = s; $("#hL").textContent = `${Math.max(0, hero.life)}/${hero.max}`; $("#tL").textContent = `${Math.max(0, trey.life)}/${trey.max}`; $("#bRound").textContent = `Round ${round}`;
+    $("#board").querySelectorAll(".hex.lit").forEach(h => h.onclick = () => { hero.c = +h.dataset.c; hero.r = +h.dataset.r; moved = true; mode = null; say(`You move.`); draw(); popup(); });
+  };
+  const hitRoll = (att, tgt, stat, mod = 0, critMin = 20) => {
+    const d = d20(), tot = d + (att.st[stat] || 0) + mod + (att.fx.hitUp || 0) - (att.fx.hitDown || 0), def = tgt.def + (tgt.fx.defUp || 0) - (tgt.fx.defDown || 0);
+    return { d, tot, def, hit: d !== 1 && (d >= critMin || tot >= def), crit: d >= critMin };
+  };
+  const hurt = (t, n, src) => { if (t.fx.guard) { n = Math.max(0, n - 1); t.fx.guard = 0; } t.life -= n;
+    if (t.fx.thorns && src) { const th = roll(1, 6); src.life -= th; say(`Thorns strike back for ${th}.`); } return n; };
+  const strike = (dice, stat, mod = 0, critMin = 20, label = "") => {
+    const h = hitRoll(hero, trey, stat, mod, critMin);
+    if (!h.hit) { say(`${label}: rolled ${h.d}, total ${h.tot} vs Defense ${h.def}. Miss.${h.d === 1 ? " A natural 1!" : ""}`); return false; }
+    const dmg = roll(dice[0] * (h.crit ? 2 : 1), dice[1]) + (hero.st[stat] || 0) + hero.st.dmg; hurt(trey, dmg, hero);
+    say(`${label}: rolled ${h.d}${h.crit ? " (Crit! double dice)" : ""}, total ${h.tot} vs ${h.def}. Hit for <b>${dmg}</b>.`); return true;
+  };
+  const spend = () => { acts++; if (trey.life <= 0) return end(true); draw(); if (acts >= 2) { $("#pop").hidden = true; return setTimeout(next, 500); } popup(); };
+  const doAttack = () => { if (gap() > wpn.range) return; strike(wpn.dice, wpn.stat, 0, hero.fx.critMin || 20, `${wpn.name}`); spend(); };
+  const doAbility = () => {
+    const a = ab, sf = a.self || {};
+    if (a.kind === "self" || a.kind === "ally") {
+      if (sf.heal) { const n = roll(sf.heal[0], sf.heal[1]) + (hero.st[sf.heal[2]] || 0); hero.life = Math.min(hero.max, hero.life + n); say(`${a.name}: you heal ${n}.`); }
+      if (sf.defUp) { hero.fx.defUp = (hero.fx.defUp || 0) + sf.defUp[0]; say(`${a.name}: +${sf.defUp[0]} Defense.`); }
+      if (sf.hitUp) hero.fx.hitUp = (hero.fx.hitUp || 0) + sf.hitUp[0];
+      if (sf.thorns) { hero.fx.thorns = 1; say(`${a.name}: thorns wrap around you.`); }
+    } else {
+      const rng = a.leap ? a.leap + 1 : (a.range || 1); if (gap() > rng) return;
+      if (a.leap && gap() > 1) { const spot = [...reach(hero, a.leap).keys()].map(k => k.split(",").map(Number)).filter(([c, r]) => dist([c, r], [trey.c, trey.r]) === 1)[0]; if (spot) { hero.c = spot[0]; hero.r = spot[1]; } }
+      const n = a.hits || 1; let any = false;
+      for (let i = 0; i < n; i++) any = (a.dmg ? strike(a.dmg, a.stat, a.hitMod || 0, a.critMin || 20, a.name) : (() => { const h = hitRoll(hero, trey, a.stat); say(`${a.name}: rolled ${h.d}, total ${h.tot} vs ${h.def}. ${h.hit ? "It works!" : "No effect."}`); return h.hit; })()) || any;
+      if (a.kind === "attacks") any = strike([wpn.dice[0] + (a.extraDie || 0), wpn.dice[1]], wpn.stat, a.hitMod || 0, 20, a.name);
+      const on = a.on || {};
+      if (any) { if (on.hit) trey.fx.hitDown = -on.hit[0]; if (on.def) trey.fx.defDown = -on.def[0]; if (on.root) trey.fx.root = 1; if (on.dot) trey.fx.dot = on.dot[1]; if (on.move) trey.fx.moveDown = 1; if (a.mendAlly) { const m = roll(1, 6); hero.life = Math.min(hero.max, hero.life + m); say(`You mend ${m} Life.`); } }
+      if (sf.def) hero.fx.defDown = -sf.def[0]; if (sf.defUp) hero.fx.defUp = (hero.fx.defUp || 0) + sf.defUp[0]; if (sf.moveNow) { hero.fx.moveNow = sf.moveNow; moved = false; }
+    }
+    abUsed = true; spend();
+  };
+  const doFeature = () => {
+    const kind = feat[2]; featUsed = true;
+    if (kind === "heal") { const n = roll(1, 6); hero.life = Math.min(hero.max, hero.life + n); say(`${feat[0]}: you heal ${n}.`); }
+    if (kind === "def") { hero.fx.defUp = (hero.fx.defUp || 0) + 2; say(`${feat[0]}: +2 Defense until your next turn.`); }
+    if (kind === "hit") { hero.fx.hitUp = (hero.fx.hitUp || 0) + 3; say(`${feat[0]}: +3 to hit this turn.`); }
+    if (kind === "foe") { trey.fx.hitDown = 2; say(`${feat[0]}: Treywind is -2 to hit on his next turn.`); }
+    if (kind === "move") { hero.fx.moveNow = 3; moved = false; say(`${feat[0]}: +3 Move, and you can move again.`); }
+    spend();
+  };
+  const doReady = () => { const i = S.loadout.ready[0] ? 0 : 1, r = S.loadout.ready[i]; if (!r) return; const n = roll(2, 6) + 2; hero.life = Math.min(hero.max, hero.life + n); r.n--; if (!r.n) S.loadout.ready[i] = null; save(); say(`You eat the ${r.name} and heal ${n}.`); spend(); };
+  const doDefend = () => { hero.fx.guard = 1; say("You Defend: the next hit against you does 1 less."); spend(); };
+  const popup = () => {
+    const p = $("#pop"); if (over || turn !== "hero") { p.hidden = true; return; }
+    const [x, y] = xy(hero.c, hero.r), inR = gap() <= wpn.range, aR = ab.kind === "self" || ab.kind === "ally" || gap() <= (ab.leap ? ab.leap + 1 : (ab.range || 1)), ready = S.loadout.ready.some(Boolean);
+    p.style.left = Math.max(18, Math.min(82, x / W * 100)) + "%"; p.style.top = (y / H * 100) + "%"; p.hidden = false;
+    p.innerHTML = `<div class="popHead">Your turn: ${2 - acts} action${2 - acts === 1 ? "" : "s"} left</div>
+      <button type="button" data-a="move" ${moved ? "disabled" : ""}>Move <small>${moved ? "used" : `free, up to ${moveRange(hero)}`}</small></button>
+      <button type="button" data-a="attack" ${inR ? "" : "disabled"}>Attack <small>${wpn.name}${inR ? "" : ", out of range"}</small></button>
+      <button type="button" data-a="ability" ${!abUsed && aR ? "" : "disabled"}>${ab.name} <small>${abUsed ? "once a round" : aR ? "ability" : "out of range"}</small></button>
+      <button type="button" data-a="feature" ${featUsed ? "disabled" : ""}>${feat[0]} <small>${featUsed ? "used this fight" : S.hero.feature}</small></button>
+      <button type="button" data-a="ready" ${ready ? "" : "disabled"}>Ready item <small>${ready ? readyText(S.loadout.ready[0] || S.loadout.ready[1]) : "none packed"}</small></button>
+      <button type="button" data-a="defend">Defend <small>next hit -1</small></button>
+      <button type="button" data-a="end">End turn</button>`;
+    p.querySelectorAll("button").forEach(b => b.onclick = () => ({ move: () => { mode = "move"; draw(); say("Tap a lit hex to move there."); p.hidden = true; }, attack: doAttack, ability: doAbility, feature: doFeature, ready: doReady, defend: doDefend, end: () => { acts = 2; p.hidden = true; draw(); setTimeout(next, 300); } })[b.dataset.a]());
+    const tip = !moved && !acts ? "Tip: Move is free. Get in range, then attack." : acts === 1 ? "One action left." : "";
+    $("#bres").innerHTML = tip ? `<p class="note">${tip}</p>` : "";
+  };
+  const heroTurn = () => { if (over) return; turn = "hero"; acts = 0; moved = false; abUsed = false; hero.fx.defUp = 0; hero.fx.hitUp = 0; hero.fx.moveNow = 0; hero.fx.defDown = 0; hero.fx.critMin = 0; mode = null; draw(); popup(); };
+  let order = [], idx = 0;
+  const next = () => { if (over) return; if (idx >= order.length) return setTimeout(newRound, 500); const who = order[idx++]; who === "hero" ? heroTurn() : treyTurn(); };
+  const treyTurn = () => {
+    if (over) return; turn = "trey"; $("#pop").hidden = true; $("#bres").innerHTML = "";
+    if (trey.fx.dot) { trey.life -= 1; trey.fx.dot--; say("Venom: Treywind loses 1 Life."); if (trey.life <= 0) return end(true); }
+    if (!trey.fx.root && gap() > 1) { const opts = [...reach(trey, moveRange(trey)).keys()].map(k => k.split(",").map(Number)).sort((x, y) => dist(x, [hero.c, hero.r]) - dist(y, [hero.c, hero.r])); if (opts[0]) { trey.c = opts[0][0]; trey.r = opts[0][1]; say("Treywind charges in."); } }
+    trey.fx.root = 0; trey.fx.moveDown = 0;
+    if (gap() <= 1) { const h = hitRoll(trey, hero, "P"); if (h.hit) { const n = hurt(hero, roll(h.crit ? 2 : 1, 6) + 1, trey); say(`Treywind swings his practice staff: ${h.d}, total ${h.tot} vs your ${h.def}. Hit for <b>${n}</b>.`); } else say(`Treywind swings his practice staff: ${h.d}, total ${h.tot} vs your ${h.def}. Miss!`); }
+    else say("Treywind can't reach you yet, so he Defends.");
+    trey.fx.hitDown = 0; trey.fx.defDown = 0; draw();
+    if (hero.life <= 0) return end(false); if (trey.life <= 0) return end(true);
+    setTimeout(next, 700);
+  };
+  const newRound = () => {
+    if (over) return; round++; const a = d20() + (hero.st.S || 0), b = d20() + 1;
+    say(`<b>Round ${round}</b>: your Speed roll ${a} vs Treywind's ${b}. ${a >= b ? "You go first." : "Treywind goes first."}`);
+    order = a >= b ? ["hero", "trey"] : ["trey", "hero"]; idx = 0; next();
+  };
+  const end = won => {
+    if (over) return; over = true; $("#pop").hidden = true; draw();
+    if (won) { const first = !S.trained; S.trained = true; if (first) S.coins += 10; save();
+      $("#bres").innerHTML = `<p><b>Treywind yields!</b> ${first ? "+10 Icosa Coins." : ""}</p>`; setTimeout(() => openTalk("treywind", "done"), 700); }
+    else { S.trained = true; save(); $("#bres").innerHTML = `<p>You're knocked flat. Treywind helps you up. "Good! Again, or go see Wexler. You've learned the basics."</p><span class="btns"><button class="btn primary" type="button" id="again">Again!</button><button class="btn" type="button" id="yard">To the Courtyard</button></span>`;
+      $("#again").onclick = battle; $("#yard").onclick = showCourtyard; }
+  };
+  draw(); say("Treywind grins and twirls his practice staff."); setTimeout(newRound, 400);
+}
+
 /* ---------- room view, with the build step for unbuilt rooms */
 const GAME_NAME = { dig: "Dig the rubble", farm: "Tend the plots", kitchen: "Cook a dish" };
 function showRoom(id) {
   stopGame();
+  if (id === "barracks") return showBarracks();
   const r = room(id), st = plotState(r);
+  if (r.section) return st === "built" ? showSection(r) : showChoose(r);
   if (st === "buildable") return showBuild(r);
   const who = r.who;
   $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Castle Comet</div>
@@ -912,12 +1528,14 @@ function showRoom(id) {
           ${who === "you" ? '<button class="btn primary" type="button" id="rest">Rest a night</button><button class="btn" type="button" id="loadoutBtn">Set your loadout</button>' : ""}
           <button class="btn" type="button" id="talk">${who === "you" ? "Look around" : "Talk to " + PEOPLE[who].name}</button>
           ${r.game ? `<button class="btn primary" type="button" id="play">${GAME_NAME[r.game]}</button>` : ""}
+          ${id === "training" ? `<button class="btn primary" type="button" id="spar">${S.trained ? "Practice battle again" : "Learn to battle"}</button>` : ""}
           <button class="btn" type="button" id="back">Back to the castle</button>
         </div></div></div></div>`;
   $("#talk").onclick = () => openTalk(r.talk || who);
   if ($("#rest")) $("#rest").onclick = rest;
   if ($("#loadoutBtn")) $("#loadoutBtn").onclick = showLoadout;
   if (r.game) $("#play").onclick = () => startGame(r.game);
+  if ($("#spar")) $("#spar").onclick = () => S.loadout.weapon ? battle() : showRack();
   $("#back").onclick = showHub;
   const tk = r.talk || who;
   if (!S.met[tk] && who !== "you") openTalk(tk);
@@ -937,11 +1555,11 @@ function showBuild(r) {
   if ($("#toScrap")) $("#toScrap").onclick = () => showRoom("scrap");
   $("#build").onclick = () => {
     Object.entries(r.cost).forEach(([k, v]) => addM(k, -v));
-    S.built[r.id] = true; save();
+    S.built[r.id] = true; if (r.id === "kitchen") S.built.training = true; save();
     $("#build").disabled = true;
     $("#res").innerHTML = `<p>You set the ${Object.keys(r.cost).map(k => MATS[k].toLowerCase()).join(", ").replace(/, ([^,]*)$/, " and $1")} at the doors and pull them open. The bare stone shimmers, and the ${r.name} forms in front of you.</p><button class="btn primary" type="button" id="enter">Step inside</button>`;
     $("#enter").onclick = () => showRoom(r.id);
-    toast(`The ${r.name} is built!`);
+    toast(r.id === "kitchen" ? "The Kitchen is built! The castle shudders, and the Training Ground forms too." : `The ${r.name} is built!`);
   };
 }
 
@@ -955,7 +1573,7 @@ function gameShell(id, title, body) {
   $("#leave").onclick = () => showRoom(id);
 }
 function startGame(k) { stopGame(); ({ dig, farm, kitchen })[k](); }
-function dieHTML(v) { return `<span class="d20 ${v === 20 ? "crit" : v === 1 ? "low" : ""}" aria-label="D20 rolled ${v}">${v}</span>`; }
+function dieHTML(v) { return `<span class="d20 ${v === 20 ? "crit" : v === 1 ? "low" : ""}" style="${v === 20 || v === 1 ? "" : diceCSS()}" aria-label="D20 rolled ${v}">${v}</span>`; }
 function rollAnim(el, final, done) {
   if (reduce) { el.innerHTML = dieHTML(final); return done(); }
   let k = 0; const t = setInterval(() => { el.innerHTML = dieHTML(k++ < 9 ? d20() : final); if (k > 9) { clearInterval(t); done(); } }, 70); timers.push(t);
@@ -991,6 +1609,7 @@ function dig() {
       else if (total >= 11) { addM("wood", 2); addM("stone", 1); get = "<b>2 Wood</b> and <b>1 Stone</b>"; }
       else if (total >= 6) { addM("stone", 2); addM("wood", 1); get = "<b>2 Stone</b> and <b>1 Wood</b>"; }
       else { addM("stone", 2); get = "<b>2 Stone</b>"; }
+      S.coins += found ? 3 : 1; get += found ? ", and <b>3 Icosa Coins</b> in an old purse" : "";
       if (found && (roll === 20 || total < 15 || total >= 18)) { const sp = pick(Object.keys(CROP).filter(known)); S.seeds[sp] = SD(sp) + 2; get += `, plus an old seed pouch with <b>2 ${CROP[sp].name} seeds</b>`; }
       save();
       $("#out").innerHTML = `You rolled ${roll}${found ? `, total ${total}` : ""}. You get ${get}.<br><span class="btns" style="margin-top:8px"><button class="btn" type="button" id="again">Dig again</button><button class="btn" type="button" id="home">Back to the castle</button></span>`;
@@ -1075,7 +1694,7 @@ function farm() {
     rollAnim($("#die"), roll, () => {
       let n = roll === 1 ? 0 : total >= 20 ? 4 : total >= 15 ? 3 : total >= 9 ? 2 : 1;
       const back = total >= 10 ? 1 : 0;
-      S.crops[p.crop] = C(p.crop) + n; S.seeds[p.crop] = SD(p.crop) + back; S.plots[i] = null; save();
+      S.crops[p.crop] = C(p.crop) + n; if (n) S.coins += 1; S.seeds[p.crop] = SD(p.crop) + back; S.plots[i] = null; save();
       $("#out").innerHTML = roll === 1 ? `A natural 1. A plague gremlin got there first and the plot is bare. Faux sighs and hands you a sympathetic leaf.`
         : `You rolled ${roll}${bonus ? `, total ${total}` : ""}. You pick <b>${n} ${CROP[p.crop].name}</b>${back ? " and save <b>1 seed</b>" : ""}.${roll === 20 ? " A natural 20, a golden harvest!" : ""}`;
       drawSeeds(); draw();
@@ -1148,7 +1767,7 @@ function cook(rec) {
       let msg = `You rolled ${roll}, total ${total}. `;
       if (q === "Burnt") msg += `The ${rec.name} is burnt. Bruxanna eats it anyway. "Still better than paste!"`;
       else {
-        S.dishes.push(`${q} ${rec.name}`);
+        S.dishes.push(`${q} ${rec.name}`); S.coins += { Plain: 1, Tasty: 2, Delicious: 3, Legendary: 5 }[q];
         msg += `You made a <b>${q} ${rec.name}</b> (${rec.effect}${q === "Delicious" || q === "Legendary" ? ", plus a little extra" : ""}). It is in your Barracks chest.`;
         if (!S.met.firstMeal) { S.met.firstMeal = true; msg += ` Bruxanna takes one bite and has to sit down. "FLAVOR!"`; }
       }
@@ -1171,6 +1790,9 @@ function cook(rec) {
 invInit();
 renderPouch();
 renderStyle();
-$("#styleChip").onclick = () => { afterStyle = null; votes = []; openTalk("narrator", S.style ? "change" : "q1"); };
-showHub();
+$("#styleChip").onclick = () => { if (S.phase === "castle") showAvatar(false); else toast("Your Style comes from how you answer in your past life."); };
+if (S.phase === "past") showPast();
+else if (S.phase === "wake") { showBarracks(); openTalk("bruxanna", "wake1"); }
+else if (S.phase === "avatar") showAvatar(true);
+else showHub();
 </script>
