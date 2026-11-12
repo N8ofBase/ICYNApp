@@ -170,6 +170,7 @@ img.mini { width: 20px; height: 20px; vertical-align: -5px; margin-right: 4px; o
 .turnPop button:disabled { opacity: .45; cursor: default; }
 .turnPop small { color: #5a4630; font-size: .78rem; }
 @media (max-width: 560px) { .turnPop { position: static; transform: none; width: auto; margin-top: 8px; } }
+.arena { width: 100%; height: min(1180px, 160vh); border: 0; border-radius: 8px; background: var(--void); display: block; }
 .nextStep { border: 1px solid var(--comet); border-radius: 8px; padding: 10px 12px; background: #2a2540; }
 .nextStep b { color: var(--comet); }
 
@@ -1381,136 +1382,23 @@ function showRack() {
     S.loadout.weapon = w; S.loadout.armor = S.loadout.armor || "clotharmor"; save(); battle();
   });
 }
+/* The practice battle uses the 3v3 sparring map's engine and look (N8 prefers it): training-ground.html is a copy of
+   hex-3v3.html (commit 05909b0) with a Training Ground mode. Your Hero, weapon and armor go in through the URL hash. */
 function battle() {
   stopGame();
-  const COLS = 9, ROWS = 5, size = 32, w = Math.sqrt(3) * size;
-  const cube = (c, r) => { const q = c - (r - (r & 1)) / 2; return [q, r, -q - r]; };
-  const dist = (a, b) => { const A = cube(...a), B = cube(...b); return Math.max(Math.abs(A[0] - B[0]), Math.abs(A[1] - B[1]), Math.abs(A[2] - B[2])); };
-  const xy = (c, r) => [w * (c + 0.5 * (r & 1)) + w / 2 + 6, size * 1.5 * r + size + 6];
-  const W = w * (COLS + 0.5) + 12, H = size * 1.5 * (ROWS - 1) + size * 2 + 12;
-  const BLOCK = new Set(["4,1", "4,3", "2,0", "6,4"]);
-  const st = heroStats(), wpn = GEAR[S.loadout.weapon] || { name: "Fists", dice: [1, 4], stat: "P", range: 1 }, arm = GEAR[S.loadout.armor];
-  const hero = { name: "You", c: 1, r: 2, max: st.life, life: st.life, def: st.def + (arm ? arm.def : 0) + (wpn.def || 0), st: { ...st, S: st.S + (arm && arm.spd || 0) }, fx: {} };
-  const trey = { name: "Treywind", c: 7, r: 2, max: 26, life: 26, def: 11, st: { P: 1, S: 1 }, fx: {} };
-  const ab = abilityOf(), feat = FEATURES[S.hero.feature];
-  let turn = null, acts = 0, moved = false, abUsed = false, featUsed = false, mode = null, over = false, round = 0;
-  const log = [];
-  const say = s => { log.unshift(s); $("#blog").innerHTML = log.slice(0, 8).map(x => `<li>${x}</li>`).join(""); };
-  const roll = (n, d) => { let t = 0; for (let i = 0; i < n; i++) t += 1 + Math.floor(Math.random() * d); return t; };
-  const occ = (c, r) => (hero.c === c && hero.r === r) || (trey.c === c && trey.r === r);
-  const moveRange = u => Math.max(1, 3 + (u.st.S || 0) + (u.fx.moveNow || 0) - (u.fx.moveDown ? 2 : 0));
-  const reach = (u, n) => { const seen = new Map([[u.c + "," + u.r, 0]]), q = [[u.c, u.r]];
-    while (q.length) { const [c, r] = q.shift(), d0 = seen.get(c + "," + r); if (d0 >= n) continue;
-      for (let cc = c - 1; cc <= c + 1; cc++) for (let rr = r - 1; rr <= r + 1; rr++) { if (cc < 0 || rr < 0 || cc >= COLS || rr >= ROWS || dist([c, r], [cc, rr]) !== 1) continue; const k = cc + "," + rr;
-        if (seen.has(k) || BLOCK.has(k) || occ(cc, rr)) continue; seen.set(k, d0 + 1); q.push([cc, rr]); } }
-    seen.delete(u.c + "," + u.r); return seen; };
-  const gap = () => dist([hero.c, hero.r], [trey.c, trey.r]);
-  gameShell("training", "Practice battle: Treywind", `
-    <p class="note">Learn to battle. Each round both sides roll D20 + Speed; higher goes first. On your turn: a free Move and 2 actions. To hit: D20 + your stat vs the foe's Defense.</p>
-    <div class="bstats"><span><b>You</b> <span id="hL"></span> Life, Defense ${hero.def}</span><span><b>Treywind</b> <span id="tL"></span> Life, Defense ${trey.def}</span><span id="bRound"></span></div>
-    <div class="bwrap" id="bwrap"><svg viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}" id="board" aria-label="Training ground hex map"></svg><div class="turnPop" id="pop" hidden></div></div>
-    <div class="result" id="bres"></div>
-    <div class="eyebrow">Chronicle</div><ul class="journal" id="blog"></ul>`);
-  const draw = () => {
-    const rr = mode === "move" && turn === "hero" ? reach(hero, moveRange(hero)) : new Map();
-    let s = "";
-    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) { const [x, y] = xy(c, r), k = c + "," + r;
-      s += `<polygon class="hex ${BLOCK.has(k) ? "bale" : ""} ${rr.has(k) ? "lit" : ""}" data-c="${c}" data-r="${r}" points="${hexPts(x, y, size)}"/>`;
-      if (BLOCK.has(k)) s += `<text class="hexT" x="${x}" y="${y}">▦</text>`; }
-    const tok = (u, col, letter) => { const [x, y] = xy(u.c, u.r); return `<g class="tok"><circle cx="${x}" cy="${y}" r="${size * .62}" fill="${col}" stroke="#ede7d6" stroke-width="2"/><text x="${x}" y="${y + 1}" class="tokT">${letter}</text>
-      <rect x="${x - 22}" y="${y + size * .7}" width="44" height="5" fill="#0c0f1f"/><rect x="${x - 22}" y="${y + size * .7}" width="${44 * Math.max(0, u.life) / u.max}" height="5" fill="${u === hero ? "#8fc274" : "#e2714b"}"/></g>`; };
-    s += tok(hero, ROLES[S.hero.role].hue, S.hero.lf[0]) + tok(trey, "#7a3a22", "T");
-    $("#board").innerHTML = s; $("#hL").textContent = `${Math.max(0, hero.life)}/${hero.max}`; $("#tL").textContent = `${Math.max(0, trey.life)}/${trey.max}`; $("#bRound").textContent = `Round ${round}`;
-    $("#board").querySelectorAll(".hex.lit").forEach(h => h.onclick = () => { hero.c = +h.dataset.c; hero.r = +h.dataset.r; moved = true; mode = null; say(`You move.`); draw(); popup(); });
-  };
-  const hitRoll = (att, tgt, stat, mod = 0, critMin = 20) => {
-    const d = d20(), tot = d + (att.st[stat] || 0) + mod + (att.fx.hitUp || 0) - (att.fx.hitDown || 0), def = tgt.def + (tgt.fx.defUp || 0) - (tgt.fx.defDown || 0);
-    return { d, tot, def, hit: d !== 1 && (d >= critMin || tot >= def), crit: d >= critMin };
-  };
-  const hurt = (t, n, src) => { if (t.fx.guard) { n = Math.max(0, n - 1); t.fx.guard = 0; } t.life -= n;
-    if (t.fx.thorns && src) { const th = roll(1, 6); src.life -= th; say(`Thorns strike back for ${th}.`); } return n; };
-  const strike = (dice, stat, mod = 0, critMin = 20, label = "") => {
-    const h = hitRoll(hero, trey, stat, mod, critMin);
-    if (!h.hit) { say(`${label}: rolled ${h.d}, total ${h.tot} vs Defense ${h.def}. Miss.${h.d === 1 ? " A natural 1!" : ""}`); return false; }
-    const dmg = roll(dice[0] * (h.crit ? 2 : 1), dice[1]) + (hero.st[stat] || 0) + hero.st.dmg; hurt(trey, dmg, hero);
-    say(`${label}: rolled ${h.d}${h.crit ? " (Crit! double dice)" : ""}, total ${h.tot} vs ${h.def}. Hit for <b>${dmg}</b>.`); return true;
-  };
-  const spend = () => { acts++; if (trey.life <= 0) return end(true); draw(); if (acts >= 2) { $("#pop").hidden = true; return setTimeout(next, 500); } popup(); };
-  const doAttack = () => { if (gap() > wpn.range) return; strike(wpn.dice, wpn.stat, 0, hero.fx.critMin || 20, `${wpn.name}`); spend(); };
-  const doAbility = () => {
-    const a = ab, sf = a.self || {};
-    if (a.kind === "self" || a.kind === "ally") {
-      if (sf.heal) { const n = roll(sf.heal[0], sf.heal[1]) + (hero.st[sf.heal[2]] || 0); hero.life = Math.min(hero.max, hero.life + n); say(`${a.name}: you heal ${n}.`); }
-      if (sf.defUp) { hero.fx.defUp = (hero.fx.defUp || 0) + sf.defUp[0]; say(`${a.name}: +${sf.defUp[0]} Defense.`); }
-      if (sf.hitUp) hero.fx.hitUp = (hero.fx.hitUp || 0) + sf.hitUp[0];
-      if (sf.thorns) { hero.fx.thorns = 1; say(`${a.name}: thorns wrap around you.`); }
-    } else {
-      const rng = a.leap ? a.leap + 1 : (a.range || 1); if (gap() > rng) return;
-      if (a.leap && gap() > 1) { const spot = [...reach(hero, a.leap).keys()].map(k => k.split(",").map(Number)).filter(([c, r]) => dist([c, r], [trey.c, trey.r]) === 1)[0]; if (spot) { hero.c = spot[0]; hero.r = spot[1]; } }
-      const n = a.hits || 1; let any = false;
-      for (let i = 0; i < n; i++) any = (a.dmg ? strike(a.dmg, a.stat, a.hitMod || 0, a.critMin || 20, a.name) : (() => { const h = hitRoll(hero, trey, a.stat); say(`${a.name}: rolled ${h.d}, total ${h.tot} vs ${h.def}. ${h.hit ? "It works!" : "No effect."}`); return h.hit; })()) || any;
-      if (a.kind === "attacks") any = strike([wpn.dice[0] + (a.extraDie || 0), wpn.dice[1]], wpn.stat, a.hitMod || 0, 20, a.name);
-      const on = a.on || {};
-      if (any) { if (on.hit) trey.fx.hitDown = -on.hit[0]; if (on.def) trey.fx.defDown = -on.def[0]; if (on.root) trey.fx.root = 1; if (on.dot) trey.fx.dot = on.dot[1]; if (on.move) trey.fx.moveDown = 1; if (a.mendAlly) { const m = roll(1, 6); hero.life = Math.min(hero.max, hero.life + m); say(`You mend ${m} Life.`); } }
-      if (sf.def) hero.fx.defDown = -sf.def[0]; if (sf.defUp) hero.fx.defUp = (hero.fx.defUp || 0) + sf.defUp[0]; if (sf.moveNow) { hero.fx.moveNow = sf.moveNow; moved = false; }
-    }
-    abUsed = true; spend();
-  };
-  const doFeature = () => {
-    const kind = feat[2]; featUsed = true;
-    if (kind === "heal") { const n = roll(1, 6); hero.life = Math.min(hero.max, hero.life + n); say(`${feat[0]}: you heal ${n}.`); }
-    if (kind === "def") { hero.fx.defUp = (hero.fx.defUp || 0) + 2; say(`${feat[0]}: +2 Defense until your next turn.`); }
-    if (kind === "hit") { hero.fx.hitUp = (hero.fx.hitUp || 0) + 3; say(`${feat[0]}: +3 to hit this turn.`); }
-    if (kind === "foe") { trey.fx.hitDown = 2; say(`${feat[0]}: Treywind is -2 to hit on his next turn.`); }
-    if (kind === "move") { hero.fx.moveNow = 3; moved = false; say(`${feat[0]}: +3 Move, and you can move again.`); }
-    spend();
-  };
-  const doReady = () => { const i = S.loadout.ready[0] ? 0 : 1, r = S.loadout.ready[i]; if (!r) return; const n = roll(2, 6) + 2; hero.life = Math.min(hero.max, hero.life + n); r.n--; if (!r.n) S.loadout.ready[i] = null; save(); say(`You eat the ${r.name} and heal ${n}.`); spend(); };
-  const doDefend = () => { hero.fx.guard = 1; say("You Defend: the next hit against you does 1 less."); spend(); };
-  const popup = () => {
-    const p = $("#pop"); if (over || turn !== "hero") { p.hidden = true; return; }
-    const [x, y] = xy(hero.c, hero.r), inR = gap() <= wpn.range, aR = ab.kind === "self" || ab.kind === "ally" || gap() <= (ab.leap ? ab.leap + 1 : (ab.range || 1)), ready = S.loadout.ready.some(Boolean);
-    p.style.left = Math.max(18, Math.min(82, x / W * 100)) + "%"; p.style.top = (y / H * 100) + "%"; p.hidden = false;
-    p.innerHTML = `<div class="popHead">Your turn: ${2 - acts} action${2 - acts === 1 ? "" : "s"} left</div>
-      <button type="button" data-a="move" ${moved ? "disabled" : ""}>Move <small>${moved ? "used" : `free, up to ${moveRange(hero)}`}</small></button>
-      <button type="button" data-a="attack" ${inR ? "" : "disabled"}>Attack <small>${wpn.name}${inR ? "" : ", out of range"}</small></button>
-      <button type="button" data-a="ability" ${!abUsed && aR ? "" : "disabled"}>${ab.name} <small>${abUsed ? "once a round" : aR ? "ability" : "out of range"}</small></button>
-      <button type="button" data-a="feature" ${featUsed ? "disabled" : ""}>${feat[0]} <small>${featUsed ? "used this fight" : S.hero.feature}</small></button>
-      <button type="button" data-a="ready" ${ready ? "" : "disabled"}>Ready item <small>${ready ? readyText(S.loadout.ready[0] || S.loadout.ready[1]) : "none packed"}</small></button>
-      <button type="button" data-a="defend">Defend <small>next hit -1</small></button>
-      <button type="button" data-a="end">End turn</button>`;
-    p.querySelectorAll("button").forEach(b => b.onclick = () => ({ move: () => { mode = "move"; draw(); say("Tap a lit hex to move there."); p.hidden = true; }, attack: doAttack, ability: doAbility, feature: doFeature, ready: doReady, defend: doDefend, end: () => { acts = 2; p.hidden = true; draw(); setTimeout(next, 300); } })[b.dataset.a]());
-    const tip = !moved && !acts ? "Tip: Move is free. Get in range, then attack." : acts === 1 ? "One action left." : "";
-    $("#bres").innerHTML = tip ? `<p class="note">${tip}</p>` : "";
-  };
-  const heroTurn = () => { if (over) return; turn = "hero"; acts = 0; moved = false; abUsed = false; hero.fx.defUp = 0; hero.fx.hitUp = 0; hero.fx.moveNow = 0; hero.fx.defDown = 0; hero.fx.critMin = 0; mode = null; draw(); popup(); };
-  let order = [], idx = 0;
-  const next = () => { if (over) return; if (idx >= order.length) return setTimeout(newRound, 500); const who = order[idx++]; who === "hero" ? heroTurn() : treyTurn(); };
-  const treyTurn = () => {
-    if (over) return; turn = "trey"; $("#pop").hidden = true; $("#bres").innerHTML = "";
-    if (trey.fx.dot) { trey.life -= 1; trey.fx.dot--; say("Venom: Treywind loses 1 Life."); if (trey.life <= 0) return end(true); }
-    if (!trey.fx.root && gap() > 1) { const opts = [...reach(trey, moveRange(trey)).keys()].map(k => k.split(",").map(Number)).sort((x, y) => dist(x, [hero.c, hero.r]) - dist(y, [hero.c, hero.r])); if (opts[0]) { trey.c = opts[0][0]; trey.r = opts[0][1]; say("Treywind charges in."); } }
-    trey.fx.root = 0; trey.fx.moveDown = 0;
-    if (gap() <= 1) { const h = hitRoll(trey, hero, "P"); if (h.hit) { const n = hurt(hero, roll(h.crit ? 2 : 1, 6) + 1, trey); say(`Treywind swings his practice staff: ${h.d}, total ${h.tot} vs your ${h.def}. Hit for <b>${n}</b>.`); } else say(`Treywind swings his practice staff: ${h.d}, total ${h.tot} vs your ${h.def}. Miss!`); }
-    else say("Treywind can't reach you yet, so he Defends.");
-    trey.fx.hitDown = 0; trey.fx.defDown = 0; draw();
-    if (hero.life <= 0) return end(false); if (trey.life <= 0) return end(true);
-    setTimeout(next, 700);
-  };
-  const newRound = () => {
-    if (over) return; round++; const a = d20() + (hero.st.S || 0), b = d20() + 1;
-    say(`<b>Round ${round}</b>: your Speed roll ${a} vs Treywind's ${b}. ${a >= b ? "You go first." : "Treywind goes first."}`);
-    order = a >= b ? ["hero", "trey"] : ["trey", "hero"]; idx = 0; next();
-  };
-  const end = won => {
-    if (over) return; over = true; $("#pop").hidden = true; draw();
-    if (won) { const first = !S.trained; S.trained = true; if (first) S.coins += 10; save();
-      $("#bres").innerHTML = `<p><b>Treywind yields!</b> ${first ? "+10 Icosa Coins." : ""}</p>`; setTimeout(() => openTalk("treywind", "done"), 700); }
-    else { S.trained = true; save(); $("#bres").innerHTML = `<p>You're knocked flat. Treywind helps you up. "Good! Again, or go see Wexler. You've learned the basics."</p><span class="btns"><button class="btn primary" type="button" id="again">Again!</button><button class="btn" type="button" id="yard">To the Courtyard</button></span>`;
-      $("#again").onclick = battle; $("#yard").onclick = showCourtyard; }
-  };
-  draw(); say("Treywind grins and twirls his practice staff."); setTimeout(newRound, 400);
+  const h = S.hero, w = GEAR[S.loadout.weapon], a = GEAR[S.loadout.armor];
+  const cfg = { lf: h.lf, role: h.role, focus: L1[h.role][h.focus] ? h.focus : Object.keys(L1[h.role])[0], ab: h.ab || 0,
+    weapon: w ? w.name : undefined, wRange: w ? w.range : undefined, def: (a ? a.def : 0) + (w && w.def || 0), color: ROLES[h.role].hue };
+  $("#view").innerHTML = `<div class="panel game"><div class="head"><div><div class="eyebrow">Training Ground</div><h2>Practice battle: Treywind</h2></div>
+    <button class="btn" type="button" id="leave">Back to the Training Ground</button></div>
+    <iframe class="arena" src="training-ground.html#${encodeURIComponent(JSON.stringify(cfg))}" title="Practice battle with Treywind"></iframe></div>`;
+  $("#leave").onclick = () => showRoom("training");
 }
+addEventListener("message", e => {
+  const d = e.data || {};
+  if (d.type === "cq-training") { if (d.won && !S.trainWon) { S.trainWon = true; S.coins += 10; toast("Treywind yields! +10 Icosa Coins."); } S.trained = true; save(); }
+  if (d.type === "cq-training-close") { showRoom("training"); if (d.won) openTalk("treywind", "done"); }
+});
 
 /* ---------- room view, with the build step for unbuilt rooms */
 const GAME_NAME = { dig: "Dig the rubble", farm: "Tend the plots", kitchen: "Cook a dish" };

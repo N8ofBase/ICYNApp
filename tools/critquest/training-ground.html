@@ -1,0 +1,1315 @@
+<title>Light Keeper Sparring</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya+Sans:wght@400;500;700&display=swap">
+<style>
+/* Same field-journal look as the first hex prototype: one warm daylight parchment theme on purpose. */
+:root {
+  color-scheme: light;
+  --paper: #efe5cc; --paper-2: #e4d6b3; --ink: #2c2416; --ink-soft: #5d4f37; --rule: #c8b68c;
+  --ember: #b5462a; --gold: #c9922c; --sky: #3f6f8f; --leaf: #4f6b3a;
+  --display: "Alegreya SC", "Palatino Linotype", Georgia, serif;
+  --body: "Alegreya Sans", "Segoe UI", system-ui, sans-serif;
+}
+html, body { min-height: 100%; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 15px; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px 24px; box-sizing: border-box;
+}
+*, *::before, *::after { box-sizing: border-box; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; text-wrap: balance; margin: 0; }
+button { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+.top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; margin-bottom: 10px; }
+.top h1 { font-size: 1.6rem; letter-spacing: .02em; }
+.top .sub { color: var(--ink-soft); font-size: .95rem; }
+.lead { margin: 0 0 12px; max-width: 70ch; color: var(--ink-soft); }
+.card { background: var(--paper-2); border: 1px solid var(--rule); border-radius: 6px; padding: 12px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.card h2 { font-size: 1.15rem; }
+.card h3 { font-size: .92rem; color: var(--ink-soft); letter-spacing: .04em; }
+.note { font-size: .82rem; color: var(--ink-soft); margin: 0; }
+.row { display: flex; flex-wrap: wrap; gap: 4px 12px; font-variant-numeric: tabular-nums; font-size: .9rem; }
+
+/* ---------- setup */
+.builders { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 980px) { .builders { grid-template-columns: minmax(0, 1fr); } }
+.choices { display: flex; flex-wrap: wrap; gap: 5px; }
+.choices button { padding: 5px 10px; border: 1px solid var(--ink-soft); background: var(--paper); border-radius: 14px; cursor: pointer; font-size: .9rem; }
+.choices button[aria-pressed="true"] { background: var(--gold); border-color: #8a6416; }
+.abil { display: grid; gap: 5px; }
+.abil button { text-align: left; padding: 7px 10px; border: 1px solid var(--ink-soft); background: var(--paper); border-radius: 6px; cursor: pointer; font-size: .9rem; }
+.abil button[aria-pressed="true"] { background: var(--gold); border-color: #8a6416; }
+.abil small { display: block; color: var(--ink-soft); font-size: .8rem; }
+.abil button[aria-pressed="true"] small { color: var(--ink); }
+.setupFoot { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-top: 12px; }
+@media (max-width: 760px) { .setupFoot { grid-template-columns: minmax(0, 1fr); } }
+.combo-line { font-size: .88rem; }
+.combo-line b { font-family: var(--display); }
+.rv { font-size: .9rem; }
+.rv small { display: block; color: var(--ink-soft); }
+.btn { padding: 8px 12px; border: 1px solid var(--ink-soft); background: var(--paper); border-radius: 5px; cursor: pointer; font-weight: 500; }
+.btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.btn.big { margin-top: 14px; padding: 11px 22px; font-size: 1.05rem; }
+button:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+
+/* ---------- battle */
+.wrap { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+.board { min-width: 0; background: #d7c79c; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; position: relative; }
+.board svg { display: block; width: 100%; height: auto; touch-action: manipulation; user-select: none; }
+.caption { min-height: 76px; padding: 8px 12px; background: var(--paper); border-bottom: 3px solid var(--rule); font-size: .92rem; display: grid; gap: 2px; align-content: start; }
+.caption.mine { border-bottom-color: var(--gold); }
+.caption.rival { border-bottom-color: var(--ember); background: #f3e4d6; }
+.caption .who { color: var(--ink-soft); font-size: .85rem; }
+.caption .hd b { font-family: var(--display); font-size: 1.02rem; }
+.caption .ctl { display: flex; justify-content: flex-end; }
+.status { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 8px 12px; background: var(--paper-2); border-top: 1px solid var(--rule); font-size: .9rem; }
+.status b { font-family: var(--display); }
+.order { display: flex; gap: 4px; flex-wrap: wrap; }
+.chip { padding: 1px 7px; border-radius: 10px; font-size: .76rem; border: 1px solid var(--rule); background: var(--paper); }
+.chip.A { border-color: var(--gold); }
+.chip.B { border-color: var(--ember); }
+.chip.now { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.chip.done { opacity: .5; }
+.side { display: grid; gap: 12px; min-width: 0; }
+.bar { height: 9px; background: #cdbd93; border-radius: 5px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--gold); transition: width .3s; }
+.bar.B i { background: var(--ember); }
+.acts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.acts button { padding: 7px 5px; border: 1px solid var(--ink-soft); background: var(--paper); border-radius: 5px; cursor: pointer; font-weight: 500; line-height: 1.15; font-size: .92rem; }
+.acts button small { display: block; font-size: .7rem; color: var(--ink-soft); font-weight: 400; }
+.acts button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.acts button[aria-pressed="true"] small { color: var(--paper-2); }
+.acts button:disabled { opacity: .42; cursor: default; }
+.acts .combo { grid-column: 1 / -1; background: #f6e3b0; border-color: #8a6416; }
+.pips { display: inline-flex; gap: 4px; vertical-align: middle; }
+.pip { width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--ink); }
+.pip.on { background: var(--gold); }
+.pipgap { width: 6px; }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag { font-size: .74rem; padding: 0 6px; border-radius: 8px; background: var(--paper); border: 1px solid var(--rule); }
+.tag.bad { border-color: var(--ember); color: #8a2e16; }
+.tag.good { border-color: var(--sky); color: #2b5068; }
+.roster { display: grid; gap: 6px; }
+.roster .unit { display: grid; gap: 3px; padding: 6px 8px; border-radius: 5px; background: var(--paper); border: 1px solid var(--rule); cursor: default; font-size: .86rem; }
+.roster .unit.now { outline: 2px solid var(--ink); }
+.roster .unit.out { opacity: .45; }
+.roster .unit .nm { display: flex; justify-content: space-between; gap: 6px; }
+.roster .unit .nm b { font-family: var(--display); }
+.roster h3 { margin-top: 2px; }
+.log { max-height: 260px; overflow-y: auto; font-size: .85rem; display: grid; gap: 3px; padding-right: 4px; }
+.log p { margin: 0; }
+.log .A { border-left: 3px solid var(--gold); padding-left: 6px; }
+.log .B { border-left: 3px solid var(--ember); padding-left: 6px; }
+.log .sys { color: var(--ink-soft); font-style: italic; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: .8rem; color: var(--ink-soft); }
+.legend i { display: inline-block; width: 11px; height: 11px; border-radius: 2px; vertical-align: -1px; margin-right: 4px; border: 1px solid #0003; }
+.banner { position: absolute; inset: 0; display: grid; place-items: center; background: #2c241699; padding: 16px; }
+.banner div { background: var(--paper); border: 2px solid var(--ink); border-radius: 8px; padding: 18px 22px; text-align: center; display: grid; gap: 10px; max-width: 360px; }
+.banner h2 { font-size: 1.5rem; }
+.tip { position: fixed; z-index: 20; max-width: 300px; background: var(--paper); border: 1.5px solid var(--ink); border-radius: 6px; padding: 8px 10px; font-size: .84rem; box-shadow: 0 6px 18px #2c241640; pointer-events: none; display: grid; gap: 3px; }
+.tip b { font-family: var(--display); }
+.tip .t2 { color: var(--ink-soft); }
+.tip .ab { border-top: 1px solid var(--rule); padding-top: 3px; }
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+</style>
+
+<div class="top">
+  <h1>Light Keeper Sparring</h1>
+  <span class="sub">Crit Quest hex prototype 2 · three level 3 Heroes against three, with Combos</span>
+</div>
+
+<!-- ======================= setup -->
+<section id="setupView">
+  <p class="lead">Build three Light Keepers for a sparring bout on the Castle Comet. Each Hero follows <b>one Focus</b> of their Role and picks 1 of 2 abilities at level 1 and again at level 3. Each turn is <b>one free Move plus two actions</b>; you may Attack twice, but only one ability (or Combo) a round. Heroes with different Focuses can join their abilities into <b>Combos</b>.</p>
+  <div class="builders" id="builders"></div>
+  <div class="setupFoot">
+    <section class="card"><h3>Combos your team can make</h3><div id="myCombos"></div></section>
+    <section class="card"><h3>Rival Keepers (the computer)</h3><div id="rivalPreview"></div><div><button class="btn" id="rerollBtn" type="button">New rivals</button></div></section>
+  </div>
+  <button class="btn primary big" id="startBtn" type="button">Start the bout</button>
+</section>
+
+<!-- ======================= battle -->
+<section id="battleView" hidden>
+  <div class="wrap">
+    <div class="board" id="board">
+      <div class="caption" id="caption"></div>
+      <svg id="map" viewBox="0 0 768 395" role="img" aria-label="Hex map of the sparring field"></svg>
+      <div class="status"><span id="status"></span><span class="order" id="order"></span></div>
+    </div>
+    <div class="side">
+      <section class="card" id="actCard">
+        <h2 id="actName">Hero</h2>
+        <div class="bar" id="actBarWrap"><i id="actBar"></i></div>
+        <div class="row" id="actStats"></div>
+        <div class="tags" id="actTags"></div>
+        <div class="row"><span>Actions <span class="pips" id="pips"></span></span></div>
+        <div class="acts" id="acts"></div>
+        <p class="note" id="hint"></p>
+      </section>
+      <section class="card">
+        <h3>Computer speed</h3>
+        <div class="choices" id="paceChoices"></div>
+        <p class="note">Step by step waits for you to press Next after each thing a Rival does.</p>
+      </section>
+      <section class="card"><div class="roster" id="rosters"></div></section>
+      <section class="card"><h3>Chronicle</h3><div class="log" id="log" aria-live="polite"></div></section>
+      <section class="card">
+        <h3>Reading the map</h3>
+        <div class="legend">
+          <span><i style="background:#b8a565"></i>Grass</span>
+          <span><i style="background:#4f6b3a"></i>Trees: cover +2, 2 to enter</span>
+          <span><i style="background:#c9ae74"></i>Hill: +1 to hit from above, 2 to climb</span>
+          <span><i style="background:#9c8562"></i>Dry creek: 2 to enter</span>
+          <span><i style="background:#7c7468"></i>Rocks: block moving and sight</span>
+          <span><i style="background:#8a6a3c"></i>Fence: blocks moving, cover +2 behind it</span>
+        </div>
+        <p class="note">Hover (or tap) any Hero to see their stats, abilities and what is affecting them.</p>
+      </section>
+    </div>
+  </div>
+</section>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+// ============================================================ rules data
+const LIFEFORMS = { Dimoneesh: { def: 1, E: 1 }, Leyf: { E: 1, S: 1 }, Lizerus: { def: 1, P: 1 }, Melkin: { S: 1, C: 1 }, Sapien: { P: 1, C: 1 } };
+const ROLES = {
+  Brawler:     { life: 40, grow: 4, P: 1, S: 1, main: 'P', wRange: 1, weapon: 'Fists', color: '#7a2232', branches: ['Que Bao', 'Fury', 'Bedrock'] },
+  Champion:    { life: 33, grow: 5, def: 1, P: 2, E: 1, main: 'P', wRange: 1, weapon: 'Blade', color: '#a8913a', branches: ['Honor', 'Sacred', 'Oath'] },
+  Maverick:    { life: 30, grow: 4, S: 1, C: 2, main: 'C', wRange: 8, weapon: 'Stringbow', color: '#5e6a3e', branches: ['Sharpsight', 'Trickster', 'Wayfinder'] },
+  'Soul Seer': { life: 30, grow: 4, E: 2, S: 1, main: 'E', wRange: 4, weapon: 'Staff spark', color: '#3f7480', branches: ['Mender', 'Sound', 'Nature'] },
+  Whisper:     { life: 30, grow: 4, S: 1, C: 1, dmg: 1, main: 'S', wRange: 1, weapon: 'Daggers', color: '#4a4a63', branches: ['Wind', 'Shadow', 'Blade'] },
+};
+const STATN = { P: 'Power', E: 'Energy', S: 'Speed', C: 'Charm' };
+const TIER_CD = { 1: 1, 3: 2 };
+
+// Each Focus slot (level 1 and level 3) offers the 2 abilities N8 approved on Nov 11 (tab "Updated abilities").
+// A slot is named "<Focus> <level>"; Combos pair slots, so either pick counts.
+const FAMS = [];
+const F = (role, branch, tier, versions) => FAMS.push({ role, branch, tier, fam: `${branch} ${tier}`, versions: versions.map(v => ({ role, branch, tier, fam: `${branch} ${tier}`, kind: 'foe', ...v })) });
+F('Brawler', 'Que Bao', 1, [
+  { name: 'Suplex', range: 1, stat: 'P', dmg: [1, 8], on: { last: 1 }, t: 'Slam the foe down: 1d8+P, and it acts last next round.' },
+  { name: 'Body Slam', range: 1, stat: 'P', dmg: [1, 10], t: 'A plain, heavy slam: 1d10+P.' }]);
+F('Brawler', 'Que Bao', 3, [
+  { name: 'Crushing Hug', range: 1, stat: 'P', dmg: [2, 6], on: { hit: [-2, 1] }, t: '2d6+P, and the foe is -2 to hit on its next turn.' },
+  { name: 'Calming Hug', range: 1, stat: 'C', dmg: [1, 6], on: { root: 2 }, t: '1d6+C. The foe can’t move for 2 rounds.' }]);
+F('Brawler', 'Fury', 1, [
+  { name: 'Hammer Fist', range: 1, stat: 'P', dmg: [1, 8], critMin: 18, t: '1d8+P that crits on 18 to 20.' },
+  { name: 'Rushing Crush', range: 1, stat: 'S', dmg: [2, 6], self: { def: [-2, 1] }, t: '2d6+S, but you are -2 Defense until your next turn.' }]);
+F('Brawler', 'Fury', 3, [
+  { name: 'Fury Flurry', kind: 'attacks', n: 3, hitMod: -3, t: 'Three Fists attacks, each rolled to hit at -3.' },
+  { name: 'Focused Fury', kind: 'attacks', n: 1, hitMod: 3, extraDie: 1, t: 'One Fists attack at +3 to hit with an extra die (2d6+P).' }]);
+F('Brawler', 'Bedrock', 1, [
+  { name: 'Sky Crash', leap: 4, stat: 'S', dmg: [1, 4], on: { hit: [-1, 1] }, t: 'Jump up to 4 hexes to a foe, then 1d4+S; it is -1 to hit on its next turn.' },
+  { name: 'Jump Punch', leap: 2, stat: 'P', dmg: [1, 8], t: 'Jump up to 2 hexes to a foe, then 1d8+P.' }]);
+F('Brawler', 'Bedrock', 3, [
+  { name: 'Second Wind', kind: 'self', self: { heal: [1, 6, 'E'], defUp: [2, 2] }, t: 'Heal 1d6+E and get +2 Defense for 2 rounds.' },
+  { name: 'Thick Skin', kind: 'self', self: { defUp: [3, 2] }, t: '+3 Defense for 2 rounds.' }]);
+
+F('Champion', 'Honor', 1, [
+  { name: 'Mighty Strike', range: 1, stat: 'P', dmg: [1, 10], t: 'A two-handed swing: 1d10+P.' },
+  { name: 'Guard Strike', range: 1, stat: 'P', dmg: [1, 6], self: { defUp: [1, 1] }, t: '1d6+P, and you get +1 Defense until your next turn.' }]);
+F('Champion', 'Honor', 3, [
+  { name: 'Shield Bash', range: 1, stat: 'P', dmg: [1, 8], on: { knock: 1, last: 1 }, t: '1d8+P, knock the foe back 1 hex, and it acts last next round.' },
+  { name: 'Shield Wall', kind: 'aura', radius: 1, self: { defUp: [1, 2] }, t: 'You and allies next to you get +1 Defense for 2 rounds.' }]);
+F('Champion', 'Sacred', 1, [
+  { name: 'Holy Spark', range: 4, stat: 'E', dmg: [1, 8], on: { hit: [-1, 1] }, t: '1d8+E at range 4; the foe is -1 to hit for 1 round.' },
+  { name: 'Mending Light', kind: 'ally', range: 4, self: { heal: [2, 6, 'E'] }, t: 'Heal an ally (or yourself) within 4 for 2d6+E.' }]);
+F('Champion', 'Sacred', 3, [
+  { name: 'Weaken', range: 4, stat: 'E', dmg: [1, 6], on: { weak: [2, 2] }, t: '1d6+E at range 4; the foe deals 2 less for 2 rounds.' },
+  { name: 'Expose', range: 4, stat: 'C', on: { def: [-2, 2] }, t: 'Charm roll at range 4: the foe is -2 Defense for 2 rounds.' }]);
+F('Champion', 'Oath', 1, [
+  { name: 'Refresh', kind: 'ally', range: 2, self: { heal: [2, 6, 'C'] }, t: 'Heal an ally (or yourself) within 2 for 2d6+C.' },
+  { name: 'Vigor', kind: 'self', self: { defUp: [1, 2], hitUp: [1, 2] }, t: '+1 Defense and +1 to hit for 2 rounds.' }]);
+F('Champion', 'Oath', 3, [
+  { name: 'Sworn Strike', range: 2, stat: 'C', dmg: [2, 6], t: '2d6+C to a foe within 2.' },
+  { name: 'Rally', kind: 'aura', radius: 2, self: { hitUp: [1, 2] }, t: 'You and allies within 2 get +1 to hit for 2 rounds.' }]);
+
+F('Maverick', 'Sharpsight', 1, [
+  { name: 'Long Shot', range: 10, stat: 'C', dmg: [1, 8], noCover: true, t: 'Stringbow 1d8+C out to 10 hexes, ignoring cover.' },
+  { name: 'Pierce', range: 8, stat: 'C', dmg: [1, 6], on: { root: 1 }, t: 'Stringbow 1d6+C; the foe can’t move on its next turn.' }]);
+F('Maverick', 'Sharpsight', 3, [
+  { name: 'Flight', kind: 'fly', fly: 3, shot: [1, 8, 'S'], t: 'Fly up to 3 hexes, then take a free 1d8+S shot.' },
+  { name: 'Quick Shot', range: 8, stat: 'S', dmg: [1, 6], hits: 2, hitMod: -2, t: 'Two stringbow shots of 1d6+S, each at -2 to hit.' }]);
+F('Maverick', 'Trickster', 1, [
+  { name: 'Mock', range: 4, stat: 'C', on: { charm: [-2, 2], hit: [-1, 2] }, t: 'Charm roll at range 4: the foe is -2 Charm and -1 to hit for 2 rounds.' },
+  { name: 'Sly Shot', range: 8, stat: 'C', dmg: [1, 6], on: { hit: [-1, 2] }, t: 'Stringbow 1d6+C; the foe is -1 to hit for 2 rounds.' }]);
+F('Maverick', 'Trickster', 3, [
+  { name: 'Tangle Bola', range: 4, stat: 'C', dmg: [1, 4], on: { root: 2 }, t: '1d4+C at range 4; the foe can’t move for 2 rounds.' },
+  { name: 'Weighted Bola', range: 3, stat: 'P', dmg: [1, 8], on: { exposed: 1, slow: [3, 1] }, t: '1d8+P at range 3; the foe is knocked down and -3 Speed next round.' }]);
+F('Maverick', 'Wayfinder', 1, [
+  { name: 'Venom Shot', range: 8, stat: 'E', dmg: [1, 6], on: { dot: [1, 3] }, t: 'Stringbow 1d6+E; the foe loses 1 Life a turn for 3 turns.' },
+  { name: 'Numbing Dart', range: 4, stat: 'C', on: { move: [-2, 2], slow: [2, 2] }, t: 'Charm roll at range 4: the foe is Move -2 and Speed -2 for 2 rounds.' }]);
+F('Maverick', 'Wayfinder', 3, [
+  { name: 'Snare', range: 4, stat: 'C', dmg: [1, 6], on: { exposed: 1, root: 1 }, t: '1d6+C at range 4; the foe is knocked down and can’t move on its next turn.' },
+  { name: 'Stop Shot', range: 4, stat: 'E', dmg: [1, 8], on: { root: 2 }, t: '1d8+E at range 4; the foe can’t move for 2 rounds.' }]);
+
+F('Soul Seer', 'Mender', 1, [
+  { name: 'Life Thread', range: 4, stat: 'E', dmg: [1, 6], mendAlly: [1, 6], t: '1d6+E at range 4, and your most hurt ally within 4 heals 1d6 if it hits.' },
+  { name: 'Wither Touch', range: 2, stat: 'E', dmg: [1, 10], t: '1d10+E to a foe within 2.' }]);
+F('Soul Seer', 'Mender', 3, [
+  { name: 'Gust', range: 4, stat: 'S', dmg: [2, 6], on: { knock: 1 }, t: '2d6+S at range 4, and the foe is pushed back 1 hex.' },
+  { name: 'Cleansing Breeze', kind: 'aura', radius: 2, self: { heal: [1, 4], cleanse: true }, t: 'You and allies within 2 heal 1d4 and shake off holds, poison and penalties.' }]);
+F('Soul Seer', 'Sound', 1, [
+  { name: 'Shriek', range: 4, stat: 'E', dmg: [1, 6], on: { last: 1 }, t: '1d6+E at range 4; the foe acts last next round.' },
+  { name: 'Rumble', range: 2, stat: 'P', dmg: [1, 10], t: 'A low, heavy tone: 1d10+P at range 2.' }]);
+F('Soul Seer', 'Sound', 3, [
+  { name: 'Mind Spike', range: 4, stat: 'E', dmg: [1, 6], on: { hit: [-2, 2] }, t: '1d6+E at range 4; the foe is -2 to hit for 2 rounds.' },
+  { name: 'Shatter Blast', kind: 'burst', radius: 1, stat: 'C', dmg: [2, 6], t: 'Every foe next to you takes 2d6+C.' }]);
+F('Soul Seer', 'Nature', 1, [
+  { name: 'Bramble Shield', kind: 'ally', range: 4, self: { thorns: 2 }, t: 'For 2 rounds, foes that hit an ally (or you) within 4 take 1d6.' },
+  { name: 'Thorn Shot', range: 4, stat: 'S', dmg: [1, 6], on: { move: [-1, 2] }, t: '1d6+S at range 4; the foe is Move -1 for 2 rounds.' }]);
+F('Soul Seer', 'Nature', 3, [
+  { name: 'Root Grip', range: 4, stat: 'S', on: { root: 2, def: [-1, 2] }, t: 'Speed roll at range 4: the foe can’t move for 2 rounds and is -1 Defense.' },
+  { name: 'Vine Lash', range: 4, stat: 'E', dmg: [1, 8], on: { pull: 1, root: 1 }, t: '1d8+E at range 4; pull the foe 1 hex closer, and it can’t move on its next turn.' }]);
+
+F('Whisper', 'Wind', 1, [
+  { name: 'Double Strike', range: 1, stat: 'S', dmg: [1, 4], hits: 2, t: 'Two quick hits of 1d4+S.' },
+  { name: 'Speed Strike', range: 1, stat: 'S', dmg: [1, 6], self: { moveNow: 2 }, t: '1d6+S, and you get +2 Move for the rest of this turn.' }]);
+F('Whisper', 'Wind', 3, [
+  { name: 'Pressing Wind', range: 2, stat: 'P', dmg: [1, 10], on: { knock: 2 }, t: '1d10+P at range 2, and the foe is pushed back 2 hexes.' },
+  { name: 'Tailwind', kind: 'aura', radius: 2, self: { moveUp: [2, 2] }, t: 'You and allies within 2 get +2 Move for 2 rounds.' }]);
+F('Whisper', 'Shadow', 1, [
+  { name: 'Shade', kind: 'self', self: { defUp: [3, 2] }, t: 'Wrap yourself in shadow: +3 Defense for 2 rounds.' },
+  { name: 'Shadow Stab', range: 1, stat: 'E', dmg: [1, 8], allyBonus: 2, t: '1d8+E, and +2 to hit if one of your allies is next to the foe.' }]);
+F('Whisper', 'Shadow', 3, [
+  { name: 'Fade Strike', range: 1, stat: 'C', dmg: [2, 6], fadeAfter: 4, t: '2d6+C, then vanish and reappear up to 4 hexes away.' },
+  { name: 'Ambush', blink: 3, stat: 'S', dmg: [1, 8], on: { exposed: 1 }, t: 'Step to a foe within 3, strike 1d8+S, and knock it down.' }]);
+F('Whisper', 'Blade', 1, [
+  { name: 'Weak Spot', range: 4, stat: 'C', dmg: [1, 4], on: { mark: 2, def: [-1, 2] }, t: 'Charm roll at range 4: 1d4+C, and the foe is Marked and -1 Defense for 2 rounds.' },
+  { name: 'Throwing Knife', range: 4, stat: 'P', dmg: [1, 8], critMin: 19, t: '1d8+P at range 4; crits on 19 to 20.' }]);
+F('Whisper', 'Blade', 3, [
+  { name: 'Knife Fan', kind: 'burst', radius: 2, max: 3, stat: 'P', dmg: [1, 6], t: '1d6+P to up to 3 foes within 2.' },
+  { name: 'Hidden Dagger', range: 1, stat: 'S', dmg: [2, 8], t: '2d8+S.' }]);
+const famOf = (role, branch, tier) => FAMS.find(x => x.role === role && x.branch === branch && x.tier === tier);
+
+// Combos: levels 1 and 3 (tab "Combos: all levels"). Each pairs two slots; either pick in a slot counts.
+// The partner must be within 4 hexes of the leader. Combo dice add no stat; the hit roll uses the leader's main stat +2 for teamwork.
+const COMBOS = [
+  { name: 'Snare and Slam', pair: ['Trickster 3', 'Que Bao 1'], range: 4, dice: [[3, 8]], on: { stun: 1 }, t: 'The bola trips the foe into the slam: 3d8 at range 4, and the foe loses its next turn.' },
+  { name: 'Hammerfall', pair: ['Bedrock 1', 'Honor 3'], range: 4, dice: [[3, 6]], on: { exposed: 1 }, t: 'Leap in and slam together: 3d6 to a foe within 4, and it is knocked down.' },
+  { name: 'Skyfall', pair: ['Sharpsight 3', 'Honor 1'], range: 4, dice: [[3, 8]], on: { root: 1 }, t: 'The Maverick lifts the Champion and drops them on a foe within 4: 3d8, and it can’t move on its next turn.' },
+  { name: 'Inescapable', pair: ['Que Bao 3', 'Wind 3'], range: 4, adjTo: 'Que Bao 3', dice: [[2, 8]], on: { held: [[[1, 6]], 2] }, t: 'The wind pins the hold: 2d8 to a foe next to the Brawler; it is held for 2 rounds and takes 1d6 at the start of its turns.' },
+  { name: 'Eclipse', pair: ['Shadow 1', 'Sacred 3'], range: 4, dice: [[2, 8]], on: { def: [-2, 2] }, t: '2d8 at range 4, and the foe is -2 Defense for 2 rounds.' },
+  { name: 'Rootbind', pair: ['Wayfinder 3', 'Nature 3'], range: 4, dice: [[2, 6]], on: { held: [[[1, 6]], 2] }, t: '2d6 at range 4; the foe is held for 2 rounds and takes 1d6 at the start of its turns.' },
+  { name: 'Sanctuary', pair: ['Oath 1', 'Mender 3'], kind: 'party', heal: [[2, 6]], self: { defUp: [1, 1] }, t: 'Your whole party heals 2d6 plus the leader’s main stat and gets +1 Defense until their next turn.' },
+  { name: 'Piercing Truth', pair: ['Sharpsight 1', 'Blade 1'], range: 8, sure: true, dice: [[2, 8]], on: { mark: 2 }, t: 'A shot that can’t miss: 2d8 at range 8, and the foe is Marked for 2 rounds.' },
+  { name: 'Thorned Bulwark', pair: ['Bedrock 3', 'Nature 1'], kind: 'guard', holder: 'Bedrock 3', self: { defUp: [2, 2], thorns: 2, thornsN: 2 }, t: 'For 2 rounds the Brawler gets +2 Defense, and foes that hit the Brawler take 2d6.' },
+  { name: 'Vanishing Slam', pair: ['Shadow 3', 'Fury 1'], range: 4, dice: [[2, 8]], critMin: 18, t: 'The Whisper slips the Brawler behind a foe within 4: 2d8 that crits on 18 to 20.' },
+  { name: 'Storm Surge', pair: ['Fury 3', 'Wind 1'], range: 4, adjEither: true, hits: 4, dice: [[1, 6]], critMin: 18, t: 'Four quick hits of 1d6 on a foe next to either Hero; each one crits on 18 to 20.' },
+  { name: 'Mind Games', pair: ['Trickster 1', 'Sound 3'], range: 4, dice: [[2, 6]], on: { hit: [-3, 2] }, t: '2d6 at range 4, and the foe is -3 to hit for 2 rounds.' },
+  { name: 'Battle Hymn', pair: ['Sound 1', 'Oath 3'], kind: 'burst', radius: 1, dice: [[1, 8]], aura: { radius: 3, self: { hitUp: [2, 2] } }, t: 'Every foe next to the leader takes 1d8, and allies within 3 get +2 to hit for 2 rounds.' },
+  { name: 'Lifelight', pair: ['Sacred 1', 'Mender 1'], kind: 'lifelight', range: 4, heal: [[3, 6]], payback: [[2, 6]], t: 'An ally within 4 heals 3d6, and the foe that last hit them takes 2d6.' },
+  { name: 'Venom Fan', pair: ['Wayfinder 1', 'Blade 3'], kind: 'burst', radius: 3, max: 3, dice: [[1, 8]], on: { dot: [1, 3] }, t: 'Poisoned knives: up to 3 foes within 3 take 1d8 each and lose 1 Life a turn for 3 turns.' },
+];
+
+// ============================================================ map: a mirror-fair sparring field
+// . grass  T trees  H hill  C dry creek  R rocks  F fence
+const MAP = [
+  'TT..R.....R..TT',
+  'T....T...T....T',
+  '...F...H...F...',
+  '...F..HHH..F...',
+  '.T....CHC....T.',
+  '......C.C......',
+  '..R...C.C...R..',
+  '.T..T..C..T..T.',
+  '....TT...TT....',
+  'R.....R.R.....R',
+];
+const START = { A: [[1, 3], [0, 5], [1, 7]], B: [[13, 3], [14, 5], [13, 7]] };
+const COLS = MAP[0].length, ROWS = MAP.length;
+const TER = {
+  '.': { cost: 1, fill: '#b8a565' }, T: { cost: 2, cover: true, fill: '#a8955a' }, H: { cost: 2, high: true, fill: '#c9ae74' },
+  C: { cost: 2, fill: '#9c8562' }, R: { block: true, sight: true, fill: '#a8955a' }, F: { block: true, lowCover: true, fill: '#b8a565' },
+};
+const ter = (c, r) => (MAP[r] && TER[MAP[r][c]]) || TER['.'];
+const HS = 30, HW = HS * 1.5, HH = Math.sqrt(3) * HS * 0.62;
+const OX = 40, OY = 46;
+function center(c, r) { return [OX + c * HW, OY + r * HH + (c & 1 ? HH / 2 : 0)]; }
+function toCube(c, r) { const x = c, z = r - (c - (c & 1)) / 2; return [x, -x - z, z]; }
+function fromCube(x, y, z) { return [x, z + (x - (x & 1)) / 2]; }
+function dist(a, b) { const A = toCube(...a), B = toCube(...b); return Math.max(Math.abs(A[0] - B[0]), Math.abs(A[1] - B[1]), Math.abs(A[2] - B[2])); }
+const DIRS = [[[+1, 0], [+1, -1], [0, -1], [-1, -1], [-1, 0], [0, +1]], [[+1, +1], [+1, 0], [0, -1], [-1, 0], [-1, +1], [0, +1]]];
+function neighbors(c, r) { return DIRS[c & 1].map(([dc, dr]) => [c + dc, r + dr]).filter(([x, y]) => x >= 0 && y >= 0 && x < COLS && y < ROWS); }
+function cubeRound(x, y, z) {
+  let rx = Math.round(x), ry = Math.round(y), rz = Math.round(z);
+  const dx = Math.abs(rx - x), dy = Math.abs(ry - y), dz = Math.abs(rz - z);
+  if (dx > dy && dx > dz) rx = -ry - rz; else if (dy > dz) ry = -rx - rz; else rz = -rx - ry;
+  return [rx, ry, rz];
+}
+function line(a, b) {
+  const n = dist(a, b), A = toCube(...a), B = toCube(...b), out = [];
+  for (let i = 0; i <= n; i++) { const t = n ? i / n : 0; out.push(fromCube(...cubeRound(A[0] + (B[0] - A[0]) * t + 1e-6, A[1] + (B[1] - A[1]) * t + 1e-6, A[2] + (B[2] - A[2]) * t - 2e-6))); }
+  return out;
+}
+function sight(a, b) {
+  const L = line(a, b); let cover = false;
+  for (let i = 1; i < L.length - 1; i++) { const t = ter(...L[i]); if (t.sight) return { ok: false }; if ((t.lowCover || t.cover) && dist(L[i], b) === 1) cover = true; }
+  if (ter(...b).cover) cover = true;
+  return { ok: true, cover: cover && dist(a, b) > 1 };
+}
+
+// ============================================================ state + helpers
+const G = { team: [], rivals: [], units: [], round: 0, order: [], turn: 0, mode: null, over: false, busy: true, pace: 'normal', floats: [], beams: [], autoA: false };
+const $ = id => document.getElementById(id);
+const rng = n => 1 + Math.floor(Math.random() * n);
+const rollDice = list => list.reduce((s, [n, d]) => { for (let i = 0; i < n; i++) s += rng(d); return s; }, 0);
+const diceTxt = list => list.map(([n, d]) => `${n}d${d}`).join('+');
+const avgDice = list => list.reduce((s, [n, d]) => s + n * (d + 1) / 2, 0);
+const key = (c, r) => c + ',' + r;
+const pos = u => [u.c, u.r];
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const rds = n => n === 1 ? '1 round' : `${n} rounds`;
+const occupied = (c, r, except) => G.units.find(u => u.alive && u !== except && u.c === c && u.r === r);
+const cur = () => G.order[G.turn];
+const enemiesOf = u => G.units.filter(x => x.alive && x.team !== u.team);
+const alliesOf = u => G.units.filter(x => x.alive && x.team === u.team);
+const stat = (u, k) => Math.max(0, (u.st[k] || 0) + (k === 'C' && u.fx.charm ? u.fx.charm[0] : 0));
+const timed = (t, [v, d]) => [v, d + (t === cur() ? 1 : 0)]; // a buff on the Hero whose turn it is lasts through their next turns too
+const strip = s => s.replace(/<[^>]+>/g, '');
+const abOf = (sp, tier) => famOf(sp.role, sp.branch, tier).versions[tier === 1 ? sp.a1 : sp.a3];
+const famsOf = sp => [famOf(sp.role, sp.branch, 1).fam, famOf(sp.role, sp.branch, 3).fam];
+const PACE = { slow: 1.8, normal: 1, fast: .35, step: 1 };
+let reduce = false; try { reduce = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+let contResolve = null;
+async function beat(ms, major) {
+  if (G.pace === 'step' && major && !G.autoA) { $('caption').insertAdjacentHTML('beforeend', '<div class="ctl"><button class="btn primary" id="contBtn" type="button">Next ▸</button></div>'); $('contBtn').onclick = () => contResolve && contResolve(); $('contBtn').focus({ preventScroll: true }); return new Promise(res => { contResolve = () => { contResolve = null; res(); }; }); }
+  return sleep(ms * PACE[G.pace]);
+}
+
+// ============================================================ heroes
+function defaultSpec(lf, role, branch, a1 = 0, a3 = 0) { return { lf, role, branch, a1, a3, l2: ROLES[role].main }; }
+function randomSpec() {
+  const lfs = Object.keys(LIFEFORMS), roles = Object.keys(ROLES);
+  const role = roles[rng(5) - 1];
+  return defaultSpec(lfs[rng(5) - 1], role, ROLES[role].branches[rng(3) - 1], rng(2) - 1, rng(2) - 1);
+}
+function teamCombos(specs) {
+  const out = [];
+  for (let i = 0; i < specs.length; i++) for (let j = i + 1; j < specs.length; j++) {
+    const a = famsOf(specs[i]), b = famsOf(specs[j]);
+    for (const C of COMBOS) if ((a.includes(C.pair[0]) && b.includes(C.pair[1])) || (a.includes(C.pair[1]) && b.includes(C.pair[0]))) out.push({ C, i, j });
+  }
+  return out;
+}
+function randomRivals() {
+  for (let k = 0; k < 400; k++) { const t = [randomSpec(), randomSpec(), randomSpec()]; if (new Set(t.map(s => s.role)).size >= 2 && teamCombos(t).length) return t; }
+  return [randomSpec(), randomSpec(), randomSpec()];
+}
+function buildUnit(sp, team, i) {
+  const R = ROLES[sp.role], L = LIFEFORMS[sp.lf], st = {};
+  for (const k of 'PESC') st[k] = (R[k] || 0) + (L[k] || 0);
+  st[sp.l2] += 1;
+  const [c, r] = START[team][i];
+  const life = R.life + 2 * R.grow;
+  return { id: team + i, team, sp, role: sp.role, lf: sp.lf, branch: sp.branch, name: '', alive: true, c, r, life, max: life,
+    def: 10 + (L.def || 0) + (R.def || 0), st, main: R.main, wRange: R.wRange, weapon: R.weapon, roleDmg: R.dmg || 0, color: R.color,
+    abs: [abOf(sp, 1), abOf(sp, 3)], cd: [0, 0], fx: {}, actions: 0, freeMove: false, abUsed: false, spent: false };
+}
+function nameTeam(list, word) {
+  const count = {}; list.forEach(u => count[u.role] = (count[u.role] || 0) + 1);
+  const seen = {}; list.forEach(u => { seen[u.role] = (seen[u.role] || 0) + 1; u.name = `${word} ${u.role}${count[u.role] > 1 ? ' ' + seen[u.role] : ''}`; });
+}
+
+// ============================================================ setup screen
+function builderHTML(sp, i) {
+  const R = ROLES[sp.role];
+  const chips = (k, list, label = x => x) => `<div class="choices">${list.map(v => `<button type="button" data-slot="${i}" data-k="${k}" data-v="${v}" aria-pressed="${sp[k] === v}">${label(v)}</button>`).join('')}</div>`;
+  const abList = tier => famOf(sp.role, sp.branch, tier).versions.map((a, n) => `<button type="button" data-slot="${i}" data-k="${tier === 1 ? 'a1' : 'a3'}" data-v="${n}" aria-pressed="${(tier === 1 ? sp.a1 : sp.a3) === n}"><b>${a.name}</b><small>${a.t}${rangeTxt(a)} · rests ${rds(TIER_CD[tier])}</small></button>`).join('');
+  const u = buildUnit(sp, 'A', i);
+  return `<section class="card">
+    <h2>Hero ${i + 1}: ${sp.lf} ${sp.role}</h2>
+    <h3>Lifeform</h3>${chips('lf', Object.keys(LIFEFORMS))}
+    <h3>Role</h3>${chips('role', Object.keys(ROLES))}
+    <h3>Focus</h3>${chips('branch', R.branches)}
+    <h3>Level 1 ability · pick 1 of 2</h3><div class="abil">${abList(1)}</div>
+    <h3>Level 3 ability · pick 1 of 2</h3><div class="abil">${abList(3)}</div>
+    <h3>Level 2 · +1 to</h3>${chips('l2', ['P', 'E', 'S', 'C'], k => STATN[k])}
+    <div class="row"><span>Life <b>${u.max}</b></span><span>Defense <b>${u.def}</b></span>${'PESC'.split('').map(k => `<span>${STATN[k]} <b>${u.st[k]}</b></span>`).join('')}<span>Move <b>${3 + u.st.S}</b></span><span>${u.weapon} 1d6+${u.main}${u.roleDmg ? '+1' : ''}, range ${u.wRange}</span></div>
+  </section>`;
+}
+function rangeTxt(a) {
+  if (a.kind === 'self') return ' · on yourself';
+  if (a.kind === 'aura') return a.radius === 1 ? ' · you and allies next to you' : ` · you and allies within ${a.radius}`;
+  if (a.kind === 'fly' || a.kind === 'attacks') return '';
+  if (a.leap) return ` · jump ${a.leap}`;
+  if (a.blink) return ` · step ${a.blink}`;
+  return a.range ? ` · range ${a.range}` : '';
+}
+function renderSetup() {
+  $('builders').innerHTML = G.team.map(builderHTML).join('');
+  const mine = teamCombos(G.team);
+  $('myCombos').innerHTML = mine.length ? mine.map(({ C, i, j }) => `<p class="combo-line"><b>${C.name}</b> · Hero ${i + 1} + Hero ${j + 1} (${C.pair.join(' + ')})<br><span class="note">${C.t}</span></p>`).join('')
+    : '<p class="note">No Combos yet. A Combo pairs two Focus slots on different Heroes (either pick in a slot counts), for example Honor 3 with Bedrock 1 (Hammerfall) or Oath 1 with Mender 3 (Sanctuary).</p>';
+  $('rivalPreview').innerHTML = G.rivals.map(sp => `<div class="rv"><b>${sp.lf} ${sp.role}</b> · ${sp.branch}<small>${abOf(sp, 1).name}, ${abOf(sp, 3).name}</small></div>`).join('')
+    + `<p class="note">Their Combos: ${teamCombos(G.rivals).map(x => x.C.name).join(', ') || 'none'}</p>`;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('button[data-slot]'); if (!b) return;
+  const sp = G.team[+b.dataset.slot], k = b.dataset.k, v = b.dataset.v;
+  if (k === 'role') { sp.role = v; sp.branch = ROLES[v].branches[0]; sp.a1 = 0; sp.a3 = 0; sp.l2 = ROLES[v].main; }
+  else if (k === 'branch') { sp.branch = v; sp.a1 = 0; sp.a3 = 0; }
+  else if (k === 'a1' || k === 'a3') sp[k] = +v;
+  else sp[k] = v;
+  renderSetup();
+});
+$('rerollBtn').onclick = () => { G.rivals = randomRivals(); renderSetup(); };
+$('startBtn').onclick = () => startBout();
+
+// ============================================================ dice, Calamities, Enhancements
+function d20(u, lines) {
+  let r = rng(20);
+  if (r === 1 && u.fx.lucky) { u.fx.lucky--; lines.push(`Lucky Star: ${u.name} rerolls the 1.`); r = rng(20); }
+  if (u.fx.curse) { u.fx.curse = false; if (r >= 2 && r <= 9) { lines.push(`Die Curse turns the ${r} into a 1.`); r = 1; } }
+  if (u.fx.bless) { u.fx.bless = false; if (r >= 11 && r <= 19) { lines.push(`Die Blessing turns the ${r} into a 20.`); r = 20; } }
+  return r;
+}
+function calamity(u) {
+  const n = rng(12);
+  const T = {
+    1: ['Die Curse', 'the next D20 counts any 2 to 9 as a 1', () => u.fx.curse = true],
+    2: ['Butterfingers', '-3 on the next attack roll', () => u.fx.fumble = 1],
+    3: ['Twisted Ankle', 'Move -2 for the rest of the bout', () => u.fx.ankle = 2],
+    4: ['Shaken', '-2 Charm for the rest of the bout', () => u.st.C -= 2],
+    5: ['Winded', 'loses an action on the next turn', () => u.fx.winded = 1],
+    6: ['Off Balance', 'falls down: the next attack on them is +2', () => u.fx.exposed = 1],
+    7: ['Tangled Gear', 'both abilities rest 2 more rounds', () => u.cd = u.cd.map(x => x + 2)],
+    8: ['Wild Swing', 'embarrassing, but nothing else', () => {}],
+    9: ['Rattled', '-1 to hit for 2 rounds', () => u.fx.hit = timed(u, [-1, 2])],
+    10: ['Dropped Guard', '-1 Defense for 2 rounds', () => u.fx.def = timed(u, [-1, 2])],
+    11: ['Slow Start', '-3 Speed next round', () => u.fx.slow = [3, 1]],
+    12: ['Stumble', 'the rest of this turn is lost', () => { if (cur() === u) u.actions = 0; }],
+  }[n];
+  T[2]();
+  return `<span style="color:#8a2e16">Calamity ${n}, ${T[0]}: ${u.name} ${T[1]}.</span>`;
+}
+function enhancement(u) {
+  const n = rng(12);
+  const T = {
+    1: ['Second Wind', 'heals 1d6+E', () => healUnit(u, rng(6) + stat(u, 'E'))], 2: ['Fleet Foot', 'Move +2 for the bout', () => u.fx.fleet = 2],
+    3: ['Keen Edge', '+1 damage die for the bout', () => u.fx.keen = 1], 4: ['Steady Heart', '+2 Charm for the bout', () => u.st.C += 2],
+    5: ['Stone Skin', 'Defense +1 for the bout', () => u.def++], 6: ['Clear Mind', 'both abilities are ready', () => u.cd = [0, 0]],
+    7: ['Rally', '+1 to hit for the bout', () => u.fx.rally = 1], 8: ['Far Sight', 'ranges +2 for the bout', () => u.fx.far = 2],
+    9: ['Lucky Star', 'one free reroll of a 1', () => u.fx.lucky = (u.fx.lucky || 0) + 1], 10: ['Light Step', 'rough ground costs 1', () => u.fx.light = true],
+    11: ['Second Breath', '+1 action this turn', () => { if (cur() === u) u.actions++; }], 12: ['Die Blessing', 'the next D20 counts 11 to 19 as a 20', () => u.fx.bless = true],
+  }[n];
+  T[2]();
+  return `<span style="color:#7a560f">Enhancement ${n}, ${T[0]}: ${u.name} ${T[1]}.</span>`;
+}
+
+// ============================================================ combat core
+function flanked(t, att) {
+  const adj = G.units.filter(x => x.alive && x.team === att.team && dist(pos(x), pos(t)) === 1);
+  if (adj.length < 2) return false;
+  const N = neighbors(t.c, t.r).map(([c, r]) => key(c, r));
+  const idx = adj.map(f => N.indexOf(key(f.c, f.r)));
+  return idx.some(i => idx.includes((i + 3) % 6));
+}
+function mods(att, tgt, statKey, o = {}) {
+  const parts = []; let sum = 0;
+  const add = (n, label) => { if (n) { sum += n; parts.push(`${n > 0 ? '+' : ''}${n} ${label}`); } };
+  if (statKey) add(stat(att, statKey), STATN[statKey]);
+  add(o.hitMod || 0, o.hitLabel || 'ability');
+  if (ter(att.c, att.r).high && !ter(tgt.c, tgt.r).high) add(1, 'high ground');
+  if (att.fx.hitUp) add(att.fx.hitUp[0], 'rallied');
+  if (att.fx.hit) add(att.fx.hit[0], 'shaken');
+  if (att.fx.rally) add(1, 'Rally');
+  if (att.fx.fumble) add(-3, 'Butterfingers');
+  if (flanked(tgt, att)) add(2, 'flanking');
+  if (tgt.fx.mark && tgt.team !== att.team) add(2, 'Marked');
+  if (o.allyBonus && alliesOf(att).some(a => a !== att && dist(pos(a), pos(tgt)) === 1)) add(o.allyBonus, 'ally close');
+  let def = tgt.def; const dp = [];
+  const dadd = (n, label) => { if (n) { def += n; dp.push(`${n > 0 ? '+' : ''}${n} ${label}`); } };
+  if (tgt.fx.defUp) dadd(tgt.fx.defUp[0], 'guarded');
+  if (tgt.fx.def) dadd(tgt.fx.def[0], 'weakened');
+  if (!o.noCover && dist(pos(att), pos(tgt)) > 1 && sight(pos(att), pos(tgt)).cover) dadd(2, 'cover');
+  if (tgt.fx.exposed) dadd(-2, 'knocked down');
+  return { sum, parts, def, dp };
+}
+function hitP(att, tgt, sp = {}) {
+  const m = mods(att, tgt, sp.statKey, sp);
+  const need = m.def - m.sum; // must beat Defense: roll > need
+  return clamp(20 - need, Math.max(1, 21 - (sp.critMin || 20)), 19) / 20;
+}
+function healUnit(t, n) { const before = t.life; t.life = Math.min(t.max, t.life + n); return t.life - before; }
+function floatOn(u, text, cls) {
+  const f = { id: u.id, text, cls }; G.floats.push(f); draw();
+  setTimeout(() => { G.floats = G.floats.filter(x => x !== f); draw(); }, 1500 * PACE[G.pace] + 200);
+}
+function hurt(t, n, src) {
+  const notes = [];
+  if (src && src.team !== t.team) t.lastHitBy = src;
+  t.life = Math.max(0, t.life - n);
+  floatOn(t, '-' + n, 'dmg');
+  if (t.life === 0) { t.alive = false; t.out = 'ko'; notes.push(`${t.name} is out of the bout`); }
+  if (src && src.alive && t.fx.thorns) { const d = rollDice([[t.fx.thornsN || 1, 6]]); notes.push(`thorns sting ${src.name} for ${d}`); const r = hurt(src, d, null); notes.push(...r); }
+  return notes;
+}
+function barbs(att) {
+  if (!att.fx.barbs) return null;
+  const d = rollDice(att.fx.barbs.dice); const n = hurt(att, d, null);
+  return `Thorned Bulwark bites ${att.name} for ${d}${n.length ? ' · ' + n.join(' · ') : ''}.`;
+}
+// One attack (or roll-only effect when sp.dice is empty). Returns { hit, lines }.
+async function strike(att, tgt, sp) {
+  const res = { hit: false, lines: [] };
+  for (let i = 0; i < (sp.hits || 1); i++) {
+    if (!tgt.alive || !att.alive) break;
+    const b = barbs(att); if (b) res.lines.push(b);
+    if (!att.alive) break;
+    const m = mods(att, tgt, sp.statKey, sp);
+    const r = d20(att, res.lines);
+    att.fx.fumble = 0;
+    const total = r + m.sum, crit = r !== 1 && r >= (sp.critMin || 20), hit = sp.sure || (r !== 1 && (crit || total > m.def));
+    G.beams = [{ a: pos(att), b: pos(tgt), team: att.team }];
+    let line = `${sp.label} → ${tgt.name}: rolled <b>${r}</b>${m.parts.length ? ' ' + m.parts.join(' ') : ''} = ${total} vs Defense ${m.def}${m.dp.length ? ' (' + m.dp.join(', ') + ')' : ''}`;
+    if (tgt.fx.exposed) tgt.fx.exposed = 0;
+    if (r === 1 && !sp.sure) { res.lines.push(line + ' · <b>natural 1, miss</b>'); floatOn(tgt, 'miss', 'miss'); res.lines.push(calamity(att)); continue; }
+    if (!hit) { res.lines.push(line + ' · <b>miss</b>'); floatOn(tgt, 'miss', 'miss'); continue; }
+    res.hit = true;
+    if (!sp.dice) { res.lines.push(line + ` · <b>${crit ? 'CRIT' : 'it works'}</b>`); if (crit) res.lines.push(enhancement(att)); continue; }
+    let dice = sp.dice.map(d => [...d]);
+    if (att.fx.keen) dice[0][0] += 1;
+    if (sp.extraDie) dice[0][0] += sp.extraDie;
+    if (crit) dice = dice.map(([n, s]) => [n * 2, s]);
+    const add = (sp.dmgStat ? stat(att, sp.dmgStat) : 0) + (sp.bonus || 0) + (att.fx.dmgUp ? att.fx.dmgUp[0] : 0) - (att.fx.weak ? att.fx.weak[0] : 0);
+    let dmg = Math.max(1, rollDice(dice) + add);
+    let gnote = '';
+    if (tgt.fx.guard && dmg > 1) { dmg -= 1; delete tgt.fx.guard; gnote = ' (Defend took 1 off)'; }
+    const notes = hurt(tgt, dmg, att);
+    res.lines.push(line + ` · <b>${crit ? 'CRIT! ' : 'Hit, '}${dmg} damage</b>${gnote}${notes.length ? ' · ' + notes.join(' · ') : ''}`);
+    if (crit) res.lines.push(enhancement(att));
+    await sleep(reduce ? 0 : 120);
+  }
+  return res;
+}
+const weaponSpec = u => ({ label: u.weapon, dice: [[1, 6]], statKey: u.main, dmgStat: u.main, bonus: u.roleDmg });
+
+// ---------- effects
+function applyOn(src, t, on) {
+  const n = []; if (!on || !t.alive) return n;
+  const fx = t.fx;
+  if (on.weak) { fx.weak = timed(t, on.weak); n.push(`deals ${on.weak[0]} less for ${rds(on.weak[1])}`); }
+  if (on.hit) { fx.hit = timed(t, on.hit); n.push(`${on.hit[0]} to hit for ${rds(on.hit[1])}`); }
+  if (on.def) { fx.def = timed(t, on.def); n.push(`${on.def[0]} Defense for ${rds(on.def[1])}`); }
+  if (on.dot) { fx.dot = timed(t, on.dot); n.push(`loses ${on.dot[0]} Life a turn for ${on.dot[1]} turns`); }
+  if (on.held) { fx.held = { dice: on.held[0], dur: on.held[1] }; fx.root = Math.max(fx.root || 0, on.held[1]); n.push(`held for ${rds(on.held[1])} (${diceTxt(on.held[0])} each turn)`); }
+  if (on.root) { fx.root = Math.max(fx.root || 0, on.root); n.push(`can’t move for ${rds(on.root)}`); }
+  if (on.stun) { fx.stun = Math.max(fx.stun || 0, on.stun); n.push(on.stun > 1 ? `can’t act for ${on.stun} turns` : 'loses the next turn'); }
+  if (on.last) { fx.last = true; n.push('acts last next round'); }
+  if (on.exposed) { fx.exposed = 1; n.push('knocked down (next attack on it +2)'); }
+  if (on.slow) { fx.slow = [...on.slow]; n.push(`Speed -${on.slow[0]}`); }
+  if (on.move) { fx.move = timed(t, on.move); n.push(`Move ${on.move[0]}`); }
+  if (on.charm) { fx.charm = timed(t, on.charm); n.push(`${on.charm[0]} Charm`); }
+  if (on.talk) { fx.talk = (fx.talk || 0) + on.talk; n.push(`+${on.talk} to Talk it down`); }
+  if (on.barbs) { fx.barbs = { dice: on.barbs[0], dur: on.barbs[1] }; n.push(`each attack it makes costs it ${diceTxt(on.barbs[0])}`); }
+  if (on.mark) { fx.mark = timed(t, [2, on.mark]); n.push(`Marked for ${rds(on.mark)} (allies +2 to hit it)`); }
+  if (on.knock) n.push(shove(src, t, on.knock, +1));
+  if (on.pull) n.push(shove(src, t, on.pull, -1));
+  return n.filter(Boolean);
+}
+function shove(src, t, steps, dir) {
+  let moved = 0;
+  for (let s = 0; s < steps; s++) {
+    const d0 = dist(pos(src), pos(t));
+    const N = neighbors(t.c, t.r).filter(([c, r]) => dist(pos(src), [c, r]) === d0 + dir && !ter(c, r).block && !occupied(c, r) && !(c === src.c && r === src.r));
+    if (!N.length) break;
+    [t.c, t.r] = N[0]; moved++;
+  }
+  return moved ? `${dir > 0 ? 'pushed back' : 'pulled in'} ${moved} hex${moved > 1 ? 'es' : ''}` : (dir > 0 ? 'can’t be pushed (something solid is behind)' : 'can’t be pulled');
+}
+function cleanse(t) {
+  const bad = [];
+  for (const k of ['dot', 'held', 'root', 'weak', 'charm', 'barbs', 'slow', 'exposed']) if (t.fx[k]) { delete t.fx[k]; bad.push(k); }
+  for (const k of ['hit', 'def', 'move']) if (t.fx[k] && t.fx[k][0] < 0) { delete t.fx[k]; bad.push(k); }
+  return bad.length ? 'their penalties' : '';
+}
+function buff(c, t, s) {
+  if (!s || !t.alive) return [];
+  const p = [];
+  if (s.heal || s.healFlat) { const n = s.healFlat || (rollDice([[s.heal[0], s.heal[1]]]) + (s.heal[2] ? stat(c, s.heal[2]) : 0)); const got = healUnit(t, n); p.push(`heals ${got}`); if (got) floatOn(t, '+' + got, 'heal'); }
+  if (s.cleanse) { const had = cleanse(t); if (had) p.push(`shakes off ${had}`); }
+  if (s.defUp) { if (!t.fx.defUp || t.fx.defUp[0] <= s.defUp[0]) t.fx.defUp = timed(t, s.defUp); p.push(`+${s.defUp[0]} Defense for ${rds(s.defUp[1])}`); }
+  if (s.def) { t.fx.def = timed(t, s.def); p.push(`${s.def[0]} Defense until the next turn`); }
+  if (s.dmgUp) { t.fx.dmgUp = timed(t, s.dmgUp); p.push(`+${s.dmgUp[0]} damage for ${rds(s.dmgUp[1])}`); }
+  if (s.hitUp) { t.fx.hitUp = timed(t, s.hitUp); p.push(`+${s.hitUp[0]} to hit for ${rds(s.hitUp[1])}`); }
+  if (s.moveUp) { t.fx.moveUp = timed(t, s.moveUp); p.push(`+${s.moveUp[0]} Move for ${rds(s.moveUp[1])}`); }
+  if (s.moveNow) { t.fx.moveNow = s.moveNow; p.push(`+${s.moveNow} Move this turn`); }
+  if (s.thorns) { t.fx.thorns = s.thorns + (t === cur() ? 1 : 0); t.fx.thornsN = s.thornsN || 1; p.push(`wrapped in thorns (${t.fx.thornsN}d6) for ${rds(s.thorns)}`); }
+  return p.length ? [`${t.name}: ${p.join(', ')}.`] : [];
+}
+function mostHurt(u, R) { return alliesOf(u).filter(x => dist(pos(x), pos(u)) <= R && x.life < x.max).sort((a, b) => a.life / a.max - b.life / b.max)[0]; }
+
+// ---------- reach and targets
+function moveRange(u) { if (u.fx.root) return 0; return Math.max(1, 3 + stat(u, 'S') + (u.fx.fleet || 0) - (u.fx.ankle || 0) + (u.fx.moveUp ? u.fx.moveUp[0] : 0) + (u.fx.move ? u.fx.move[0] : 0) + (u.fx.moveNow || 0)); }
+function reachable(u, budget) {
+  const best = new Map([[key(u.c, u.r), 0]]), prev = new Map(), q = [[0, u.c, u.r]];
+  while (q.length) {
+    q.sort((a, b) => a[0] - b[0]); const [d, c, r] = q.shift();
+    for (const [nc, nr] of neighbors(c, r)) {
+      const t = ter(nc, nr); if (t.block || occupied(nc, nr, u)) continue;
+      const nd = d + (u.fx.light ? 1 : t.cost); if (nd > budget) continue;
+      if (nd < (best.get(key(nc, nr)) ?? 99)) { best.set(key(nc, nr), nd); prev.set(key(nc, nr), key(c, r)); q.push([nd, nc, nr]); }
+    }
+  }
+  best.delete(key(u.c, u.r)); return { best, prev };
+}
+function pathTo(R, u, c, r) { const path = []; let k = key(c, r); while (k && k !== key(u.c, u.r)) { path.unshift(k.split(',').map(Number)); k = R.prev.get(k); } return path; }
+const inReach = (u, f, R) => { const d = dist(pos(u), pos(f)); return d <= R && (d === 1 || sight(pos(u), pos(f)).ok); };
+function weaponRange(u) { return u.wRange + (u.wRange > 1 ? (u.fx.far || 0) : 0); }
+function weaponTargets(u) { return enemiesOf(u).filter(f => inReach(u, f, weaponRange(u))); }
+function landing(u, f, n) {
+  if (dist(pos(u), pos(f)) === 1) return pos(u);
+  let best = null;
+  for (const [c, r] of neighbors(f.c, f.r)) { if (ter(c, r).block || occupied(c, r, u)) continue; const d = dist(pos(u), [c, r]); if (d <= n && (!best || d < best[2])) best = [c, r, d]; }
+  return best && [best[0], best[1]];
+}
+function flyHexes(u, n) {
+  const out = [];
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) { const d = dist(pos(u), [c, r]); if (d >= 1 && d <= n && !ter(c, r).block && !occupied(c, r)) out.push([c, r]); }
+  return out;
+}
+function abTargets(u, a) {
+  if (a.kind === 'self' || a.kind === 'aura') return [u];
+  if (a.kind === 'burst') return burstFoes(u, a.radius, a.max).length ? [u] : [];
+  if (a.kind === 'attacks') return weaponTargets(u);
+  if (a.kind === 'ally') return alliesOf(u).filter(x => dist(pos(u), pos(x)) <= a.range);
+  if (a.kind === 'fly') return flyHexes(u, a.fly);
+  const R = a.range > 1 ? a.range + (u.fx.far || 0) : a.range;
+  const foes = (a.leap || a.blink) ? enemiesOf(u).filter(f => landing(u, f, a.leap || a.blink)) : enemiesOf(u).filter(f => inReach(u, f, R));
+  if (a.kind === 'foeOrAlly') return [...foes, ...alliesOf(u).filter(x => dist(pos(u), pos(x)) <= a.range)];
+  return foes;
+}
+function burstFoes(u, radius, max) { const f = enemiesOf(u).filter(e => inReach(u, e, radius)).sort((a, b) => a.life - b.life); return max ? f.slice(0, max) : f; }
+function talkTargets(u) { return enemiesOf(u).filter(f => f.life <= Math.ceil(f.max / 4) && inReach(u, f, 4)); }
+function talkChance(u, f) { const need = 10 + stat(f, 'C') - stat(u, 'C') - (f.fx.talk || 0); return clamp(21 - need, 1, 19) / 20; }
+function famReady(u, fam) { const i = u.abs.findIndex(a => a.fam === fam); return i >= 0 && !u.cd[i] ? i : -1; }
+function comboList(u) {
+  const out = [];
+  for (const C of COMBOS) for (let s = 0; s < 2; s++) {
+    if (u.abUsed) continue;
+    const i = famReady(u, C.pair[s]); if (i < 0) continue;
+    for (const p of alliesOf(u)) { if (p === u || p.fx.stun || p.spent || dist(pos(p), pos(u)) > 4) continue; const j = famReady(p, C.pair[1 - s]); if (j >= 0) out.push({ C, partner: p, i, j }); }
+  }
+  return out;
+}
+function holderOf(u, K, slot) { return u.abs[K.i].fam === slot ? u : K.partner; }
+function comboTargets(u, K) {
+  const C = K.C;
+  if (C.kind === 'party') return [u];
+  if (C.kind === 'guard') return [holderOf(u, K, C.holder)];
+  if (C.kind === 'burst') return burstFoes(u, C.radius, C.max).length ? [u] : [];
+  if (C.kind === 'lifelight') return alliesOf(u).filter(x => dist(pos(u), pos(x)) <= C.range && x.life < x.max);
+  const R = C.range > 1 ? C.range + (u.fx.far || 0) : 1;
+  return enemiesOf(u).filter(f => {
+    if (C.adjTo) return dist(pos(holderOf(u, K, C.adjTo)), pos(f)) === 1;
+    if (C.adjEither) return dist(pos(u), pos(f)) === 1 || dist(pos(K.partner), pos(f)) === 1;
+    return inReach(u, f, R) && dist(pos(K.partner), pos(f)) <= 6;
+  });
+}
+const comboInstant = C => C.kind === 'party' || C.kind === 'guard' || C.kind === 'burst';
+
+// ---------- doing things (shared by you and the computer)
+async function walk(u, path) { for (const [c, r] of path) { u.c = c; u.r = r; draw(); await sleep(reduce ? 0 : 150 * Math.min(1.4, PACE[G.pace])); } }
+async function hop(u, c, r) { u.c = c; u.r = r; draw(); await sleep(reduce ? 0 : 220); }
+function terrainNote(c, r) { const t = ter(c, r); return t.cover ? ' (into the trees: cover +2)' : t.high ? ' (onto the hill: +1 to hit from above)' : ''; }
+async function perform(u, a, tgt) {
+  const i = u.abs.indexOf(a); if (i >= 0) u.cd[i] = TIER_CD[a.tier] + 1;
+  u.abUsed = true;
+  const L = [];
+  if (a.kind === 'burst') {
+    L.push(`<b>${a.name}</b>`);
+    for (const f of burstFoes(u, a.radius, a.max)) {
+      const res = await strike(u, f, { label: a.name, dice: [a.dmg], statKey: a.stat, dmgStat: a.stat });
+      L.push(...res.lines);
+      if (res.hit && f.alive && a.on) { const n = applyOn(u, f, a.on); if (n.length) L.push(`${f.name}: ${n.join(', ')}.`); }
+    }
+  } else if (a.kind === 'self' || a.kind === 'aura') {
+    const grp = a.kind === 'self' ? [u] : alliesOf(u).filter(x => dist(pos(x), pos(u)) <= a.radius);
+    L.push(`<b>${a.name}</b>`);
+    for (const t of grp) L.push(...buff(u, t, a.self));
+  } else if (a.kind === 'ally' || (a.kind === 'foeOrAlly' && tgt.team === u.team)) {
+    G.beams = tgt === u ? [] : [{ a: pos(u), b: pos(tgt), team: u.team, heal: true }];
+    L.push(`<b>${a.name}</b> → ${tgt === u ? 'self' : tgt.name}`);
+    L.push(...buff(u, tgt, a.kind === 'ally' ? a.self : { heal: a.heal }));
+  } else if (a.kind === 'fly') {
+    const [c, r] = tgt; await hop(u, c, r);
+    L.push(`<b>${a.name}</b>: ${u.name} ${a.name === 'Fade' ? 'vanishes and reappears' : 'flies'} ${terrainNote(c, r) || 'to a new spot'}.`);
+    if (a.self) L.push(...buff(u, u, a.self));
+    if (a.shot) {
+      const T = weaponTargets(u).sort((x, y) => x.life - y.life)[0];
+      if (T) { const res = await strike(u, T, { label: 'Free shot', dice: [[a.shot[0], a.shot[1]]], statKey: a.shot[2], dmgStat: a.shot[2] }); L.push(...res.lines); }
+      else L.push('No foe in range for the free shot.');
+    }
+  } else if (a.kind === 'attacks') {
+    L.push(`<b>${a.name}</b>`);
+    for (let k = 0; k < a.n && tgt.alive && u.alive; k++) { const res = await strike(u, tgt, { ...weaponSpec(u), label: `${u.weapon} ${k + 1}`, hitMod: a.hitMod, hitLabel: a.name, extraDie: a.extraDie }); L.push(...res.lines); }
+  } else {
+    if (a.leap || a.blink) { const spot = landing(u, tgt, a.leap || a.blink); if (spot[0] !== u.c || spot[1] !== u.r) { await hop(u, ...spot); L.push(`${u.name} ${a.leap ? 'leaps' : 'steps through the shadows'} next to ${tgt.name}.`); } }
+    const res = await strike(u, tgt, { label: a.name, dice: a.dmg ? [a.dmg] : null, statKey: a.stat, dmgStat: a.stat, hits: a.hits, hitMod: a.hitMod, hitLabel: a.name, critMin: a.critMin, noCover: a.noCover, allyBonus: a.allyBonus });
+    L.push(...res.lines);
+    if (res.hit && tgt.alive && a.on) { const n = applyOn(u, tgt, a.on); if (n.length) L.push(`${tgt.name}: ${n.join(', ')}.`); }
+    if (res.hit && a.mendAlly) { const m = mostHurt(u, 4); if (m) L.push(...buff(u, m, { heal: a.mendAlly })); }
+    if (a.self) { const s = { ...a.self }; if (!res.hit) delete s.heal; L.push(...buff(u, u, s)); }
+    if (a.fadeAfter && u.alive) {
+      let best = null;
+      for (const [c, r] of flyHexes(u, a.fadeAfter)) { const v = at(u, c, r, () => spotVal(u) - (enemiesOf(u).some(e => dist(pos(e), [c, r]) === 1) ? 2 : 0)); if (!best || v > best.v) best = { v, c, r }; }
+      if (best) { await hop(u, best.c, best.r); L.push(`${u.name} vanishes and reappears${terrainNote(best.c, best.r) || ' a few hexes away'}.`); }
+    }
+  }
+  return L;
+}
+async function performCombo(u, K, t) {
+  const { C, partner, i, j } = K;
+  u.cd[i] = TIER_CD[u.abs[i].tier] + 1; partner.cd[j] = TIER_CD[partner.abs[j].tier] + 1;
+  u.abUsed = true;
+  const already = G.order.indexOf(partner) < G.turn;
+  partner.spent = true;
+  const L = [`<b>Combo: ${C.name}</b> · ${u.abs[i].name} + ${partner.name}’s ${partner.abs[j].name}`];
+  const team = { statKey: u.main, hitMod: 2, hitLabel: 'teamwork' };
+  if (C.kind === 'party') {
+    G.beams = [];
+    const n = rollDice(C.heal) + stat(u, u.main);
+    for (const x of alliesOf(u)) L.push(...buff(u, x, { healFlat: n, defUp: C.self.defUp }));
+  } else if (C.kind === 'guard') {
+    G.beams = [{ a: pos(partner), b: pos(t), team: u.team, heal: true }];
+    L.push(...buff(u, t, C.self));
+  } else if (C.kind === 'burst') {
+    for (const f of burstFoes(u, C.radius, C.max)) {
+      const res = await strike(u, f, { ...team, label: C.name, dice: C.dice });
+      L.push(...res.lines);
+      if (res.hit && f.alive && C.on) { const n = applyOn(u, f, C.on); if (n.length) L.push(`${f.name}: ${n.join(', ')}.`); }
+    }
+    if (C.aura) for (const x of alliesOf(u).filter(x => dist(pos(x), pos(u)) <= C.aura.radius)) L.push(...buff(u, x, C.aura.self));
+  } else if (C.kind === 'lifelight') {
+    G.beams = [{ a: pos(u), b: pos(t), team: u.team, heal: true }];
+    L.push(...buff(u, t, { healFlat: rollDice(C.heal) }));
+    const f = t.lastHitBy;
+    if (f && f.alive) { const d = rollDice(C.payback); const n = hurt(f, d, null); G.beams.push({ a: pos(t), b: pos(f), team: u.team }); L.push(`The light lashes ${f.name} for ${d}${n.length ? ' · ' + n.join(' · ') : ''}.`); }
+  } else {
+    const res = await strike(u, t, { ...team, label: C.name, dice: C.dice, critMin: C.critMin, sure: C.sure, hits: C.hits });
+    G.beams.push({ a: pos(partner), b: pos(t), team: u.team });
+    L.push(...res.lines);
+    if (res.hit && t.alive && C.on) { const n = applyOn(u, t, C.on); if (n.length) L.push(`${t.name}: ${n.join(', ')}.`); }
+  }
+  L.push(`${partner.name} gives ${already ? 'their next turn' : 'their turn this round'} to the Combo.`);
+  return L;
+}
+async function doTalk(u, f) {
+  const L = [];
+  const r = d20(u, L), mod = stat(u, 'C') + (f.fx.talk || 0), dc = 10 + stat(f, 'C');
+  G.beams = [{ a: pos(u), b: pos(f), team: u.team, talk: true }];
+  const ok = r === 20 || (r !== 1 && r + mod >= dc);
+  L.push(`<b>Talk</b> → ${f.name}: rolled <b>${r}</b> +${mod} Charm = ${r + mod}, needs ${dc} · <b>${ok ? 'they yield the bout' : 'not yet'}</b>`);
+  if (ok) { f.alive = false; f.out = 'talk'; floatOn(f, 'yields', 'heal'); }
+  if (r === 1) L.push(calamity(u));
+  return L;
+}
+function startOfTurn(u) {
+  const L = [];
+  if (u.fx.dot) { const n = hurt(u, u.fx.dot[0], null); L.push(`Poison: loses ${u.fx.dot[0]} Life${n.length ? ' · ' + n.join(' · ') : ''}.`); }
+  if (u.alive && u.fx.held) { const d = rollDice(u.fx.held.dice); const n = hurt(u, d, null); L.push(`Held tight: takes ${d}${n.length ? ' · ' + n.join(' · ') : ''}.`); }
+  return L;
+}
+function endTurnTick(u) {
+  for (const k of ['hit', 'weak', 'def', 'dot', 'defUp', 'hitUp', 'dmgUp', 'moveUp', 'move', 'charm', 'mark']) if (u.fx[k] && --u.fx[k][1] <= 0) delete u.fx[k];
+  for (const k of ['thorns', 'root']) if (u.fx[k] && --u.fx[k] <= 0) delete u.fx[k];
+  if (u.fx.held && --u.fx.held.dur <= 0) delete u.fx.held;
+  if (u.fx.barbs && --u.fx.barbs.dur <= 0) delete u.fx.barbs;
+  u.fx.exposed = 0; u.fx.moveNow = 0;
+  u.cd = u.cd.map(x => Math.max(0, x - 1));
+}
+
+// ============================================================ rounds and turns
+function say(u, lines) {
+  const cap = $('caption');
+  cap.className = 'caption ' + (u ? (u.team === 'A' ? 'mine' : 'rival') : '');
+  cap.innerHTML = (u ? `<div class="hd"><b>${u.name}</b> <span class="who">${u.lf} · ${u.branch}${u.team === 'B' ? ' · computer' : ''}</span></div>` : '') + lines.map(l => `<div>${l}</div>`).join('');
+}
+function log(u, lines) {
+  const p = document.createElement('p'); p.className = u ? u.team : 'sys';
+  p.textContent = (u ? u.name + ': ' : '') + lines.map(strip).join(' ');
+  $('log').prepend(p);
+}
+function startBout() {
+  const A = G.team.map((sp, i) => buildUnit(sp, 'A', i)), B = G.rivals.map((sp, i) => buildUnit(sp, 'B', i));
+  nameTeam(A, 'Your'); nameTeam(B, 'Rival');
+  G.units = [...A, ...B]; G.round = 0; G.over = false; G.mode = null; G.floats = []; G.beams = [];
+  $('setupView').hidden = true; $('battleView').hidden = false;
+  $('log').innerHTML = ''; document.querySelectorAll('.banner').forEach(b => b.remove());
+  log(null, [document.title === 'Training Ground' ? 'Treywind twirls his practice staff. Knock him down to win.' : 'The bout begins. Knock a Rival out, or Talk them into yielding once they are below a quarter of their Life.']);
+  draw(); nextRound();
+}
+async function nextRound() {
+  if (checkEnd()) return;
+  G.round++;
+  G.order = G.units.filter(u => u.alive).map(u => ({ u, s: rng(20) + stat(u, 'S') - (u.fx.slow ? u.fx.slow[0] : 0) - (u.fx.last ? 40 : 0) + Math.random() }))
+    .sort((a, b) => b.s - a.s).map(x => x.u);
+  G.order.forEach(u => { u.fx.last = false; if (u.fx.slow && --u.fx.slow[1] <= 0) delete u.fx.slow; });
+  log(null, [`Round ${G.round}: ${G.order.map(u => u.name).join(', ')}.`]);
+  G.turn = -1; return nextTurn();
+}
+async function nextTurn() {
+  if (checkEnd()) return;
+  G.turn++;
+  if (G.turn >= G.order.length) return nextRound();
+  const u = G.order[G.turn];
+  if (!u.alive) return nextTurn();
+  G.mode = null; G.beams = []; G.busy = true;
+  const pre = startOfTurn(u);
+  draw();
+  const skip = async msg => { if (msg) pre.push(msg); say(u, pre); log(u, pre); endTurnTick(u); draw(); await beat(1100, true); return nextTurn(); };
+  if (!u.alive) return skip();
+  if (u.fx.stun) { u.fx.stun--; return skip('Can’t act this turn.'); }
+  if (u.spent) { u.spent = false; return skip('Gave this turn to a Combo.'); }
+  u.actions = 2; u.freeMove = true; u.abUsed = false; delete u.fx.guard;
+  if (u.fx.winded) { u.actions = 1; u.fx.winded = 0; pre.push('Winded: only 1 action this turn.'); }
+  if (u.team === 'A' && !G.autoA) {
+    if (pre.length) log(u, pre);
+    say(u, [...pre, 'Your turn: one free Move plus two actions. Hover any Hero or button for a reminder.']);
+    G.busy = false; draw(); return;
+  }
+  if (pre.length) log(u, pre);
+  say(u, [...pre, 'Thinking…']); draw(); await beat(700, false);
+  await aiTurn(u);
+  endTurnTick(u); draw(); await beat(250, false);
+  return nextTurn();
+}
+function checkEnd() {
+  if (G.over) return true;
+  const a = G.units.filter(u => u.team === 'A' && u.alive).length, b = G.units.filter(u => u.team === 'B' && u.alive).length;
+  if (a && b) return false;
+  G.over = true; G.busy = true; draw();
+  const talked = G.units.filter(u => u.out === 'talk').length;
+  banner(b ? 'The Rivals take the bout' : 'Your Keepers win the bout',
+    `${G.round} rounds. ${b ? 'Your three tapped out this time.' : `Your team stood with ${G.units.filter(u => u.team === 'A' && u.alive).map(u => `${u.life}/${u.max}`).join(', ')} Life.`}${talked ? ` ${talked} Hero${talked > 1 ? 'es were' : ' was'} talked into yielding.` : ''}`);
+  return true;
+}
+function banner(title, text) {
+  const b = document.createElement('div'); b.className = 'banner';
+  b.innerHTML = `<div><h2>${title}</h2><p>${text}</p><button class="btn primary" type="button" id="againBtn">Same teams again</button><button class="btn" type="button" id="newBtn">Change Heroes</button></div>`;
+  $('board').appendChild(b);
+  $('againBtn').onclick = () => { b.remove(); startBout(); };
+  $('newBtn').onclick = () => { b.remove(); $('battleView').hidden = true; $('setupView').hidden = false; renderSetup(); };
+}
+
+// ============================================================ your turn
+const myTurn = () => !G.over && !G.busy && cur() && cur().team === 'A' && !G.autoA && cur().alive && (cur().actions > 0 || canFreeMove(cur()));
+const canFreeMove = u => u.freeMove && moveRange(u) > 0;
+function setMode(m) { G.mode = G.mode === m ? null : m; draw(); }
+async function finish(u, lines, cost = 1) {
+  say(u, lines); log(u, lines); draw();
+  u.actions = cost === 'all' ? 0 : u.actions - cost;
+  await beat(350, false); G.beams = [];
+  if (checkEnd()) return;
+  if (!u.alive || (u.actions <= 0 && !canFreeMove(u))) { endTurnTick(u); G.mode = null; draw(); await beat(500, false); return nextTurn(); }
+  G.busy = false; draw();
+}
+async function clickHex(c, r) {
+  const t = occupied(c, r);
+  if (!myTurn() || !G.mode) { if (t) showUnitTip(t, null); return; }
+  const u = cur(), m = G.mode;
+  if (m === 'move') {
+    const R = reachable(u, moveRange(u)); if (!R.best.has(key(c, r))) return;
+    const free = u.freeMove;
+    G.busy = true; G.mode = null; const path = pathTo(R, u, c, r); await walk(u, path);
+    if (free) u.freeMove = false;
+    return finish(u, [`${free ? 'Free move' : 'Moves again'}: ${path.length} hex${path.length > 1 ? 'es' : ''}${terrainNote(c, r)}.`], free ? 0 : 1);
+  }
+  if (m === 'attack') { if (!t || !weaponTargets(u).includes(t)) return; G.busy = true; G.mode = null; const res = await strike(u, t, weaponSpec(u)); return finish(u, res.lines); }
+  if (m === 'talk') { if (!t || !talkTargets(u).includes(t)) return; G.busy = true; G.mode = null; return finish(u, await doTalk(u, t)); }
+  if (m.startsWith('ab')) {
+    const a = u.abs[+m[2]], v = abTargets(u, a);
+    if (a.kind === 'fly') { if (!v.some(h => h[0] === c && h[1] === r)) return; G.busy = true; G.mode = null; return finish(u, await perform(u, a, [c, r])); }
+    if (!t || !v.includes(t)) return; G.busy = true; G.mode = null; return finish(u, await perform(u, a, t));
+  }
+  if (m.startsWith('combo')) {
+    const K = comboList(u)[+m.slice(5)]; if (!K || !t || !comboTargets(u, K).includes(t)) return;
+    G.busy = true; G.mode = null; return finish(u, await performCombo(u, K, t));
+  }
+}
+async function pressAct(act) {
+  const u = cur(); if (!myTurn()) return;
+  if (act === 'move' || act === 'attack' || act === 'talk') return setMode(act);
+  if (act === 'defend') { G.busy = true; G.mode = null; u.fx.guard = 1; return finish(u, [`<b>Defend</b>: the next hit on ${u.name} does 1 less damage.`]); }
+  if (act === 'end') { G.busy = true; G.mode = null; say(u, ['Ends the turn.']); endTurnTick(u); draw(); await beat(300, false); return nextTurn(); }
+  if (act.startsWith('ab')) {
+    const a = u.abs[+act[2]];
+    if (a.kind === 'self' || a.kind === 'aura' || a.kind === 'burst') { G.busy = true; G.mode = null; return finish(u, await perform(u, a, u)); }
+    return setMode(act);
+  }
+  if (act.startsWith('combo')) {
+    const K = comboList(u)[+act.slice(5)];
+    if (comboInstant(K.C)) { G.busy = true; G.mode = null; return finish(u, await performCombo(u, K, comboTargets(u, K)[0])); }
+    return setMode(act);
+  }
+}
+
+// ============================================================ the computer
+function riderVal(on, t) {
+  if (!on) return 0; let v = 0;
+  if (on.stun) v += (t.fx.stun ? 1 : 7) * on.stun;
+  if (on.held) v += t.fx.held ? 1 : 5 + avgDice(on.held[0]) * on.held[1] * .6;
+  if (on.root) v += t.fx.root ? .2 : 1.2 * on.root * (t.wRange > 1 ? .5 : 1);
+  if (on.weak) v += on.weak[0] * on.weak[1] * .7;
+  if (on.hit) v += -on.hit[0] * on.hit[1] * 1.1;
+  if (on.def) v += -on.def[0] * on.def[1] * .9;
+  if (on.dot) v += t.fx.dot ? .5 : on.dot[0] * on.dot[1];
+  if (on.last) v += 1; if (on.exposed) v += 1.5; if (on.slow) v += .6 * on.slow[1]; if (on.move) v += .5 * on.move[1];
+  if (on.knock) v += .8; if (on.pull) v += .5; if (on.charm) v += .8; if (on.talk) v += 1 + (t.life < t.max / 2 ? 2 : 0);
+  if (on.barbs) v += 1.5 * on.barbs[1];
+  return v;
+}
+function evStrike(u, t, sp) {
+  const p = sp.sure ? 1 : hitP(u, t, sp);
+  if (!sp.dice) return { v: 0, p };
+  const avg = avgDice(sp.dice) + (sp.dmgStat ? stat(u, sp.dmgStat) : 0) + (sp.bonus || 0) + (u.fx.dmgUp ? u.fx.dmgUp[0] : 0) - (u.fx.weak ? u.fx.weak[0] : 0);
+  const hits = sp.hits || 1;
+  let v = p * Math.max(1, avg) * hits;
+  if (avg * hits >= t.life) v += 8 * p;
+  v += (1 - t.life / t.max) * 3 * p;
+  return { v, p };
+}
+function buffVal(u, t, s) {
+  if (!s) return 0;
+  let v = 0; const near = r => enemiesOf(u).some(e => dist(pos(e), pos(t)) <= r);
+  if (s.heal || s.healFlat) { const avg = s.healFlat || (s.heal[0] * (s.heal[1] + 1) / 2 + (s.heal[2] ? stat(u, s.heal[2]) : 0)); const miss = t.max - t.life; v += miss >= avg * .6 ? Math.min(miss, avg) * 1.1 : 0; }
+  if (s.cleanse) v += ['dot', 'held', 'root', 'weak', 'charm', 'barbs'].filter(k => t.fx[k]).length * 2.5 + (t.fx.hit && t.fx.hit[0] < 0 ? 2 : 0);
+  if (s.defUp && near(5)) v += s.defUp[0] * s.defUp[1] * .8 * (t.fx.defUp ? .25 : 1);
+  if (s.hitUp && near(5)) v += s.hitUp[0] * s.hitUp[1] * (t.fx.hitUp ? .2 : 1);
+  if (s.dmgUp && near(3)) v += s.dmgUp[0] * s.dmgUp[1] * 1.2 * (t.fx.dmgUp ? .2 : 1);
+  if (s.moveUp) v += near(6) ? .3 : 1.2;
+  if (s.thorns && near(3)) v += 3.5 * (t.fx.thorns ? .2 : 1);
+  return v;
+}
+function evAbility(u, a, t) {
+  switch (a.kind) {
+    case 'self': return buffVal(u, u, a.self);
+    case 'aura': return alliesOf(u).filter(x => dist(pos(x), pos(u)) <= a.radius).reduce((s, x) => s + buffVal(u, x, a.self), 0);
+    case 'ally': return buffVal(u, t, a.self);
+    case 'burst': return burstFoes(u, a.radius, a.max).reduce((s, f) => s + evStrike(u, f, { dice: [a.dmg], statKey: a.stat, dmgStat: a.stat }).v, 0);
+    case 'attacks': return evStrike(u, t, { ...weaponSpec(u), dice: [[1 + (a.extraDie || 0), 6]], hitMod: a.hitMod, hits: a.n }).v;
+    case 'foeOrAlly': if (t.team === u.team) return buffVal(u, t, { heal: a.heal }); // falls through for foes
+    default: {
+      const E = evStrike(u, t, { dice: a.dmg ? [a.dmg] : null, statKey: a.stat, dmgStat: a.stat, hits: a.hits, hitMod: a.hitMod, critMin: a.critMin, noCover: a.noCover, allyBonus: a.allyBonus });
+      let v = E.v + E.p * riderVal(a.on, t);
+      if (a.self) v += buffVal(u, u, a.self) * (a.self.heal ? E.p : 1);
+      if (a.mendAlly) { const m = mostHurt(u, 4); if (m) v += E.p * buffVal(u, m, { heal: a.mendAlly }); }
+      return v;
+    }
+  }
+}
+// best value this Hero could get from where it stands (no flying, no combos), plus how safe the spot is
+function spotVal(u) {
+  let best = 0;
+  for (const t of weaponTargets(u)) best = Math.max(best, evStrike(u, t, weaponSpec(u)).v);
+  u.abs.forEach((a, i) => { if (u.cd[i] > 1 || a.kind === 'fly' || a.kind === 'self' || a.kind === 'aura' || a.kind === 'ally') return; for (const t of abTargets(u, a)) if (t.team !== u.team) best = Math.max(best, evAbility(u, a, t) * (u.cd[i] ? .5 : 1)); });
+  const E = enemiesOf(u); if (!E.length) return best;
+  const near = Math.min(...E.map(e => dist(pos(e), pos(u))));
+  const adj = E.filter(e => dist(pos(e), pos(u)) === 1).length;
+  const t = ter(u.c, u.r);
+  let v = best + (t.cover ? 1.2 : 0) + (t.high ? .8 : 0) - near * .35;
+  if (u.wRange > 1) v -= adj * 3;
+  if (u.life < u.max / 3) v -= adj * 1.5;
+  return v;
+}
+function at(u, c, r, fn) { const o = [u.c, u.r]; u.c = c; u.r = r; const v = fn(); u.c = o[0]; u.r = o[1]; return v; }
+function bestMove(u) {
+  const R = reachable(u, moveRange(u)); let best = null;
+  for (const k of R.best.keys()) { const [c, r] = k.split(',').map(Number); const v = at(u, c, r, () => spotVal(u)); if (!best || v > best.v) best = { v, c, r, R }; }
+  return best;
+}
+function optionsHere(u) {
+  const o = [];
+  for (const t of weaponTargets(u)) o.push({ type: 'attack', tgt: t, score: evStrike(u, t, weaponSpec(u)).v });
+  u.abs.forEach((a, i) => {
+    if (u.cd[i] || u.abUsed) return;
+    if (a.kind === 'fly') {
+      const here = spotVal(u); let best = null;
+      for (const [c, r] of abTargets(u, a)) {
+        let v = at(u, c, r, () => spotVal(u)) - here + buffVal(u, u, a.self);
+        if (a.shot) v += at(u, c, r, () => Math.max(0, ...weaponTargets(u).map(t => evStrike(u, t, { dice: [[a.shot[0], a.shot[1]]], statKey: a.shot[2], dmgStat: a.shot[2] }).v)));
+        if (!best || v > best.score) best = { type: 'ab', a, tgt: [c, r], score: v };
+      }
+      if (best) o.push(best); return;
+    }
+    for (const t of abTargets(u, a)) o.push({ type: 'ab', a, tgt: t, score: evAbility(u, a, t) });
+  });
+  for (const t of talkTargets(u)) o.push({ type: 'talk', tgt: t, score: talkChance(u, t) * 20 });
+  for (const K of comboList(u)) for (const t of comboTargets(u, K)) {
+    let v; const C = K.C, team = { statKey: u.main, hitMod: 2, dice: C.dice };
+    if (C.kind === 'party') v = alliesOf(u).reduce((s, x) => s + buffVal(u, x, { healFlat: avgDice(C.heal) + stat(u, u.main), defUp: C.self.defUp }), 0);
+    else if (C.kind === 'guard') v = enemiesOf(u).some(e => dist(pos(e), pos(t)) <= 2) ? buffVal(u, t, { defUp: C.self.defUp }) + 5 : 0;
+    else if (C.kind === 'burst') v = burstFoes(u, C.radius, C.max).reduce((s, f) => { const E = evStrike(u, f, team); return s + E.v + E.p * riderVal(C.on, f); }, 0) + (C.aura ? alliesOf(u).filter(x => dist(pos(x), pos(u)) <= C.aura.radius).reduce((s, x) => s + buffVal(u, x, C.aura.self), 0) : 0);
+    else if (C.kind === 'lifelight') v = buffVal(u, t, { healFlat: avgDice(C.heal) }) + (t.lastHitBy && t.lastHitBy.alive ? avgDice(C.payback) : 0);
+    else { const E = evStrike(u, t, { ...team, critMin: C.critMin, sure: C.sure, hits: C.hits }); v = E.v + E.p * riderVal(C.on, t); }
+    o.push({ type: 'combo', K, tgt: t, score: v - 5 });
+  }
+  return o.sort((a, b) => b.score - a.score);
+}
+function describeMove(u, c, r, n) {
+  const E = enemiesOf(u); const nearest = E.sort((a, b) => dist(pos(a), [c, r]) - dist(pos(b), [c, r]))[0];
+  return `Moves ${n} hex${n > 1 ? 'es' : ''}${nearest ? ` toward ${nearest.name}` : ''}${terrainNote(c, r)}.`;
+}
+async function aiTurn(u) {
+  for (let step = 0; step < 8 && u.alive && !G.over; step++) {
+    const canAct = u.actions > 0;
+    const opts = canAct ? optionsHere(u) : [], best = opts[0];
+    const mv = (!u.fx.root && (u.freeMove || canAct)) ? bestMove(u) : null;
+    const here = spotVal(u);
+    let L, cost = 0;
+    const go = async () => { const path = pathTo(mv.R, u, mv.c, mv.r); L = [(u.freeMove ? 'Free move: ' : 'Moves again: ') + describeMove(u, mv.c, mv.r, path.length)]; say(u, L); await walk(u, path); if (u.freeMove) u.freeMove = false; else cost = 1; };
+    if (mv && u.freeMove && mv.v > here + 1 && !(best && best.type === 'combo' && best.score > 4)) await go();
+    else if (canAct && best && best.score > .6) {
+      cost = 1;
+      if (best.type === 'attack') L = (await strike(u, best.tgt, weaponSpec(u))).lines;
+      else if (best.type === 'ab') L = await perform(u, best.a, best.tgt);
+      else if (best.type === 'talk') L = await doTalk(u, best.tgt);
+      else L = await performCombo(u, best.K, best.tgt);
+    } else if (mv && u.freeMove && mv.v > here - .5) await go();
+    else if (canAct && !u.freeMove && mv && mv.v > here + 1.5) await go();
+    else if (canAct && !u.fx.guard) { u.fx.guard = 1; L = [`<b>Defend</b>: the next hit on ${u.name} does 1 less damage.`]; cost = 1; }
+    else break;
+    say(u, L); log(u, L); draw();
+    await beat(1500, true); G.beams = []; draw();
+    u.actions -= cost;
+    if (checkEnd()) return;
+    if (u.actions <= 0 && !canFreeMove(u)) break;
+  }
+}
+
+// ============================================================ tooltips
+const tip = $('tip');
+function fxTags(u) {
+  const t = [], f = u.fx;
+  const bad = (s) => t.push(['bad', s]), good = (s) => t.push(['good', s]);
+  if (f.stun) bad(`can’t act ${f.stun}`); if (f.held) bad(`held ${f.held.dur}`); else if (f.root) bad(`can’t move ${f.root}`);
+  if (f.dot) bad(`poison ${f.dot[0]}/turn`); if (f.weak) bad(`deals ${f.weak[0]} less`); if (f.hit) bad(`${f.hit[0]} to hit`);
+  if (f.def) bad(`${f.def[0]} Defense`); if (f.exposed) bad('knocked down'); if (f.charm) bad(`${f.charm[0]} Charm`); if (f.slow) bad(`Speed -${f.slow[0]}`);
+  if (f.move && f.move[0] < 0) bad(`Move ${f.move[0]}`); if (f.barbs) bad('thorned'); if (f.curse) bad('Die Curse'); if (f.fumble) bad('Butterfingers'); if (f.ankle) bad('Twisted Ankle');
+  if (f.mark) bad('Marked'); if (f.talk) bad(`+${f.talk} to Talk down`); if (u.spent) bad('gave next turn to a Combo');
+  if (f.guard) good('Defending'); if (f.defUp) good(`+${f.defUp[0]} Defense`); if (f.hitUp) good(`+${f.hitUp[0]} to hit`); if (f.dmgUp) good(`+${f.dmgUp[0]} damage`);
+  if (f.moveUp) good(`+${f.moveUp[0]} Move`); if (f.thorns) good('thorns'); if (f.keen) good('Keen Edge'); if (f.bless) good('Die Blessing'); if (f.fleet) good('Fleet Foot'); if (f.far) good('Far Sight');
+  return t;
+}
+const tagsHTML = u => fxTags(u).map(([k, s]) => `<span class="tag ${k}">${s}</span>`).join('');
+function abTip(a, u) {
+  const cd = u && u.cd[u.abs.indexOf(a)];
+  const partners = u ? COMBOS.filter(C => C.pair.includes(a.fam)).map(C => C.name + ' with ' + C.pair.find(p => p !== a.fam)) : [];
+  return `<b>${a.name}</b> <span class="t2">${a.branch} · level ${a.tier}${rangeTxt(a)}</span><div>${a.t}</div><div class="t2">Rests ${rds(TIER_CD[a.tier])} after use${cd ? ` · resting now (${cd})` : ''}.</div>${partners.length ? `<div class="t2">Combos: ${partners.join('; ')}</div>` : ''}`;
+}
+function unitTip(u) {
+  return `<b>${u.name}</b> <span class="t2">${u.lf} · ${u.branch}${u.team === 'B' ? ' · computer' : ''}</span>
+    <div>Life ${u.life}/${u.max} · Defense ${u.def} · Move ${moveRange(u)}</div>
+    <div>${'PESC'.split('').map(k => `${STATN[k]} ${stat(u, k)}`).join(' · ')}</div>
+    <div class="t2">${u.weapon}: 1d6+${STATN[u.main]}${u.roleDmg ? '+1' : ''}, range ${u.wRange}</div>
+    ${u.abs.map((a, i) => `<div class="ab"><b>${a.name}</b> <span class="t2">${u.cd[i] ? `resting ${u.cd[i]}` : 'ready'}${rangeTxt(a)}</span><div>${a.t}</div></div>`).join('')}
+    ${fxTags(u).length ? `<div class="tags">${tagsHTML(u)}</div>` : ''}`;
+}
+function placeTip(x, y) {
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = clamp(x + 14, 8, innerWidth - w - 8) + 'px';
+  tip.style.top = (y + 18 + h > innerHeight - 8 ? Math.max(8, y - h - 12) : y + 18) + 'px';
+}
+let tipTimer;
+function showTip(html, x, y, ms) { tip.innerHTML = html; tip.hidden = false; placeTip(x, y); clearTimeout(tipTimer); if (ms) tipTimer = setTimeout(() => tip.hidden = true, ms); }
+function showUnitTip(u, ev) {
+  const [x, y] = center(u.c, u.r), box = $('map').getBoundingClientRect(), s = box.width / 768;
+  showTip(unitTip(u), ev ? ev.clientX : box.left + x * s, ev ? ev.clientY : box.top + (y - 20) * s, ev ? 0 : 4000);
+}
+document.addEventListener('mouseover', e => { const el = e.target.closest('[data-tip]'); if (el) showTip(TIPS[el.dataset.tip] || '', e.clientX, e.clientY); });
+document.addEventListener('mousemove', e => { if (!tip.hidden && e.target.closest('[data-tip], g.unit')) placeTip(e.clientX, e.clientY); });
+document.addEventListener('mouseout', e => { if (e.target.closest('[data-tip], g.unit')) tip.hidden = true; });
+document.addEventListener('focusin', e => { const el = e.target.closest('[data-tip]'); if (el) { const b = el.getBoundingClientRect(); showTip(TIPS[el.dataset.tip] || '', b.left, b.bottom); } });
+document.addEventListener('focusout', () => tip.hidden = true);
+let TIPS = {};
+
+// ============================================================ drawing
+const svg = $('map'), NS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs, parent = svg) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; }
+function hexPts(x, y, s = HS) { const p = []; for (let i = 0; i < 6; i++) { const a = Math.PI / 3 * i; p.push([x + s * Math.cos(a), y + s * Math.sin(a) * .62]); } return p.map(q => q.join(',')).join(' '); }
+const lift = (c, r) => ter(c, r).high ? 7 : 0;
+let hoverHex = null;
+function modeTargets() {
+  const u = cur(); if (!myTurn() || !G.mode) return { units: [], hexes: null };
+  const m = G.mode;
+  if (m === 'move') return { units: [], hexes: reachable(u, moveRange(u)).best };
+  if (m === 'attack') return { units: weaponTargets(u), hexes: null };
+  if (m === 'talk') return { units: talkTargets(u), hexes: null };
+  if (m.startsWith('ab')) { const a = u.abs[+m[2]]; const v = abTargets(u, a); return a.kind === 'fly' ? { units: [], hexes: new Map(v.map(([c, r]) => [key(c, r), 1])) } : { units: v, hexes: null }; }
+  if (m.startsWith('combo')) { const K = comboList(u)[+m.slice(5)]; return { units: K ? comboTargets(u, K) : [], hexes: null }; }
+  return { units: [], hexes: null };
+}
+function draw() {
+  svg.innerHTML = '';
+  el('rect', { x: 0, y: 0, width: 768, height: 395, fill: '#cdbb8a' });
+  const MT = modeTargets();
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    const [x, y] = center(c, r), t = ter(c, r), lf = lift(c, r);
+    if (t.high) el('polygon', { points: hexPts(x, y + 2), fill: '#a48a55' });
+    el('polygon', { points: hexPts(x, y - lf), fill: t.fill, stroke: '#00000022', 'stroke-width': 1 });
+    if (MAP[r][c] === 'C') el('path', { d: `M${x - 18} ${y - 2} q9 -5 18 0 t18 0`, stroke: '#7d6747', 'stroke-width': 2, fill: 'none', opacity: .7 });
+    if (MT.hexes && MT.hexes.has(key(c, r))) el('polygon', { points: hexPts(x, y - lf, HS - 3), fill: '#ffffff55', stroke: '#2c2416', 'stroke-width': 1.5, 'stroke-dasharray': '3 3' });
+    const hit = el('polygon', { points: hexPts(x, y - lf), fill: 'transparent', style: 'cursor:pointer' });
+    hit.addEventListener('click', () => clickHex(c, r));
+    hit.addEventListener('mouseenter', () => { hoverHex = [c, r]; readout(); });
+  }
+  const items = [];
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if ('TRF'.includes(MAP[r][c])) items.push({ c, r, prop: MAP[r][c] });
+  G.units.filter(u => u.alive).forEach(u => items.push({ c: u.c, r: u.r, unit: u }));
+  items.sort((a, b) => center(a.c, a.r)[1] - center(b.c, b.r)[1]);
+  for (const it of items) {
+    const [x, y0] = center(it.c, it.r), y = y0 - lift(it.c, it.r);
+    if (it.prop === 'T') { el('ellipse', { cx: x + 4, cy: y + 6, rx: 20, ry: 7, fill: '#00000026' }); el('rect', { x: x - 3, y: y - 14, width: 6, height: 18, fill: '#5b4026' }); el('circle', { cx: x, cy: y - 24, r: 17, fill: '#4f6b3a', opacity: .92 }); el('circle', { cx: x - 7, cy: y - 29, r: 9, fill: '#5f7d45', opacity: .92 }); }
+    if (it.prop === 'R') { el('path', { d: `M${x - 20} ${y + 6} L${x - 14} ${y - 14} L${x + 2} ${y - 20} L${x + 18} ${y - 8} L${x + 20} ${y + 6} Z`, fill: '#7c7468' }); el('path', { d: `M${x - 14} ${y - 14} L${x + 2} ${y - 20} L${x + 18} ${y - 8} L${x} ${y - 6} Z`, fill: '#958c7e' }); }
+    if (it.prop === 'F') { for (const dx of [-14, 0, 14]) el('rect', { x: x + dx - 2, y: y - 16, width: 4, height: 20, fill: '#8a6a3c' }); el('rect', { x: x - 18, y: y - 12, width: 36, height: 3, fill: '#8a6a3c' }); el('rect', { x: x - 18, y: y - 4, width: 36, height: 3, fill: '#8a6a3c' }); }
+    if (it.unit) drawUnit(it.unit, x, y, MT.units.includes(it.unit));
+  }
+  for (const b of G.beams) {
+    const [x1, y1] = center(...b.a), [x2, y2] = center(...b.b);
+    const col = b.heal ? '#3f6f8f' : b.talk ? '#7a560f' : b.team === 'A' ? '#c9922c' : '#b5462a';
+    el('line', { x1, y1: y1 - 18 - lift(...b.a), x2, y2: y2 - 18 - lift(...b.b), stroke: col, 'stroke-width': 3, 'stroke-dasharray': '7 4', 'stroke-linecap': 'round', opacity: .9 });
+    el('circle', { cx: x2, cy: y2 - 18 - lift(...b.b), r: 5, fill: col });
+  }
+  for (const f of G.floats) {
+    const u = G.units.find(x => x.id === f.id); if (!u) continue;
+    const [x, y] = center(u.c, u.r);
+    const t = el('text', { x, y: y - 58 - lift(u.c, u.r) - G.floats.filter(g => g.id === f.id).indexOf(f) * 15, 'text-anchor': 'middle', 'font-family': 'Alegreya SC, Georgia, serif', 'font-size': 17, 'font-weight': 700, fill: f.cls === 'heal' ? '#2b5f82' : f.cls === 'miss' ? '#2c2416' : '#a8321a', stroke: '#efe5cc', 'stroke-width': 3, 'paint-order': 'stroke' });
+    t.textContent = f.text;
+  }
+  hud();
+}
+function drawUnit(u, x, y, targetable) {
+  const teamCol = u.team === 'A' ? '#c9922c' : '#b5462a';
+  el('ellipse', { cx: x, cy: y + 4, rx: 17, ry: 7, fill: '#00000033' });
+  el('ellipse', { cx: x, cy: y + 4, rx: 19, ry: 8, fill: 'none', stroke: teamCol, 'stroke-width': 3 });
+  if (u === cur() && !G.over) el('ellipse', { cx: x, cy: y + 4, rx: 25, ry: 11, fill: 'none', stroke: '#2c2416', 'stroke-width': 2, 'stroke-dasharray': '4 3' });
+  if (targetable) el('ellipse', { cx: x, cy: y - 14, rx: 23, ry: 24, fill: 'none', stroke: u.team === cur().team ? '#3f6f8f' : '#b5462a', 'stroke-width': 3, 'stroke-dasharray': '5 3' });
+  if (u.fx.root || u.fx.held) el('ellipse', { cx: x, cy: y + 2, rx: 15, ry: 5, fill: 'none', stroke: '#4f6b3a', 'stroke-width': 3, 'stroke-dasharray': '2 2' });
+  const g = el('g', { class: 'unit', style: 'cursor:pointer' });
+  el('path', { d: `M${x - 13} ${y + 2} Q${x - 15} ${y - 22} ${x} ${y - 30} Q${x + 15} ${y - 22} ${x + 13} ${y + 2} Z`, fill: u.color, stroke: '#2c2416', 'stroke-width': 1.5 }, g);
+  el('circle', { cx: x, cy: y - 30, r: 9, fill: '#e7c27a', stroke: '#2c2416', 'stroke-width': 1.5 }, g);
+  el('path', { d: `M${x - 6} ${y - 41} l6 -6 l6 6`, stroke: teamCol, 'stroke-width': 3, fill: 'none', 'stroke-linecap': 'round' }, g);
+  const t = el('text', { x, y: y - 8, 'text-anchor': 'middle', 'font-family': 'Alegreya SC, Georgia, serif', 'font-size': 13, 'font-weight': 700, fill: '#fff' }, g);
+  t.textContent = u.role === 'Soul Seer' ? 'SS' : u.role[0];
+  if (u.fx.stun) { const z = el('text', { x: x + 14, y: y - 34, 'font-size': 13, 'font-weight': 700, fill: '#2c2416' }, g); z.textContent = 'zz'; }
+  g.addEventListener('click', ev => { ev.stopPropagation(); if (myTurn() && G.mode) clickHex(u.c, u.r); else showUnitTip(u, null); });
+  g.addEventListener('mouseenter', ev => { hoverHex = [u.c, u.r]; readout(); showUnitTip(u, ev); });
+  g.addEventListener('mouseleave', () => tip.hidden = true);
+  const w = 32, top = y - 54;
+  el('rect', { x: x - w / 2, y: top, width: w, height: 5, rx: 2, fill: '#2c241699' });
+  el('rect', { x: x - w / 2, y: top, width: w * u.life / u.max, height: 5, rx: 2, fill: teamCol });
+}
+function readout() {
+  const u = cur(); if (!myTurn() || !hoverHex || !G.mode) return;
+  const [c, r] = hoverHex, t = occupied(c, r), m = G.mode;
+  if (m === 'move') { const R = reachable(u, moveRange(u)).best.get(key(c, r)); $('hint').textContent = R ? `Move here for ${R} of your ${moveRange(u)} movement.${terrainNote(c, r)}` : 'You can’t reach that hex this action.'; return; }
+  if (!t) return;
+  let sp = null, label = '';
+  if (m === 'attack') { sp = weaponSpec(u); label = u.weapon; }
+  if (m.startsWith('ab')) { const a = u.abs[+m[2]]; if (a.kind === 'fly') return; if (t.team === u.team) { $('hint').textContent = `${a.name} on ${t.name} (${t.life}/${t.max} Life).`; return; } sp = a.kind === 'attacks' ? { ...weaponSpec(u), hitMod: a.hitMod } : { statKey: a.stat, critMin: a.critMin, noCover: a.noCover, allyBonus: a.allyBonus }; label = a.name; }
+  if (m.startsWith('combo')) { const K = comboList(u)[+m.slice(5)]; sp = { statKey: u.main, hitMod: 2, critMin: K && K.C.critMin }; label = K ? K.C.name : ''; }
+  if (m === 'talk') { $('hint').textContent = `Talk ${t.name} into yielding: ${Math.round(talkChance(u, t) * 100)}% chance.`; return; }
+  if (!sp || t.team === u.team) return;
+  const d = dist(pos(u), pos(t)), M = mods(u, t, sp.statKey, sp);
+  if (!modeTargets().units.includes(t)) { $('hint').textContent = `${t.name}: ${d > 1 && !sight(pos(u), pos(t)).ok ? 'no line of sight' : `out of reach (${d} hexes)`}.`; return; }
+  $('hint').textContent = `${label} on ${t.name}: ${Math.round(hitP(u, t, sp) * 100)}% to hit (Defense ${M.def}${M.dp.length ? ': ' + M.dp.join(', ') : ''}). ${t.life}/${t.max} Life.`;
+}
+function hud() {
+  const u = cur();
+  $('order').innerHTML = G.order.filter(x => x.alive).map(x => `<span class="chip ${x.team} ${x === u ? 'now' : ''} ${G.order.indexOf(x) < G.turn ? 'done' : ''}">${x.name.replace('Your ', '').replace('Rival ', 'Rival ')}</span>`).join('');
+  $('status').innerHTML = G.over ? '<b>The bout is over.</b>' : `<b>Round ${G.round}</b>`;
+  TIPS = {};
+  // rosters
+  $('rosters').innerHTML = ['A', 'B'].map(team => `<h3>${team === 'A' ? 'Your Keepers' : 'Rival Keepers'}</h3>` + G.units.filter(x => x.team === team).map(x => {
+    TIPS['u' + x.id] = unitTip(x);
+    return `<div class="unit ${x === u ? 'now' : ''} ${x.alive ? '' : 'out'}" data-tip="u${x.id}"><div class="nm"><b>${x.name}</b><span>${x.alive ? `${x.life}/${x.max}` : x.out === 'talk' ? 'yielded' : 'out'}</span></div><div class="bar ${team}"><i style="width:${100 * x.life / x.max}%"></i></div>${x.alive && fxTags(x).length ? `<div class="tags">${tagsHTML(x)}</div>` : ''}</div>`;
+  }).join('')).join('');
+  // action card
+  const card = $('actCard');
+  if (!u || G.over) { card.hidden = true; return; }
+  card.hidden = false;
+  const mine = u.team === 'A' && !G.autoA, my = myTurn();
+  $('actName').textContent = mine ? `${u.name} · your turn` : `${u.name} · computer`;
+  $('actBarWrap').className = 'bar ' + u.team;
+  $('actBar').style.width = (100 * u.life / u.max) + '%';
+  $('actStats').innerHTML = `<span>Life <b>${u.life}/${u.max}</b></span><span>Defense <b>${u.def + (u.fx.defUp ? u.fx.defUp[0] : 0) + (u.fx.def ? u.fx.def[0] : 0)}</b></span>` + 'PESC'.split('').map(k => `<span>${k} <b>${stat(u, k)}</b></span>`).join('') + `<span>Move <b>${moveRange(u)}</b></span>`;
+  $('actTags').innerHTML = tagsHTML(u);
+  $('pips').innerHTML = `<span class="pip ${u.freeMove ? 'on' : ''}" title="Free move"></span><span class="pipgap"></span>` + [0, 1].map(i => `<span class="pip ${i < (u.actions || 0) ? 'on' : ''}" title="Action"></span>`).join('');
+  if (!mine) { $('acts').innerHTML = ''; $('hint').textContent = 'The computer is taking its turn. Watch the box above the map.'; return; }
+  const btn = (act, label, sub, ok, tipKey, cls = '') => `<button type="button" class="${cls}" data-act="${act}" ${tipKey ? `data-tip="${tipKey}"` : ''} aria-pressed="${G.mode === act}" ${my && ok ? '' : 'disabled'}>${label}<small>${sub}</small></button>`;
+  TIPS.move = `<b>${u.freeMove ? 'Free move' : 'Move again'}</b><div>Walk up to your Move in hexes, all at once. Trees, hills and the creek cost 2. ${u.freeMove ? 'Your free Move can come before or after your actions, but it isn’t split up.' : 'Moving again costs an action.'}</div>`;
+  TIPS.attack = `<b>Attack</b><div>${u.weapon}: 1d6+${STATN[u.main]}${u.roleDmg ? '+1' : ''} at range ${weaponRange(u)}. Beat the foe’s Defense with D20 + ${STATN[u.main]}.</div>`;
+  TIPS.talk = '<b>Talk</b><div>A foe below a quarter of their Life can be talked into yielding: D20 + your Charm must reach 10 + their Charm. Range 4.</div>';
+  TIPS.defend = '<b>Defend</b><div>The next hit on you does 1 less damage (until your next turn).</div>';
+  TIPS.end = '<b>End turn</b><div>Skip any actions (and the free Move) you have left.</div>';
+  const act = u.actions > 0;
+  let h = btn('move', u.freeMove ? 'Free move' : 'Move again', u.fx.root ? 'can’t move' : `${moveRange(u)} hexes${u.freeMove ? '' : ' · 1 action'}`, moveRange(u) > 0 && (u.freeMove || act), 'move')
+    + btn('attack', 'Attack', `${u.weapon}, range ${weaponRange(u)}`, act && weaponTargets(u).length, 'attack')
+    + u.abs.map((a, i) => { TIPS['ab' + i] = abTip(a, u); const ok = act && !u.abUsed && !u.cd[i] && abTargets(u, a).length; return btn('ab' + i, a.name, u.cd[i] ? `resting ${u.cd[i]}` : u.abUsed ? 'one ability a round' : rangeTxt(a).replace(' · ', '') || (a.kind === 'fly' ? `fly ${a.fly}` : 'ready'), ok, 'ab' + i); }).join('')
+    + btn('talk', 'Talk', talkTargets(u).length ? 'a foe can yield' : 'foe below ¼ Life', act && talkTargets(u).length, 'talk')
+    + btn('defend', 'Defend', 'next hit -1', act && !u.fx.guard, 'defend')
+    + btn('end', 'End turn', `${u.actions || 0} action${u.actions === 1 ? '' : 's'}${u.freeMove ? ' + Move' : ''} left`, true, 'end');
+  comboList(u).forEach((K, j) => { TIPS['combo' + j] = `<b>Combo: ${K.C.name}</b><div>${K.C.t}</div><div class="t2">Uses your ${u.abs[K.i].name} and ${K.partner.name}’s ${K.partner.abs[K.j].name}. Counts as your one ability this round; +2 to hit for teamwork, and Combo dice add no stat. ${K.partner.name} gives up their next turn.</div>`; h += btn('combo' + j, `Combo: ${K.C.name}`, `with ${K.partner.name} · they skip a turn`, act && comboTargets(u, K).length, 'combo' + j, 'combo'); });
+  $('acts').innerHTML = h;
+  $('acts').querySelectorAll('button').forEach(b => b.onclick = () => pressAct(b.dataset.act));
+  if (!G.mode) $('hint').textContent = my ? 'One free Move plus two actions. You may Attack twice, but only one ability or Combo a round. Hover a button or a Hero for a reminder.' : '';
+  else if (G.mode.startsWith('ab')) { const a = u.abs[+G.mode[2]]; $('hint').textContent = `${a.name}: ${a.t} ${a.kind === 'fly' ? 'Tap a lit hex.' : 'Tap a circled Hero.'}`; }
+  else if (G.mode.startsWith('combo')) { const K = comboList(u)[+G.mode.slice(5)]; $('hint').textContent = K ? `${K.C.name}: ${K.C.t} ${comboInstant(K.C) ? '' : ' Tap a circled target.'}` : ''; }
+  else $('hint').textContent = { move: 'Tap a lit hex to move there.', attack: 'Tap a circled foe. Hover one first to see your odds.', talk: 'Tap a circled foe to Talk.' }[G.mode] || '';
+}
+function renderPace() {
+  $('paceChoices').innerHTML = [['slow', 'Slow'], ['normal', 'Normal'], ['fast', 'Fast'], ['step', 'Step by step']].map(([k, l]) => `<button type="button" data-pace="${k}" aria-pressed="${G.pace === k}">${l}</button>`).join('');
+  $('paceChoices').querySelectorAll('button').forEach(b => b.onclick = () => { G.pace = b.dataset.pace; try { localStorage.setItem('cq-pace', G.pace); } catch (e) {} renderPace(); if (G.pace !== 'step' && contResolve) contResolve(); });
+}
+
+// ============================================================ go
+try { const p = localStorage.getItem('cq-pace'); if (p && PACE[p]) G.pace = p; } catch (e) {}
+G.team = [defaultSpec('Lizerus', 'Champion', 'Honor'), defaultSpec('Dimoneesh', 'Soul Seer', 'Nature'), defaultSpec('Leyf', 'Maverick', 'Wayfinder')];
+G.rivals = randomRivals();
+renderSetup(); renderPace();
+
+// ============================================================ Training Ground mode (Castle Comet)
+// A copy of the 3v3 sparring map (hex-3v3.html, commit 05909b0) used by castle-comet.html for Treywind's practice battle.
+// The castle passes your Hero in the URL hash; the result goes back to the castle with postMessage.
+(() => {
+  let cfg = null; try { cfg = JSON.parse(decodeURIComponent(location.hash.slice(1))); } catch (e) {}
+  if (!cfg || !cfg.role) return;
+  document.title = 'Training Ground';
+  document.querySelector('.top h1').textContent = 'Training Ground';
+  document.querySelector('.top .sub').textContent = 'Treywind teaches you to battle: one free Move plus two actions each turn.';
+  const baseBuild = buildUnit;
+  buildUnit = (sp, team, i) => {
+    const u = baseBuild(sp, team, i);
+    u.abs = [u.abs[0]]; u.cd = [0]; u.st[sp.l2] -= 1;              // a fresh level 1 Hero: one ability, no level 2 bonus
+    u.life = u.max = sp.life || ROLES[sp.role].life;
+    if (sp.weapon) { u.weapon = sp.weapon; u.wRange = sp.wRange; }
+    if (sp.def) u.def += sp.def;
+    if (sp.color) u.color = sp.color;
+    return u;
+  };
+  const baseName = nameTeam;
+  nameTeam = (list, word) => { baseName(list, word); list.forEach(u => u.name = word === 'Your' ? `You (${u.role})` : 'Treywind'); };
+  banner = (title, text) => {
+    const won = G.units.some(u => u.team === 'A' && u.alive);
+    const b = document.createElement('div'); b.className = 'banner';
+    b.innerHTML = `<div><h2>${won ? 'Treywind yields!' : 'Knocked flat'}</h2><p>${won ? '"Sweet Sassy Mollassy, you do pack a wallop!"' : 'Treywind helps you up. "Good! Again, or go see Wexler. You know the basics now."'} ${G.round} rounds.</p>
+      <button class="btn primary" type="button" id="againBtn">Again!</button><button class="btn" type="button" id="newBtn">Back to the castle</button></div>`;
+    $('board').appendChild(b);
+    $('againBtn').onclick = () => { b.remove(); startBout(); };
+    $('newBtn').onclick = () => parent.postMessage({ type: 'cq-training-close', won }, '*');
+    parent.postMessage({ type: 'cq-training', won }, '*');
+  };
+  const me = { ...defaultSpec(cfg.lf, cfg.role, cfg.focus, cfg.ab || 0, 0), weapon: cfg.weapon, wRange: cfg.wRange, def: cfg.def || 0, color: cfg.color };
+  const trey = { ...defaultSpec('Sapien', 'Brawler', 'Que Bao', 1, 0), life: 30, color: '#7a3a22' };
+  talkTargets = () => []; // no Talk in training (N8: Talk comes off the map)
+  G.team = [me]; G.rivals = [trey];
+  START.A[0] = [3, 3]; START.B[0] = [11, 3];
+  startBout();
+})();
+</script>
