@@ -69,7 +69,7 @@ body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;ov
   </div>
   <div class="notes">
     <b>How to play:</b> pick an action, then tap something in the scene. Tap the ground to walk. With Walk on, tapping something does the obvious thing (look, or go that way). Items work too: pick the knife, then tap what you want to use it on.<br>
-    <b>About this mockup:</b> it's an original, painted-screen adventure scene built from the Maverick intro (scouting the dying hill for Cecil). Four answers quietly count toward your Style, and the last one counts double. Art is simple placeholder shapes.
+    <b>About this mockup:</b> it's an original, painted-screen adventure scene built from the Maverick intro (scouting the dying hill). Four answers quietly count toward your Style, and the last one counts double. Art is simple placeholder shapes.
   </div>
 </div>
 
@@ -136,9 +136,9 @@ const SCENES={
       <path d="M900 330 L960 300 V540 H900Z" fill="#33401f" opacity=".8"/>`,
     hot:[
       {id:"farm",name:"Farluck Farm, far below",shape:`<rect x="30" y="250" width="320" height="110" fill="transparent"/>`,stand:[200,420],
-        Look:()=>{ say("Far below, smoke curls from Cecil's chimney at Farluck Farm. He asked you to find out why this hill is dying, and he's counting on you."); if(!flags.mood){flags.mood=1; ask("Narrator","Watching the farm, a thought comes to you.",[
+        Look:()=>{ say("Far below, smoke curls from a farmhouse chimney. You've never met the farmer, but the fields look as thirsty as this hill."); if(!flags.mood){flags.mood=1; ask("Narrator","Watching the farm, a thought comes to you.",[
           ["Somebody should find out why the land is so dry.","Serious"],
-          ["If Cecil's stew is dry too, I'm moving out.","Silly"],
+          ["If the soup down there is this dry too, I'm moving out.","Silly"],
           ["(You wish you could help, but you'd never knock.)","Shy"],
           ["Lucky for them, the best hunter on the hill is on duty.","Smug"]]);} }},
       {id:"tree",name:"Wilting tree",shape:`<rect x="300" y="200" width="70" height="180" fill="transparent"/>`,stand:[350,440],
@@ -146,7 +146,7 @@ const SCENES={
         Use:()=>{ say("You climb up into the branches, the way Leyf do, and look east. A red shimmer flickers between the rocks, like heat over a fire."); flags.shimmer=1; },
         Take:()=>say("You pinch a grey leaf. It crumbles to dust and smells faintly of rot.")},
       {id:"tracks",name:"Strange tracks",shape:`<rect x="590" y="455" width="160" height="45" fill="transparent"/>`,stand:[620,470],
-        Look:()=>{ say("Boot prints, and the drag of long cloaks, heading east into the rocks. Nobody walks up here. Then you notice smaller prints on top of them: Tam, Cecil's young farmhand, who begged to come along, has run ahead!"); if(!flags.hunt){flags.hunt=1; ask("Narrator","Tam has run off after the tracks. What do you do?",[
+        Look:()=>{ say("Boot prints, and the drag of long cloaks, heading east into the rocks. Nobody walks up here. Then you notice smaller prints on top of them: Tam, the village kid who follows you everywhere, has run ahead!"); if(!flags.hunt){flags.hunt=1; ask("Narrator","Tam has run off after the tracks. What do you do?",[
           ["Follow fast, but read every print. No mistakes.","Serious"],
           ["\"Tam! If you find the trouble first, I want half!\"","Silly"],
           ["Keep low and quiet along the ferns, and catch up unseen.","Shy"],
@@ -252,7 +252,7 @@ function cloaksAppear(){
   flags.cloaks=1; const c=$("cloaks"); c.style.transition="opacity 1.2s"; c.setAttribute("opacity",1);
   say("Figures in dark red cloaks step out of the glowing tunnel. Their hoods turn toward Tam, and toward you.");
   setTimeout(()=>ask("Narrator","Tam is free but frozen with fear. The cloaks are coming.",[
-    ["\"Run to Cecil, Tam. Now.\" Then loose a shot into the stone above the cloaks.","Serious",()=>flags.end="shot"],
+    ["\"Run for the farm, Tam. Now.\" Then loose a shot into the stone above the cloaks.","Serious",()=>flags.end="shot"],
     ["\"Over here, red hoods! Bet you can't catch me!\"","Silly",()=>flags.end="shot"],
     ["(Pull Tam into the ferns, point downhill, and stay behind so they can slip away.)","Shy",()=>flags.end="hide"],
     ["Shoot the rock above them. One arrow, perfect. Obviously.","Smug",()=>flags.end="shot"]],ending,2),1500);
@@ -295,7 +295,7 @@ document.addEventListener("keydown",e=>{
   if(!$("box").classList.contains("on")) return; const n=parseInt(e.key,10); const bs=$("choices").querySelectorAll("button"); if(n>=1&&n<=bs.length) bs[n-1].click();
 });
 buildBar(); load("edge");
-say("<em>Your first life.</em> Evening at the edge of the forest above Farluck Farm. Cecil asked you to find out why the trees up here are dying. Try looking at the farm, and find the tracks.");
+say("<em>Your first life.</em> Evening at the edge of the forest above Farluck Farm. Your hunting hill is dying, and you've come to find out why. Tam, a village kid, tagged along. Try looking at the farm, and find the tracks.");
 </script>
 </body>
 </html>
