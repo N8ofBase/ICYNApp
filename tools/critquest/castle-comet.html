@@ -1,0 +1,533 @@
+<title>Castle Comet</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Alegreya+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout: the Comet seen from above. A 20-sided Welcome Hall sits in the middle, the 20 Corridor doors ring it,
+   and each room, NPC dialog and minigame opens over the ring. One night-sky look on purpose (the Comet is in space). */
+:root {
+  color-scheme: dark;
+  --void: #0c0f1f; --hall: #171c35; --stone: #262c4d; --line: #3b4370;
+  --ink: #ede7d6; --soft: #a8a6bd;
+  --comet: #f0c04f; --ember: #e2714b; --frost: #82cbd9; --leaf: #8fc274;
+  --display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --body: "Alegreya Sans", "Segoe UI", system-ui, sans-serif;
+}
+html, body { min-height: 100%; }
+body {
+  background: var(--void); color: var(--ink); font-family: var(--body); font-size: 16px; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px 28px; box-sizing: border-box;
+}
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+#stars { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+main { position: relative; z-index: 1; max-width: 1040px; margin: 0 auto; display: grid; gap: 14px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 400; margin: 0; text-wrap: balance; }
+button { font: inherit; color: inherit; }
+button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--comet); outline-offset: 2px; }
+.note { color: var(--soft); font-size: .9rem; margin: 0; }
+
+/* top bar */
+.top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 8px 16px; }
+.top h1 { font-size: 2rem; letter-spacing: .04em; color: var(--comet); }
+.top .sub { color: var(--soft); font-size: .95rem; }
+.pouch { display: flex; flex-wrap: wrap; gap: 6px; font-variant-numeric: tabular-nums; }
+.pouch span { padding: 3px 9px; border: 1px solid var(--line); border-radius: 12px; background: var(--hall); font-size: .85rem; white-space: nowrap; }
+.pouch b { color: var(--comet); font-weight: 700; }
+
+/* hub */
+.hub { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 820px) { .hub { grid-template-columns: minmax(0, 1fr); } }
+.ringWrap { position: relative; max-width: 560px; width: 100%; margin: 0 auto; }
+.ringWrap svg { display: block; width: 100%; height: auto; user-select: none; touch-action: manipulation; }
+.door { cursor: pointer; }
+.door circle.face { fill: var(--stone); stroke: var(--line); stroke-width: 2; transition: fill .2s, stroke .2s; }
+.door.open circle.face { fill: #3a3150; stroke: var(--comet); }
+.door.open:hover circle.face, .door.open:focus-visible circle.face, .door.sel circle.face { fill: #5a4a2c; }
+.door text { font-family: var(--display); font-size: 17px; text-anchor: middle; dominant-baseline: central; fill: var(--soft); pointer-events: none; }
+.door.open text { fill: var(--ink); }
+.door:focus { outline: none; }
+.door:focus-visible circle.face { stroke: var(--frost); stroke-width: 3; }
+.spoke { stroke: var(--line); stroke-width: 1.5; }
+.spoke.open { stroke: #6d5a2e; }
+.hallShape { fill: var(--hall); stroke: var(--comet); stroke-width: 2; cursor: pointer; }
+.hallShape:hover { fill: #221f3a; }
+.hallText { font-family: var(--display); fill: var(--comet); text-anchor: middle; pointer-events: none; }
+.crystal { fill: var(--frost); opacity: .85; pointer-events: none; }
+@media (prefers-reduced-motion: no-preference) { .crystal { animation: pulse 3.2s ease-in-out infinite; transform-origin: 300px 286px; } }
+@keyframes pulse { 50% { opacity: .5; transform: scale(.94); } }
+
+.panel { background: var(--hall); border: 1px solid var(--line); border-radius: 8px; padding: 14px; display: grid; gap: 10px; min-width: 0; }
+.panel h2 { font-size: 1.3rem; }
+.eyebrow { font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; color: var(--soft); }
+.doorList { display: grid; gap: 6px; }
+.doorList button { display: grid; grid-template-columns: 2.2em minmax(0, 1fr) auto; gap: 8px; align-items: center; text-align: left; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--stone); cursor: pointer; }
+.doorList button:hover { border-color: var(--comet); }
+.doorList .n { font-family: var(--display); color: var(--comet); font-variant-numeric: tabular-nums; }
+.doorList small { color: var(--soft); }
+.tag { font-size: .72rem; padding: 1px 7px; border-radius: 9px; border: 1px solid var(--comet); color: var(--comet); white-space: nowrap; }
+.locked { font-size: .85rem; color: var(--soft); }
+
+/* room */
+.room { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 520px) { .room { grid-template-columns: minmax(0, 1fr); } }
+.room .portrait { width: 120px; height: 120px; }
+.room p { margin: 0; max-width: 62ch; line-height: 1.45; }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn { padding: 9px 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--stone); cursor: pointer; font-weight: 500; }
+.btn:hover { border-color: var(--comet); }
+.btn.primary { background: var(--comet); color: var(--void); border-color: var(--comet); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* dialog window */
+.dlgBack { position: fixed; inset: 0; z-index: 20; background: rgba(6, 8, 18, .55); display: flex; align-items: flex-end; justify-content: center;
+  padding: 0 max(12px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
+.dlg { width: min(760px, 100%); background: linear-gradient(180deg, #1d2343, #151a32); border: 2px solid var(--comet); border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.6); display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 14px; padding: 14px; }
+@media (max-width: 480px) { .dlg { grid-template-columns: 64px minmax(0, 1fr); gap: 10px; padding: 12px; } }
+.dlg .portrait { width: 100%; aspect-ratio: 1; max-width: 100%; }
+.dlg .who { font-family: var(--display); color: var(--comet); font-size: 1.15rem; }
+.dlg .who small { font-family: var(--body); color: var(--soft); font-size: .8rem; margin-left: 6px; }
+.dlg .line { margin: 4px 0 10px; line-height: 1.45; min-height: 3em; cursor: pointer; }
+.dlg .choices { display: grid; gap: 6px; }
+.dlg .choices button { text-align: left; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--stone); cursor: pointer; display: flex; gap: 8px; }
+.dlg .choices button:hover, .dlg .choices button:focus-visible { border-color: var(--comet); background: #303762; }
+.dlg .choices kbd { font-family: var(--display); color: var(--comet); min-width: 1.2em; }
+.portrait { border-radius: 50%; display: block; }
+
+/* minigames */
+.game { display: grid; gap: 12px; }
+.game .head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; align-items: baseline; }
+.stat { font-variant-numeric: tabular-nums; color: var(--soft); }
+.stat b { color: var(--ink); }
+.track { position: relative; height: 54px; border-radius: 8px; background: linear-gradient(90deg, #2a2030, #4b2a22 50%, #2a2030); border: 1px solid var(--line); overflow: hidden; }
+.zone { position: absolute; top: 0; bottom: 0; background: rgba(240, 192, 79, .28); border-left: 2px solid var(--comet); border-right: 2px solid var(--comet); }
+.zone i { position: absolute; top: 0; bottom: 0; left: 50%; transform: translateX(-50%); background: rgba(255, 236, 170, .55); }
+.marker { position: absolute; top: -4px; bottom: -4px; width: 6px; margin-left: -3px; background: var(--ink); border-radius: 3px; box-shadow: 0 0 10px var(--ember); }
+.strikes { display: flex; gap: 8px; flex-wrap: wrap; }
+.strikes span { padding: 4px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--stone); font-size: .9rem; }
+.strikes .perfect { border-color: var(--comet); color: var(--comet); }
+.strikes .good { border-color: var(--leaf); color: var(--leaf); }
+.strikes .miss { color: var(--soft); }
+.d20 { display: inline-grid; place-items: center; width: 64px; height: 64px; font-family: var(--display); font-size: 1.6rem; color: var(--void);
+  background: var(--comet); clip-path: polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%); font-variant-numeric: tabular-nums; }
+.d20.crit { background: var(--frost); }
+.d20.low { background: var(--ember); }
+.result { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.result p { margin: 0; flex: 1 1 220px; min-width: 0; }
+.digWrap { max-width: 520px; width: 100%; }
+.digWrap svg { width: 100%; height: auto; display: block; touch-action: manipulation; }
+.hex { fill: #3a3326; stroke: #5c4f37; stroke-width: 2; cursor: pointer; }
+.hex:hover { fill: #4a4130; }
+.hex:focus { outline: none; }
+.hex:focus-visible { stroke: var(--frost); stroke-width: 3; }
+.hex.dug { fill: #1d1912; cursor: default; }
+.hex.found { fill: #6b5a28; stroke: var(--comet); }
+.hexT { font-family: var(--display); font-size: 20px; text-anchor: middle; dominant-baseline: central; pointer-events: none; fill: var(--ink); }
+.hexT.far { fill: var(--soft); }
+.hexT.warm { fill: var(--comet); }
+.hexT.hot { fill: var(--ember); }
+.order { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 40px; }
+.order > span { padding: 6px 10px; border-radius: 16px; border: 1px solid var(--line); background: var(--stone); display: inline-flex; gap: 6px; align-items: center; }
+.order > span.done { opacity: .35; text-decoration: line-through; }
+.order > span.next { border-color: var(--comet); }
+.sw { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex: none; }
+.shelf { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.shelf button { padding: 12px 6px; border: 1px solid var(--line); border-radius: 8px; background: var(--stone); cursor: pointer; display: flex; gap: 8px; justify-content: center; align-items: center; }
+.shelf button:hover { border-color: var(--comet); }
+.timer { height: 8px; border-radius: 4px; background: var(--stone); overflow: hidden; }
+.timer i { display: block; height: 100%; background: var(--comet); }
+.flash { min-height: 1.4em; color: var(--comet); }
+.toast { position: fixed; z-index: 30; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--comet); color: var(--void);
+  padding: 8px 16px; border-radius: 18px; font-weight: 700; box-shadow: 0 4px 20px rgba(0,0,0,.5); max-width: calc(100% - 32px); text-align: center; }
+</style>
+
+<canvas id="stars" aria-hidden="true"></canvas>
+<main>
+  <header class="top">
+    <div>
+      <h1>Castle Comet</h1>
+      <div class="sub">Home of the Light Keepers. Prototype hub with three Corridor minigames.</div>
+    </div>
+    <div class="pouch" id="pouch" aria-label="Your pouch"></div>
+  </header>
+  <section id="view"></section>
+</main>
+<div class="dlgBack" id="dlgBack" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlgWho">
+    <div id="dlgPic"></div>
+    <div style="min-width:0">
+      <div class="who" id="dlgWho"></div>
+      <p class="line" id="dlgLine" aria-live="polite"></p>
+      <div class="choices" id="dlgChoices"></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const d20 = () => 1 + Math.floor(Math.random() * 20);
+const pick = a => a[Math.floor(Math.random() * a.length)];
+
+/* ---------- saved pouch (per browser only) */
+const START = { coins: 10, ore: 2, scrap: 0, lyr: 0, sapphire: 0, shards: 0, gear: [], met: {} };
+let S;
+try { S = Object.assign({}, START, JSON.parse(localStorage.getItem("cq-comet") || "{}")); } catch (e) { S = Object.assign({}, START); }
+function save() { try { localStorage.setItem("cq-comet", JSON.stringify(S)); } catch (e) {} renderPouch(); }
+function renderPouch() {
+  const items = [["Icosa Coins", S.coins], ["Ore", S.ore], ["Scrap", S.scrap], ["Lyr Dust", S.lyr], ["Sapphire Dust", S.sapphire], ["Crit Shards", S.shards], ["Gear", S.gear.length]];
+  $("#pouch").innerHTML = items.map(([k, v]) => `<span>${k} <b>${v}</b></span>`).join("");
+}
+let toastT;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600); }
+
+/* ---------- people */
+const PEOPLE = {
+  bruxanna: { name: "Bruxanna Barr", role: "Keeper of the Comet", hue: "#f0c04f", letter: "B" },
+  wexler:   { name: "Wexler", role: "Portal to Talus", hue: "#82cbd9", letter: "W" },
+  treywind: { name: "Treywind", role: "Training Ground", hue: "#8fc274", letter: "T" },
+  georgia:  { name: "Georgia", role: "The Forge", hue: "#e2714b", letter: "G" },
+  shnee:    { name: "Shnee", role: "Scrap Yard", hue: "#c9a36b", letter: "S" },
+  tata:     { name: "Tata", role: "The Tavern", hue: "#c58bd8", letter: "T" },
+  you:      { name: "Your Barracks", role: "Home", hue: "#a8a6bd", letter: "⌂" }
+};
+let picN = 0;
+function portrait(id, size) {
+  const p = PEOPLE[id], g = "pg" + (picN++);
+  return `<svg class="portrait" viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="${p.name}">
+    <defs><radialGradient id="${g}" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="${p.hue}"/><stop offset="1" stop-color="#171c35"/></radialGradient></defs>
+    <circle cx="50" cy="50" r="48" fill="url(#${g})" stroke="${p.hue}" stroke-width="3"/>
+    <text x="50" y="54" text-anchor="middle" dominant-baseline="central" font-family="Marcellus, Georgia, serif" font-size="46" fill="#0c0f1f">${p.letter}</text></svg>`;
+}
+
+/* ---------- the 20 Corridors (from the design plan) */
+const CORRIDORS = [
+  [1, "Portal to Talus", "wexler", "Step through the Icosa Crystal to start a quest. Wexler keeps in touch with you while you are on Talus.", true],
+  [2, "Barracks", "you", "Your room: storage, and a mirror to change your look.", true],
+  [3, "Barracks Boutique", null, "Bruxanna's shop for Crit Dice styles and Comet decor."],
+  [4, "Farm", null, "Faux's hex plots by the water. Each plot rolls a D20 harvest every 20 hours."],
+  [5, "Kitchen", null, "Cook food that heals and waters for crafting, like Cecil's charbean soup."],
+  [6, "Tavern", "tata", "Tata's tavern. Mix brews fast for Icosa Coins.", true, "tavern"],
+  [7, "Scrap Yard", "shnee", "Shnee's digging grounds. Listen for the hint, then dig.", true, "dig"],
+  [8, "Forge", "georgia", "Georgia's Forge for Metal Melters, Bone Benders, Stone Shapers and Wood Weavers.", true, "forge"],
+  [9, "Training Ground", "treywind", "Learn and Empower abilities, and practice on the hex grid.", true],
+  [10, "Mystic", null, "Meya's Corridor: enchant gear, make potions, lift curses."],
+  [11, "Spiritual", null, "Sloan's quiet room: trace Icosa healing symbols while you breathe."],
+  [12, "Mission Map", "bruxanna", "Choose Story, Recon, Forage or Battle quests on Talus.", true],
+  [13, "Companion Hall", null, "Where the companions you recruit live."],
+  [14, "Stables", null, "Raise and ride Lazerith and Rocsprey."],
+  [15, "Library", null, "Machiventa's teachings and a bestiary of every terror you meet."],
+  [16, "Observatory", null, "Talus from above: the Fear map and the coming night quests."],
+  [17, "Hall of Echoes", null, "Trophies, and thanks from the beings you have Inspired."],
+  [18, "Sparring Ring", null, "Practice fights with no risk."],
+  [19, "Colosseum", null, "The I Crit You Not! arena: duels and Starvos."],
+  [20, "Crit Crafter", null, "Build your own quests (much later)."]
+].map(([n, name, who, text, open, game]) => ({ n, name, who, text, open: !!open, game }));
+
+/* ---------- dialog trees */
+const TALK = {
+  bruxanna: {
+    start: { t: "Welcome home, Light Keeper. You look rested. The Comet suits you.", c: [["Where am I, really?", "where"], ["What should I do first?", "first"], ["Thank you, Bruxanna.", "bye"]] },
+    where: { t: "The Castle Comet. Twenty Corridors, and each one opens as Talus needs it. Your kindness at the end of your first life is what brought you here.", c: [["And what now?", "first"], ["I'd like to look around.", "bye"]] },
+    first: { t: "Earn a few Icosa Coins at Tata's, find ore in Shnee's yard, and let Georgia teach you the Forge. Then Wexler can send you down to Farluck Farm.", c: [["I'll start with the Tavern.", "go:6"], ["Show me the Forge.", "go:8"], ["I'll find my own way.", "bye"]] },
+    bye: { t: "Go gently. The Comet is always here when you need to come back.", c: [] }
+  },
+  wexler: {
+    start: { t: "Ah! A Light Keeper! So, the crystal, right, it takes you down, but also sideways, and a little bit... forward? Time-wise. It's very simple.", c: [["That did not sound simple.", "simple"], ["Can I go to Farluck Farm?", "farm"]] },
+    simple: { t: "It is simple. Explaining it is the hard part. I'll stay in your head while you're down there. Politely! I'll knock first.", c: [["Can I go to Farluck Farm?", "farm"], ["Maybe later.", "bye"]] },
+    farm: { t: "Cecil's farm needs help, water and food both. The quest isn't ready in this prototype, so practice here first. The crystal will hum when it is.", c: [["I'll get ready.", "bye"]] },
+    bye: { t: "Mind the step! There isn't one, but mind it anyway.", c: [] }
+  },
+  treywind: {
+    start: { t: "Good stance. Here you can learn new abilities and Empower the ones you have. Every odd level, a new pick.", c: [["How do I get stronger?", "strong"], ["Can I spar?", "spar"], ["Later, Treywind.", "bye"]] },
+    strong: { t: "Quests give experience. Even levels raise a stat, odd levels give an ability. Bring four abilities into each quest, chosen right here.", c: [["Can I spar?", "spar"], ["Got it.", "bye"]] },
+    spar: { t: "The practice grid is being built in another wing. Soon you'll move, strike twice, and use one ability each round.", c: [["I'll be ready.", "bye"]] },
+    bye: { t: "Breathe, step, strike. In that order.", c: [] }
+  },
+  georgia: {
+    start: { t: "Heat's up. Strike when the glow sits in the gold band, three times. Hit the bright middle and the metal sings.", c: [["Let's forge something.", "play:forge"], ["What do I need?", "need"], ["Just looking.", "bye"]] },
+    need: { t: "One Ore per piece. No Ore? Shnee's yard has plenty, if you know how to listen.", c: [["Let's forge something.", "play:forge"], ["To the Scrap Yard, then.", "go:7"]] },
+    bye: { t: "Come back when your hands are itching.", c: [] }
+  },
+  shnee: {
+    start: { t: "Dig where you like. I'll tell you how close you are. Three dots, cold. A question mark, warmer. Three bangs, right next to it!", c: [["Let me dig.", "play:dig"], ["What's down there?", "what"], ["Maybe later.", "bye"]] },
+    what: { t: "Ore, scrap, Lyr Dust, sometimes Sapphire Dust. Once, a Crit Shard. A D20 decides what the ground gives you.", c: [["Let me dig.", "play:dig"]] },
+    bye: { t: "The ground's not going anywhere.", c: [] }
+  },
+  tata: {
+    start: { t: "Busy night! Orders come in, you mix them in the right order. Twenty seconds on the sand glass. Ready?", c: [["Pour me in.", "play:tavern"], ["What's on the shelf?", "shelf"], ["Not tonight.", "bye"]] },
+    shelf: { t: "Jeewa juice, Flash Water, charbean, honeycomb, mint and a pinch of star salt. Three coins for every order served right.", c: [["Pour me in.", "play:tavern"]] },
+    bye: { t: "Your stool will be waiting.", c: [] }
+  },
+  you: {
+    start: { t: "Your room on the Comet. A cot, a chest and a tall mirror. Your gear rests here.", c: [["Open the chest.", "chest"], ["Leave.", "bye"]] },
+    chest: { t: "", c: [["Close it.", "bye"]] },
+    bye: { t: "", c: [] }
+  }
+};
+
+/* ---------- dialog window (headshot, line, 2 to 4 answers) */
+let typing = null;
+function openTalk(id, node = "start") {
+  const tree = TALK[id], nd = tree[node];
+  if (!nd || (!nd.t && !nd.c.length)) { closeTalk(); return; }
+  let text = nd.t;
+  if (id === "you" && node === "chest") text = S.gear.length ? "Inside: " + S.gear.join(", ") + "." : "The chest is empty. Georgia's Forge can fill it.";
+  S.met[id] = true;
+  $("#dlgPic").innerHTML = portrait(id, 96);
+  $("#dlgWho").innerHTML = `${PEOPLE[id].name}<small>${PEOPLE[id].role}</small>`;
+  const line = $("#dlgLine"), box = $("#dlgChoices");
+  box.innerHTML = "";
+  const choices = nd.c.length ? nd.c : [["Goodbye.", "close"]];
+  const showChoices = () => {
+    box.innerHTML = choices.map((c, i) => `<button type="button" data-next="${c[1]}"><kbd>${i + 1}</kbd><span>${c[0]}</span></button>`).join("");
+    box.querySelector("button").focus();
+  };
+  clearInterval(typing);
+  $("#dlgBack").hidden = false;
+  if (reduce) { line.textContent = text; showChoices(); return; }
+  let i = 0; line.textContent = "";
+  typing = setInterval(() => { i += 2; line.textContent = text.slice(0, i); if (i >= text.length) { clearInterval(typing); typing = null; showChoices(); } }, 22);
+  line.onclick = () => { if (typing) { clearInterval(typing); typing = null; line.textContent = text; showChoices(); } };
+  box.onclick = e => { const b = e.target.closest("button"); if (b) answer(id, b.dataset.next); };
+}
+function answer(id, next) {
+  if (next === "close") return closeTalk();
+  if (next.startsWith("play:")) { closeTalk(); return startGame(next.slice(5)); }
+  if (next.startsWith("go:")) { closeTalk(); return showRoom(+next.slice(3)); }
+  openTalk(id, next);
+}
+function closeTalk() { clearInterval(typing); typing = null; $("#dlgBack").hidden = true; }
+document.addEventListener("keydown", e => {
+  if ($("#dlgBack").hidden) return;
+  if (e.key === "Escape") return closeTalk();
+  const n = +e.key; const bs = $("#dlgChoices").querySelectorAll("button");
+  if (n >= 1 && n <= bs.length) { e.preventDefault(); bs[n - 1].click(); }
+  else if ((e.key === " " || e.key === "Enter") && typing) { e.preventDefault(); $("#dlgLine").onclick(); }
+});
+
+/* ---------- hub ring */
+function showHub(sel) {
+  stopGame();
+  const cx = 300, cy = 300, R = 238;
+  let spokes = "", doors = "";
+  CORRIDORS.forEach((c, i) => {
+    const a = -Math.PI / 2 + i * Math.PI / 10, x = cx + R * Math.cos(a), y = cy + R * Math.sin(a);
+    spokes += `<line class="spoke ${c.open ? "open" : ""}" x1="${cx + 118 * Math.cos(a)}" y1="${cy + 118 * Math.sin(a)}" x2="${x - 30 * Math.cos(a)}" y2="${y - 30 * Math.sin(a)}"/>`;
+    doors += `<g class="door ${c.open ? "open" : ""}" tabindex="0" role="button" data-n="${c.n}" aria-label="Corridor ${c.n}, ${c.name}${c.open ? "" : ", opens later"}">
+      <circle class="face" cx="${x}" cy="${y}" r="29"/><text x="${x}" y="${y}">${c.open ? c.n : "•"}</text><title>${c.n}. ${c.name}</title></g>`;
+  });
+  let hall = "";
+  for (let i = 0; i < 20; i++) { const a = -Math.PI / 2 + i * Math.PI / 10 + Math.PI / 20; hall += `${cx + 112 * Math.cos(a)},${cy + 112 * Math.sin(a)} `; }
+  const open = CORRIDORS.filter(c => c.open);
+  $("#view").innerHTML = `<div class="hub">
+    <div class="ringWrap"><svg viewBox="0 0 600 600" aria-label="Map of the Castle Comet">
+      <circle cx="300" cy="300" r="270" fill="none" stroke="#262c4d" stroke-width="2" stroke-dasharray="3 9"/>
+      ${spokes}
+      <polygon class="hallShape" id="hallBtn" points="${hall}" tabindex="0" role="button" aria-label="Welcome Hall, talk to Bruxanna"/>
+      <polygon class="crystal" points="300,248 326,286 300,324 274,286"/>
+      <text class="hallText" x="300" y="350" font-size="22">Welcome Hall</text>
+      <text class="hallText" x="300" y="374" font-size="14" style="fill:#a8a6bd">Bruxanna Barr</text>
+      ${doors}</svg></div>
+    <div class="panel" id="side">
+      <div class="eyebrow">Open Corridors</div>
+      <div class="doorList">${open.map(c => `<button type="button" data-n="${c.n}"><span class="n">${c.n}</span><span>${c.name}<br><small>${c.who ? PEOPLE[c.who].name : ""}</small></span>${c.game ? '<span class="tag">Minigame</span>' : ""}</button>`).join("")}</div>
+      <p class="locked" id="lockNote">Dim doors open as the story goes on. Tap one to see what waits behind it.</p>
+    </div></div>`;
+  const go = n => { const c = CORRIDORS[n - 1]; if (c.open) showRoom(n); else { $("#lockNote").innerHTML = `<b>${c.n}. ${c.name}</b> opens later in the story. ${c.text}`; } };
+  $("#view").querySelectorAll("[data-n]").forEach(el => {
+    el.addEventListener("click", () => go(+el.dataset.n));
+    el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(+el.dataset.n); } });
+  });
+  const hb = $("#hallBtn");
+  hb.addEventListener("click", () => openTalk("bruxanna"));
+  hb.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openTalk("bruxanna"); } });
+  if (sel) { const d = $(`.door[data-n="${sel}"]`); if (d) d.focus(); }
+}
+
+/* ---------- room view */
+const GAME_NAME = { forge: "Forge a piece", dig: "Dig for materials", tavern: "Work the bar" };
+function showRoom(n) {
+  stopGame();
+  const c = CORRIDORS[n - 1], who = c.who;
+  $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Corridor ${c.n}</div>
+    <div class="room">${portrait(who, 120)}
+      <div style="display:grid;gap:10px;min-width:0"><h2>${c.name}</h2><p>${c.text}</p>
+        <div class="btns">
+          <button class="btn ${c.game ? "" : "primary"}" type="button" id="talk">${who === "you" ? "Look around" : "Talk to " + PEOPLE[who].name}</button>
+          ${c.game ? `<button class="btn primary" type="button" id="play">${GAME_NAME[c.game]}</button>` : ""}
+          <button class="btn" type="button" id="back">Back to the Welcome Hall</button>
+        </div></div></div></div>`;
+  $("#talk").onclick = () => openTalk(who);
+  if (c.game) $("#play").onclick = () => startGame(c.game);
+  $("#back").onclick = () => showHub(n);
+  if (!S.met[who] && who !== "you") openTalk(who);
+}
+
+/* ---------- minigames */
+let raf = null, timers = [];
+function stopGame() { cancelAnimationFrame(raf); raf = null; timers.forEach(clearInterval); timers = []; document.onkeydown = null; }
+function gameShell(n, title, body) {
+  const c = CORRIDORS[n - 1];
+  $("#view").innerHTML = `<div class="panel game"><div class="head"><div><div class="eyebrow">Corridor ${c.n}, ${c.name}</div><h2>${title}</h2></div>
+    <button class="btn" type="button" id="leave">Back to ${c.name}</button></div>${body}</div>`;
+  $("#leave").onclick = () => showRoom(n);
+}
+function startGame(k) { stopGame(); ({ forge, dig, tavern })[k](); }
+function dieHTML(v) { return `<span class="d20 ${v === 20 ? "crit" : v === 1 ? "low" : ""}" aria-label="D20 rolled ${v}">${v}</span>`; }
+function rollAnim(el, final, done) {
+  if (reduce) { el.innerHTML = dieHTML(final); return done(); }
+  let k = 0; const t = setInterval(() => { el.innerHTML = dieHTML(k++ < 9 ? d20() : final); if (k > 9) { clearInterval(t); done(); } }, 70); timers.push(t);
+}
+
+/* Forge: three timed strikes, then a D20 quality check */
+function forge() {
+  const PIECES = ["Iron Knuckles", "Stringbow Arrowheads", "Round Shield Rim", "Whisper Knife", "Hammer Head"];
+  const piece = pick(PIECES);
+  gameShell(8, "Forge: " + piece, `
+    <p class="note">Press <b>Strike</b> (or the space bar) when the glowing marker is inside the gold band. The bright middle is a perfect strike. Costs 1 Ore.</p>
+    <div class="track" id="track"><div class="zone" id="zone"><i id="sweet"></i></div><div class="marker" id="mk"></div></div>
+    <div class="strikes" id="strikes"></div>
+    <div class="btns"><button class="btn primary" type="button" id="strike">Strike</button></div>
+    <div class="result" id="res"></div>`);
+  if (S.ore < 1) { $("#strike").disabled = true; $("#res").innerHTML = `<p>You need 1 Ore. Shnee's Scrap Yard turns some up.</p><button class="btn" type="button" id="toDig">Go to the Scrap Yard</button>`; $("#toDig").onclick = () => showRoom(7); return; }
+  S.ore--; save();
+  const zone = $("#zone"), mk = $("#mk"); let strikes = [], pos = 0, dir = 1, speed = 0.55, zc, zw;
+  const place = () => { zw = 22 - strikes.length * 4; zc = 20 + Math.random() * 60; zone.style.left = (zc - zw / 2) + "%"; zone.style.width = zw + "%"; $("#sweet").style.width = (5 / zw * 100) + "%"; };
+  place();
+  let last = performance.now();
+  const step = t => { const dt = Math.min(40, t - last); last = t; pos += dir * speed * dt / 10; if (pos > 100) { pos = 100; dir = -1; } if (pos < 0) { pos = 0; dir = 1; } mk.style.left = pos + "%"; raf = requestAnimationFrame(step); };
+  raf = requestAnimationFrame(step);
+  const hit = () => {
+    if (strikes.length >= 3) return;
+    const off = Math.abs(pos - zc), q = off <= 2.5 ? "perfect" : off <= zw / 2 ? "good" : "miss";
+    strikes.push(q);
+    $("#strikes").innerHTML = strikes.map((s, i) => `<span class="${s}">Strike ${i + 1}: ${s}</span>`).join("");
+    if (strikes.length < 3) { speed += 0.2; place(); return; }
+    cancelAnimationFrame(raf); $("#strike").disabled = true;
+    const bonus = strikes.reduce((a, s) => a + (s === "perfect" ? 3 : s === "good" ? 1 : 0), 0), roll = d20();
+    $("#res").innerHTML = `<span id="die"></span><p id="out">Quality check: D20 + ${bonus} from your strikes...</p>`;
+    rollAnim($("#die"), roll, () => {
+      const total = roll + bonus;
+      const grade = roll === 20 || total >= 24 ? "Masterwork" : total >= 14 ? "Fine" : roll === 1 ? "Cracked" : "Rough";
+      let msg = `You rolled ${roll}, total ${total}. `;
+      if (grade === "Cracked") { msg += "A natural 1. The metal cracks and Georgia gives you a sympathetic pat. The Ore is lost."; }
+      else { S.gear.push(`${grade} ${piece}`); msg += `You made a <b>${grade} ${piece}</b>. It is waiting in your Barracks chest.`; if (roll === 20) { S.shards++; msg += " A natural 20 also throws off a Crit Shard!"; } }
+      save();
+      $("#out").innerHTML = msg + `<br><button class="btn" type="button" id="again" style="margin-top:8px">Forge another</button>`;
+      $("#again").onclick = forge;
+    });
+  };
+  $("#strike").onclick = hit;
+  document.onkeydown = e => { if (e.key === " " && $("#dlgBack").hidden) { e.preventDefault(); hit(); } };
+}
+
+/* Scrap Yard: hot and cold digging on a hex patch, then a D20 for the find */
+function dig() {
+  const COLS = 7, ROWS = 5, DIGS = 6, size = 34, w = Math.sqrt(3) * size;
+  const target = [Math.floor(Math.random() * COLS), Math.floor(Math.random() * ROWS)];
+  const cube = (c, r) => { const q = c - (r - (r & 1)) / 2; return [q, r, -q - r]; };
+  const dist = (a, b) => { const A = cube(...a), B = cube(...b); return Math.max(Math.abs(A[0] - B[0]), Math.abs(A[1] - B[1]), Math.abs(A[2] - B[2])); };
+  let left = DIGS, over = false, cells = "";
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    const x = w * (c + 0.5 * (r & 1)) + w / 2 + 6, y = size * 1.5 * r + size + 6;
+    const pts = [...Array(6)].map((_, i) => { const a = Math.PI / 180 * (60 * i - 30); return `${(x + size * Math.cos(a)).toFixed(1)},${(y + size * Math.sin(a)).toFixed(1)}`; }).join(" ");
+    cells += `<g data-c="${c}" data-r="${r}"><polygon class="hex" points="${pts}" tabindex="0" role="button" aria-label="Dig here"/><text class="hexT" x="${x}" y="${y}"></text></g>`;
+  }
+  const W = w * (COLS + 0.5) + 12, H = size * 1.5 * (ROWS - 1) + size * 2 + 12;
+  gameShell(7, "Scrap Yard dig", `
+    <p class="note">Tap a patch to dig. Shnee calls out how close you are: <b>...</b> is cold, <b>?</b> is warmer, <b>!!!</b> is right next to it. You have ${DIGS} digs.</p>
+    <div class="stat">Digs left: <b id="left">${left}</b></div>
+    <div class="digWrap"><svg viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}" id="yard" aria-label="Digging patch">${cells}</svg></div>
+    <div class="result" id="res"></div>`);
+  const finish = found => {
+    over = true; const roll = d20(), total = Math.min(20, roll + (found ? 6 : 0));
+    $("#res").innerHTML = `<span id="die"></span><p id="out">${found ? "You found the cache! D20 + 6" : "Out of digs. You sift what you turned up: D20"}...</p>`;
+    rollAnim($("#die"), roll, () => {
+      let get;
+      if (roll === 20 || total >= 20) { S.shards++; get = "a <b>Crit Shard</b>"; }
+      else if (total >= 16) { S.sapphire++; S.ore++; get = "<b>Sapphire Dust</b> and <b>1 Ore</b>"; }
+      else if (total >= 11) { S.lyr++; S.ore++; get = "<b>Lyr Dust</b> and <b>1 Ore</b>"; }
+      else if (total >= 6) { S.ore += 1; S.scrap += 1; get = "<b>1 Ore</b> and <b>1 Scrap</b>"; }
+      else { S.scrap += 1; get = "a rusty bolt (<b>1 Scrap</b>)"; }
+      save();
+      $("#out").innerHTML = `You rolled ${roll}${found ? `, total ${total}` : ""}. You get ${get}.<br><button class="btn" type="button" id="again" style="margin-top:8px">Dig again</button>`;
+      $("#again").onclick = dig;
+    });
+  };
+  const tryDig = g => {
+    if (over) return; const poly = g.querySelector("polygon"); if (poly.classList.contains("dug")) return;
+    const c = +g.dataset.c, r = +g.dataset.r, d = dist([c, r], target), t = g.querySelector("text");
+    left--; $("#left").textContent = left;
+    if (d === 0) { poly.classList.add("found"); t.textContent = "★"; t.classList.add("warm"); return finish(true); }
+    poly.classList.add("dug");
+    if (d === 1) { t.textContent = "!!!"; t.classList.add("hot"); } else if (d === 2) { t.textContent = "?"; t.classList.add("warm"); } else { t.textContent = "..."; t.classList.add("far"); }
+    poly.setAttribute("aria-label", d === 1 ? "Right next to it" : d === 2 ? "Warmer" : "Cold");
+    if (left === 0) finish(false);
+  };
+  $("#yard").querySelectorAll("g[data-c]").forEach(g => {
+    g.addEventListener("click", () => tryDig(g));
+    g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tryDig(g); } });
+  });
+}
+
+/* Tavern: fill orders in the right order before the 20-second sand glass runs out */
+function tavern() {
+  const ING = [["Jeewa juice", "#e2714b"], ["Flash Water", "#82cbd9"], ["Charbean", "#7a5a3a"], ["Honeycomb", "#f0c04f"], ["Mint", "#8fc274"], ["Star salt", "#ede7d6"]];
+  const GUESTS = ["a tired Leyf ranger", "two Melkin dice players", "a Lizerus guard off duty", "a Sapien farmhand", "a giggling Dimoneesh"];
+  const sw = i => `<span class="sw" style="background:${ING[i][1]}"></span>`;
+  let order = [], at = 0, served = 0, running = false, endAt = 0;
+  gameShell(6, "Tavern rush", `
+    <p class="note">Tap the ingredients in the order shown. Serve as many orders as you can before the 20-second sand glass runs out. 3 Icosa Coins per order.</p>
+    <div class="timer" aria-hidden="true"><i id="glass" style="width:100%"></i></div>
+    <div class="stat">Served: <b id="served">0</b> &nbsp; Time: <b id="secs">20.0</b>s</div>
+    <div><div class="eyebrow" id="guest">Press Open the bar to start</div><div class="order" id="order"></div></div>
+    <div class="flash" id="flash" aria-live="polite"></div>
+    <div class="shelf" id="shelf">${ING.map((g, i) => `<button type="button" data-i="${i}" disabled>${sw(i)}<span>${g[0]}</span></button>`).join("")}</div>
+    <div class="btns"><button class="btn primary" type="button" id="openBar">Open the bar</button></div>
+    <div class="result" id="res"></div>`);
+  const newOrder = () => {
+    const len = 3 + Math.min(2, Math.floor(served / 2)); order = []; at = 0;
+    while (order.length < len) { const i = Math.floor(Math.random() * ING.length); if (order[order.length - 1] !== i) order.push(i); }
+    $("#guest").textContent = "Order for " + pick(GUESTS);
+    drawOrder();
+  };
+  const drawOrder = () => { $("#order").innerHTML = order.map((i, k) => `<span class="${k < at ? "done" : k === at ? "next" : ""}">${sw(i)}${ING[i][0]}</span>`).join(""); };
+  const end = () => {
+    running = false; timers.forEach(clearInterval); timers = [];
+    $("#shelf").querySelectorAll("button").forEach(b => b.disabled = true);
+    const coins = served * 3; S.coins += coins; save();
+    $("#guest").textContent = "Last call!"; $("#order").innerHTML = ""; $("#flash").textContent = "";
+    $("#res").innerHTML = `<p>You served <b>${served}</b> ${served === 1 ? "order" : "orders"} and earned <b>${coins} Icosa Coins</b>. ${served >= 6 ? "Tata wants to hire you full time." : served >= 3 ? "Tata nods, impressed." : "Tata laughs and says you'll get faster."}</p>`;
+    const b = $("#openBar"); b.textContent = "Another night"; b.disabled = false;
+  };
+  $("#openBar").onclick = () => {
+    served = 0; $("#served").textContent = 0; $("#res").innerHTML = ""; running = true; $("#openBar").disabled = true;
+    $("#shelf").querySelectorAll("button").forEach(b => b.disabled = false);
+    endAt = performance.now() + 20000; newOrder();
+    const t = setInterval(() => { const ms = Math.max(0, endAt - performance.now()); $("#secs").textContent = (ms / 1000).toFixed(1); $("#glass").style.width = (ms / 200) + "%"; if (ms <= 0) end(); }, 100);
+    timers.push(t);
+  };
+  $("#shelf").onclick = e => {
+    const b = e.target.closest("button"); if (!b || !running) return;
+    if (+b.dataset.i === order[at]) { at++; if (at >= order.length) { served++; $("#served").textContent = served; $("#flash").textContent = "Served! +3 coins"; newOrder(); } else drawOrder(); }
+    else { at = 0; drawOrder(); $("#flash").textContent = "Oops, that spilled. Start the order again."; endAt -= 1000; }
+  };
+}
+
+/* ---------- starfield (gentle; still when reduced motion) */
+(() => {
+  const cv = $("#stars"), cx = cv.getContext("2d"); let stars = [];
+  const size = () => { cv.width = innerWidth; cv.height = innerHeight; stars = [...Array(Math.round(innerWidth * innerHeight / 5000))].map(() => [Math.random() * cv.width, Math.random() * cv.height, Math.random() * 1.4 + .3, Math.random() * 6]); };
+  const draw = t => { cx.clearRect(0, 0, cv.width, cv.height); for (const [x, y, r, p] of stars) { cx.globalAlpha = .35 + .4 * Math.sin(t / 1400 + p) ** 2; cx.fillStyle = "#ede7d6"; cx.beginPath(); cx.arc(x, y, r, 0, 7); cx.fill(); } if (!reduce) requestAnimationFrame(draw); };
+  addEventListener("resize", size); size(); requestAnimationFrame(draw);
+})();
+
+renderPouch();
+showHub();
+</script>
