@@ -107,6 +107,14 @@ img.mini { width: 20px; height: 20px; vertical-align: -5px; margin-right: 4px; o
 .need { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: .85rem; color: var(--soft); }
 .need .short { color: var(--ember); }
 .seeds small { margin-left: 4px; }
+.loadout { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 6px 0 12px; }
+.gslot { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: grid; gap: 2px; background: var(--hall); }
+.loadForm { display: grid; gap: 10px; margin: 12px 0; }
+.loadForm label { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.loadForm select { font: inherit; padding: 5px 8px; border-radius: 6px; max-width: 100%; background: var(--stone); color: var(--ink); border: 1px solid var(--line); }
+.slot.empty { background: var(--hall); border: 1px dashed var(--line); color: var(--soft); min-height: 66px; align-content: center; }
+.packSlots { padding: 6px 0 12px; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); }
+.warn { color: var(--ember); }
 
 /* room */
 .room { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; align-items: start; }
@@ -605,7 +613,7 @@ function discover(t) {
 function wirePanel() {
   if ($("#demoNext")) $("#demoNext").onclick = () => { discover(S.tier + 1); showHub(); };
   $("#demoAll").onclick = () => { for (let t = S.tier + 1; t < TIERS.length; t++) discover(t); Object.keys(CROP).forEach(k => { S.seeds[k] = SD(k) + 3; S.crops[k] = C(k) + 3; }); Object.keys(MATS).forEach(k => addM(k, 5)); save(); showHub(); };
-  $("#demoReset").onclick = () => { const keep = { style: S.style, met: S.met }; S = Object.assign(structuredClone(START), keep); hallX = null; save(); showHub(); };
+  $("#demoReset").onclick = () => { const keep = { style: S.style, met: S.met }; S = Object.assign(structuredClone(START), keep); invInit(); hallX = null; save(); showHub(); };
   $("#view").querySelectorAll(".panel [data-id]").forEach(el => el.addEventListener("click", () => goPlot(el.dataset.id)));
   $("[data-yard]").addEventListener("click", showCourtyard);
   $("#view").querySelectorAll("[data-view]").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
@@ -764,9 +772,130 @@ function showCourtyard() {
   $("#view").innerHTML = `<div class="panel"><div class="eyebrow">The heart of the castle</div>
     <div class="room">${portrait("wexler", 120)}<div style="display:grid;gap:10px;min-width:0"><h2>Courtyard</h2>
       <p>An open courtyard on the pale gray rock of the comet, with the Nebrom system hanging overhead. In the middle, a circle of blue crystals hums: the Teleportation Station.</p>
-      <div class="btns"><button class="btn primary" type="button" id="tb">Talk to Bruxanna</button><button class="btn" type="button" id="tw">Talk to Wexler</button><button class="btn" type="button" id="back">Back to the castle</button></div>
+      <div class="btns"><button class="btn primary" type="button" id="tb">Talk to Bruxanna</button><button class="btn" type="button" id="tw">Talk to Wexler</button><button class="btn primary" type="button" id="tdown">${S.trip ? "Back down to Talus (demo)" : "Go down to Talus (demo)"}</button><button class="btn" type="button" id="back">Back to the castle</button></div>
     </div></div></div>`;
-  $("#tb").onclick = () => openTalk("bruxanna"); $("#tw").onclick = () => openTalk("wexler"); $("#back").onclick = showHub;
+  $("#tb").onclick = () => openTalk("bruxanna"); $("#tw").onclick = () => openTalk("wexler"); $("#tdown").onclick = () => showTrip(); $("#back").onclick = showHub;
+}
+
+/* ---------- inventory (N8 2026-11-12): loadout = 1 Weapon, 1 Armor, 2 Ready slots (stacks of up to 3).
+   The Pack holds what you find on Talus: 8 slots, stacks of 10. It comes home through any Icosa Crystal.
+   Knocked out: you keep your loadout; the Pack stays where you fell and can be recovered once. */
+const PACK_SLOTS = 8, PACK_STACK = 10, READY_STACK = 3;
+const GEAR = { blade: { name: "Worn Training Blade", slot: "weapon" }, vest: { name: "Padded Vest", slot: "armor" } }; // placeholders until the Forge and Trades
+function invInit() {
+  if (!S.gear || !Array.isArray(S.gear) || typeof S.gear[0] === "string") S.gear = ["blade", "vest"];
+  if (!S.loadout) S.loadout = { weapon: "blade", armor: "vest", ready: [null, null] };
+  if (!S.pack) S.pack = [];
+}
+const dishCount = name => S.dishes.filter(d => d === name).length;
+function takeDish(name, n) { for (let i = 0; i < n; i++) { const at = S.dishes.indexOf(name); if (at >= 0) S.dishes.splice(at, 1); } }
+function readyText(r) { return r ? `${r.name} x${r.n}` : "Empty"; }
+function packAdd(k, n) { // returns how many did not fit
+  for (const sl of S.pack) if (sl.k === k && sl.n < PACK_STACK) { const add = Math.min(n, PACK_STACK - sl.n); sl.n += add; n -= add; }
+  while (n > 0 && S.pack.length < PACK_SLOTS) { const add = Math.min(n, PACK_STACK); S.pack.push({ k, n: add }); n -= add; }
+  return n;
+}
+function packGrid(pack) {
+  let html = "";
+  for (let i = 0; i < PACK_SLOTS; i++) { const sl = pack[i]; html += sl ? `<div class="slot" title="${itemName(sl.k)}"><img src="${iconOf(sl.k)}" alt="${itemName(sl.k)}"><b>${sl.n}</b><span>${itemName(sl.k)}</span></div>` : `<div class="slot empty"><span>Empty</span></div>`; }
+  return `<div class="slots packSlots">${html}</div>`;
+}
+function loadoutCard() {
+  const L = S.loadout;
+  return `<div class="loadout">
+    <div class="gslot"><span class="eyebrow">Weapon</span><b>${GEAR[L.weapon] ? GEAR[L.weapon].name : "None"}</b></div>
+    <div class="gslot"><span class="eyebrow">Armor</span><b>${GEAR[L.armor] ? GEAR[L.armor].name : "None"}</b></div>
+    <div class="gslot"><span class="eyebrow">Ready 1</span><b>${readyText(L.ready[0])}</b></div>
+    <div class="gslot"><span class="eyebrow">Ready 2</span><b>${readyText(L.ready[1])}</b></div></div>`;
+}
+
+/* Loadout screen, in the Barracks */
+function showLoadout() {
+  stopGame(); invInit();
+  const L = S.loadout;
+  // put Ready items back in the chest while choosing, so the lists show everything you own
+  L.ready.forEach(r => { if (r) for (let i = 0; i < r.n; i++) S.dishes.push(r.name); }); L.ready = [null, null];
+  const names = [...new Set(S.dishes)];
+  const gearOpts = slot => S.gear.filter(g => GEAR[g].slot === slot).map(g => `<option value="${g}" ${L[slot] === g ? "selected" : ""}>${GEAR[g].name}</option>`).join("");
+  const readyOpts = `<option value="">Empty</option>` + names.map(n => `<option value="${n}">${n} (${dishCount(n)} in your chest)</option>`).join("");
+  $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Barracks</div><h2>Your loadout</h2>
+    <p class="note" style="max-width:62ch">This is everything you take down to Talus, plus an empty Pack for what you find. Weapon and armor stay equipped. Ready items are used up: free in the field, 1 action in combat.</p>
+    <div class="loadForm">
+      <label>Weapon <select id="lw">${gearOpts("weapon")}</select></label>
+      <label>Armor <select id="la">${gearOpts("armor")}</select></label>
+      <label>Ready 1 <select id="r1">${readyOpts}</select> <select id="n1"><option>1</option><option>2</option><option>3</option></select></label>
+      <label>Ready 2 <select id="r2">${readyOpts}</select> <select id="n2"><option>1</option><option>2</option><option>3</option></select></label>
+    </div>
+    ${names.length ? "" : '<p class="note">No dishes yet. Cook something in the Kitchen to fill your Ready slots.</p>'}
+    <div class="btns"><button class="btn primary" type="button" id="saveLoad">Save loadout</button><button class="btn" type="button" id="back">Back to the Barracks</button></div>
+    <p class="note" id="loadMsg"></p></div>`;
+  const saveIt = () => {
+    L.weapon = $("#lw").value; L.armor = $("#la").value;
+    [["#r1", "#n1"], ["#r2", "#n2"]].forEach(([r, n], i) => {
+      const name = $(r).value; if (!name) return;
+      const take = Math.min(+$(n).value, READY_STACK, dishCount(name)); if (!take) return;
+      takeDish(name, take); L.ready[i] = { name, n: take };
+    });
+    save();
+  };
+  $("#saveLoad").onclick = () => { saveIt(); $("#loadMsg").innerHTML = `Saved. Ready 1: <b>${readyText(L.ready[0])}</b>. Ready 2: <b>${readyText(L.ready[1])}</b>.`; $("#saveLoad").disabled = true; };
+  $("#back").onclick = () => { if (!$("#saveLoad").disabled) saveIt(); showRoom("barracks"); };
+}
+
+/* Demo trip: quests aren't built yet, so this shows how the Pack and loadout work on Talus. */
+function showTrip(msg = "") {
+  stopGame(); invInit();
+  const t = S.trip, L = S.loadout;
+  if (!t) {
+    const dest = TIERS[Math.max(1, Math.min(S.tier, TIERS.length - 1))];
+    $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Teleportation Station</div><h2>Go down to Talus (demo)</h2>
+      <p class="note" style="max-width:62ch">Quests aren't built yet. This short demo trip shows what you carry and what comes home.</p>
+      <div class="eyebrow">Your loadout</div>${loadoutCard()}
+      ${S.dropped ? `<p class="warn">Your Pack is still lying in ${S.dropped.where}, where you were knocked out. You can go back for it once.</p>` : ""}
+      <div class="btns"><button class="btn primary" type="button" id="go">Step into the crystals: ${dest.region}</button>
+        <button class="btn" type="button" id="lo">Change loadout in the Barracks</button><button class="btn" type="button" id="back">Back to the Courtyard</button></div></div>`;
+    $("#go").onclick = () => { if (S.tier < dest.tier) discover(dest.tier); S.trip = { where: dest.region, tier: dest.tier }; S.pack = []; save(); showTrip(`The crystals hum, the courtyard folds away, and you step out in ${dest.region} with an empty Pack.`); };
+    $("#lo").onclick = showLoadout; $("#back").onclick = showCourtyard;
+    return;
+  }
+  const findable = TIERS.filter(x => x.tier <= t.tier).flatMap(x => x.items).filter(k => !["stone", "wood"].includes(k));
+  $("#view").innerHTML = `<div class="panel"><div class="eyebrow">On Talus, demo</div><h2>${t.where}</h2>
+    ${msg ? `<p>${msg}</p>` : ""}
+    <div class="eyebrow">Loadout</div>${loadoutCard()}
+    <div class="eyebrow">Pack: ${S.pack.length} of ${PACK_SLOTS} slots, stacks of ${PACK_STACK}</div>${packGrid(S.pack)}
+    <div class="btns">
+      <button class="btn" type="button" id="gather">Gather and fight (find things)</button>
+      <button class="btn" type="button" id="use" ${L.ready.some(Boolean) ? "" : "disabled"}>Use a Ready item</button>
+      ${S.dropped && S.dropped.where === t.where ? '<button class="btn" type="button" id="recover">Go back for your dropped Pack</button>' : ""}
+      <button class="btn primary" type="button" id="home">Return through an Icosa Crystal</button>
+      <button class="btn" type="button" id="ko">Get knocked out (demo)</button></div></div>`;
+  $("#gather").onclick = () => {
+    const k = pick(findable), n = 1 + Math.floor(Math.random() * 3), left = packAdd(k, n); save();
+    showTrip(left === n ? `You find ${n} ${itemName(k)}, but your Pack is full. You have to leave it.` : `You find <b>${n - left} ${itemName(k)}</b>${left ? ` (${left} wouldn't fit)` : ""}.${k.startsWith("plasma") ? " Plasma only comes from creatures here on Talus." : ""}`);
+  };
+  $("#use").onclick = () => {
+    const i = L.ready[0] ? 0 : 1, r = L.ready[i], rec = RECIPES.find(x => r.name.endsWith(x.name));
+    r.n--; if (!r.n) L.ready[i] = null; save();
+    showTrip(`You use the ${r.name}: ${rec ? rec.effect : "it helps"}. In the field that's free; in combat it costs 1 action.`);
+  };
+  if ($("#recover")) $("#recover").onclick = () => {
+    let lost = 0; S.dropped.pack.forEach(sl => lost += packAdd(sl.k, sl.n)); S.dropped = null; save();
+    showTrip(`You find your Pack right where you fell and repack what fits.${lost ? ` ${lost} items had no room.` : ""}`);
+  };
+  $("#home").onclick = () => {
+    const got = S.pack.map(sl => `${sl.n} ${itemName(sl.k)}`);
+    S.pack.forEach(sl => { if (CROP[sl.k]) S.crops[sl.k] = C(sl.k) + sl.n; else addM(sl.k, sl.n); });
+    S.pack = []; S.trip = null; save();
+    toast(got.length ? "Back on the Comet. Unpacked: " + got.join(", ") : "Back on the Comet with an empty Pack.");
+    showCourtyard();
+  };
+  $("#ko").onclick = () => {
+    const lostOld = !!S.dropped; // knocked out again before going back: the old Pack is gone
+    S.dropped = S.pack.length ? { where: t.where, pack: S.pack } : null;
+    S.pack = []; S.trip = null; save();
+    toast(`You wake on your bed in the Barracks with your loadout.${S.dropped ? ` Your Pack is still in ${t.where}.` : ""}${lostOld ? " The Pack you dropped before is gone for good." : ""}`);
+    showRoom("barracks");
+  };
 }
 
 /* ---------- room view, with the build step for unbuilt rooms */
@@ -780,13 +909,14 @@ function showRoom(id) {
     <div class="room">${portrait(who, 120)}
       <div style="display:grid;gap:10px;min-width:0"><h2>${r.name}</h2><p>${r.text}</p>${S.warm[who] ? `<p class="warm">${PERKS[who]}</p>` : ""}
         <div class="btns">
-          ${who === "you" ? '<button class="btn primary" type="button" id="rest">Rest a night</button>' : ""}
+          ${who === "you" ? '<button class="btn primary" type="button" id="rest">Rest a night</button><button class="btn" type="button" id="loadoutBtn">Set your loadout</button>' : ""}
           <button class="btn" type="button" id="talk">${who === "you" ? "Look around" : "Talk to " + PEOPLE[who].name}</button>
           ${r.game ? `<button class="btn primary" type="button" id="play">${GAME_NAME[r.game]}</button>` : ""}
           <button class="btn" type="button" id="back">Back to the castle</button>
         </div></div></div></div>`;
   $("#talk").onclick = () => openTalk(r.talk || who);
   if ($("#rest")) $("#rest").onclick = rest;
+  if ($("#loadoutBtn")) $("#loadoutBtn").onclick = showLoadout;
   if (r.game) $("#play").onclick = () => startGame(r.game);
   $("#back").onclick = showHub;
   const tk = r.talk || who;
@@ -1038,6 +1168,7 @@ function cook(rec) {
   addEventListener("resize", size); size(); requestAnimationFrame(draw);
 })();
 
+invInit();
 renderPouch();
 renderStyle();
 $("#styleChip").onclick = () => { afterStyle = null; votes = []; openTalk("narrator", S.style ? "change" : "q1"); };
