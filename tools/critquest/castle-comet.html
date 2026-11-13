@@ -923,7 +923,7 @@ function showTrip(msg = "") {
       ${S.dropped ? `<p class="warn">Your Pack is still lying in ${S.dropped.where}, where you were knocked out. You can go back for it once.</p>` : ""}
       <div class="btns"><button class="btn primary" type="button" id="go">Step into the crystals: ${dest.region}</button>
         <button class="btn" type="button" id="lo">Change loadout in the Barracks</button><button class="btn" type="button" id="back">Back to the Courtyard</button></div></div>`;
-    $("#go").onclick = () => { if (S.tier < dest.tier) discover(dest.tier); S.trip = { where: dest.region, tier: dest.tier }; S.pack = []; save(); showTrip(S.mission && !S.farluckDone ? `The crystals hum, the courtyard folds away, and you step out on the forest lane above Farluck Farm. An old farmer in a patched hat waves you down. "A Light Keeper? Oh, thank the stars. I'm Cecil. The gremlins are in the gorgrain again..."` : `The crystals hum, the courtyard folds away, and you step out in ${dest.region} with an empty Pack.`); };
+    $("#go").onclick = () => { if (S.tier < dest.tier) discover(dest.tier); S.trip = { where: dest.region, tier: dest.tier }; S.pack = []; save(); showTrip(S.mission && !S.farluckDone ? `The crystals hum, the courtyard folds away, and Wexler's beam sets you down on the old landing stones above Farluck Farm. An old farmer in a patched hat waves you down. "A Light Keeper? Oh, thank the stars. I'm Cecil. The gremlins are in the gorgrain again..."` : `The crystals hum, the courtyard folds away, and you step out in ${dest.region} with an empty Pack.`); };
     $("#lo").onclick = showLoadout; $("#back").onclick = showCourtyard;
     return;
   }
@@ -1191,7 +1191,7 @@ TALK.boutique = {
   coins: { face: "bruxanna", t: "Looks only! Dice, decorations, the fun stuff. Never power. You earn them helping out around the castle and on Talus.", c: [ { t: "Show me the dice.", go: "close" } ] }
 };
 Object.assign(TALK.wexler, {
-  mission: { t: "Farluck Farm, below the forest. The crops are failing, plague gremlins are in the fields, and something is hammering under the hill. Help the farmer. The first fights there are gentle ones, a good place to learn. Take this Return Shard. There are no Icosa Crystals out by the farm, only in the towns. Crack the shard any time and it pulls you, and your Pack, home.", c: [
+  mission: { t: "Farluck Farm, below the forest. The crops are failing, plague gremlins are in the fields, and something is hammering under the hill. Help the farmer. The first fights there are gentle ones, a good place to learn. My beam sets you down at the old landing stones above the farm, but it only goes one way. There are no Icosa Crystals out there, only in the towns. So take this Return Shard. Crack it any time and it pulls you, and your Pack, home.", c: [
     { t: "Send me down.", go: "trip" },
     { t: "Not yet.", go: "close" } ] }
 });
@@ -1406,11 +1406,11 @@ function heroCfg() {
    Your Hero and Ready items go in through the URL hash; your Pack, Cecil's gifts and what's left of your Ready items come back by postMessage. */
 function showFarluck() {
   stopGame();
-  const cfg = { ...heroCfg(), style: S.hero.style || S.style, ready: S.loadout.ready };
+  if (!(S.returnShards > 0)) { S.returnShards = 1; save(); toast("Wexler presses a Return Shard into your hand."); }
+  const cfg = { ...heroCfg(), style: S.hero.style || S.style, ready: S.loadout.ready, returnShards: S.returnShards, anchors: S.anchors || [] };
   $("#view").innerHTML = `<div class="panel game"><div class="head"><div><div class="eyebrow">Mission</div><h2>Farluck Farm</h2></div>
-    <button class="btn" type="button" id="leave">Crack your Return Shard</button></div>
+</div>
     <iframe class="arena" src="farluck-adventure.html#${encodeURIComponent(JSON.stringify(cfg))}" title="Farluck Farm"></iframe></div>`;
-  $("#leave").onclick = showCourtyard;
 }
 function farluckGifts(g = {}) {
   const seeds = g.seeds || { gorgrain: 3, charbean: 3 }, dishes = g.dishes || ["Cecil's Char Bean Soup", "Cecil's Char Bean Soup"], recipes = [...(g.recipes || []), "soup"];
@@ -1420,6 +1420,8 @@ function farluckGifts(g = {}) {
   addClue("Cecil's recipe card: Char Bean Soup, the way his family makes it.");
   return `Cecil's thank-you gifts: ${Object.entries(seeds).map(([k, n]) => `${n} ${CROP[k] ? CROP[k].name : k} seeds`).join(", ")}, ${dishes.length} bowls of his Char Bean Soup, and his recipe card.`;
 }
+/* what every way home sends back: Return Shards left and any hearth anchors marked */
+function homeBits(d) { if (typeof d.returnShards === "number") S.returnShards = d.returnShards; if (Array.isArray(d.anchors)) S.anchors = [...new Set([...(S.anchors || []), ...d.anchors])]; }
 function unpack(pack) { (pack || []).forEach(sl => { if (CROP[sl.k]) S.crops[sl.k] = C(sl.k) + sl.n; else if (MATS[sl.k]) addM(sl.k, sl.n); }); }
 function battle() {
   stopGame();
@@ -1434,8 +1436,8 @@ addEventListener("message", e => {
   if (d.type === "cq-training") { if (d.won && !S.trainWon) { S.trainWon = true; S.coins += 10; toast("Treywind yields! +10 Icosa Coins."); } S.trained = true; save(); }
   if (d.type === "cq-training-close") { showRoom("training"); if (d.won) openTalk("treywind", "done"); }
   if (d.type === "cq-mission-done") {
-    unpack(d.pack); if (Array.isArray(d.ready)) S.loadout.ready = d.ready; (d.clues || []).forEach(c => { if (!S.clues.includes(c)) S.clues.push(c); });
-    const first = !S.farluckDone, msg = first ? farluckGifts(d.gifts) : "Back on the Comet."; S.trip = null; save();
+    unpack(d.pack); homeBits(d); if (Array.isArray(d.ready)) S.loadout.ready = d.ready; (d.clues || []).forEach(c => { if (!S.clues.includes(c)) S.clues.push(c); });
+    const first = !S.farluckDone, via = d.via === "hearth" ? "You step out of Cecil's hearth glow and onto the Comet. " : "Your Return Shard cracks, and the Comet pulls you home. ", msg = via + (first ? farluckGifts(d.gifts) : ""); S.trip = null; save();
     toast(msg); showCourtyard(); if (first) openTalk("bruxanna", "salvage1");
   }
   if (d.type === "cq-mission-ko") {
@@ -1443,7 +1445,10 @@ addEventListener("message", e => {
     const lostOld = !!S.dropped; S.dropped = d.pack && d.pack.length ? { where: "Farluck Farm", pack: d.pack } : null; save();
     toast(`You wake on your bed in the Barracks with your loadout.${S.dropped ? " Your Pack is still on Farluck Farm." : ""}${lostOld ? " The Pack you dropped before is gone for good." : ""}`); showBarracks();
   }
-  if (d.type === "cq-mission-close") showCourtyard();
+  if (d.type === "cq-mission-close") {
+    unpack(d.pack); homeBits(d); if (Array.isArray(d.ready)) S.loadout.ready = d.ready; S.trip = null; save();
+    toast(d.via === "shard" ? "Your Return Shard cracks, and the Comet pulls you home. Farluck Farm still needs you." : "Back on the Comet."); showCourtyard();
+  }
 });
 
 /* ---------- room view, with the build step for unbuilt rooms */

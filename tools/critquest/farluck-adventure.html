@@ -95,9 +95,10 @@ let verb="Walk", item=null, busy=false, scene=null, flags={}, inv=["Weapon"], pa
 let HERO=null; try{ HERO=JSON.parse(decodeURIComponent(location.hash.slice(1))); }catch(e){}
 const EMBED=parent!==window;
 let READY=(HERO&&HERO.ready)||[null,null];
+pack["Return Shard"]=(HERO&&HERO.returnShards!=null)?HERO.returnShards:1;
 const PACK_KEYS={"Gorgrain seeds":"gorgrain","Char Bean seeds":"charbean"}; // gifts are reported separately
 function post(msg){ if(EMBED) parent.postMessage(msg,"*"); }
-function packOut(){ return Object.entries(pack).filter(([k])=>PACK_KEYS[k]===undefined&&!k.startsWith("Recipe")&&k!=="Char Bean Soup"&&k!=="Red cloak thread").map(([k,n])=>({k,n})); }
+function packOut(){ return Object.entries(pack).filter(([k])=>PACK_KEYS[k]===undefined&&!k.startsWith("Recipe")&&k!=="Char Bean Soup"&&k!=="Red cloak thread"&&k!=="Return Shard").map(([k,n])=>({k,n})); }
 
 /* ---------- hero ---------- */
 const hero={x:150,y:430,tx:150,ty:430,face:1,step:0,el:null,cb:null};
@@ -149,7 +150,7 @@ requestAnimationFrame(tick);
 
 
 /* ---------- Farluck Farm screens (original placeholder art) ---------- */
-function crystal(x,y){ return `<ellipse cx="${x}" cy="${y+6}" rx="60" ry="14" fill="rgba(0,0,0,.25)"/><circle cx="${x}" cy="${y-60}" r="70" fill="#bfe4ff" opacity=".18"/><polygon points="${x},${y-130} ${x+34},${y-70} ${x+22},${y} ${x-22},${y} ${x-34},${y-70}" fill="#bfe4ff" stroke="#fff" stroke-width="2"/><polygon points="${x},${y-130} ${x+10},${y-70} ${x},${y} ${x-10},${y-70}" fill="#eaf7ff" opacity=".7"/>`; }
+function stones(x,y){ let g=`<ellipse cx="${x}" cy="${y}" rx="120" ry="28" fill="#bfe4ff" opacity="${flags.landed?0.12:0.35}"/>`; [[-110,0],[-70,-18],[0,-26],[70,-18],[110,0],[60,18],[-60,18]].forEach(([dx,dy])=>{ g+=`<path d="M${x+dx-10} ${y+dy} L${x+dx-8} ${y+dy-44} Q${x+dx} ${y+dy-52} ${x+dx+8} ${y+dy-44} L${x+dx+10} ${y+dy}Z" fill="#8a8a7a" stroke="#5a5a4e" stroke-width="2"/>`; }); return g; }
 function stalks(x0,x1,y,dry){ let s=""; for(let x=x0;x<x1;x+=22){ s+=`<path d="M${x} ${y} q${dry?6:2} -30 ${dry?14:0} -${dry?34:44}" stroke="${dry?'#b59a55':'#6e8f3a'}" stroke-width="4" fill="none"/>`; } return s; }
 function cecilArt(x,y){ return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="22" ry="7" fill="rgba(0,0,0,.3)"/>
   <rect x="-10" y="-34" width="8" height="34" rx="3" fill="#4a3a2a"/><rect x="2" y="-34" width="8" height="34" rx="3" fill="#4a3a2a"/>
@@ -159,21 +160,21 @@ function cecilArt(x,y){ return `<g transform="translate(${x} ${y})"><ellipse cx=
 function gremlinArt(x,y){ return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="10" ry="3" fill="rgba(0,0,0,.3)"/><path d="M-9 0 Q-10 -20 0 -22 Q10 -20 9 0Z" fill="#5f8a2e"/><path d="M-8 -18 l-8 -8 M8 -18 l8 -8" stroke="#5f8a2e" stroke-width="4"/><circle cx="-3" cy="-14" r="2" fill="#ffe24a"/><circle cx="3" cy="-14" r="2" fill="#ffe24a"/></g>`; }
 const SCENES={
   clearing:{
-    name:"The crystal clearing", bounds:[40,370,920,515], start:[300,460],
+    name:"The old landing stones", bounds:[40,370,920,515], start:[300,460],
     art:()=>`<rect width="960" height="540" fill="#9cc7d8"/><path d="M0 0 H960 V230 Q480 200 0 240Z" fill="#cfe6ee"/>
       <path d="M0 330 Q480 290 960 330 V540 H0Z" fill="#6f8a48"/><path d="M0 390 Q480 370 960 395 V540 H0Z" fill="#5c7a3a"/>
       ${tree(60,380,"#2f5a2c")}${tree(180,360,"#35632f")}${tree(800,365,"#7a6a3a",true)}
-      ${crystal(480,400)}
+      ${stones(480,440)}
       <path d="M690 420 q14 -18 30 -4" stroke="#7a1414" stroke-width="4" fill="none" opacity="${flags.thread?0:1}"/>
       <path d="M880 340 L960 330 V540 H880Z" fill="#c9b47a" opacity=".55"/>`,
     hot:[
-      {id:"crystal",name:"Icosa Crystal",shape:`<rect x="430" y="260" width="100" height="150" fill="transparent"/>`,stand:[400,470],
-        Look:()=>say("The Icosa Crystal that set you down here. It hums softly. Through any crystal like it, you can always go home to the Comet."),
-        Use:()=>leaveByCrystal(),
-        Talk:()=>say("\"Hello, Wexler?\" The crystal hums back something that might be \"calibrating.\"")},
+      {id:"stones",name:"Old landing stones",shape:`<rect x="360" y="380" width="240" height="90" fill="transparent"/>`,stand:[330,470],
+        Look:()=>say("A ring of old standing stones, still faintly glowing where Wexler's beam set you down. The beam only works one way. To go home, break your Return Shard, or find an Icosa Crystal in a town."),
+        Use:()=>say("You stand in the middle and wait. Nothing. The stones are for landing, not leaving."),
+        Talk:()=>say("\"Wexler? Can you hear me?\" A pebble falls off one stone. Probably not an answer.")},
       {id:"thread",name:"Something red on a branch",shape:`<rect x="670" y="390" width="70" height="50" fill="transparent"/>`,stand:[680,470],
         Look:()=>say(flags.thread?"Just a branch now.":"A thread of dark red cloth, snagged on a twig. Someone in a red cloak passed this way."),
-        Take:()=>{ if(flags.thread) return say("You already have it."); flags.thread=1; addPack("Red cloak thread",1); note("A red cloak thread, snagged near the crystal clearing."); load("clearing",true); say("You tuck the red thread into your Pack."); }},
+        Take:()=>{ if(flags.thread) return say("You already have it."); flags.thread=1; addPack("Red cloak thread",1); note("A red cloak thread, snagged near the landing stones."); load("clearing",true); say("You tuck the red thread into your Pack."); }},
       {id:"east",name:"Path to the farm",shape:`<rect x="880" y="300" width="80" height="230" fill="transparent"/>`,stand:[930,450],exit:"lane"}
     ]
   },
@@ -213,7 +214,7 @@ const SCENES={
       {id:"west",name:"Back to the lane",shape:`<rect x="0" y="300" width="50" height="230" fill="transparent"/>`,stand:[40,460],exit:"lane"},
       {id:"house",name:"Farmhouse",shape:`<rect x="70" y="110" width="270" height="240" fill="transparent"/>`,stand:[205,440],
         Look:()=>say("A snug farmhouse with a smoking chimney. It smells like bean soup."),
-        Use:()=>say(flags.met?"\"Make yourself at home after,\" Cecil calls. \"Gremlins first.\"":"It's not your house. Maybe talk to the farmer first.")},
+        Use:()=>{ if(flags.hearth) return goHome("hearth"); say(flags.met?"\"Make yourself at home after,\" Cecil calls. \"Gremlins first.\"":"It's not your house. Maybe talk to the farmer first."); }},
       {id:"well",name:"Well",shape:`<rect x="430" y="300" width="100" height="120" fill="transparent"/>`,stand:[470,460],
         Look:()=>{ say("You lean over the well. It's bone dry. From somewhere deep below comes a faint, steady hammering."); note("The well at Farluck Farm is dry, and something is hammering deep under it."); },
         Use:()=>say("You drop a pebble. Clack. No splash.")},
@@ -274,7 +275,7 @@ function talkCecil(){
   if(flags.cleared) return say("\"Plant those seeds somewhere they'll be loved,\" Cecil says. \"And come back. I've a feeling about that well.\"");
   if(flags.met) return say("\"The shed,\" Cecil says, nodding at it. \"They're in there chewing my last seeds.\"");
   flags.met=1;
-  ask("Cecil","\"Well now, a stranger who came down from the crystal clearing! I'm Cecil, and this is Farluck Farm, what's left of it. Gremlins got into my seed shed, and the well's gone dry besides.\"",[
+  ask("Cecil","\"Well now, a stranger who came down from the old stones on the hill! I'm Cecil, and this is Farluck Farm, what's left of it. Gremlins got into my seed shed, and the well's gone dry besides.\"",[
     ["\"I'm here to help. Tell me what you need.\"",""],
     ["\"Gremlins? How many are we talking?\"",""],
     ["\"Dry wells and hungry gremlins. Sounds like a bad week.\"","Serious"],
@@ -292,9 +293,9 @@ function startBattle(){
 window.addEventListener("message",e=>{
   if(!e.data||e.data.type!=="cq-battle-close") return;
   $("ov").classList.remove("on"); $("ovf").src="about:blank"; busy=false;
-  if(!e.data.won){ // knocked out: wake at the crystal; the Pack stays by the shed (one recovery)
+  if(!e.data.won){ // knocked out: the Comet pulls you home; the Pack stays by the shed (one recovery)
     if(EMBED) return post({type:"cq-mission-ko",pack:packOut()});
-    load("clearing"); return say("You wake by the Icosa Crystal, a little dizzy. Your Pack is back by the seed shed. Try the shed again when you're ready.");
+    load("clearing"); return say("Everything goes bright, and the Comet pulls you home... (In this mockup you land back at the stones instead. In the full game, your Pack stays by the seed shed for one trip back to get it.)");
   }
   if(e.data.won){ flags.cleared=1; load("yard"); hero.x=hero.tx=700; hero.y=hero.ty=460; placeHero();
     say("The gremlins scurry off into the fields, squeaking. Cecil waves you over."); }
@@ -302,22 +303,31 @@ window.addEventListener("message",e=>{
 function giveGifts(){
   flags.gifts=1;
   ask("Cecil","\"Well I'll be! Not a scratch on the shed, either. Here: the last of my seeds, some soup for the road, and how to make it. My grandmother's recipe, so don't go changing it.\"",[["\"Thank you, Cecil.\"",""]],()=>{
+    flags.hearth=1; note("Cecil let you mark his hearth: a way home to the Comet, and a place to land next time.");
     addPack("Gorgrain seeds",3); addPack("Char Bean seeds",3); addPack("Char Bean Soup",2); addPack("Recipe: Char Bean Soup",1);
     toast("Gifts from Cecil","Gorgrain and Char Bean seeds, 2 Char Bean Soup, and his recipe. Use them once you build the Farm and Kitchen.");
     note("Cecil's gifts: seeds for the Farm, a recipe for the Kitchen.");
-    setTimeout(()=>toast("New quest: The dry well","Find out what is hammering under Farluck Farm."),3200);
+    setTimeout(()=>toast("Hearth anchor: Cecil's farm","\"Mark my hearth, friend. Come and go as you need.\" Use the farmhouse to go home."),3200);
+    setTimeout(()=>toast("New quest: The dry well","Find out what is hammering under Farluck Farm."),6400);
     say("Your Pack: Gorgrain seeds x3, Char Bean seeds x3, Char Bean Soup x2, Recipe: Char Bean Soup. The soup can go in a Ready slot.");
   });
 }
-function leaveByCrystal(){
-  if(flags.gifts){
-    ask("Narrator","Step into the Icosa Crystal and go home to the Castle Comet with Cecil's gifts?",[["Go home to the Comet.","",()=>{
-      const msg={type:"cq-mission-done",mission:"farluck",pack:packOut(),gifts:{seeds:{gorgrain:pack["Gorgrain seeds"]||0,charbean:pack["Char Bean seeds"]||0},dishes:Array(pack["Char Bean Soup"]||0).fill("Cecil's Char Bean Soup"),recipes:pack["Recipe: Char Bean Soup"]?["soup"]:[]},ready:READY,clues:journal};
-      if(EMBED) post(msg); else { $("fade").classList.add("on"); say("Light folds around you, and you're home on the Comet. (In the full game, the castle takes your Pack and gifts from here.)"); }
-    }],["Not yet.",""]]);
+function missionDone(how){
+  return {type:"cq-mission-done",mission:"farluck",via:how,pack:packOut(),gifts:{seeds:{gorgrain:pack["Gorgrain seeds"]||0,charbean:pack["Char Bean seeds"]||0},dishes:Array(pack["Char Bean Soup"]||0).fill("Cecil's Char Bean Soup"),recipes:pack["Recipe: Char Bean Soup"]?["soup"]:[]},ready:READY,returnShards:pack["Return Shard"]||0,anchors:flags.hearth?["farluck-hearth"]:[],clues:journal};
+}
+function goHome(how){
+  const by=how==="hearth"?"Cecil's hearth":"the Return Shard";
+  if(how==="hearth"){
+    ask("Narrator","Rest your hand on the warm hearthstone and go home to the Castle Comet?",[["Go home to the Comet.","",()=>finishHome(how)],["Not yet.",""]]);
   } else {
-    ask("Narrator","The crystal hums. Go back to the Comet now? Farluck still needs help.",[["Leave for now.","",()=>{ if(EMBED) post({type:"cq-mission-close"}); else say("(In the full game, this takes you home without finishing.)"); }],["Stay.",""]]);
+    ask("Narrator",flags.gifts?"Break your Return Shard and go home now, with everything in your Pack?":"Break your Return Shard and leave the farm now? Your Pack comes with you, but Farluck still needs help.",
+      [["Break the shard.","",()=>{ pack["Return Shard"]--; if(!pack["Return Shard"]) delete pack["Return Shard"]; buildBar(); finishHome(how); }],["Keep it for now.",""]]);
   }
+}
+function finishHome(how){
+  if(EMBED) return post(flags.gifts?missionDone(how):{type:"cq-mission-close",via:how,pack:packOut(),returnShards:pack["Return Shard"]||0,ready:READY});
+  $("fade").classList.add("on");
+  say((how==="hearth"?"The hearth glows, the farmhouse fades, and":"The shard cracks with a chime, light folds around you, and")+" you're home on the Comet. (In the full game, the castle takes your Pack and gifts from here.)");
 }
 function addPack(name,n){ pack[name]=(pack[name]||0)+n; buildBar(); }
 function note(t){ if(!journal.includes(t)) journal.push(t); }
@@ -346,6 +356,7 @@ function buildBar(){
   const inv=document.createElement("div"); inv.className="inv";
   const pk=document.createElement("button"); pk.type="button"; pk.textContent="Pack ("+Object.keys(pack).length+"/8)";
   pk.onclick=()=>say(Object.keys(pack).length?"Your Pack: "+Object.entries(pack).map(([k,n])=>`${k} x${n}`).join(", ")+(journal.length?"<br><em>Journal:</em> "+journal.join(" · "):""):"Your Pack is empty."+(journal.length?"<br><em>Journal:</em> "+journal.join(" · "):""));
+  if(pack["Return Shard"]){ const rs=document.createElement("button"); rs.type="button"; rs.textContent="Return Shard ("+pack["Return Shard"]+")"; rs.onclick=()=>{ if(!busy&&!$("box").classList.contains("on")) goHome("shard"); }; inv.appendChild(rs); }
   inv.appendChild(pk); bar.appendChild(inv);
 }
 
@@ -357,7 +368,7 @@ $("selStyle").onchange=e=>STYLE=e.target.value;
 ["selLf","selRole"].forEach(id=>$(id).onchange=()=>{ if(hero.el){ hero.el.innerHTML=heroSVG(); placeHero(); } });
 if(HERO&&HERO.role){ $("selLf").value=HERO.lf; $("selRole").value=HERO.role; if(HERO.style){ $("selStyle").value=HERO.style; STYLE=HERO.style; } document.querySelector(".setup").hidden=true; }
 buildBar(); load("clearing");
-say("<em>Chapter 1.</em> The Icosa Crystal sets you down in a quiet clearing. Somewhere east, a chimney is smoking. Look around, then follow the path.");
+say("<em>Chapter 1.</em> Wexler's beam sets you down on a ring of old landing stones. Somewhere east, a chimney is smoking. Look around, then follow the path. Your Return Shard can take you home any time.");
 </script>
 </body>
 </html>
