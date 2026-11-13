@@ -1,0 +1,132 @@
+<title>Path of the Light Keeper Logos</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cinzel+Decorative:wght@700&family=Alegreya:ital,wght@0,400;1,400&family=Alegreya+SC:wght@500&display=swap">
+<style>
+/* Layout: a night-sky sheet of logo boards, each its own small stage; one deliberate dark look for every viewer */
+:root{
+  --night:#060914; --deep:#0b1230; --panel:#0c1129; --edge:#22305e;
+  --cyan:#5fe3ff; --blue:#3a78ff; --pearl:#eef5ff; --gold:#e8c260; --gold2:#b8862e; --muted:#9fb0d8;
+  --display:"Cinzel","Trajan Pro",Georgia,serif; --deco:"Cinzel Decorative","Cinzel",Georgia,serif;
+  --body:"Alegreya",Georgia,serif; --sc:"Alegreya SC","Alegreya",Georgia,serif;
+  color-scheme:dark;
+}
+html,body{background:var(--night);color:var(--pearl)}
+body{font-family:var(--body);font-size:17px;line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:28px}
+header{display:grid;gap:6px}
+header h1{font-family:var(--sc);font-weight:500;font-size:15px;letter-spacing:.2em;color:var(--muted);margin:0;text-transform:uppercase}
+header p{margin:0;max-width:62ch;color:#c9d4f0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:22px}
+figure{margin:0;display:grid;gap:10px;min-width:0}
+figcaption{display:grid;gap:2px}
+figcaption b{font-family:var(--sc);font-weight:500;font-size:17px;letter-spacing:.06em;color:var(--gold)}
+figcaption span{color:var(--muted);font-size:15px}
+.board{position:relative;aspect-ratio:16/10;max-width:100%;border-radius:14px;overflow:hidden;border:1px solid var(--edge);
+  background:radial-gradient(ellipse at 50% 42%,#13235a 0%,var(--deep) 45%,var(--night) 100%);container-type:inline-size;display:grid;place-items:center}
+.stars{position:absolute;inset:0;width:100%;height:100%}
+.glowimg{position:absolute;mix-blend-mode:screen;pointer-events:none;filter:saturate(1.15)}
+.word{font-family:var(--display);color:var(--pearl);text-align:center;position:relative;line-height:1;
+  text-shadow:0 0 .35em rgba(95,227,255,.55),0 0 1.2em rgba(58,120,255,.45)}
+.word .sm{display:block;font-weight:500;letter-spacing:.32em;font-size:.34em;margin-bottom:.22em;color:#d6e8ff}
+.word .lg{display:block;font-weight:900;letter-spacing:.06em}
+.gold .lg{background:linear-gradient(180deg,#fff6d8 0%,#f2d27a 45%,#b8862e 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:none;filter:drop-shadow(0 0 .18em rgba(255,214,120,.45)) drop-shadow(0 .05em 0 #3a2410)}
+.rule{display:block;height:2px;margin:.35em auto 0;width:70%;background:linear-gradient(90deg,transparent,var(--cyan),#fff,var(--cyan),transparent);box-shadow:0 0 10px var(--cyan)}
+.tag{font-family:var(--body);font-style:italic;font-size:.34em;letter-spacing:.04em;color:#c9d8f6;display:block;margin-top:.7em;text-shadow:none}
+
+/* 1 crest */
+#b1 .glowimg{width:54cqw;left:23cqw;top:-8cqw;opacity:.95;animation:breathe 7s ease-in-out infinite}
+#b1 .word{font-size:9.6cqw;margin-top:30cqw}
+#b1 .word .sm{text-shadow:0 0 6px #000,0 0 14px #000}
+/* 2 lit O */
+#b2 .word{font-size:6.6cqw;display:flex;align-items:center;gap:.18em;flex-wrap:nowrap;font-weight:700;letter-spacing:.04em;white-space:nowrap}
+#b2 .o{position:relative;width:.78em;height:.78em;display:inline-block;margin:0 .02em}
+#b2 .o::after{content:"";position:absolute;inset:0;border:.07em solid #eaf6ff;border-radius:50%;box-shadow:0 0 .2em var(--cyan),inset 0 0 .2em var(--cyan)}
+#b2 .o img{position:absolute;width:2.6em;left:50%;top:50%;transform:translate(-50%,-50%);mix-blend-mode:screen;animation:breathe 6s ease-in-out infinite}
+#b2 .row2{display:block;font-size:6.6cqw}
+#b2 .stack{display:grid;gap:.12em;justify-items:center}
+#b2 .k{font-weight:900;font-size:1.5em;letter-spacing:.06em}
+/* 3 the path */
+#b3 svg.path{position:absolute;inset:0;width:100%;height:100%}
+#b3 .glowimg{width:44cqw;left:28cqw;top:9cqw;animation:breathe 8s ease-in-out infinite}
+#b3 .word{font-size:7.4cqw;position:absolute;top:5.5cqw;left:0;right:0}
+/* 4 seal */
+#b4 .seal{position:relative;width:52cqw;aspect-ratio:1;max-width:100%}
+#b4 .seal svg{position:absolute;inset:0;width:100%;height:100%}
+#b4 .glowimg{width:70%;left:15%;top:15%}
+/* 5 lockup */
+#b5 .lock{display:flex;align-items:center;gap:2.6cqw;position:relative}
+#b5 .mark{position:relative;width:22cqw;aspect-ratio:1}
+#b5 .mark img{position:absolute;inset:-12%;width:124%;mix-blend-mode:screen}
+#b5 .word{text-align:left;font-size:8.4cqw}
+#b5 .word .sm{letter-spacing:.42em}
+/* 6 light only */
+#b6 .glowimg{width:60cqw;left:20cqw;top:-4cqw;animation:breathe 6.5s ease-in-out infinite}
+#b6 .word{font-family:var(--deco);font-size:6.4cqw;margin-top:22cqw;letter-spacing:.03em;font-weight:700}
+#b6 .word .sm{font-family:var(--display);letter-spacing:.5em}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.92}50%{transform:scale(1.04);opacity:1}}
+#b2 .o img{animation-name:breatheC}
+@keyframes breatheC{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.06)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+footer{color:var(--muted);font-size:14px}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Path of the Light Keeper · logo ideas</h1>
+    <p>Six logo ideas built from your two light images. Each sits on the night sky from the opening, with gold or starlight lettering in the same carved serif.</p>
+  </header>
+
+  <div class="grid">
+    <figure><div class="board" id="b1"><svg class="stars" data-seed="3"></svg><img class="glowimg" src="art/lb-mandala.png" alt="">
+      <div class="word gold"><span class="sm">Path of the</span><span class="lg">Light Keeper</span><span class="rule"></span></div></div>
+      <figcaption><b>1 · Mandala Crest</b><span>The mandala rises behind the title like a dawn. This is the main title card for the opening and the menu.</span></figcaption></figure>
+
+    <figure><div class="board" id="b2"><svg class="stars" data-seed="7"></svg>
+      <div class="word"><span class="stack"><span>Path <span class="o"><img src="art/lb-light.png" alt=""></span>f the</span><span class="k">Light Keeper</span></span></div></div>
+      <figcaption><b>2 · The Lit O</b><span>The burst of Light becomes the O in "of". It is small and easy to read, and it works well on store pages and loading screens.</span></figcaption></figure>
+
+    <figure><div class="board" id="b3"><svg class="stars" data-seed="11"></svg>
+      <svg class="path" viewBox="0 0 800 500" preserveAspectRatio="none" aria-hidden="true">
+        <defs><linearGradient id="pg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#e8c260" stop-opacity=".9"/><stop offset=".55" stop-color="#5fe3ff" stop-opacity=".7"/><stop offset="1" stop-color="#ffffff" stop-opacity=".95"/></linearGradient>
+        <linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16244f"/><stop offset="1" stop-color="#060914"/></linearGradient></defs>
+        <path d="M0 330 Q200 300 400 318 Q600 300 800 330 V500 H0Z" fill="url(#gr)"/>
+        <path d="M250 500 C300 452 470 438 424 392 C398 366 394 340 400 318 C404 342 410 364 436 388 C500 440 420 466 560 500Z" fill="url(#pg)" opacity=".85"/>
+        <path d="M400 318 C398 344 404 366 430 390 C480 436 380 458 405 500" stroke="#fff" stroke-width="1.6" stroke-dasharray="6 7" opacity=".55" fill="none"/>
+      </svg>
+      <img class="glowimg" src="art/lb-light.png" alt="">
+      <div class="word"><span class="sm">Path of the</span><span class="lg">Light Keeper</span></div></div>
+      <figcaption><b>3 · The Path</b><span>A road of gold and starlight runs to the Light on the horizon. It tells the whole idea at a glance: you are walking toward Love.</span></figcaption></figure>
+
+    <figure><div class="board" id="b4"><svg class="stars" data-seed="17"></svg>
+      <div class="seal">
+        <svg viewBox="0 0 300 300" aria-hidden="true">
+          <defs><path id="ring" d="M150 150 m-112 0 a112 112 0 1 1 224 0 a112 112 0 1 1 -224 0"/>
+          <linearGradient id="gd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2c8"/><stop offset=".5" stop-color="#e8c260"/><stop offset="1" stop-color="#9a6a24"/></linearGradient></defs>
+          <circle cx="150" cy="150" r="140" fill="#0a1236" stroke="url(#gd)" stroke-width="5"/>
+          <circle cx="150" cy="150" r="127" fill="none" stroke="#e8c260" stroke-width="1.2" opacity=".7"/>
+          <circle cx="150" cy="150" r="96" fill="none" stroke="#e8c260" stroke-width="1.2" opacity=".7"/>
+          <text font-family="Cinzel, Georgia, serif" font-weight="700" font-size="19" fill="#f2d27a"><textPath href="#ring" startOffset="0" textLength="696" lengthAdjust="spacing">PATH OF THE LIGHT KEEPER ✦ A STORY OF LOVE ✦</textPath></text>
+        </svg>
+        <img class="glowimg" src="art/lb-mandala.png" alt="">
+      </div></div>
+      <figcaption><b>4 · Keeper's Seal</b><span>A round gold seal around the mandala. It works as the app icon, a save badge, or the stamp on a Light Keeper's journal.</span></figcaption></figure>
+
+    <figure><div class="board" id="b5"><svg class="stars" data-seed="23"></svg>
+      <div class="lock"><span class="mark"><img src="art/lb-mandala.png" alt=""></span>
+      <div class="word gold"><span class="sm">Path of the</span><span class="lg">Light Keeper</span></div></div></div>
+      <figcaption><b>5 · Side Lockup</b><span>Mark and name side by side, for the top bar of menus and the website header.</span></figcaption></figure>
+
+    <figure><div class="board" id="b6"><svg class="stars" data-seed="31"></svg><img class="glowimg" src="art/lb-light.png" alt="">
+      <div class="word"><span class="sm">Path of the</span><span class="lg" style="font-weight:700">Light Keeper</span><span class="tag">A story of Love on Talus</span></div></div>
+      <figcaption><b>6 · First Light</b><span>Only the burst, with ornate capitals and the subtitle. It is the quietest of the six, made for the very first screen before the opening plays.</span></figcaption></figure>
+  </div>
+  <footer>Your mandala and light images are used as they are. The lettering, seal, path and stars are drawn on this page. Any pick can be cleaned up as a sharp graphic for the game and store pages.</footer>
+</div>
+
+<script>
+function rnd(seed){ let a=seed>>>0; return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+document.querySelectorAll("svg.stars").forEach(s=>{ const r=rnd(+s.dataset.seed); s.setAttribute("viewBox","0 0 800 500"); s.setAttribute("preserveAspectRatio","xMidYMid slice"); s.setAttribute("aria-hidden","true");
+  let g=""; for(let i=0;i<140;i++){ g+=`<circle cx="${(r()*800).toFixed(1)}" cy="${(r()*500).toFixed(1)}" r="${(r()*1.3+.3).toFixed(2)}" fill="#fff" opacity="${(r()*.6+.25).toFixed(2)}"/>`; } s.innerHTML=g; });
+</script>
