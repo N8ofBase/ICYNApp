@@ -210,7 +210,7 @@ const ROLES={Brawler:{t:"Masters of balance and energy who subdue rivals with Qu
 const LF_COLORS={Sapien:["#8a5e3c","#5e3f2a","#a2703f","#5a5a7a"],Lizerus:["#8fae5a","#5f8a4a","#b0884a","#7a6aa8"],Leyf:["#7fa36a","#5f7f4a","#8a7a4a","#4f8a7a"],Dimoneesh:["#8fa8d0","#5a6a8a","#4a7a6a","#3e3a4e"],Melkin:["#c9a0d8","#c9a04a","#8a6a4a","#5a3e4a"]};
 const FOLK_CLOTH={Sapien:"#7a8a5a",Lizerus:"#5a6a8a",Leyf:"#8a6a3a",Dimoneesh:"#3f5a7a",Melkin:"#6a8a9a"};
 const look=(lf,role,skin)=>({lf,role,skin:skin||SKIN[lf],cloak:role==="Folk"?FOLK_CLOTH[lf]:ROLE_LOOK[role],size:1});
-function headShot(lf,role,bust,skin){ const vb=bust?"-42 -128 84 84":"-26 -124 52 52"; return `<svg viewBox="${vb}" aria-hidden="true">${heroSVG(look(lf,role,skin))}</svg>`; }
+function headShot(lf,role,bust,skin){ const vb=bust?(lf==="Lizerus"?"-38 -128 84 84":"-42 -128 84 84"):(lf==="Lizerus"?"-24 -124 60 60":"-26 -124 52 52"); return `<svg viewBox="${vb}" aria-hidden="true">${heroSVG(look(lf,role,skin))}</svg>`; }
 function figure(lf,role,skin){ return `<svg viewBox="-44 -128 88 136" aria-hidden="true">${heroSVG(look(lf,role,skin))}</svg>`; }
 
 /* ---------- Role intros (copied from the castle, design doc tab "Role intros") */
