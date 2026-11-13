@@ -1402,7 +1402,8 @@ function showRack() {
 function heroCfg() {
   const h = S.hero, w = GEAR[S.loadout.weapon], a = GEAR[S.loadout.armor];
   return { lf: h.lf, role: h.role, focus: L1[h.role][h.focus] ? h.focus : Object.keys(L1[h.role])[0], ab: h.ab || 0,
-    weapon: w ? w.name : undefined, wRange: w ? w.range : undefined, def: (a ? a.def : 0) + (w && w.def || 0), color: ROLES[h.role].hue };
+    weapon: w ? w.name : undefined, wRange: w ? w.range : undefined, def: (a ? a.def : 0) + (w && w.def || 0), color: ROLES[h.role].hue,
+    dice: S.dice && DICE.body[S.dice.body] ? { body: DICE.body[S.dice.body][1], num: DICE.num[S.dice.num][1], finish: S.dice.finish } : undefined };
 }
 /* Farluck Farm: the painted-screen adventure (farluck-adventure.html, from the Crit Quest thread) with its hex battle.
    Your Hero and Ready items go in through the URL hash; your Pack, Cecil's gifts and what's left of your Ready items come back by postMessage. */
@@ -1412,10 +1413,10 @@ function showFarluck(start) {
   const cfg = { ...heroCfg(), style: S.hero.style || S.style, ready: S.loadout.ready, returnShards: S.returnShards, anchors: S.anchors || [], ...(start ? { start } : {}) };
   closeTalk(); dropFarluck();
   $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Mission</div><h2>Farluck Farm</h2><p class="note">You're on Talus.</p></div>`;
-  const fr = document.createElement("iframe"); fr.className = "arena full"; fr.id = "farluckFrame"; fr.title = "Farluck Farm";
+  const fr = document.createElement("iframe"); fr.className = "arena full"; fr.id = "fullFrame"; fr.title = "Farluck Farm";
   fr.src = "farluck-adventure.html#" + encodeURIComponent(JSON.stringify(cfg)); document.body.appendChild(fr); fr.focus();
 }
-function dropFarluck() { const fr = document.getElementById("farluckFrame"); if (fr) fr.remove(); }
+function dropFarluck() { const fr = document.getElementById("fullFrame"); if (fr) fr.remove(); }
 function farluckGifts(g = {}) {
   const seeds = g.seeds || { gorgrain: 3, charbean: 3 }, dishes = g.dishes || ["Cecil's Char Bean Soup", "Cecil's Char Bean Soup"], recipes = [...(g.recipes || []), "soup"];
   S.farluckDone = true; S.tier = Math.max(S.tier, 1);
@@ -1428,16 +1429,14 @@ function farluckGifts(g = {}) {
 function homeBits(d) { if (typeof d.returnShards === "number") S.returnShards = d.returnShards; if (Array.isArray(d.anchors)) S.anchors = [...new Set([...(S.anchors || []), ...d.anchors])]; }
 function unpack(pack) { (pack || []).forEach(sl => { if (CROP[sl.k]) S.crops[sl.k] = C(sl.k) + sl.n; else if (MATS[sl.k]) addM(sl.k, sl.n); }); }
 function battle() {
-  stopGame();
-  const cfg = heroCfg();
-  $("#view").innerHTML = `<div class="panel game"><div class="head"><div><div class="eyebrow">Training Ground</div><h2>Practice battle: Treywind</h2></div>
-    <button class="btn" type="button" id="leave">Back to the Training Ground</button></div>
-    <iframe class="arena" src="training-ground.html#${encodeURIComponent(JSON.stringify(cfg))}" title="Practice battle with Treywind"></iframe></div>`;
-  $("#leave").onclick = () => showRoom("training");
+  stopGame(); closeTalk(); dropFarluck();
+  $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Training Ground</div><h2>Practice battle: Treywind</h2><p class="note">You're on the sand with Treywind.</p></div>`;
+  const fr = document.createElement("iframe"); fr.className = "arena full"; fr.id = "fullFrame"; fr.title = "Practice battle with Treywind";
+  fr.src = "training-ground.html#" + encodeURIComponent(JSON.stringify(heroCfg())); document.body.appendChild(fr); fr.focus();
 }
 addEventListener("message", e => {
   const d = e.data || {};
-  if (/^cq-mission-/.test(d.type || "")) dropFarluck();
+  if (/^cq-mission-|^cq-training-close/.test(d.type || "")) dropFarluck();
   if (d.type === "cq-training") { if (d.won && !S.trainWon) { S.trainWon = true; S.coins += 10; toast("Treywind yields! +10 Icosa Coins."); } S.trained = true; save(); }
   if (d.type === "cq-training-close") { showRoom("training"); if (d.won) openTalk("treywind", "done"); }
   if (d.type === "cq-mission-done") {
