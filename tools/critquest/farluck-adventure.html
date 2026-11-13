@@ -27,7 +27,7 @@ body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;ov
 .corner svg{width:100%;height:100%}
 .c-tl{left:-22px;top:-22px}.c-tr{right:-22px;top:-22px;transform:scaleX(-1)}.c-bl{left:-22px;bottom:-22px;transform:scaleY(-1)}.c-br{right:-22px;bottom:-22px;transform:scale(-1,-1)}
 .stage{position:absolute;inset:0;overflow:hidden}
-.stage svg{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer}
+#svg{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer}
 .hot{cursor:pointer}
 .hot:hover .hl,.hot:focus .hl{stroke:#ffe9a8;stroke-width:3;stroke-dasharray:6 4}
 .plateTop{position:absolute;left:14px;top:12px;z-index:5;background:rgba(15,10,6,.72);border:1px solid var(--gold);border-radius:8px;padding:4px 12px;color:#f3e6c8;font-family:"Alegreya SC",serif;pointer-events:none}
@@ -49,7 +49,7 @@ body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;ov
 .box.on{display:block}
 .head{display:flex;gap:12px;align-items:flex-start}
 .portrait{flex:0 0 auto;width:70px;height:70px;border-radius:10px;border:2px solid var(--gold);background:#201810;overflow:hidden}
-.portrait svg{width:100%;height:100%}
+.portrait svg{width:100%;height:100%;display:block;position:static}
 .plate{font-family:"Alegreya SC",serif;font-weight:700;font-size:17px;color:var(--accent);margin:0 0 2px}
 .say{margin:0;font-size:16px;line-height:1.45}
 .choices{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:4px}
@@ -168,10 +168,10 @@ function packOut(){ return Object.entries(pack).filter(([k])=>PACK_KEYS[k]===und
 
 /* ---------- hero ---------- */
 const hero={x:150,y:430,tx:150,ty:430,face:1,step:0,el:null,cb:null};
-const SKIN={Leyf:"#7fa36a",Sapien:"#d9a57c",Lizerus:"#8fae5a",Melkin:"#c9a0d8",Dimoneesh:"#8fa8d0"};
+const SKIN={Leyf:"#7fa36a",Sapien:"#8a5e3c",Lizerus:"#8fae5a",Melkin:"#c9a0d8",Dimoneesh:"#8fa8d0"};
 const ROLE_LOOK={Maverick:"#3f6b45",Brawler:"#8a4a2a",Champion:"#b08a2a","Soul Seer":"#5a4a8a",Whisper:"#2f3a4a"};
 function heroLook(){ const lf=(HERO&&HERO.lf)||$("selLf").value, role=(HERO&&HERO.role)||$("selRole").value;
-  return {lf,role,skin:SKIN[lf]||"#d9a57c",cloak:(HERO&&HERO.color)||ROLE_LOOK[role]||"#3f6b45",size:lf==="Melkin"?.62:lf==="Dimoneesh"?.9:1}; }
+  return {lf,role,skin:SKIN[lf]||"#8a5e3c",cloak:(HERO&&HERO.color)||ROLE_LOOK[role]||"#3f6b45",size:lf==="Melkin"?.62:lf==="Dimoneesh"?.9:1}; }
 function rolePropSVG(role){
   if(role==="Maverick") return `<path d="M18 -86 Q34 -56 18 -24" fill="none" stroke="#8a5a2a" stroke-width="3"/><line x1="18" y1="-86" x2="18" y2="-24" stroke="#e8dcc0" stroke-width="1"/>`;
   if(role==="Champion") return `<rect x="20" y="-90" width="4" height="52" fill="#d8d8e0"/><rect x="14" y="-42" width="16" height="4" fill="#8a6a3a"/><path d="M-30 -66 h20 v20 q-10 14 -20 0z" fill="#c9a03c" stroke="#7a5a22" stroke-width="2"/>`;
@@ -179,19 +179,94 @@ function rolePropSVG(role){
   if(role==="Whisper") return `<path d="M16 -50 l12 -14 l3 3 l-12 14z" fill="#d8d8e0"/><rect x="13" y="-48" width="6" height="4" fill="#5a3a22" transform="rotate(-45 16 -46)"/>`;
   return `<circle cx="18" cy="-46" r="7" fill="${heroLook().skin}" stroke="#5a3a22" stroke-width="2"/><circle cx="-18" cy="-46" r="7" fill="${heroLook().skin}" stroke="#5a3a22" stroke-width="2"/>`; // Brawler: fists
 }
+const OL="#1d140c";
 function heroSVG(){
-  const L=heroLook();
+  const L=heroLook(), lf=L.lf, role=L.role, sk=L.skin, skD=shade(sk,.72), skL=shade(sk,1.18);
+  const cl=L.cloak, clD=shade(cl,.62), clL=shade(cl,1.3);
+  const robe=role==="Soul Seer", hooded=role==="Whisper"||role==="Soul Seer", armored=role==="Champion", brawl=role==="Brawler";
+  const tun=armored?"#b9bcc6":brawl?"#6a4a2c":role==="Maverick"?"#7a5634":shade(cl,.8), tunD=shade(tun,.7);
+  const hoof=lf==="Dimoneesh";
+  const sw=`stroke="${OL}" stroke-width="1.6" stroke-linejoin="round"`;
+  const leg=(id,x,dark)=>`<g id="${id}"><path d="M${x-4} -36 L${x+4} -36 L${x+4} -8 L${x-4} -8Z" fill="${dark?shade("#4a3a28",.75):"#4a3a28"}" ${sw}/>${hoof?`<path d="M${x-5} -9 h10 l1 9 h-12z" fill="#2a2420" ${sw}/><path d="M${x} -6 v6" stroke="#5a5048" stroke-width="1"/>`:`<path d="M${x-5} -12 h9 q6 0 7 8 v4 h-16z" fill="${dark?"#3a2616":"#5a3a1e"}" ${sw}/><path d="M${x-4} -10 h8" stroke="#8a6a3a" stroke-width="1.4"/>`}</g>`;
+  // head per Lifeform (faces right)
+  let head;
+  if(lf==="Leyf") head=`<path d="M-8 -84 Q-12 -104 4 -106 Q20 -106 22 -92 Q24 -84 16 -80 L-4 -78Z" fill="${sk}" ${sw}/>
+    <path d="M10 -86 Q20 -86 22 -90" stroke="${skD}" stroke-width="1.6" fill="none"/>
+    <path d="M-4 -102 q6 -3 12 0 M-6 -96 q6 -3 12 0" stroke="${skD}" stroke-width="1.2" fill="none" opacity=".7"/>
+    <ellipse cx="11" cy="-95" rx="4.2" ry="4.6" fill="#fff" ${sw}/><circle cx="12.5" cy="-95" r="2.4" fill="#1b140c"/><circle cx="13.3" cy="-96" r=".8" fill="#fff"/>
+    <path d="M4 -104 Q12 -108 18 -101" fill="none" stroke="${skL}" stroke-width="2" opacity=".7"/>`;
+  else if(lf==="Lizerus") head=`<path d="M-8 -82 Q-10 -102 4 -104 Q14 -104 18 -96 L30 -92 Q32 -86 26 -84 L6 -80Z" fill="${sk}" ${sw}/>
+    <path d="M-6 -100 l-6 -8 l7 2 l-2 -9 l7 6 l1 -9 l5 8" fill="#c8583a" ${sw}/>
+    <path d="M14 -86 L28 -87" stroke="${OL}" stroke-width="1.2"/><circle cx="27" cy="-91" r=".9" fill="${OL}"/>
+    <ellipse cx="10" cy="-96" rx="3.4" ry="3" fill="#f2d23a" ${sw}/><rect x="9.6" y="-98.4" width="1.2" height="4.8" fill="#1b140c"/>
+    ${[0,1,2].map(k=>`<circle cx="${-2+k*5}" cy="${-90+k%2*3}" r="1.3" fill="${skD}"/>`).join("")}`;
+  else if(lf==="Sapien") head=`<path d="M-12 -80 Q-16 -96 -8 -106 Q4 -114 14 -104 Q22 -96 18 -84 Q16 -76 6 -76 Q-6 -74 -12 -80Z" fill="${sk}" ${sw}/>
+    ${[[-12,-96],[-14,-86],[-8,-106],[2,-110],[12,-106]].map(([x,y])=>`<path d="M${x} ${y} l-5 -2 l3 5" fill="${sk}" ${sw}/>`).join("")}
+    <path d="M4 -96 Q14 -98 18 -92 Q20 -84 12 -82 Q4 -84 4 -96Z" fill="${skL}"/>
+    <circle cx="12" cy="-94" r="2.2" fill="#1b140c"/><circle cx="12.6" cy="-94.6" r=".7" fill="#fff"/><path d="M8 -98 q4 -2 8 0" stroke="${skD}" stroke-width="2" fill="none"/>
+    <path d="M12 -86 q4 2 7 0" stroke="${OL}" stroke-width="1.3" fill="none"/>
+    ${[0,1,2,3].map(k=>`<path d="M${-8+k*4} ${-104+k*2} q2 6 -1 12" stroke="${skD}" stroke-width="1.2" fill="none" opacity=".7"/>`).join("")}`;
+  else if(lf==="Melkin") head=`<path d="M-10 -86 Q-12 -106 4 -108 Q20 -106 20 -90 Q18 -78 4 -78 Q-8 -78 -10 -86Z" fill="${sk}" ${sw}/>
+    <path d="M-6 -100 L-20 -112 L-4 -94Z" fill="${sk}" ${sw}/><path d="M-8 -100 L-16 -108" stroke="${skD}" stroke-width="2"/>
+    <ellipse cx="11" cy="-94" rx="4.6" ry="5.4" fill="#fff" ${sw}/><circle cx="12.4" cy="-93.4" r="3" fill="#3a2a5a"/><circle cx="13.4" cy="-95" r="1" fill="#fff"/>
+    <path d="M12 -84 q3 1 5 -1" stroke="${OL}" stroke-width="1.2" fill="none"/><circle cx="6" cy="-86" r="2.4" fill="#e88aa8" opacity=".5"/>`;
+  else head=`<path d="M-10 -82 Q-12 -104 4 -106 Q20 -104 20 -90 Q20 -78 6 -77 Q-6 -76 -10 -82Z" fill="${sk}" ${sw}/>
+    <path d="M-4 -102 Q-14 -114 -4 -120 Q-8 -112 2 -104Z" fill="#e8e0d0" ${sw}/><path d="M6 -105 Q4 -118 14 -120 Q8 -112 12 -104Z" fill="#e8e0d0" ${sw}/>
+    <ellipse cx="12" cy="-93" rx="3.6" ry="3.2" fill="#e8f4ff" ${sw}/><circle cx="13" cy="-93" r="1.8" fill="#4a6aa8"/>
+    <path d="M12 -84 q4 1 6 -1" stroke="${OL}" stroke-width="1.2" fill="none"/><path d="M-2 -98 q4 4 2 10" stroke="${skL}" stroke-width="2" fill="none" opacity=".6"/>`;
+  const hood=hooded?`<path d="M-14 -80 Q-18 -108 4 -112 Q22 -110 22 -96 Q16 -104 4 -104 Q-6 -102 -6 -84Z" fill="${role==="Whisper"?"#22262e":cl}" ${sw}/><path d="M-12 -84 Q-14 -100 -2 -108" stroke="${role==="Whisper"?"#3a404c":clL}" stroke-width="2" fill="none"/>`:"";
+  const mask=role==="Whisper"?`<path d="M4 -88 Q14 -90 22 -86 Q20 -79 8 -79 Q2 -80 4 -88Z" fill="#2c3038" ${sw}/>`:"";
+  const tail=lf==="Lizerus"?`<path d="M-10 -34 Q-34 -30 -44 -10 Q-46 -4 -40 -6 Q-30 -22 -8 -26Z" fill="${sk}" ${sw}/>`:"";
+  // body
+  const cape=`<path d="M-12 -76 Q-30 -56 -30 -22 Q-22 -16 -14 -22 Q-10 -18 -4 -24 L4 -74Z" fill="${cl}" ${sw}/>
+    <path d="M-20 -60 Q-24 -40 -22 -22 M-12 -58 Q-14 -40 -12 -24" stroke="${clD}" stroke-width="2" fill="none" opacity=".8"/>
+    <path d="M-10 -74 Q-22 -60 -26 -40" stroke="${clL}" stroke-width="2" fill="none" opacity=".6"/>`;
+  const torso=robe?`<path d="M-12 -76 L14 -76 Q18 -40 20 -6 Q2 0 -16 -6 Q-16 -40 -12 -76Z" fill="${cl}" ${sw}/><path d="M2 -74 L4 -6" stroke="${clL}" stroke-width="2.5"/><path d="M-6 -60 Q-8 -30 -10 -8" stroke="${clD}" stroke-width="2" fill="none"/>`
+    :`<path d="M-12 -76 L13 -76 Q16 -56 14 -32 L15 -26 Q0 -22 -14 -26 L-13 -32 Q-15 -56 -12 -76Z" fill="${tun}" ${sw}/>
+    <path d="M6 -74 Q10 -54 9 -34" stroke="${shade(tun,1.3)}" stroke-width="3" fill="none" opacity=".6"/><path d="M-8 -72 Q-10 -52 -9 -34" stroke="${tunD}" stroke-width="3" fill="none" opacity=".6"/>
+    ${armored?`<path d="M-11 -74 Q2 -66 13 -74 L12 -50 Q0 -44 -11 -50Z" fill="#d8dae2" ${sw}/><circle cx="1" cy="-60" r="4" fill="#e8b83a" ${sw}/>`:""}
+    ${brawl?`<path d="M-14 -78 Q0 -70 16 -78 L14 -68 Q0 -62 -14 -68Z" fill="#8a6a3a" ${sw}/>${[-10,-4,2,8].map(x=>`<path d="M${x} -66 l2 6 l2 -6" fill="#8a6a3a" ${sw}/>`).join("")}`:""}
+    <rect x="-14" y="-38" width="29" height="6" fill="#3a2414" ${sw}/><rect x="-1" y="-39" width="7" height="8" rx="1" fill="#d8b04a" ${sw}/>`;
+  const collar=`<path d="M-13 -78 Q0 -70 15 -78 Q12 -84 0 -82 Q-10 -84 -13 -78Z" fill="${clD}" ${sw}/>`;
+  const armBack=`<path d="M8 -72 Q14 -60 16 -48" stroke="${OL}" stroke-width="8.5" stroke-linecap="round" fill="none"/><path d="M8 -72 Q14 -60 16 -48" stroke="${shade(robe?cl:tun,.7)}" stroke-width="6" stroke-linecap="round" fill="none"/><circle cx="16.5" cy="-46" r="3.6" fill="${skD}" ${sw}/>`;
+  const armFront=`<path d="M-2 -72 Q2 -56 12 -50" stroke="${OL}" stroke-width="9.5" stroke-linecap="round" fill="none"/><path d="M-2 -72 Q2 -56 12 -50" stroke="${robe?cl:brawl?sk:tun}" stroke-width="7" stroke-linecap="round" fill="none"/>${brawl?`<path d="M6 -54 l6 3" stroke="#e8e0cc" stroke-width="5"/>`:""}<circle cx="14" cy="-49" r="4.2" fill="${sk}" ${sw}/>`;
+  // role props, drawn in hand at (14,-49)
+  let back="", front="";
+  if(role==="Maverick"){ back=`<rect x="-16" y="-80" width="8" height="30" rx="2" fill="#6a4426" ${sw} transform="rotate(-18 -12 -65)"/>${[0,1,2].map(k=>`<path d="M${-16+k*3} -82 l-2 -9 M${-16+k*3} -91 l-2 3 m2 -3 l2 3" stroke="#e8e0cc" stroke-width="1.4" transform="rotate(-18 -12 -65)"/>`).join("")}`;
+    front=`<path d="M22 -90 Q36 -50 22 -10" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/><path d="M22 -90 Q36 -50 22 -10" fill="none" stroke="#9a6a34" stroke-width="3" stroke-linecap="round"/><line x1="22" y1="-90" x2="22" y2="-10" stroke="#efe6cc" stroke-width="1"/><path d="M28 -52 h6" stroke="#5a3a1e" stroke-width="4"/>`; }
+  else if(role==="Champion"){ back=`<path d="M-26 -70 h22 v22 q-11 16 -22 0z" fill="#c9a03c" ${sw}/><circle cx="-15" cy="-58" r="6" fill="#f2d86a" ${sw}/>${[0,45,90,135,180,225,270,315].map(a=>`<path d="M-15 -58 l${(Math.cos(a*Math.PI/180)*9).toFixed(1)} ${(Math.sin(a*Math.PI/180)*9).toFixed(1)}" stroke="#7a5a22" stroke-width="1.2"/>`).join("")}`;
+    front=`<path d="M16 -52 L34 -100 L37 -98 L20 -50Z" fill="#e6e8f0" ${sw}/><path d="M18 -56 L34 -99" stroke="#fff" stroke-width="1"/><path d="M9 -56 L24 -48" stroke="#7a5a2a" stroke-width="4" stroke-linecap="round"/><circle cx="13" cy="-47" r="2.4" fill="#d8b04a" ${sw}/>`; }
+  else if(role==="Soul Seer"){ front=`<rect x="12" y="-112" width="4.5" height="112" rx="2" fill="#6b4a2a" ${sw}/><path d="M10 -112 q4 -8 8 0" fill="none" stroke="#6b4a2a" stroke-width="3"/><path d="M14 -128 l6 10 l-6 8 l-6 -8z" fill="#bfe4ff" ${sw}/><circle cx="14" cy="-118" r="12" fill="#bfe4ff" opacity=".25"/><circle cx="26" cy="-104" r="3" fill="#e8f6ff" opacity=".8"/>`; }
+  else if(role==="Whisper"){ back=`<path d="M-14 -40 q-6 -6 0 -12 q6 -6 12 0" fill="none" stroke="#a88a5a" stroke-width="3"/>`;
+    front=`<path d="M16 -52 L32 -66 L34 -63 L19 -49Z" fill="#d8dae4" ${sw}/><path d="M12 -52 l6 4" stroke="#3a2414" stroke-width="4"/><path d="M14 -42 L22 -26 L19 -25 L12 -40Z" fill="#c8cad4" ${sw}/>`; }
+  else { front=`<circle cx="14" cy="-49" r="6" fill="${sk}" ${sw}/><path d="M9 -52 h10 M9 -48 h10" stroke="#e8e0cc" stroke-width="2"/>${[0,1,2].map(k=>`<path d="M${11+k*3} -55 l1 -4 l1 4" fill="#c8c8d0" ${sw}/>`).join("")}`; }
   return `<g id="heroInner"><g transform="scale(${L.size})">
-   <ellipse cx="0" cy="0" rx="22" ry="7" fill="rgba(0,0,0,.35)"/>
-   <g id="legs"><rect id="legL" x="-9" y="-30" width="7" height="30" rx="3" fill="#4a3a26"/><rect id="legR" x="2" y="-30" width="7" height="30" rx="3" fill="#4a3a26"/></g>
-   <path d="M-16 -30 Q-18 -68 0 -74 Q18 -68 16 -30 Z" fill="${L.cloak}"/>
-   <path d="M-16 -30 L-20 -12 L-4 -24 Z" fill="${L.cloak}" opacity=".8"/>
-   <circle cx="0" cy="-84" r="12" fill="${L.skin}"/>
-   ${L.lf==="Lizerus"?`<path d="M-4 -96 l4 -8 l4 8 M4 -94 l5 -6 l2 7" fill="${L.skin}" stroke="#5a7a3a"/>`:`<path d="M-12 -86 Q0 -104 12 -86 Q6 -92 0 -92 Q-6 -92 -12 -86Z" fill="rgba(0,0,0,.35)"/>`}
-   <circle cx="5" cy="-85" r="2" fill="#1b140c"/>
-   ${rolePropSVG(L.role)}
+   <ellipse cx="0" cy="0" rx="24" ry="6.5" fill="rgba(0,0,0,.35)"/>
+   ${cape}${tail}${back}${armBack}
+   <g id="legs">${leg("legR",4,true)}${leg("legL",-5,false)}</g>
+   ${torso}${collar}${hood}${head}${mask}${armFront}${front}
   </g></g>`;
 }
+function cecilArt(x,y){ const sw=`stroke="${OL}" stroke-width="1.6" stroke-linejoin="round"`; return `<g transform="translate(${x} ${y}) scale(-1 1)"><ellipse cx="0" cy="0" rx="24" ry="6.5" fill="rgba(0,0,0,.3)"/>
+  <path d="M26 -10 L34 -112" stroke="${OL}" stroke-width="5"/><path d="M26 -10 L34 -112" stroke="#8a6a3a" stroke-width="3"/><path d="M24 -112 h20 l-2 10 h-16z" fill="#8a8a92" ${sw}/>
+  <path d="M-9 -36 h8 v28 h-8z M2 -36 h8 v28 h-8z" fill="#3e5a7a" ${sw}/><path d="M-11 -10 h10 q4 0 4 6 v4 h-14z M1 -10 h10 q4 0 4 6 v4 h-14z" fill="#4a2e18" ${sw}/>
+  <path d="M-15 -78 Q-18 -56 -15 -34 L15 -34 Q18 -56 15 -78 Q0 -84 -15 -78Z" fill="#b84a3a" ${sw}/>
+  <path d="M-15 -66 h30 M-15 -54 h30 M-6 -80 v46 M6 -80 v46" stroke="#7a2a20" stroke-width="1.6" opacity=".7"/>
+  <path d="M-12 -62 h24 v26 h-24z" fill="#4f6f8f" ${sw}/><path d="M-10 -62 L-12 -80 M10 -62 L12 -80" stroke="#4f6f8f" stroke-width="4"/><rect x="-5" y="-56" width="10" height="7" fill="#3e5a7a" ${sw}/><circle cx="-8" cy="-60" r="1.6" fill="#d8b04a"/><circle cx="8" cy="-60" r="1.6" fill="#d8b04a"/>
+  <path d="M12 -74 Q22 -60 26 -50" stroke="${OL}" stroke-width="9" stroke-linecap="round" fill="none"/><path d="M12 -74 Q22 -60 26 -50" stroke="#b84a3a" stroke-width="6.5" stroke-linecap="round" fill="none"/><circle cx="27" cy="-48" r="4" fill="#8a5a3a" ${sw}/>
+  <path d="M-12 -82 Q-14 -104 2 -106 Q16 -104 15 -88 Q14 -78 2 -78 Q-10 -78 -12 -82Z" fill="#8a5a3a" ${sw}/>
+  <path d="M-8 -86 Q2 -66 14 -86 Q10 -80 2 -80 Q-4 -80 -8 -86Z" fill="#eeeae2" ${sw}/><path d="M-4 -88 q6 -3 12 0" stroke="#eeeae2" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="-3" cy="-94" r="1.6" fill="#1b140c"/><circle cx="8" cy="-94" r="1.6" fill="#1b140c"/><path d="M-6 -98 q3 -2 6 0 M5 -98 q3 -2 6 0" stroke="#eeeae2" stroke-width="1.6" fill="none"/><circle cx="2" cy="-90" r="2.6" fill="#6e4228"/>
+  <ellipse cx="2" cy="-102" rx="26" ry="6" fill="#d8b65a" ${sw}/><path d="M-11 -102 Q-10 -120 2 -120 Q14 -120 15 -102Z" fill="#e2c46a" ${sw}/><path d="M-11 -106 h26" stroke="#8a3a2a" stroke-width="3"/>
+  <path d="M-20 -101 l4 2 M-10 -98 l2 3 M14 -98 l-1 3 M24 -101 l-4 2" stroke="#a8863a" stroke-width="1.2"/></g>`; }
+function gremlinArt(x,y){ const sw=`stroke="#1e2a0c" stroke-width="1.5" stroke-linejoin="round"`; return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="13" ry="3.5" fill="rgba(0,0,0,.3)"/>
+  <path d="M-6 -2 l-3 2 M-4 -2 l0 2 M5 -2 l3 2 M3 -2 l0 2" stroke="#1e2a0c" stroke-width="1.4"/>
+  <path d="M-10 -1 Q-13 -16 -6 -22 Q0 -26 6 -22 Q13 -16 10 -1Z" fill="#5f8a2e" ${sw}/><path d="M-4 -4 Q-6 -14 0 -18" stroke="#8fbf4e" stroke-width="2" fill="none"/>
+  <circle cx="-5" cy="-10" r="1.6" fill="#a8c84a"/><circle cx="5" cy="-6" r="1.3" fill="#a8c84a"/><circle cx="2" cy="-14" r="1.1" fill="#7a4a8a"/>
+  <path d="M-7 -20 L-20 -30 L-9 -16Z M7 -20 L20 -30 L9 -16Z" fill="#6f9a3a" ${sw}/><path d="M-8 -20 L-16 -26 M8 -20 L16 -26" stroke="#c87a8a" stroke-width="1.5"/>
+  <ellipse cx="-3.5" cy="-17" rx="2.6" ry="3" fill="#ffe24a" ${sw}/><ellipse cx="3.5" cy="-17" rx="2.6" ry="3" fill="#ffe24a" ${sw}/><circle cx="-3" cy="-16.5" r="1" fill="#1e2a0c"/><circle cx="4" cy="-16.5" r="1" fill="#1e2a0c"/>
+  <path d="M-4 -11 Q0 -8 4 -11" fill="#3a1a14" ${sw}/><path d="M-2 -10.5 l1 2 l1 -2 M1 -10.5 l1 2 l1 -2" fill="#fff"/>
+  <path d="M-10 -10 l-6 4 l2 -1 l-1 3 M10 -10 l6 4 l-2 -1 l1 3" stroke="#5f8a2e" stroke-width="3" fill="none" stroke-linecap="round"/></g>`; }
 function placeHero(){
   const s=0.75+(hero.y-330)/190*0.45;
   hero.el.setAttribute("transform",`translate(${hero.x} ${hero.y}) scale(${hero.face*s} ${s})`);
@@ -256,12 +331,6 @@ function well(x,y){ return `<g transform="translate(${x} ${y})"><ellipse cx="0" 
   <path d="M-52 -92 L0 -116 L52 -92Z" fill="url(#roof)" stroke="#3a1a0c" stroke-width="2"/><line x1="-34" y1="-74" x2="34" y2="-74" stroke="#5a3a1e" stroke-width="4"/><line x1="0" y1="-74" x2="0" y2="-44" stroke="#c9b28a" stroke-width="2"/><rect x="-6" y="-46" width="12" height="10" fill="#7a5a34"/></g>`; }
 function stones(x,y){ let g=`<ellipse cx="${x}" cy="${y}" rx="140" ry="34" fill="url(#beam)" opacity=".9"/><ellipse cx="${x}" cy="${y}" rx="118" ry="26" fill="none" stroke="#d8f0ff" stroke-width="2" opacity=".5"/>`; [[-110,0],[-70,-18],[0,-26],[70,-18],[110,0],[60,18],[-60,18]].sort((a,b)=>a[1]-b[1]).forEach(([dx,dy])=>{ const X=x+dx, Y=y+dy; g+=`<ellipse cx="${X+6}" cy="${Y+2}" rx="14" ry="4" fill="#000" opacity=".25"/><path d="M${X-11} ${Y} L${X-9} ${Y-46} Q${X} ${Y-56} ${X+9} ${Y-46} L${X+11} ${Y}Z" fill="url(#stoneG)" stroke="#4e4a40" stroke-width="2"/><path d="M${X-5} ${Y-36} l6 6 l-2 8" stroke="#bfe4ff" stroke-width="2" fill="none" opacity=".8"/><path d="M${X-9} ${Y-8} q4 -4 8 0" stroke="#5f8a3c" stroke-width="3" fill="none"/>`; }); return g; }
 function stalks(x0,x1,y,dry){ let s=""; for(let x=x0;x<x1;x+=22){ s+=`<path d="M${x} ${y} q${dry?6:2} -30 ${dry?14:0} -${dry?34:44}" stroke="${dry?'#b59a55':'#6e8f3a'}" stroke-width="4" fill="none"/>`; } return s; }
-function cecilArt(x,y){ return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="22" ry="7" fill="rgba(0,0,0,.3)"/>
-  <rect x="-10" y="-34" width="8" height="34" rx="3" fill="#4a3a2a"/><rect x="2" y="-34" width="8" height="34" rx="3" fill="#4a3a2a"/>
-  <path d="M-17 -34 Q-18 -76 0 -80 Q18 -76 17 -34Z" fill="#4f6f8f"/><rect x="-9" y="-66" width="18" height="24" fill="#6f8fae"/>
-  <circle cx="0" cy="-90" r="13" fill="#d9a57c"/><path d="M-8 -84 q8 6 16 0" stroke="#e8e0d0" stroke-width="4" fill="none"/>
-  <ellipse cx="0" cy="-101" rx="24" ry="5" fill="#d8b65a"/><path d="M-12 -101 Q0 -118 12 -101Z" fill="#d8b65a"/></g>`; }
-function gremlinArt(x,y){ return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="10" ry="3" fill="rgba(0,0,0,.3)"/><path d="M-9 0 Q-10 -20 0 -22 Q10 -20 9 0Z" fill="#5f8a2e" stroke="#2f4a14" stroke-width="1.5"/><path d="M-4 -4 Q-4 -16 2 -18" stroke="#8fbf4e" stroke-width="2" fill="none"/><path d="M-8 -18 l-8 -8 M8 -18 l8 -8" stroke="#5f8a2e" stroke-width="4"/><circle cx="-3" cy="-14" r="2" fill="#ffe24a"/><circle cx="3" cy="-14" r="2" fill="#ffe24a"/></g>`; }
 const SCENES={
   clearing:{
 
@@ -478,7 +547,7 @@ let tt; function toast(t,s){ $("toastT").textContent=t; $("toastS").textContent=
 
 /* ---------- pixel-art option (original sprites drawn on a 16-wide grid) ---------- */
 let ART="classic"; try{ ART=localStorage.getItem("cq-art")||"classic"; }catch(e){}
-let BG="painted"; try{ BG=localStorage.getItem("cq-bg")||"painted"; }catch(e){}
+let BG="drawn"; try{ BG=localStorage.getItem("cq-bg")||"drawn"; }catch(e){}
 function setBg(b){ BG=b; try{ localStorage.setItem("cq-bg",b); }catch(e){} const k=$("bgBtn"); if(k) k.textContent=BG==="painted"?"Painted":"Drawn"; if(scene){ const keep=[hero.x,hero.y]; load(scene.key,true); hero.x=hero.tx=Math.max(scene.bounds[0],Math.min(scene.bounds[2],keep[0])); hero.y=hero.ty=Math.max(scene.bounds[1],Math.min(scene.bounds[3],keep[1])); placeHero(); } }
 function bgFail(){ if(BG==="painted"){ BG="drawn"; const k=$("bgBtn"); if(k) k.textContent="Drawn"; if(scene) load(scene.key,true); } }
 const PX=5;
@@ -552,7 +621,7 @@ function heroPixSVG(){
   return `<g id="heroInner"><g transform="scale(${L.size})"><ellipse cx="0" cy="0" rx="24" ry="7" fill="rgba(0,0,0,.35)"/>
     <g transform="translate(-40 -95)" shape-rendering="crispEdges">${pixRows(HERO_PIX,pal,14)}${pixProp(L.role,L.skin)}</g></g></g>`;
 }
-function cecilPix(x,y){ const pal={o:"#1a120c",y:"#d8b65a",s:"#d9a57c",e:"#1b140c",w:"#efe6d6",B:"#3f5f7f",b:"#6f8fae",l:"#4a3a2a",d:"#2a1c10"};
+function cecilPix(x,y){ const pal={o:"#1a120c",y:"#d8b65a",s:"#8a5a3a",e:"#1b140c",w:"#efe6d6",B:"#3f5f7f",b:"#6f8fae",l:"#4a3a2a",d:"#2a1c10"};
   return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="24" ry="7" fill="rgba(0,0,0,.3)"/><g transform="translate(-40 -90)" shape-rendering="crispEdges">${pixRows(CECIL_PIX,pal)}</g></g>`; }
 function gremPix(x,y){ const pal={o:"#1a120c",g:"#5f8a2e",y:"#ffe24a"};
   return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="12" ry="3" fill="rgba(0,0,0,.3)"/><g transform="translate(-16 -32) scale(.8)" shape-rendering="crispEdges">${pixRows(GREM_PIX,pal)}</g></g>`; }
@@ -676,10 +745,10 @@ function posBubble(){
   b.style.left=x+"px"; b.style.top=y+"px";
 }
 const FACE={Narrator:`<svg viewBox="0 0 70 70"><rect width="70" height="70" fill="#1d2633"/><polygon points="35,8 54,30 47,62 23,62 16,30" fill="#bfe4ff" stroke="#fff" stroke-width="1.5"/></svg>`,
-  Cecil:`<svg viewBox="0 0 70 70"><rect width="70" height="70" fill="#3a4a2a"/><path d="M8 70c3-14 12-20 27-20s24 6 27 20z" fill="#4f6f8f"/><circle cx="35" cy="34" r="15" fill="#d9a57c"/><path d="M26 42 q9 6 18 0" stroke="#e8e0d0" stroke-width="4" fill="none"/><circle cx="30" cy="32" r="1.8" fill="#2b1d10"/><circle cx="40" cy="32" r="1.8" fill="#2b1d10"/><ellipse cx="35" cy="21" rx="26" ry="6" fill="#d8b65a"/><path d="M22 21 Q35 2 48 21Z" fill="#d8b65a"/></svg>`};
+  Cecil:`<svg viewBox="0 0 70 70"><defs><linearGradient id="fcB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2c98a"/><stop offset="1" stop-color="#9a6a3a"/></linearGradient></defs><rect width="70" height="70" fill="url(#fcB)"/><path d="M6 70c2-14 12-20 29-20s27 6 29 20z" fill="#b84a3a" stroke="#1d140c" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 70v-14M56 70v-14M24 52v18M46 52v18" stroke="#7a2a20" stroke-width="1.5" opacity=".7"/><path d="M22 70V56h26v14" fill="#4f6f8f" stroke="#1d140c" stroke-width="1.4" stroke-linejoin="round"/><circle cx="26" cy="60" r="1.6" fill="#d8b04a"/><circle cx="44" cy="60" r="1.6" fill="#d8b04a"/><path d="M20 34Q20 16 35 16Q50 16 50 34Q50 50 35 50Q20 50 20 34Z" fill="#8a5a3a" stroke="#1d140c" stroke-width="1.4" stroke-linejoin="round"/><path d="M22 38Q35 66 48 38Q44 46 35 46Q26 46 22 38Z" fill="#eeeae2" stroke="#1d140c" stroke-width="1.4" stroke-linejoin="round"/><path d="M28 40q7-4 14 0" stroke="#eeeae2" stroke-width="3.5" stroke-linecap="round"/><path d="M31 43q4 2 8 0" stroke="#7a3a2a" stroke-width="1.4" fill="none"/><circle cx="29" cy="31" r="1.9" fill="#1b140c"/><circle cx="41" cy="31" r="1.9" fill="#1b140c"/><path d="M25 27q4-2 7 0M38 27q4-2 7 0" stroke="#eeeae2" stroke-width="2" fill="none"/><circle cx="35" cy="36" r="3" fill="#6e4228"/><circle cx="24" cy="38" r="3" fill="#e88a7a" opacity=".35"/><circle cx="46" cy="38" r="3" fill="#e88a7a" opacity=".35"/><ellipse cx="35" cy="21" rx="30" ry="6" fill="#d8b65a" stroke="#1d140c" stroke-width="1.4" stroke-linejoin="round"/><path d="M21 21Q22 4 35 4Q48 4 49 21Z" fill="#e2c46a" stroke="#1d140c" stroke-width="1.4" stroke-linejoin="round"/><path d="M21 17h28" stroke="#8a3a2a" stroke-width="3"/><path d="M8 21l4 2M58 21l-4 2M18 25l2 2M52 25l-2 2" stroke="#a8863a" stroke-width="1"/></svg>`};
 // opts: [text, style("" = plain), fn, worksOnSpeaker]
 function ask(who,text,opts,after){
-  const box=$("box"); box.classList.add("on"); $("portrait").innerHTML=FACE[who]||FACE.Narrator; $("plate").textContent=who==="Narrator"?"":who; $("say").innerHTML=text;
+  $("bubble").classList.remove("on"); bubOn=false; const box=$("box"); box.classList.add("on"); $("portrait").innerHTML=FACE[who]||FACE.Narrator; $("plate").textContent=who==="Narrator"?"":who; $("say").innerHTML=text;
   const ul=$("choices"); ul.innerHTML="";
   opts.filter(o=>!o[1]||o[1]===STYLE).forEach((o,i)=>{ const li=document.createElement("li"), b=document.createElement("button"); b.type="button";
     b.innerHTML=`<span class="k">${i+1}.</span><span>${o[0]}${o[1]?`<span class="tag">${o[1]}</span>`:""}</span>`;
