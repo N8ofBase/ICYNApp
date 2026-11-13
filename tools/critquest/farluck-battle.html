@@ -1288,7 +1288,8 @@ renderSetup(); renderPace();
   const baseBuild = buildUnit;
   buildUnit = (sp, team, i) => {
     const u = baseBuild(sp, team, i);
-    if (team === 'A') { u.abs = [u.abs[0]]; u.cd = [0]; u.st[sp.l2] -= 1; u.life = u.max = ROLES[sp.role].life; }
+    if (team === 'A') { u.abs = [u.abs[0]]; u.cd = [0]; u.st[sp.l2] -= 1; u.life = u.max = ROLES[sp.role].life;
+      if (sp.weapon) { u.weapon = sp.weapon; u.wRange = sp.wRange || u.wRange; } if (sp.def) u.def += sp.def; if (sp.color) u.color = sp.color; }
     else { // plague gremlin: small, quick, weak
       u.abs = []; u.cd = []; u.life = u.max = 6; u.def = 9; u.st = { P: 0, E: 0, S: 1, C: 0 }; u.main = 'P';
       u.weapon = 'Claws'; u.wRange = 1; u.roleDmg = 0; u.color = '#5f8a2e'; u.gremlin = true; u.lf = 'Plague'; u.branch = 'gremlin';
@@ -1301,12 +1302,12 @@ renderSetup(); renderPace();
     const won = G.units.some(u => u.team === 'A' && u.alive);
     const b = document.createElement('div'); b.className = 'banner';
     b.innerHTML = `<div><h2>${won ? 'The gremlins scatter!' : 'Knocked out'}</h2><p>${won ? 'Their fear melts away, and they scurry off into the fields, squeaking.' : 'You wake by the Icosa Crystal. Your Pack waits by the shed.'} ${G.round} rounds.</p>
-      <button class="btn primary" type="button" id="newBtn">${won ? 'Back to the farm' : 'Try again'}</button></div>`;
+      <button class="btn primary" type="button" id="newBtn">${won ? 'Back to the farm' : 'Wake at the crystal'}</button></div>`;
     $('board').appendChild(b);
-    $('newBtn').onclick = () => { if (won) parent.postMessage({ type: 'cq-battle-close', won }, '*'); else { b.remove(); startBout(); } };
+    $('newBtn').onclick = () => { if (parent !== window) parent.postMessage({ type: 'cq-battle-close', won }, '*'); else { b.remove(); startBout(); } };
     parent.postMessage({ type: 'cq-battle', won }, '*');
   };
-  const me = defaultSpec(cfg.lf, cfg.role, cfg.focus || ROLES[cfg.role].branches[0], 0, 0);
+  const me = { ...defaultSpec(cfg.lf, cfg.role, cfg.focus || ROLES[cfg.role].branches[0], cfg.ab || 0, 0), weapon: cfg.weapon, wRange: cfg.wRange, def: cfg.def || 0, color: cfg.color };
   const grem = () => defaultSpec('Melkin', 'Whisper', ROLES.Whisper.branches[0], 0, 0);
   talkTargets = () => [];
   G.team = [me]; G.rivals = [grem(), grem(), grem()];
