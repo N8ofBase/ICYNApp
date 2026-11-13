@@ -1537,13 +1537,13 @@ function dig() {
   }
   const W = w * (COLS + 0.5) + 12, H = size * 1.5 * (ROWS - 1) + size * 2 + 12;
   gameShell("scrap", "Dig the rubble", `
-    <p class="note">Tap a patch to dig. Shnee calls out how close you are: <b>...</b> is cold, <b>?</b> is warmer, <b>!!!</b> is right next to it. You have ${DIGS} digs.</p>
+    <p class="note">Tap a patch to dig. Shnee calls out how close you are: <b>...</b> is cold, <b>?</b> is warmer, <b>!!!</b> is right next to it. You have ${DIGS} digs. Find the cache and every dig you have left adds to your D20. Coins turn up on 18 to 20.</p>
     <div class="stat">Digs left: <b id="left">${left}</b></div>
     <div class="hexWrap"><svg viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}" id="yard" aria-label="Rubble patch">${cells}</svg></div>
     <div class="result" id="res"></div>`);
   const finish = found => {
-    over = true; const roll = d20(), total = Math.min(20, roll + (found ? 6 : 0));
-    $("#res").innerHTML = `<span id="die"></span><p id="out">${found ? "You found the cache! D20 + 6" : "Out of digs. You sift what you turned up: D20"}...</p>`;
+    over = true; const bonus = found ? left : 0, roll = d20(), total = Math.min(20, roll + bonus);
+    $("#res").innerHTML = `<span id="die"></span><p id="out">${found ? `You found the cache with ${left} dig${left === 1 ? "" : "s"} left! D20 + ${left}` : "Out of digs. You sift what you turned up: D20"}...</p>`;
     rollAnim($("#die"), roll, () => {
       let get;
       const ores = COLORS.map(c => "ore" + c).filter(known), ore = ores.length ? pick(ores) : null, sd = pick(Object.keys(CROP).filter(known));
@@ -1553,10 +1553,10 @@ function dig() {
       else if (total >= 11) { addM("wood", 2); addM("stone", 1); get = "<b>2 Wood</b> and <b>1 Stone</b>"; }
       else if (total >= 6) { addM("stone", 2); addM("wood", 1); get = "<b>2 Stone</b> and <b>1 Wood</b>"; }
       else { addM("stone", 2); get = "<b>2 Stone</b>"; }
-      S.coins += found ? 3 : 1; get += found ? ", and <b>3 Icosa Coins</b> in an old purse" : "";
+      if (total >= 18) { S.coins += 3; get += ", and <b>3 Icosa Coins</b> in an old purse"; }
       if (found && (roll === 20 || total < 15 || total >= 18)) { const sp = pick(Object.keys(CROP).filter(known)); S.seeds[sp] = SD(sp) + 2; get += `, plus an old seed pouch with <b>2 ${CROP[sp].name} seeds</b>`; }
       save();
-      $("#out").innerHTML = `You rolled ${roll}${found ? `, total ${total}` : ""}. You get ${get}.<br><span class="btns" style="margin-top:8px"><button class="btn" type="button" id="again">Dig again</button><button class="btn" type="button" id="home">Back to the castle</button></span>`;
+      $("#out").innerHTML = `You rolled ${roll}${bonus ? ` + ${bonus} = ${total}` : ""}. You get ${get}.<br><span class="btns" style="margin-top:8px"><button class="btn" type="button" id="again">Dig again</button><button class="btn" type="button" id="home">Back to the castle</button></span>`;
       $("#again").onclick = dig; $("#home").onclick = showHub;
     });
   };
