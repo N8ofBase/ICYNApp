@@ -828,7 +828,7 @@ function cornerSVG(role){
 function applyRole(){
   const L=heroLook(); document.documentElement.style.setProperty("--role",ROLE_FRAME[L.role]||"#3f6b45");
   document.querySelectorAll(".corner").forEach(c=>c.innerHTML=cornerSVG(L.role));
-  $("whoName").textContent=`${L.lf} ${L.role}`; $("whoSub").textContent=`Style: ${STYLE}`;
+  $("whoName").textContent=(HERO&&HERO.name)||`${L.lf} ${L.role}`; $("whoSub").textContent=(HERO&&HERO.name?`${L.lf} ${L.role}, `:"")+`Style: ${STYLE}`;
   renderStats();
 }
 /* Level 1 stats, same tables as the hex battle (farluck-battle.html) */
