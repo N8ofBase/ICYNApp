@@ -61,6 +61,13 @@ body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;ov
 .hud{flex:0 0 auto;min-height:var(--hudH);display:flex;align-items:stretch;gap:0;background:linear-gradient(180deg,var(--stone1),var(--stone2));border-top:3px solid var(--role);box-shadow:inset 0 2px 0 var(--gold);color:var(--barInk);font-family:"Alegreya SC",serif;overflow-x:auto}
 .sec{display:flex;flex-direction:column;justify-content:center;gap:6px;padding:8px 12px;border-right:2px solid #000;box-shadow:1px 0 0 #3a2f25}
 .sec:last-child{border-right:0;box-shadow:none}
+.hud{justify-content:safe center}.sec:first-child{border-left:2px solid #000}
+.stats{min-width:170px}.lifebar{position:relative;height:16px;border:1px solid #000;border-radius:8px;background:#2a1612;overflow:hidden;box-shadow:inset 0 1px 2px #000}
+.lifebar i{position:absolute;inset:0;background:linear-gradient(#e0584a,#8a1e18);border-radius:8px}
+.lifebar span{position:relative;display:block;text-align:center;font:11px/16px Alegreya,serif;color:#fff;text-shadow:0 1px 1px #000}
+.stg{display:grid;grid-template-columns:repeat(5,auto);gap:4px}
+.stg div{display:flex;flex-direction:column;align-items:center;min-width:28px;padding:2px 3px;border:1px solid #6b5537;border-radius:5px;background:#2a221a;font-size:9px;color:#bfa77a;line-height:1.1}
+.stg div b{font:600 15px/1.1 Alegreya,serif;color:var(--barInk)}.stg div.main{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
 .sec h4{margin:0;font-size:11px;letter-spacing:.08em;color:#bfa77a;font-weight:500}
 .who{min-width:150px}
 .who b{font-size:15px}.who small{font-size:12px;color:#cdb98e;font-family:Alegreya,serif}
@@ -96,6 +103,7 @@ button.slot:hover,button.slot:focus-visible{border-color:var(--gold);outline:non
   .hud{flex-wrap:wrap}
   .sec{padding:6px 8px;border-right:0;box-shadow:none}
   .who{display:none}
+  .hud{justify-content:center}.sec:first-child{border-left:0}
   .verbs button{font-size:13px;padding:5px 8px}
   .slot{width:50px;height:50px}.pack{width:56px;height:56px}
   .frame{border-width:6px}.corner{width:30px;height:30px}.c-tl,.c-tr,.c-bl,.c-br{margin:7px}
@@ -128,6 +136,7 @@ button.slot:hover,button.slot:focus-visible{border-color:var(--gold);outline:non
   </div>
   <div class="hud" id="hud">
     <div class="sec who"><h4>Light Keeper</h4><b id="whoName"></b><small id="whoSub"></small></div>
+    <div class="sec stats" id="statSec"><h4>Stats · Level 1</h4><div class="lifebar" title="Life"><i id="lifeFill"></i><span id="lifeTxt"></span></div><div class="stg" id="statGrid"></div></div>
     <div class="sec"><h4>Actions</h4><div class="verbs" id="verbs"></div></div>
     <div class="sec"><h4>Gear and Ready</h4><div class="slots" id="slots"></div></div>
     <div class="sec"><h4>Pack</h4><button type="button" class="slot pack" id="packBtn" aria-label="Open Pack"></button></div>
@@ -778,7 +787,16 @@ function applyRole(){
   const L=heroLook(); document.documentElement.style.setProperty("--role",ROLE_FRAME[L.role]||"#3f6b45");
   document.querySelectorAll(".corner").forEach(c=>c.innerHTML=cornerSVG(L.role));
   $("whoName").textContent=`${L.lf} ${L.role}`; $("whoSub").textContent=`Style: ${STYLE}`;
+  renderStats();
 }
+/* Level 1 stats, same tables as the hex battle (farluck-battle.html) */
+const ROLE_ST={Brawler:{life:40,P:1,S:1,main:"P"},Champion:{life:33,def:1,P:2,E:1,main:"P"},Maverick:{life:30,S:1,C:2,main:"C"},"Soul Seer":{life:30,E:2,S:1,main:"E"},Whisper:{life:30,S:1,C:1,main:"S"}};
+const LF_ST={Dimoneesh:{def:1,E:1},Leyf:{E:1,S:1},Lizerus:{def:1,P:1},Melkin:{S:1,C:1},Sapien:{P:1,C:1}};
+const STATN={P:"Power",E:"Energy",S:"Speed",C:"Charm"};
+function heroStats(){ const L=heroLook(), R=ROLE_ST[L.role]||ROLE_ST.Maverick, F=LF_ST[L.lf]||{}; const st={}; for(const k of "PESC") st[k]=(R[k]||0)+(F[k]||0);
+  const max=R.life; return {st,main:R.main,max,life:(HERO&&HERO.life!=null)?Math.min(max,HERO.life):max,def:10+(R.def||0)+(F.def||0)+((HERO&&HERO.def)||0)}; }
+function renderStats(){ const S=heroStats(); $("lifeFill").style.width=(100*S.life/S.max)+"%"; $("lifeTxt").textContent=`Life ${S.life} / ${S.max}`;
+  $("statGrid").innerHTML=`<div title="Defense: rolls must meet this to hit you"><b>${S.def}</b>Def</div>`+[..."PESC"].map(k=>`<div class="${k===S.main?"main":""}" title="${STATN[k]}${k===S.main?" (main stat)":""}"><b>${S.st[k]>=0?"+":""}${S.st[k]}</b>${STATN[k].slice(0,3)}</div>`).join(""); }
 function slotHTML(name,n,label){ return name?`<span class="ic">${ICON[name]||"◆"}</span>${label||name}${n>1?`<span class="n">${n}</span>`:""}`:`<span class="ic">·</span>${label||"Empty"}`; }
 function buildBar(){
   const bar=$("verbs"); bar.innerHTML="";
