@@ -1680,7 +1680,7 @@ addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelecto
     return u;
   };
   const baseName = nameTeam;
-  nameTeam = (list, word) => { baseName(list, word); list.forEach(u => u.name = word === 'Your' ? `You (${u.role})` : 'Treywind'); };
+  nameTeam = (list, word) => { baseName(list, word); list.forEach(u => u.name = word === 'Your' ? (cfg.name || `You (${u.role})`) : 'Treywind'); };
   banner = (title, text) => {
     const won = G.units.some(u => u.team === 'A' && u.alive);
     const b = document.createElement('div'); b.className = 'banner';

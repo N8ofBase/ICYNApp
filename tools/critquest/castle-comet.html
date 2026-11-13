@@ -138,6 +138,8 @@ img.mini { width: 20px; height: 20px; vertical-align: -5px; margin-right: 4px; o
 .avatar { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 16px; align-items: start; }
 .avForm { display: grid; gap: 10px; min-width: 0; }
 .avSheet { position: sticky; top: 12px; display: grid; gap: 8px; justify-items: start; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--void); }
+.nameRow { display: flex; gap: 10px; align-items: center; }
+.nameRow input { font: inherit; padding: 6px 10px; border-radius: 6px; border: 1px solid #b08a4a; background: #fffaf0; color: #2b1d10; width: min(260px, 100%); }
 .skinRow { display: flex; gap: 8px; align-items: center; }
 .skinSw { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #8a6a3a; box-shadow: 0 0 0 1px #1d140c; cursor: pointer; padding: 0; }
 .skinSw.on { outline: 3px solid #7a2e1c; outline-offset: 2px; }
@@ -632,8 +634,8 @@ let hudRole = null;
 function renderHud() {
   const h = S.hero || {}, role = h.role || "Champion", awake = S.phase === "castle";
   if (role !== hudRole) { hudRole = role; document.documentElement.style.setProperty("--role", ROLE_FRAME[role] || "#a8821f"); document.querySelectorAll(".corner").forEach(c => c.innerHTML = cornerSVG(role)); }
-  $("#whoName").textContent = h.lf && h.role ? `${h.lf} ${h.role}` : S.phase === "past" ? "Your past life" : "Not yet woken";
-  $("#whoSub").textContent = (h.style || S.style) ? `Style: ${h.style || S.style}` : "";
+  $("#whoName").textContent = h.name ? h.name : h.lf && h.role ? `${h.lf} ${h.role}` : S.phase === "past" ? "Your past life" : "Not yet woken";
+  $("#whoSub").textContent = [h.name && h.lf ? `${h.lf} ${h.role}` : "", (h.style || S.style) ? `Style: ${h.style || S.style}` : ""].filter(Boolean).join(" · ");
   ["hbHall", "hbYard", "hbBarracks"].forEach(id => $("#" + id).disabled = !awake);
 }
 function renderPouch() {
@@ -822,7 +824,7 @@ function openTalk(id, key = "start") {
   }
   if (!nd) return closeTalk();
   node = nd; nodeWho = id;
-  let text = nd.t.replace(/\{ROLE\}/g, S.hero.role || "Light Keeper").replace("{LF}", S.hero.lf ? LIFEFORMS[S.hero.lf].line : "");
+  let text = nd.t.replace(/\{NAME\}/g, S.hero.name || "Light Keeper").replace(/\{ROLE\}/g, S.hero.role || "Light Keeper").replace("{LF}", S.hero.lf ? LIFEFORMS[S.hero.lf].line : "");
   if (id === "you" && key === "chest") text = S.dishes.length ? "Inside: " + S.dishes.join(", ") + "." : "The chest is empty. Dishes from the Kitchen will go here.";
   if (id === "you" && key === "mirror") text = `You see a Light Keeper with a <b>${S.style}</b> Style looking back.`;
   if (nd.clue) addClue(nd.clue);
@@ -1442,7 +1444,7 @@ function showFuture() {
 
 /* ---------- waking in the Barracks (Game Bible's Barracks welcome, told the Lightbringer way) */
 Object.assign(TALK.bruxanna, {
-  wake1: { t: "Welcome, {ROLE}! Welcome to the Castle Comet! Oh, you must be SO confused.", c: [
+  wake1: { t: "Welcome, {NAME}! Welcome, {ROLE}, to the Castle Comet! Oh, you must be SO confused.", c: [
     { t: "Where am I?", go: "wake2" },
     { t: "Did I... pass on?", go: "wakeGone" },
     { t: "Tell me what happened. All of it.", s: "Serious", go: "wakeS", works: ["bruxanna"] },
@@ -1467,7 +1469,7 @@ Object.assign(TALK.bruxanna, {
   wakeNod: { face: "wexler", t: "<em>(He nods back, and something in his face softens.)</em> Good. Then you already understand.", next: "wake5" },
   wake5: { t: "You go back down to Talus and help! Stand against the Legion, help the folk of Talus, and clear the way for the Lightbringer. But first, the best part: you get to choose your new self. Go look in the long mirror!", c: [
     { t: "Look in the long mirror.", go: "avatar" } ] },
-  mission1: { t: "Look at you! A brand new {ROLE}. I left a starter weapon and some cloth armor in your chest. And just in time: Wexler says Farluck Farm needs help right away. The farmer's crops are failing. The Training Ground is just down the hall if you'd like to practice with Treywind first.", c: [
+  mission1: { t: "Look at you, {NAME}! A brand new {ROLE}. I left a starter weapon and some cloth armor in your chest. And just in time: Wexler says Farluck Farm needs help right away. The farmer's crops are failing. The Training Ground is just down the hall if you'd like to practice with Treywind first.", c: [
     { t: "Go see Wexler. Farluck Farm can't wait.", go: "talk:wexler:mission" },
     { t: "Train with Treywind first.", go: "room:training" },
     { t: "I'll look around first.", go: "close" } ] },
@@ -1515,7 +1517,7 @@ TALK.sloan = { start: { t: "Breathe in. Breathe out. Talus is loud, and the Come
 /* ---------- the long mirror: build your new self */
 function showAvatar(first = false, h0 = null) {
   stopGame();
-  const h = h0 || { lf: S.hero.lf, role: S.hero.role, skin: S.hero.skin || LF_COLORS[S.hero.lf][0], style: S.hero.style || S.style || "Serious", feature: S.hero.feature || "Lucky", focus: S.hero.focus, ab: S.hero.ab || 0 };
+  const h = h0 || { name: S.hero.name || "", lf: S.hero.lf, role: S.hero.role, skin: S.hero.skin || LF_COLORS[S.hero.lf][0], style: S.hero.style || S.style || "Serious", feature: S.hero.feature || "Lucky", focus: S.hero.focus, ab: S.hero.ab || 0 };
   if (!L1[h.role][h.focus]) { h.focus = Object.keys(L1[h.role])[0]; h.ab = 0; }
   const d = { ...S.dice, own: S.dice.own };
   const st = heroStats(h), ab = abilityOf(h);
@@ -1529,6 +1531,7 @@ function showAvatar(first = false, h0 = null) {
     <p class="note" style="max-width:66ch">${first ? `Your first life is filled in. Change anything you like: this is your new, enhanced self.` : "Change your look and your choices any time you're in the Barracks."}</p>
     <div class="avatar">
       <div class="avForm">
+        <label class="nameRow"><span class="eyebrow">Name</span><input id="avName" type="text" maxlength="18" autocomplete="off" spellcheck="false" value="${(h.name || "").replace(/"/g, "&quot;")}" placeholder="Your new name"></label>
         <div class="eyebrow">Lifeform ${past.lf ? `<small>first life: ${past.lf}</small>` : ""}</div><div class="pickGrid sm">${Object.entries(LIFEFORMS).map(([n, L]) => card("lf", n, n, bon(L.b), h.lf === n, `title="${L.t}"`, headshot(n, "Folk", false, "#4a3c2b", n === h.lf ? h.skin : null))).join("")}</div>
         <div class="skinRow" role="group" aria-label="${h.lf} color"><span class="eyebrow">Color</span>${LF_COLORS[h.lf].map(c => `<button type="button" class="skinSw ${c === h.skin ? "on" : ""}" data-g="skin" data-v="${c}" style="background:${c}" aria-label="Color ${c}" aria-pressed="${c === h.skin}"></button>`).join("")}</div>
         <div class="eyebrow">Role ${past.role ? `<small>first life: ${past.role}</small>` : ""}</div><div class="pickGrid sm">${Object.entries(ROLES).map(([n, R]) => card("role", n, n, `Life ${R.life}`, h.role === n, `title="${R.t}"`, headshot(h.lf, n, true, "#4a3c2b", h.skin))).join("")}</div>
@@ -1541,7 +1544,7 @@ function showAvatar(first = false, h0 = null) {
       </div>
       <aside class="avSheet">
         <div class="mirrorView"><svg viewBox="-60 -150 120 160" role="img" aria-label="Your reflection: ${h.lf} ${h.role}">${charSVG({ lf: h.lf, role: h.role, skin: h.skin || SKIN[h.lf], cloak: ROLES[h.role].hue, size: SIZE(h.lf) })}</svg><span class="d20" style="${diceCSS()}">20</span></div>
-        <h3>${h.lf} ${h.role}</h3><p class="note">${h.style} Style, ${h.feature}</p><p class="note"><b>${h.lf}:</b> ${LIFEFORMS[h.lf].t}<br><b>${h.role}:</b> ${ROLES[h.role].t}</p>
+        <h3>${h.name ? `${h.name}<br><small>${h.lf} ${h.role}</small>` : `${h.lf} ${h.role}`}</h3><p class="note">${h.style} Style, ${h.feature}</p><p class="note"><b>${h.lf}:</b> ${LIFEFORMS[h.lf].t}<br><b>${h.role}:</b> ${ROLES[h.role].t}</p>
         <div class="statGrid"><span>Life <b>${st.life}</b></span><span>Defense <b>${st.def}</b></span>${Object.keys(STATN).map(k => `<span>${STATN[k]} <b>${st[k]}</b></span>`).join("")}${st.dmg ? `<span>Damage <b>+${st.dmg}</b></span>` : ""}</div>
         <p class="note"><b>${ab.name}</b> (${h.focus}): ${ab.t}</p>
         <p class="note"><b>${FEATURES[h.feature][0]}</b>: ${FEATURES[h.feature][1]}.</p>
@@ -1551,7 +1554,7 @@ function showAvatar(first = false, h0 = null) {
       </aside>
     </div></div>`;
   $("#view").querySelectorAll("[data-g]").forEach(b => b.onclick = () => {
-    const g = b.dataset.g, v = b.dataset.v, n = { ...h };
+    const g = b.dataset.g, v = b.dataset.v, n = { ...h, name: cleanName($("#avName").value) || h.name };
     if (g === "ab") { const [fo, i] = v.split("|"); n.focus = fo; n.ab = +i; } else n[g] = v;
     if (g === "role") { n.focus = Object.keys(L1[v])[0]; n.ab = 0; }
     if (g === "lf") n.skin = LF_COLORS[v][0];
@@ -1568,6 +1571,7 @@ function showAvatar(first = false, h0 = null) {
     S.dice[p] = k; save(); showAvatar(first, h);
   });
   $("#become").onclick = () => {
+    h.name = cleanName($("#avName").value) || h.name || null;
     Object.assign(S.hero, h); S.style = h.style; save(); renderStyle();
     if (first) {
       if (!S.loadout.weapon) { const w = FORGE.find(g => g.slot === "weapon" && g.roles.includes(h.role)); S.gear.push(w.id, "clotharmor"); S.loadout.weapon = w.id; S.loadout.armor = "clotharmor"; }
@@ -1694,7 +1698,7 @@ function showRack() {
 function heroCfg() {
   const h = S.hero, w = GEAR[S.loadout.weapon], a = GEAR[S.loadout.armor];
   return { lf: h.lf, role: h.role, focus: L1[h.role][h.focus] ? h.focus : Object.keys(L1[h.role])[0], ab: h.ab || 0,
-    weapon: w ? w.name : undefined, wRange: w ? w.range : undefined, def: (a ? a.def : 0) + (w && w.def || 0), color: ROLES[h.role].hue, skin: h.skin,
+    weapon: w ? w.name : undefined, wRange: w ? w.range : undefined, def: (a ? a.def : 0) + (w && w.def || 0), color: ROLES[h.role].hue, skin: h.skin, name: h.name || undefined,
     dice: S.dice && DICE.body[S.dice.body] ? { body: DICE.body[S.dice.body][1], num: DICE.num[S.dice.num][1], finish: S.dice.finish } : undefined };
 }
 /* Farluck Farm: the painted-screen adventure (farluck-adventure.html, from the Path of the Light Keeper thread) with its hex battle.
@@ -2049,10 +2053,11 @@ function showWorldIntro() {
 }
 /* Create Your Past and the Role intros: create-past.html (Path of the Light Keeper thread, d9da7e2), drawn full screen like the explore screens.
    It posts {type: "cq-past-done", lf, role, votes, style, clue, skipped?}. The older in-castle panel (showPast) stays as a fallback. */
+const cleanName = n => { const t = String(n || "").replace(/[^\p{L}\p{N} '\-]/gu, "").replace(/\s+/g, " ").trim().slice(0, 18); return t.length >= 2 ? t : ""; };
 function showCreatePast() {
   stopGame(); closeTalk(); dropFarluck();
   $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Part one</div><h2>Create Your Past</h2><p class="note">Your first life on Talus.</p></div>`;
-  const pick = {}; if (S.hero.lf) pick.lf = S.hero.lf; if (S.hero.role) pick.role = S.hero.role;
+  const pick = {}; if (S.hero.lf) pick.lf = S.hero.lf; if (S.hero.role) pick.role = S.hero.role; if (S.hero.name) pick.name = S.hero.name; if (S.hero.skin) pick.skin = S.hero.skin;
   const fr = document.createElement("iframe"); fr.className = "arena full"; fr.id = "fullFrame"; fr.title = "Create Your Past";
   fr.src = "create-past.html#" + encodeURIComponent(JSON.stringify(pick)); document.body.appendChild(fr); fr.focus();
 }
@@ -2061,7 +2066,7 @@ addEventListener("message", e => {
   if (d.type === "cq-intro-done") { dropFarluck(); S.introSeen = true; save(); showCreatePast(); }
   if (d.type === "cq-past-done") {
     dropFarluck(); const lf = d.lf || "Sapien", role = d.role || "Brawler";
-    S.hero = { ...S.hero, lf, role, skin: d.skin || LF_COLORS[lf][0], past: { lf, role, skin: d.skin || LF_COLORS[lf][0] } };
+    S.hero = { ...S.hero, lf, role, name: cleanName(d.name) || S.hero.name || null, skin: d.skin || LF_COLORS[lf][0], past: { lf, role, skin: d.skin || LF_COLORS[lf][0] } };
     if (d.clue) addClue(d.clue);
     if (d.skipped) { S.style = S.style || d.style || "Serious"; S.hero.style = S.style; S.phase = "avatar"; save(); renderStyle(); return showAvatar(true); }
     votes = Array.isArray(d.votes) ? d.votes.slice() : []; save(); showFuture();
