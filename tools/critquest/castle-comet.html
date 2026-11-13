@@ -566,7 +566,7 @@ function faceSVG(id, bg) {
 /* small headshot icons for pick lists (N8 2026-11-12): a Lifeform's face, or a Role's bust with its gear in view */
 function headshot(lf, role, bust = false, bg = "#4a3c2b", skin = null) {
   const L = { lf, role, skin: skin || SKIN[lf], cloak: role === "Folk" ? FOLK_CLOTH[lf] : (ROLES[role] && ROLES[role].hue) || ROLE_LOOK[role], size: 1 };
-  const vb = bust ? "-42 -128 84 84" : "-26 -124 52 52";
+  const vb = bust ? (lf === "Lizerus" ? "-38 -128 84 84" : "-42 -128 84 84") : (lf === "Lizerus" ? "-24 -124 60 60" : "-26 -124 52 52"); // the Lizerus snout reaches x 31
   return `<span class="hs" aria-hidden="true"><svg viewBox="${vb}" preserveAspectRatio="xMidYMid slice" style="background:radial-gradient(circle at 50% 35%, ${bg}, #17120e)">${charSVG(L)}</svg></span>`;
 }
 const keeperShot = id => CAST[id] ? `<span class="hs" aria-hidden="true">${faceSVG(id, PEOPLE[id] && PEOPLE[id].hue)}</span>` : "";
