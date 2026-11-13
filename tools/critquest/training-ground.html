@@ -145,14 +145,17 @@ body.inBattle { overflow: hidden; }
 #caption.bubble b { color: #ffe2a0; }
 #caption.bubble .ctl { pointer-events: auto; display: flex; justify-content: flex-end; }
 /* turn pop-up beside the active Hero */
-.turnPop { position: absolute; z-index: 6; transform: translate(0, -50%); display: grid; gap: 3px; background: rgba(20, 14, 9, .9); border: 1px solid var(--gold2); border-radius: 10px; padding: 6px; min-width: 120px; }
+.turnPop { position: absolute; z-index: 6; transform: translate(-50%, 0); display: grid; gap: 3px; background: rgba(20, 14, 9, .9); border: 1px solid var(--gold2); border-radius: 10px; padding: 6px; min-width: 120px; }
 .turnPop .tp { font: 11px "Alegreya SC", serif; color: #bfa77a; text-align: center; }
 .turnPop button { font: 13px/1.1 "Alegreya SC", serif; color: #f3e6c8; background: #3a2e24; border: 1px solid #6b5537; border-radius: 6px; padding: 4px 8px; cursor: pointer; text-align: left; }
 .turnPop button[aria-pressed="true"] { background: var(--gold2); color: #22170d; border-color: #ffe2a0; }
 .turnPop button:disabled { display: none; }
 .turnPop button small { color: #cdb98e; font-family: Alegreya, serif; }
-.turnPop.left { transform: translate(-100%, -50%); }
+.turnPop { grid-template-columns: repeat(auto-fit, minmax(96px, auto)); max-width: 330px; }
+.turnPop .tp { grid-column: 1 / -1; }
+@media (max-width: 760px), (max-height: 520px) { .turnPop { display: none !important; } }
 /* rolling Crit Dice */
+.tray.gone { opacity: 0; transition: opacity .6s; }
 .tray { position: absolute; z-index: 5; display: flex; gap: 4px; transform: translate(-50%, -50%); pointer-events: none; }
 .die { --sz: var(--dz, 46px); width: var(--sz); height: var(--sz); position: relative; filter: drop-shadow(0 5px 5px rgba(0, 0, 0, .6)); }
 .die.sm { --sz: calc(var(--dz, 46px) * .75); }
@@ -1379,10 +1382,10 @@ function turnPop(u) {
   P.innerHTML = `<div class="tp">Your turn</div>` + [...$('acts').querySelectorAll('button')].map(b => `<button type="button" data-act="${b.dataset.act}" aria-pressed="${b.getAttribute('aria-pressed')}" ${b.disabled ? 'disabled' : ''}>${b.firstChild.textContent} <small>${b.querySelector('small') ? b.querySelector('small').textContent : ''}</small></button>`).join('');
   P.querySelectorAll('button').forEach(b => b.onclick = () => pressAct(b.dataset.act));
   P.hidden = false;
-  const [x, y, k] = unitXY(u), B = $('board').getBoundingClientRect(), off = 28 * (k || 1.5);
-  const right = x + off + P.offsetWidth < B.width - 8;
-  P.classList.toggle('left', !right);
-  P.style.left = (right ? x + off : x - off) + 'px'; P.style.top = clamp(y - 20 * (k || 1.5), P.offsetHeight / 2 + 8, B.height - P.offsetHeight / 2 - 8) + 'px';
+  // below the Light Keeper, under where the dice land (N8, Nov 13); the bar keeps the same actions on phones
+  const [x, y, k] = unitXY(u), B = $('board').getBoundingClientRect(), w = P.offsetWidth, h = P.offsetHeight;
+  P.style.left = clamp(x, w / 2 + 8, B.width - w / 2 - 8) + 'px';
+  P.style.top = Math.min(y + 36 * (k || 1.5), B.height - h - 8) + 'px';
 }
 function renderPace() {
   $('paceChoices').innerHTML = [['slow', 'Slow'], ['normal', 'Normal'], ['fast', 'Fast'], ['step', 'Step by step']].map(([k, l]) => `<button type="button" data-pace="${k}" aria-pressed="${G.pace === k}">${l}</button>`).join('');
@@ -1536,12 +1539,15 @@ async function showRoll(u, tgt, dice, add) {
     tray.style.setProperty('--dz', Math.round(clamp(30 * (k || 1.5), 24, 52)) + 'px');
     $('board').appendChild(tray); G.tray = tray;
   }
+  $('turnPop').hidden = true; // keep the roll in view
   const look = u.team === 'A' ? (G.diceLook || DICE_LOOK.A) : DICE_LOOK.B;
   for (const d of dice) {
     const e = document.createElement('div'); e.className = `die ${u.gremlin ? 'sm' : ''} ${d.cls || ''} ${t ? 'rolling' : ''}`;
     e.style.setProperty('--t', t + 'ms'); e.innerHTML = dieSVG(d.s, d.v, look) + (d.lbl ? `<span class="lbl">${d.lbl}</span>` : '');
     G.tray.appendChild(e);
   }
+  const tray = G.tray; clearTimeout(tray.fade);
+  tray.fade = setTimeout(() => { tray.classList.add('gone'); setTimeout(() => { tray.remove(); if (G.tray === tray) G.tray = null; }, 650); }, 3000 + t);
   if (t) await sleep(t + 120);
 }
 function rollList(list) { const out = []; for (const [n, s] of list) for (let i = 0; i < n; i++) out.push({ s, v: rng(s) }); return out; }
@@ -1576,7 +1582,7 @@ addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelecto
 </script>
 <script>
 // ============================================================ Training Ground mode (Castle Comet)
-// A copy of the 3v3 sparring map (hex-3v3.html, commit 4286c2c) used by castle-comet.html for Treywind's practice battle.
+// A copy of the 3v3 sparring map (hex-3v3.html, commit 85208df) used by castle-comet.html for Treywind's practice battle.
 // The castle passes your Hero (and your mirror's Crit Dice look) in the URL hash; the result goes back with postMessage.
 (() => {
   let cfg = null; try { cfg = JSON.parse(decodeURIComponent(location.hash.slice(1))); } catch (e) {}

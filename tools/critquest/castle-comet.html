@@ -159,7 +159,7 @@ img.mini { width: 20px; height: 20px; vertical-align: -5px; margin-right: 4px; o
 .bstats b { color: var(--ink); }
 .bwrap { position: relative; max-width: 640px; width: 100%; }
 .bwrap svg { width: 100%; height: auto; display: block; touch-action: manipulation; }
-.hex.bale { fill: #5a4a2a; cursor: default; }
+.hex.bale { fill: #c9a36b; cursor: default; }
 .hex.lit { fill: #2f4a3a; stroke: var(--leaf); }
 .tokT { font-family: var(--display); font-size: 20px; fill: #fff; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
 .turnPop { position: absolute; z-index: 5; transform: translate(-50%, 34px); width: 220px; display: grid; gap: 3px; padding: 8px; border-radius: 10px;
@@ -178,6 +178,10 @@ img.mini { width: 20px; height: 20px; vertical-align: -5px; margin-right: 4px; o
 
 /* room */
 .room { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; align-items: start; }
+.room.solo { grid-template-columns: minmax(0, 1fr); }
+.scene .hot { cursor: pointer; transition: filter .15s; }
+.scene .hot:hover, .scene .hot:focus-visible { filter: drop-shadow(0 0 5px #f0c04f) drop-shadow(0 0 2px #fff4d8); outline: none; }
+.scene { display: block; width: 100%; height: auto; max-height: 46vh; border-radius: 8px; box-shadow: 0 0 0 2px #000, 0 0 0 4px var(--edge, #8a6a3a); background: #17120e; }
 @media (max-width: 520px) { .room { grid-template-columns: minmax(0, 1fr); } }
 .room p { margin: 0; max-width: 62ch; line-height: 1.45; }
 .btns { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -221,6 +225,7 @@ img.mini { width: 20px; height: 20px; vertical-align: -5px; margin-right: 4px; o
 
 /* minigames */
 .game { display: grid; gap: 12px; }
+.gameWho { display: flex; gap: 12px; align-items: center; }
 .game > .head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; align-items: baseline; }
 .stat { font-variant-numeric: tabular-nums; color: var(--soft); }
 .stat b { color: var(--ink); }
@@ -230,24 +235,24 @@ img.mini { width: 20px; height: 20px; vertical-align: -5px; margin-right: 4px; o
 .d20.low { background: var(--ember); }
 .result { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
 .result p { margin: 0; flex: 1 1 220px; min-width: 0; }
-.hexWrap { max-width: 540px; width: 100%; }
+.hexWrap { max-width: 560px; width: 100%; padding: 10px; border-radius: 10px; border: 3px solid var(--edge, #8a6a3a); background: radial-gradient(ellipse at 50% 40%, #6a5a3a, #3a2f20); }
 .hexWrap svg { width: 100%; height: auto; display: block; touch-action: manipulation; }
-.hex { fill: #3a3326; stroke: #5c4f37; stroke-width: 2; cursor: pointer; }
-.hex:hover { fill: #4a4130; }
+.hex { fill: #9a8a64; stroke: #1d140c; stroke-width: 2; stroke-linejoin: round; cursor: pointer; }
+.hex:hover { fill: #b8a678; }
 .hex:focus, #field g:focus, #yard g:focus { outline: none; }
 #field g:focus-visible polygon { stroke: var(--frost); stroke-width: 3; }
 .hex:focus-visible { stroke: var(--frost); stroke-width: 3; }
-.hex.dug { fill: #1d1912; cursor: default; }
-.hex.found { fill: #6b5a28; stroke: var(--comet); }
-.hex.water { fill: var(--water); stroke: #2c5a78; cursor: default; }
-.hex.soil { fill: #4a3a26; }
-.hex.watered { fill: #3c3424; stroke: var(--frost); }
-.hex.ready { stroke: var(--comet); stroke-width: 3; }
-.hexT { font-family: var(--display); font-size: 20px; text-anchor: middle; dominant-baseline: central; pointer-events: none; fill: var(--ink); }
+.hex.dug { fill: #4a3a26; cursor: default; }
+.hex.found { fill: #e8c260; stroke: #1d140c; }
+.hex.water { fill: #3f7fa6; stroke: #1d140c; cursor: default; }
+.hex.soil { fill: #6a4a2a; }
+.hex.watered { fill: #4a321c; stroke: #2f6f9a; stroke-width: 3; }
+.hex.ready { stroke: #e8c260; stroke-width: 4; }
+.hexT { font-family: var(--display); font-size: 20px; text-anchor: middle; dominant-baseline: central; pointer-events: none; fill: #fff4d8; stroke: #1d140c; stroke-width: 3px; paint-order: stroke; }
 .hexT.small { font-family: var(--body); font-size: 13px; }
-.hexT.far { fill: var(--soft); }
-.hexT.warmT { fill: var(--comet); }
-.hexT.hot { fill: var(--ember); }
+.hexT.far { fill: #c9b38a; }
+.hexT.warmT { fill: #f0c04f; }
+.hexT.hot { fill: #ff8a5a; }
 .seeds { display: flex; flex-wrap: wrap; gap: 6px; }
 .seeds button { padding: 6px 12px; border-radius: 16px; border: 1px solid var(--line); background: var(--stone); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; font-variant-numeric: tabular-nums; }
 .seeds button[aria-pressed="true"] { border-color: var(--comet); background: #4a3f2c; }
@@ -265,19 +270,88 @@ img.mini { width: 20px; height: 20px; vertical-align: -5px; margin-right: 4px; o
 .stirCue b { color: var(--comet); font-family: var(--display); font-size: 1.2rem; }
 .toast { position: fixed; z-index: 30; left: 50%; transform: translateX(-50%); top: calc(16px + env(safe-area-inset-top, 0px)); background: var(--comet); color: var(--void);
   padding: 8px 16px; border-radius: 18px; font-weight: 700; box-shadow: 0 4px 20px rgba(0,0,0,.5); max-width: calc(100% - 32px); text-align: center; }
+
+/* ===== World format (N8 2026-11-12): the same full-screen look as Farluck Farm.
+   Role-colored frame with gold corners, the stage inside it, a dark stone action bar along the bottom, parchment windows. */
+:root { --role: #a8821f; --gold: #c99a3c; --parch: #f3e6c8; --parch2: #e6d3a8; --edge: #8a6a3a; --accent: #7a2e1c;
+  --stone1: #2a231d; --stone2: #17120e; --barInk: #f3e6c8; }
+html, body { height: 100%; }
+body { padding: 0; overflow: hidden; background: var(--void); }
+#shell { position: fixed; inset: 0; display: flex; flex-direction: column; }
+.frame { position: relative; flex: 1; min-height: 0; border: 10px solid var(--role); box-shadow: inset 0 0 0 2px #000, 0 0 0 2px #000, inset 0 0 40px rgba(0,0,0,.55); background: transparent; }
+.frame::before { content: ""; position: absolute; inset: -6px; border: 2px solid var(--gold); pointer-events: none; z-index: 3; border-radius: 2px; opacity: .85; }
+.corner { position: absolute; width: 46px; height: 46px; z-index: 4; pointer-events: none; }
+.corner svg { width: 100%; height: 100%; display: block; }
+.c-tl { top: -16px; left: -16px; } .c-tr { top: -16px; right: -16px; transform: scaleX(-1); } .c-bl { bottom: -16px; left: -16px; transform: scaleY(-1); } .c-br { bottom: -16px; right: -16px; transform: scale(-1); }
+.stage { position: absolute; inset: 0; overflow: auto; overscroll-behavior: contain; padding: 14px max(16px, env(safe-area-inset-left, 0px)) 24px max(16px, env(safe-area-inset-right, 0px)); }
+main { padding-top: 2px; }
+.top { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px; justify-self: start; padding: 8px 14px; border-radius: 8px;
+  background: rgba(20, 14, 10, .78); border: 1px solid var(--gold); box-shadow: 0 2px 10px rgba(0,0,0,.5); }
+.top h1 { font-family: "Alegreya SC", var(--display); font-weight: 700; font-size: 1.15rem; letter-spacing: .03em; color: var(--parch); }
+.top .sub { font-size: .8rem; color: #bfa77a; }
+/* parchment windows: every panel swaps the night palette for ink on parchment */
+.panel { --hall: #efe0b8; --stone: #f6ecd2; --line: #b08a4a; --ink: #2b1d10; --soft: #5a4630; --comet: #7a2e1c; --void: #f6ecd2; --frost: #2f5d6e; --leaf: #3d6b35;
+  color: var(--ink); background: linear-gradient(var(--parch), var(--parch2)); border: 3px solid var(--edge); border-radius: 12px; box-shadow: 0 0 0 2px #000, 0 8px 24px rgba(0,0,0,.45); }
+.panel h2, .panel h3 { font-family: "Alegreya SC", var(--display); font-weight: 700; color: var(--accent); }
+.panel .btn { background: #f6ecd2; border-color: #b08a4a; color: #2b1d10; }
+.panel .btn:hover { background: #fff4d8; border-color: #7a2e1c; }
+.panel .btn.primary { background: #7a2e1c; border-color: #5a1e10; color: #f6ecd2; }
+.nextStep { background: #fff4d8; border-color: #7a2e1c; }
+.panel .pickCard.on, .panel .seeds button[aria-pressed="true"], .panel .chip2.on { background: #7a2e1c; color: #f6ecd2; border-color: #5a1e10; }
+.panel .pickCard.on small, .panel .pickCard.on .note, .panel .seeds button[aria-pressed="true"] small { color: #f3e6c8; }
+.hallWrap, .hexWrap, .heat { box-shadow: 0 0 0 2px #000; }
+/* the action bar */
+.hud { flex: 0 0 auto; display: flex; align-items: stretch; justify-content: safe center; background: linear-gradient(180deg, var(--stone1), var(--stone2));
+  border-top: 3px solid var(--role); box-shadow: inset 0 2px 0 var(--gold); color: var(--barInk); font-family: "Alegreya Sans", sans-serif;
+  padding-bottom: env(safe-area-inset-bottom, 0px); overflow-x: auto; }
+.sec { display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 8px 12px; border-right: 2px solid #000; box-shadow: 1px 0 0 #3a2f25; min-width: 0; }
+.sec:first-child { border-left: 2px solid #000; }
+.sec h4 { margin: 0; font-size: 11px; letter-spacing: .08em; color: #bfa77a; font-weight: 500; font-family: "Alegreya SC", serif; }
+.sec .whoName { font-family: "Alegreya SC", serif; font-weight: 700; font-size: 15px; }
+.sec small { color: #bfa77a; }
+.hud .pouch span { background: #1d1712; border-color: #4a3c2b; color: var(--barInk); }
+.hud .pouch b { color: #e8c260; }
+.hud .styleChip { background: #1d1712; border-color: var(--gold); color: #e8c260; }
+.hudBtns { display: flex; flex-wrap: wrap; gap: 6px; }
+.hb { padding: 6px 12px; border: 1px solid #5a4630; border-radius: 6px; background: linear-gradient(#3a2f25, #241c15); color: var(--barInk); cursor: pointer; font-family: "Alegreya SC", serif; font-size: 13px; }
+.hb:hover, .hb[aria-current="true"] { border-color: var(--gold); color: #ffe9a8; }
+.hb:disabled { opacity: .4; cursor: not-allowed; }
+.dlgBack, .toast { z-index: 70; }
+.toast { background: linear-gradient(var(--parch), var(--parch2)); color: #2b1d10; border: 2px solid var(--gold); border-radius: 10px; }
+@media (max-width: 760px) {
+  .frame { border-width: 6px; } .corner { width: 30px; height: 30px; } .c-tl, .c-tr { top: -11px; } .c-bl, .c-br { bottom: -11px; } .c-tl, .c-bl { left: -11px; } .c-tr, .c-br { right: -11px; }
+  .hud { flex-wrap: wrap; justify-content: center; } .sec { padding: 6px 8px; border-right: 0; box-shadow: none; } .sec:first-child { border-left: 0; }
+  .hud .pouch span { font-size: .75rem; padding: 2px 7px; }
+  .hud { padding-top: 2px; }
+  .sec { width: 100%; flex-direction: row; align-items: center; gap: 8px; padding: 3px 8px; }
+  .sec h4, .sec small { display: none; }
+  .sec .whoName { font-size: 13px; white-space: nowrap; }
+  .hud .pouch { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .hudBtns { flex-wrap: nowrap; overflow-x: auto; } .hb { padding: 4px 9px; font-size: 12px; white-space: nowrap; }
+  .top { padding: 5px 10px; } .top .sub { display: none; }
+}
 </style>
 
+<div id="shell">
+<div class="frame" id="frame">
+  <div class="corner c-tl"></div><div class="corner c-tr"></div><div class="corner c-bl"></div><div class="corner c-br"></div>
+  <div class="stage" id="stage">
 <canvas id="stars" aria-hidden="true"></canvas>
 <main>
   <header class="top">
-    <div>
       <h1>Castle Comet</h1>
       <div class="sub" id="sub">Home of the Light Keepers. Build it back up, one room at a time.</div>
-    </div>
-    <div class="bar"><button type="button" class="styleChip" id="styleChip">Choose a Style</button><div class="pouch" id="pouch" aria-label="Your pouch"></div></div>
   </header>
   <section id="view"></section>
 </main>
+  </div>
+</div>
+<footer class="hud" id="hud" aria-label="Action bar">
+  <div class="sec"><h4>Light Keeper</h4><span class="whoName" id="whoName">Not yet woken</span><small id="whoSub"></small></div>
+  <div class="sec"><h4>Pouch</h4><div class="pouch" id="pouch" aria-label="Your pouch"></div></div>
+  <div class="sec"><h4>Castle</h4><div class="hudBtns"><button type="button" class="hb" id="hbHall">Hall</button><button type="button" class="hb" id="hbYard">Courtyard</button><button type="button" class="hb" id="hbBarracks">Barracks</button><button type="button" class="styleChip" id="styleChip">Choose a Style</button></div></div>
+</footer>
+</div>
 <div class="dlgBack" id="dlgBack" hidden>
   <div class="dlg" id="dlgBox" role="dialog" aria-modal="true" aria-labelledby="dlgWho">
     <div class="head">
@@ -339,7 +413,195 @@ try { S = Object.assign(structuredClone(START), JSON.parse(localStorage.getItem(
 function save() { try { localStorage.setItem("cq-comet-v6", JSON.stringify(S)); } catch (e) {} renderPouch(); }
 const M = k => S.mats[k] || 0, addM = (k, n) => { S.mats[k] = M(k) + n; };
 const C = k => S.crops[k] || 0, SD = k => S.seeds[k] || 0;
+/* World format: Role frame color and gold corners (copied from farluck-adventure.html as they are) */
+const ROLE_FRAME = {Maverick:"#3f6b45",Brawler:"#8a4a2a",Champion:"#a8821f","Soul Seer":"#5a4a8a",Whisper:"#3d4b5c"};
+function cornerSVG(role){
+  const c="#e8c260";
+  const g={Maverick:`<path d="M8 38 Q10 10 38 8 Q30 22 20 26 Q26 30 8 38Z" fill="${c}"/>`,
+    Brawler:`<rect x="6" y="6" width="16" height="16" rx="3" fill="${c}"/><circle cx="30" cy="10" r="5" fill="${c}"/><circle cx="10" cy="30" r="5" fill="${c}"/>`,
+    Champion:`<circle cx="18" cy="18" r="9" fill="${c}"/>${[0,45,90,135,180,225,270,315].map(a=>`<rect x="17" y="2" width="2" height="7" fill="${c}" transform="rotate(${a} 18 18)"/>`).join("")}`,
+    "Soul Seer":`<polygon points="18,2 22,14 34,18 22,22 18,34 14,22 2,18 14,14" fill="${c}"/>`,
+    Whisper:`<path d="M30 6 A16 16 0 1 0 30 34 A12 12 0 1 1 30 6Z" fill="${c}"/>`};
+  return `<svg viewBox="0 0 40 40">${g[role]||g.Maverick}</svg>`;
+}
+function shade(c,f){ const n=parseInt(c.slice(1),16); let r=n>>16,g=n>>8&255,b=n&255; r=Math.min(255,Math.round(r*f)); g=Math.min(255,Math.round(g*f)); b=Math.min(255,Math.round(b*f)); return "#"+((1<<24)|(r<<16)|(g<<8)|b).toString(16).slice(1); }
+const OL="#1d140c";
+function charSVG(L, opt = {}){
+  const lf=L.lf, role=L.role, sk=L.skin, skD=shade(sk,.72), skL=shade(sk,1.18);
+  const cl=L.cloak, clD=shade(cl,.62), clL=shade(cl,1.3);
+  const robe=role==="Soul Seer", hooded=role==="Whisper"||role==="Soul Seer", armored=role==="Champion", brawl=role==="Brawler";
+  const tun=armored?"#b9bcc6":brawl?"#6a4a2c":role==="Maverick"?"#7a5634":shade(cl,.8), tunD=shade(tun,.7);
+  const hoof=lf==="Dimoneesh";
+  const sw=`stroke="${OL}" stroke-width="1.6" stroke-linejoin="round"`;
+  const leg=(id,x,dark)=>`<g><path d="M${x-4} -36 L${x+4} -36 L${x+4} -8 L${x-4} -8Z" fill="${dark?shade("#4a3a28",.75):"#4a3a28"}" ${sw}/>${hoof?`<path d="M${x-5} -9 h10 l1 9 h-12z" fill="#2a2420" ${sw}/><path d="M${x} -6 v6" stroke="#5a5048" stroke-width="1"/>`:`<path d="M${x-5} -12 h9 q6 0 7 8 v4 h-16z" fill="${dark?"#3a2616":"#5a3a1e"}" ${sw}/><path d="M${x-4} -10 h8" stroke="#8a6a3a" stroke-width="1.4"/>`}</g>`;
+  // head per Lifeform (faces right)
+  let head;
+  if(lf==="Leyf") head=`<path d="M-8 -84 Q-12 -104 4 -106 Q20 -106 22 -92 Q24 -84 16 -80 L-4 -78Z" fill="${sk}" ${sw}/>
+    <path d="M10 -86 Q20 -86 22 -90" stroke="${skD}" stroke-width="1.6" fill="none"/>
+    <path d="M-4 -102 q6 -3 12 0 M-6 -96 q6 -3 12 0" stroke="${skD}" stroke-width="1.2" fill="none" opacity=".7"/>
+    <ellipse cx="11" cy="-95" rx="4.2" ry="4.6" fill="#fff" ${sw}/><circle cx="12.5" cy="-95" r="2.4" fill="#1b140c"/><circle cx="13.3" cy="-96" r=".8" fill="#fff"/>
+    <path d="M5 -101 Q12 -104 16 -99" fill="none" stroke="${skL}" stroke-width="2" opacity=".7"/>`;
+  else if(lf==="Lizerus") head=`<path d="M-8 -82 Q-10 -102 4 -104 Q14 -104 18 -96 L30 -92 Q32 -86 26 -84 L6 -80Z" fill="${sk}" ${sw}/>
+    <path d="M10 -103 Q4 -116 -6 -118 L-4 -110 Q-12 -114 -18 -108 L-13 -103 Q-20 -102 -22 -94 L-14 -93 Q-12 -100 -4 -104 Q2 -106 10 -103Z" fill="${shade(sk,.78)}" ${sw}/>
+    <path d="M6 -105 L-4 -116 M0 -106 L-15 -109 M-6 -103 L-20 -96" stroke="${shade(sk,.5)}" stroke-width="1.3"/>
+    <path d="M14 -86 L28 -87" stroke="${OL}" stroke-width="1.2"/><circle cx="27" cy="-91" r=".9" fill="${OL}"/>
+    <ellipse cx="10" cy="-96" rx="3.4" ry="3" fill="#f2d23a" ${sw}/><rect x="9.6" y="-98.4" width="1.2" height="4.8" fill="#1b140c"/>
+    ${[0,1,2].map(k=>`<circle cx="${-2+k*5}" cy="${-90+k%2*3}" r="1.3" fill="${skD}"/>`).join("")}`;
+  else if(lf==="Sapien"){
+    const locks=(ox,oy,sc)=>{ let d=`M${ox+11*sc} ${oy-13*sc}`; const pts=[[16,-6],[14,4],[17,12],[10,10],[11,20],[4,14],[2,24],[-4,16],[-8,24],[-11,14],[-17,18],[-16,6],[-20,2],[-16,-6],[-18,-14],[-12,-14],[-12,-22],[-4,-18],[-2,-26],[4,-18],[10,-22],[10,-14]];
+      pts.forEach(([x,y])=>{ const a=Math.atan2(y,x), bx=Math.cos(a)*15, by=Math.sin(a)*17; x=bx+(x-bx)*.45; y=by+(y-by)*.45; d+=` L${(ox+x*sc).toFixed(1)} ${(oy+y*sc).toFixed(1)}`; }); return d+"Z"; };
+    head=`<path d="${locks(1,-92,1.05)}" fill="${skD}" ${sw}/><path d="${locks(1.5,-93,.9)}" fill="${sk}"/>
+    <path d="M5 -96 Q15 -98 19 -90 Q20 -82 12 -81 Q4 -82 5 -96Z" fill="${skL}" ${sw}/>
+    <path d="M5 -100 q7 -4 13 -1" stroke="${skD}" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <circle cx="12" cy="-95" r="2" fill="#1b140c"/><circle cx="12.6" cy="-95.6" r=".7" fill="#fff"/>
+    <ellipse cx="18" cy="-89" rx="2.4" ry="1.8" fill="#2a1a10"/><path d="M11 -84 q4 2 7 0" stroke="${OL}" stroke-width="1.3" fill="none"/>
+    ${[[-10,-98],[-6,-104],[0,-108],[-12,-88],[-6,-86],[-2,-100],[2,-78],[-4,-76]].map(([x,y])=>`<path d="M${x} ${y} q2 5 0 10" stroke="${skL}" stroke-width="1.3" fill="none" opacity=".75"/>`).join("")}`; }
+  else if(lf==="Melkin") head=`<path d="M-10 -86 Q-12 -106 4 -108 Q20 -106 20 -90 Q18 -78 4 -78 Q-8 -78 -10 -86Z" fill="${sk}" ${sw}/>
+    <path d="M-6 -100 L-20 -112 L-4 -94Z" fill="${sk}" ${sw}/><path d="M-8 -100 L-16 -108" stroke="${skD}" stroke-width="2"/>
+    <ellipse cx="11" cy="-94" rx="4.6" ry="5.4" fill="#fff" ${sw}/><circle cx="12.4" cy="-93.4" r="3" fill="#3a2a5a"/><circle cx="13.4" cy="-95" r="1" fill="#fff"/>
+    <path d="M12 -84 q3 1 5 -1" stroke="${OL}" stroke-width="1.2" fill="none"/><circle cx="6" cy="-86" r="2.4" fill="#e88aa8" opacity=".5"/>`;
+  else head=`<path d="M-10 -82 Q-12 -104 4 -106 Q20 -104 20 -90 Q20 -78 6 -77 Q-6 -76 -10 -82Z" fill="${sk}" ${sw}/>
+    <path d="M-4 -102 Q-14 -114 -4 -120 Q-8 -112 2 -104Z" fill="#e8e0d0" ${sw}/><path d="M6 -105 Q4 -118 14 -120 Q8 -112 12 -104Z" fill="#e8e0d0" ${sw}/>
+    <ellipse cx="12" cy="-93" rx="3.6" ry="3.2" fill="#e8f4ff" ${sw}/><circle cx="13" cy="-93" r="1.8" fill="#4a6aa8"/>
+    <path d="M12 -84 q4 1 6 -1" stroke="${OL}" stroke-width="1.2" fill="none"/><path d="M-2 -98 q4 4 2 10" stroke="${skL}" stroke-width="2" fill="none" opacity=".6"/>`;
+  const hood="";
+  const mask="";
+  const tail="";
+  // body
+  const cape=`<path d="M-12 -76 Q-30 -56 -30 -22 Q-22 -16 -14 -22 Q-10 -18 -4 -24 L4 -74Z" fill="${cl}" ${sw}/>
+    <path d="M-20 -60 Q-24 -40 -22 -22 M-12 -58 Q-14 -40 -12 -24" stroke="${clD}" stroke-width="2" fill="none" opacity=".8"/>
+    <path d="M-10 -74 Q-22 -60 -26 -40" stroke="${clL}" stroke-width="2" fill="none" opacity=".6"/>`;
+  const torso=robe?`<path d="M-12 -76 L14 -76 Q18 -40 20 -6 Q2 0 -16 -6 Q-16 -40 -12 -76Z" fill="${cl}" ${sw}/><path d="M2 -74 L4 -6" stroke="${clL}" stroke-width="2.5"/><path d="M-6 -60 Q-8 -30 -10 -8" stroke="${clD}" stroke-width="2" fill="none"/>`
+    :`<path d="M-12 -76 L13 -76 Q16 -56 14 -32 L15 -26 Q0 -22 -14 -26 L-13 -32 Q-15 -56 -12 -76Z" fill="${tun}" ${sw}/>
+    <path d="M6 -74 Q10 -54 9 -34" stroke="${shade(tun,1.3)}" stroke-width="3" fill="none" opacity=".6"/><path d="M-8 -72 Q-10 -52 -9 -34" stroke="${tunD}" stroke-width="3" fill="none" opacity=".6"/>
+    ${armored?`<path d="M-11 -74 Q2 -66 13 -74 L12 -50 Q0 -44 -11 -50Z" fill="#d8dae2" ${sw}/><circle cx="1" cy="-60" r="4" fill="#e8b83a" ${sw}/>`:""}
+    ${brawl?`<path d="M-14 -78 Q0 -70 16 -78 L14 -68 Q0 -62 -14 -68Z" fill="#8a6a3a" ${sw}/>${[-10,-4,2,8].map(x=>`<path d="M${x} -66 l2 6 l2 -6" fill="#8a6a3a" ${sw}/>`).join("")}`:""}
+    <rect x="-14" y="-38" width="29" height="6" fill="#3a2414" ${sw}/><rect x="-1" y="-39" width="7" height="8" rx="1" fill="#d8b04a" ${sw}/>`;
+  const furMantle=lf==="Sapien"?`<path d="M-15 -80 L-15 -70 L-12 -72 L-10 -67 L-6 -71 L-3 -66 L0 -71 L3 -67 L6 -72 L9 -68 L12 -73 L15 -70 L16 -80 Q0 -86 -15 -80Z" fill="${sk}" ${sw}/>`:"";
+  const collar=lf==="Sapien"?furMantle:`<path d="M-13 -78 Q0 -70 15 -78 Q12 -84 0 -82 Q-10 -84 -13 -78Z" fill="${clD}" ${sw}/>`;
+  const armBack=`<path d="M8 -72 Q14 -60 16 -48" stroke="${OL}" stroke-width="8.5" stroke-linecap="round" fill="none"/><path d="M8 -72 Q14 -60 16 -48" stroke="${shade(robe?cl:tun,.7)}" stroke-width="6" stroke-linecap="round" fill="none"/><circle cx="16.5" cy="-46" r="3.6" fill="${skD}" ${sw}/>`;
+  const armFront=`<path d="M-2 -72 Q2 -56 12 -50" stroke="${OL}" stroke-width="9.5" stroke-linecap="round" fill="none"/><path d="M-2 -72 Q2 -56 12 -50" stroke="${robe?cl:brawl?sk:tun}" stroke-width="7" stroke-linecap="round" fill="none"/>${brawl?`<path d="M6 -54 l6 3" stroke="#e8e0cc" stroke-width="5"/>`:""}<circle cx="14" cy="-49" r="4.2" fill="${sk}" ${sw}/>${lf==="Sapien"?`<path d="M6 -56 l3 4 l1 -5 l3 5 l1 -4" stroke="${skD}" stroke-width="2" fill="none" stroke-linejoin="round"/>`:""}`;
+  // role props, drawn in hand at (14,-49)
+  let back="", front="";
+  if(role==="Maverick"){ back=`<rect x="-16" y="-80" width="8" height="30" rx="2" fill="#6a4426" ${sw} transform="rotate(-18 -12 -65)"/>${[0,1,2].map(k=>`<path d="M${-16+k*3} -82 l-2 -9 M${-16+k*3} -91 l-2 3 m2 -3 l2 3" stroke="#e8e0cc" stroke-width="1.4" transform="rotate(-18 -12 -65)"/>`).join("")}`;
+    front=`<path d="M22 -90 Q36 -50 22 -10" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/><path d="M22 -90 Q36 -50 22 -10" fill="none" stroke="#9a6a34" stroke-width="3" stroke-linecap="round"/><line x1="22" y1="-90" x2="22" y2="-10" stroke="#efe6cc" stroke-width="1"/><path d="M28 -52 h6" stroke="#5a3a1e" stroke-width="4"/>`; }
+  else if(role==="Champion"){ back=`<path d="M19 -50 L44 -86 L47 -84 L22 -47Z" fill="#e6e8f0" ${sw}/><path d="M21 -51 L45 -85" stroke="#fff" stroke-width="1"/><path d="M13 -52 L25 -42" stroke="#7a5a2a" stroke-width="4" stroke-linecap="round"/><circle cx="16" cy="-48" r="3" fill="${skD}" ${sw}/><circle cx="12" cy="-53" r="2.2" fill="#d8b04a" ${sw}/>`;
+    front=`<path d="M8 -70 h22 v20 q-11 18 -22 0z" fill="#c9a03c" ${sw}/><circle cx="19" cy="-58" r="5.5" fill="#f2d86a" ${sw}/>${[0,45,90,135,180,225,270,315].map(a=>`<path d="M${(19+Math.cos(a*Math.PI/180)*6).toFixed(1)} ${(-58+Math.sin(a*Math.PI/180)*6).toFixed(1)} l${(Math.cos(a*Math.PI/180)*4).toFixed(1)} ${(Math.sin(a*Math.PI/180)*4).toFixed(1)}" stroke="#7a5a22" stroke-width="1.3"/>`).join("")}<path d="M10 -68 v14" stroke="#e8c868" stroke-width="1.5" opacity=".7"/>`; }
+  else if(role==="Soul Seer"){ front=`<rect x="22" y="-82" width="4" height="82" rx="2" fill="#6b4a2a" ${sw}/><path d="M20 -82 q4 -6 8 0" fill="none" stroke="#6b4a2a" stroke-width="2.5"/><path d="M24 -94 l4.5 7 l-4.5 6 l-4.5 -6z" fill="#bfe4ff" ${sw}/><circle cx="24" cy="-87" r="9" fill="#bfe4ff" opacity=".25"/><circle cx="33" cy="-78" r="2.4" fill="#e8f6ff" opacity=".8"/><path d="M14 -49 L22 -50" stroke="${OL}" stroke-width="1"/>`; }
+  else if(role==="Whisper"){ back=`<path d="M-14 -40 q-6 -6 0 -12 q6 -6 12 0" fill="none" stroke="#a88a5a" stroke-width="3"/>`;
+    front=`<path d="M16 -52 L32 -66 L34 -63 L19 -49Z" fill="#d8dae4" ${sw}/><path d="M12 -52 l6 4" stroke="#3a2414" stroke-width="4"/><path d="M14 -42 L22 -26 L19 -25 L12 -40Z" fill="#c8cad4" ${sw}/>`; }
+  else { front=`<circle cx="14" cy="-49" r="6" fill="${sk}" ${sw}/><path d="M9 -52 h10 M9 -48 h10" stroke="#e8e0cc" stroke-width="2"/>${[0,1,2].map(k=>`<path d="M${11+k*3} -55 l1 -4 l1 4" fill="#c8c8d0" ${sw}/>`).join("")}`; }
+  if (opt.noProp) { back = ""; front = ""; }
+  return `<g><g transform="scale(${L.size})">
+   <ellipse cx="0" cy="0" rx="24" ry="6.5" fill="rgba(0,0,0,.35)"/>
+   ${cape}${tail}${back}${armBack}
+   <g>${leg("legR",4,true)}${leg("legL",-5,false)}</g>
+   ${torso}${collar}${hood}${head}${mask}${opt.extra || ""}${armFront}${front}
+  </g></g>`;
+}
+
+
+/* ---------- classic character art (heroSVG from farluck-adventure.html, copied as is and given a look to draw).
+   N8's art rules: pigmented skin only (greenish is fine for Leyf and Lizerus), no hoods, masks or tails. */
+const SKIN = {Leyf:"#7fa36a",Sapien:"#8a5e3c",Lizerus:"#8fae5a",Melkin:"#c9a0d8",Dimoneesh:"#8fa8d0"};
+const ROLE_LOOK = {Maverick:"#3f6b45",Brawler:"#8a4a2a",Champion:"#b08a2a","Soul Seer":"#5a4a8a",Whisper:"#2f3a4a"};
+const SIZE = lf => lf === "Melkin" ? .62 : lf === "Dimoneesh" ? .9 : 1;
+const crown = `<path d="M-6 -110 l3 -9 3 6 3 -9 3 9 3 -6 3 9z" fill="#e8c260" stroke="#1d140c" stroke-width="1.4"/>`;
+const specs = `<circle cx="11" cy="-93" r="5" fill="none" stroke="#c99a3c" stroke-width="1.6"/><path d="M5 -93 h-8" stroke="#c99a3c" stroke-width="1.4"/>`;
+const strawHat = `<ellipse cx="4" cy="-104" rx="24" ry="5" fill="#d8b860" stroke="#1d140c" stroke-width="1.4"/><path d="M-8 -105 q2 -14 12 -14 q10 0 12 14z" fill="#e2c46a" stroke="#1d140c" stroke-width="1.4"/><path d="M-8 -106 h24" stroke="#7a2e1c" stroke-width="2.5"/>`;
+const bandana = `<path d="M-10 -100 q14 -8 30 0 l-2 5 q-13 -6 -26 0z" fill="#b24a2a" stroke="#1d140c" stroke-width="1.3"/>`;
+const apron = `<path d="M-9 -66 h20 l3 54 h-26z" fill="#efe0b8" stroke="#1d140c" stroke-width="1.4"/><path d="M-9 -60 h20" stroke="#c99a3c" stroke-width="1.5"/>`;
+/* The castle folk. Lifeforms from the book where it says (Bruxanna is a Melkin, Wexler a Dimoneesh); the rest are my placeholders. */
+const CAST = {
+  bruxanna: { lf: "Melkin", role: "Soul Seer", cloak: "#6a3d8f", extra: crown + apron, noProp: true },
+  wexler:   { lf: "Dimoneesh", role: "Soul Seer", cloak: "#2f5d6e", extra: specs },
+  shnee:    { lf: "Leyf", role: "Brawler", cloak: "#6a5a3a", extra: bandana, noProp: true },
+  faux:     { lf: "Lizerus", role: "Maverick", cloak: "#4f6b3a", extra: strawHat, noProp: true },
+  treywind: { lf: "Sapien", role: "Brawler", cloak: "#7a3a22" },
+  georgia:  { lf: "Lizerus", role: "Champion", cloak: "#8a4a2a", noProp: true, extra: apron },
+  tata:     { lf: "Sapien", role: "Maverick", cloak: "#b24a5a", noProp: true },
+  meya:     { lf: "Dimoneesh", role: "Soul Seer", cloak: "#4a3a7a" },
+  sloan:    { lf: "Leyf", role: "Soul Seer", cloak: "#3f6f8f", noProp: true }
+};
+function lookOf(id) {
+  if (id === "you" || !CAST[id]) { const h = S.hero || {}, lf = h.lf || "Sapien", role = h.role || "Champion";
+    return { lf, role, skin: SKIN[lf], cloak: (ROLES[role] && ROLES[role].hue) || ROLE_LOOK[role], size: SIZE(lf) }; }
+  const c = CAST[id]; return { lf: c.lf, role: c.role, skin: SKIN[c.lf], cloak: c.cloak, size: SIZE(c.lf), opt: { extra: c.extra, noProp: c.noProp } };
+}
+/* a figure standing at (x, y), feet on y; s scales it, flip faces it left */
+function charAt(id, x, y, s = 1, flip = false) { const L = lookOf(id); return `<g transform="translate(${x} ${y}) scale(${flip ? -s : s} ${s})">${charSVG(L, L.opt || {})}</g>`; }
+/* head-and-shoulders portrait for dialogs and room cards */
+function faceSVG(id, bg) {
+  const L = lookOf(id), top = -126 * L.size, h = 64 * L.size + 8;
+  return `<svg viewBox="-34 ${top.toFixed(1)} 72 ${h.toFixed(1)}" preserveAspectRatio="xMidYMid slice" style="display:block;width:100%;height:100%;background:radial-gradient(circle at 50% 35%, ${bg || "#4a3c2b"}, #17120e)">${charSVG(L, L.opt || {})}</svg>`;
+}
+
+/* ---------- room scenes, drawn in the same outlined style as Farluck Farm */
+const OLs = `stroke="#1d140c" stroke-width="2" stroke-linejoin="round"`;
+function sceneWall(top = "#4a4060", bot = "#2f2a3c") {
+  let bricks = ""; for (let r = 0; r < 6; r++) for (let c = -1; c < 11; c++) bricks += `<rect x="${c * 80 + (r % 2) * 40}" y="${r * 36}" width="78" height="34" rx="3" fill="${r % 2 ? top : bot}" opacity=".55"/>`;
+  return `<rect width="800" height="300" fill="${bot}"/>${bricks}`;
+}
+const floorBand = (c1, c2) => `<rect y="220" width="800" height="80" fill="${c1}"/><path d="M0 220 H800" stroke="${c2}" stroke-width="4"/>`;
+function torchAt(x, y) { return `<rect x="${x - 4}" y="${y}" width="8" height="22" fill="#5a3e26" ${OLs}/><path d="M${x} ${y - 22} q10 10 0 22 q-10 -12 0 -22z" fill="#f0a040"/><circle cx="${x}" cy="${y - 8}" r="22" fill="#f0c04f" opacity=".15"/>`; }
+/* point and click: a hotspot presses the matching button under the scene */
+const hot = (btn, label, svg) => `<g class="hot" data-btn="${btn}" tabindex="0" role="button" aria-label="${label}">${svg}</g>`;
+function sceneSVG(id) {
+  let bg = "", folk = "";
+  if (id === "barracks") {
+    bg = sceneWall("#5a4a3a", "#3a2f25") + floorBand("#5a3e26", "#2b1d10") +
+      hot("rest", "Sleep in your bed", `<rect x="40" y="170" width="190" height="56" rx="6" fill="#6a4426" ${OLs}/><rect x="48" y="150" width="174" height="34" rx="10" fill="#c9b07a" ${OLs}/><rect x="52" y="146" width="56" height="26" rx="10" fill="#f3e6c8" ${OLs}/>`) +
+      hot("chest", "Open your chest", `<rect x="250" y="190" width="90" height="46" rx="4" fill="#7a5634" ${OLs}/><path d="M250 206 h90" stroke="#3a2414" stroke-width="3"/><rect x="288" y="200" width="14" height="12" fill="#e8c260" ${OLs}/>`) +
+      hot("table", "Sit at the table", `<rect x="520" y="180" width="140" height="14" fill="#7a5634" ${OLs}/><rect x="530" y="194" width="10" height="40" fill="#5a3e26"/><rect x="640" y="194" width="10" height="40" fill="#5a3e26"/><circle cx="560" cy="174" r="7" fill="#efe0b8" ${OLs}/><rect x="600" y="166" width="22" height="14" fill="#bfe4ff" opacity=".6" ${OLs}/>`) +
+      hot("mirror", "Look in the long mirror", `<rect x="700" y="60" width="60" height="176" rx="28" fill="#8a6a3a" ${OLs}/><rect x="708" y="68" width="44" height="160" rx="22" fill="#bfd6e8" opacity=".75"/><path d="M716 90 l20 -14 M716 110 l30 -22" stroke="#fff" stroke-width="3" opacity=".6"/>`) + torchAt(400, 120);
+    folk = hot("loadoutBtn", "Set your loadout", charAt("you", 440, 252, 1.2));
+  } else if (id === "scrap") {
+    bg = `<rect width="800" height="300" fill="#151a3a"/>${[[60, 30], [210, 70], [380, 24], [520, 60], [690, 40], [760, 90]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.8" fill="#fff"/>`).join("")}` +
+      `<path d="M0 90 L120 70 L160 120 L240 80 L300 140 L360 110 L360 300 L0 300Z" fill="#4a4060" ${OLs}/><path d="M800 110 L700 80 L640 130 L580 100 L540 150 L540 300 L800 300Z" fill="#3f3656" ${OLs}/>` +
+      floorBand("#4a3f2c", "#2b2418") + hot("play", "Dig the rubble", 
+      [[160, 236, 70], [330, 250, 50], [470, 240, 64], [640, 252, 46]].map(([x, y, w]) => `<path d="M${x - w} ${y} q${w / 2} -${w * .7} ${w} -${w * .5} q${w / 2} -${w * .2} ${w} ${w * .5}z" fill="#6c6f8f" ${OLs}/><rect x="${x - 14}" y="${y - w * .4}" width="20" height="10" fill="#7a5634" ${OLs} transform="rotate(-12 ${x} ${y})"/>`).join(""));
+    folk = hot("talk", "Talk to Shnee", charAt("shnee", 420, 262, 1.15)) + `<g transform="translate(470 262)"><rect x="-3" y="-80" width="6" height="70" fill="#7a5634" ${OLs}/><path d="M-14 -12 h28 l-4 16 h-20z" fill="#a8a6bd" ${OLs}/></g>`;
+  } else if (id === "farm") {
+    bg = `<rect width="800" height="300" fill="#2f5470"/><circle cx="660" cy="60" r="36" fill="#bfe4ff" opacity=".35"/>` +
+      `<path d="M0 150 Q200 120 400 140 T800 130 V300 H0Z" fill="#3d6b35" ${OLs}/><path d="M0 190 Q200 170 400 186 T800 178 V206 Q600 196 400 214 T0 220Z" fill="#3f7fa6" ${OLs}/>` +
+      floorBand("#5a3e26", "#2b1d10") + hot("play", "Tend the plots", [100, 230, 560, 690].map(x => `<ellipse cx="${x}" cy="252" rx="56" ry="16" fill="#3a2414" ${OLs}/>${[-30, -10, 10, 30].map(d => `<path d="M${x + d} 248 q-4 -16 0 -24 q4 8 0 24" fill="#8fc274" stroke="#1d3a14" stroke-width="1.2"/>`).join("")}`).join(""));
+    folk = hot("talk", "Talk to Faux", charAt("faux", 400, 266, 1.15));
+  } else if (id === "kitchen") {
+    bg = sceneWall("#6a4a3a", "#4a3226") + floorBand("#5a3e26", "#2b1d10") +
+      hot("play", "Cook a dish", `<path d="M500 80 h220 v156 h-220z" fill="#6c6f8f" ${OLs}/><path d="M540 236 v-90 q70 -50 140 0 v90z" fill="#201810" ${OLs}/><path d="M580 236 q30 -60 60 0z" fill="#e2714b"/><path d="M596 236 q14 -36 28 0z" fill="#f0c04f"/>` +
+      `<path d="M570 170 h80 l-8 40 h-64z" fill="#3a3326" ${OLs}/><path d="M600 160 q6 -14 0 -26 M620 160 q6 -14 0 -26" stroke="#efe0b8" stroke-width="2" fill="none" opacity=".6"/>`) +
+      `<rect x="60" y="90" width="200" height="10" fill="#7a5634" ${OLs}/>${[80, 120, 160, 210].map((x, i) => `<rect x="${x}" y="${66 - i % 2 * 6}" width="22" height="${24 + i % 2 * 6}" rx="4" fill="${["#c96b3a", "#8fc274", "#e8c260", "#9a5ad0"][i]}" ${OLs}/>`).join("")}` +
+      `<rect x="80" y="196" width="220" height="16" fill="#8a6a3a" ${OLs}/><circle cx="130" cy="190" r="10" fill="#e8c260" ${OLs}/><ellipse cx="200" cy="192" rx="18" ry="6" fill="#efe0b8" ${OLs}/>`;
+    folk = hot("talk", "Talk to Bruxanna", charAt("bruxanna", 400, 262, 1.3));
+  } else if (id === "training") {
+    bg = `<rect width="800" height="300" fill="#2f2a3c"/><rect y="0" width="800" height="150" fill="#3a3150"/>` + `<path d="M0 160 H800 V300 H0Z" fill="#d9b878" ${OLs}/>` +
+      [110, 660].map(x => `<rect x="${x - 4}" y="150" width="8" height="90" fill="#7a5634" ${OLs}/><ellipse cx="${x}" cy="168" rx="22" ry="30" fill="#c9a36b" ${OLs}/><circle cx="${x}" cy="128" r="14" fill="#c9a36b" ${OLs}/><path d="M${x - 22} 162 h44" stroke="#7a2e1c" stroke-width="4"/>`).join("") +
+      [220, 560].map(x => `<rect x="${x - 34}" y="214" width="68" height="34" rx="6" fill="#e2c46a" ${OLs}/><path d="M${x - 30} 226 h60 M${x - 30} 238 h60" stroke="#b08a2a" stroke-width="2"/>`).join("");
+    folk = hot("talk", "Talk to Treywind", charAt("treywind", 330, 262, 1.1)) + hot("spar", "Practice battle", charAt("you", 470, 262, 1.1, true));
+  } else if (id === "yard") {
+    bg = `<rect width="800" height="300" fill="#121630"/>${Array.from({ length: 30 }, (_, i) => `<circle cx="${(i * 137) % 800}" cy="${(i * 61) % 150}" r="${1 + i % 2}" fill="#fff" opacity=".8"/>`).join("")}` +
+      `<circle cx="120" cy="70" r="38" fill="#e88a3a" opacity=".85" ${OLs}/><ellipse cx="120" cy="70" rx="62" ry="10" fill="none" stroke="#e8c260" stroke-width="3"/><circle cx="680" cy="56" r="20" fill="#82cbd9" ${OLs}/>` +
+      `<path d="M0 200 Q400 170 800 200 V300 H0Z" fill="#a8a6bd" ${OLs}/><ellipse cx="400" cy="236" rx="170" ry="34" fill="#6c6f8f" ${OLs}/>` +
+      hot("tdown", "The Teleportation Station", [0, 1, 2, 3, 4, 5].map(i => { const a = i * Math.PI / 3, x = 400 + 150 * Math.cos(a), y = 232 + 28 * Math.sin(a); return `<path d="M${x.toFixed(0)} ${(y - 50).toFixed(0)} l12 30 l-12 22 l-12 -22z" fill="#82cbd9" ${OLs}/>`; }).join(""));
+    folk = hot("tw", "Talk to Wexler", charAt("wexler", 300, 262, 1.1)) + hot("tb", "Talk to Bruxanna", charAt("bruxanna", 520, 262, 1.2, true));
+  } else {
+    const p = PEOPLE[id] || { hue: "#c99a3c" };
+    bg = sceneWall("#4a4060", "#2f2a3c") + floorBand("#3a3326", "#1d1912") + `<path d="M340 30 h120 v120 l-60 -24 l-60 24z" fill="${p.hue}" ${OLs}/>` + torchAt(200, 110) + torchAt(600, 110);
+    folk = CAST[id] ? hot("talk", "Talk", charAt(id, 400, 262, 1.2)) : "";
+  }
+  return `<svg class="scene" viewBox="0 0 800 300" role="img" aria-label="${(ROOMS.find(r => r.id === id) || {}).name || "Castle room"}">${bg}<ellipse cx="400" cy="300" rx="420" ry="40" fill="#000" opacity=".25"/>${folk}</svg>`;
+}
+
+let hudRole = null;
+function renderHud() {
+  const h = S.hero || {}, role = h.role || "Champion", awake = S.phase === "castle";
+  if (role !== hudRole) { hudRole = role; document.documentElement.style.setProperty("--role", ROLE_FRAME[role] || "#a8821f"); document.querySelectorAll(".corner").forEach(c => c.innerHTML = cornerSVG(role)); }
+  $("#whoName").textContent = h.lf && h.role ? `${h.lf} ${h.role}` : S.phase === "past" ? "Your past life" : "Not yet woken";
+  $("#whoSub").textContent = (h.style || S.style) ? `Style: ${h.style || S.style}` : "";
+  ["hbHall", "hbYard", "hbBarracks"].forEach(id => $("#" + id).disabled = !awake);
+}
 function renderPouch() {
+  renderHud();
   const crops = Object.values(S.crops).reduce((x, y) => x + y, 0);
   const items = [["Day", S.day, ""], ["Stone", M("stone"), "stone"], ["Wood", M("wood"), "wood"], ["Tar Oil", M("taroil"), "taroil"], ["Crops", crops, ""], ["Dishes", S.dishes.length, ""]];
   items.push(["Icosa Coins", S.coins || 0, ""]);
@@ -372,6 +634,7 @@ const PERKS = {
 };
 let picN = 0;
 function portrait(id, size) {
+  if (CAST[id] || id === "you") return `<div style="width:${size}${typeof size === "number" ? "px" : ""};height:${size}${typeof size === "number" ? "px" : ""};border-radius:12px;overflow:hidden;border:2px solid #c99a3c">${faceSVG(id, PEOPLE[id] && PEOPLE[id].hue)}</div>`;
   if (SHARED_FACES[id]) return `<div style="width:${size}px;height:${size}px;border-radius:12px;overflow:hidden;border:2px solid #c99a3c">${SHARED_FACES[id]}</div>`;
   const p = PEOPLE[id], g = "pg" + (picN++);
   return `<svg class="portrait" viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="${p.name}">
@@ -529,7 +792,7 @@ function openTalk(id, key = "start") {
   if (nd.clue) addClue(nd.clue);
   S.met[id] = true;
   const face = nd.face || (id === "kitchen" ? "bruxanna" : id === "past" ? "narrator" : id), p = PEOPLE[face];
-  $("#dlgPic").innerHTML = SHARED_FACES[face] || portrait(face, "100%");
+  $("#dlgPic").innerHTML = CAST[face] || face === "you" ? faceSVG(face, PEOPLE[face] && PEOPLE[face].hue) : SHARED_FACES[face] || portrait(face, "100%");
   $("#dlgWho").innerHTML = p.name ? `${p.name}<small>${id === "kitchen" ? "Kitchen" : p.role}</small>` : "";
   $("#dlgChoices").innerHTML = ""; $("#dlgRoll").textContent = ""; $("#dlgRoll").className = "roll"; $("#dlgMore").hidden = true;
   $("#dlgBack").hidden = false;
@@ -730,14 +993,7 @@ const HALL_ORDER = ["training", "barracks", "scrap", "yard", "farm", "kitchen", 
 const HALL_GAP = 280, HALL_START = 220, FLOOR = 330;
 let hallX = null;
 function hallSpot(id) { return HALL_START + HALL_ORDER.indexOf(id) * HALL_GAP; }
-function figure(kind, x, flip) { // simple painted figures; real art comes later
-  const f = flip ? -1 : 1;
-  if (kind === "bruxanna") return `<g transform="translate(${x},${FLOOR}) scale(${f},1)"><ellipse cx="0" cy="2" rx="18" ry="4" fill="#000" opacity=".35"/><path d="M-14 0 q2 -34 14 -36 q12 2 14 36z" fill="#6a3d8f"/><circle cx="0" cy="-44" r="11" fill="#b5784c"/><path d="M-11 -46 q0 -14 11 -14 q11 0 11 14 q-5 -6 -11 -6 q-6 0 -11 6z" fill="#3b2316"/><path d="M-8 -56 l3 -6 3 4 2 -6 2 6 3 -4 3 6z" fill="#e8c260"/></g>`;
-  if (kind === "wexler") return `<g transform="translate(${x},${FLOOR}) scale(${f},1)"><ellipse cx="0" cy="2" rx="20" ry="4" fill="#000" opacity=".35"/><path d="M-16 0 q2 -56 16 -58 q14 2 16 58z" fill="#2f5d6e"/><circle cx="0" cy="-68" r="12" fill="#a26a42"/><path d="M-9 -76 q-10 -6 -8 -16 q4 8 12 10z M9 -76 q10 -6 8 -16 q-4 8 -12 10z" fill="#ede7d6"/><circle cx="-4" cy="-68" r="3.5" fill="none" stroke="#c99a3c" stroke-width="1.5"/><circle cx="5" cy="-68" r="3.5" fill="none" stroke="#c99a3c" stroke-width="1.5"/></g>`;
-  if (kind === "shnee") return `<g transform="translate(${x},${FLOOR}) scale(${f},1)"><ellipse cx="0" cy="2" rx="16" ry="4" fill="#000" opacity=".35"/><path d="M-12 0 q2 -30 12 -32 q10 2 12 32z" fill="#7a5a3a"/><circle cx="0" cy="-40" r="10" fill="#9c6b3e"/><path d="M-10 -44 h20 l-4 -8 h-12z" fill="#5c4f37"/><line x1="16" y1="0" x2="24" y2="-40" stroke="#a8a6bd" stroke-width="3"/><path d="M20 0 h10 l-2 8 h-6z" fill="#a8a6bd"/></g>`;
-  if (kind === "faux") return `<g transform="translate(${x},${FLOOR}) scale(${f},1)"><ellipse cx="0" cy="2" rx="17" ry="4" fill="#000" opacity=".35"/><path d="M-13 0 q2 -40 13 -42 q11 2 13 42z" fill="#4f6b3a"/><circle cx="0" cy="-50" r="11" fill="#7d4f2f"/><ellipse cx="0" cy="-58" rx="18" ry="4" fill="#c9a36b"/><path d="M-8 -60 q8 -12 16 0z" fill="#c9a36b"/></g>`;
-  return "";
-}
+function figure(kind, x, flip) { return CAST[kind] ? charAt(kind, x, FLOOR, .62, flip) : ""; }
 function hallDoor(id) {
   const x = hallSpot(id);
   if (id === "yard") {
@@ -782,7 +1038,7 @@ function showHall() {
         ${windows}
         <rect x="0" y="${FLOOR}" width="${W}" height="70" fill="#2a2540"/><line x1="0" y1="${FLOOR}" x2="${W}" y2="${FLOOR}" stroke="#4a4060" stroke-width="3"/>
         ${HALL_ORDER.map(hallDoor).join("")}
-        <g id="hero"><ellipse cx="0" cy="2" rx="18" ry="4" fill="#000" opacity=".35"/><g id="heroBody"><path d="M-16 0 q0 -48 16 -50 q16 2 16 50z" fill="#3f6f8f"/><path d="M-16 0 q4 -20 16 -22 q12 2 16 22z" fill="#2f5470"/><circle cx="0" cy="-60" r="12" fill="#8c5636"/><path d="M-13 -58 q0 -18 13 -18 q13 0 13 18 q-2 -10 -13 -10 q-11 0 -13 10z" fill="#82cbd9"/><circle cx="4" cy="-61" r="1.8" fill="#2b1d10"/></g></g>
+        <g id="hero"><ellipse cx="0" cy="2" rx="18" ry="4" fill="#000" opacity=".35"/><g id="heroBody"><g transform="scale(.62)">${charSVG(lookOf("you"))}</g></g></g>
         <g id="prompt" visibility="hidden"><rect id="promptBg" rx="12" height="28" fill="#f0c04f"/><text id="promptT" class="promptT" y="0"></text></g>
       </svg>
     </div>
@@ -841,7 +1097,7 @@ function showHall() {
 function showCourtyard() {
   stopGame();
   $("#view").innerHTML = `<div class="panel"><div class="eyebrow">The heart of the castle</div>
-    <div class="room">${portrait("wexler", 120)}<div style="display:grid;gap:10px;min-width:0"><h2>Courtyard</h2>
+    ${sceneSVG("yard")}<div class="room solo"><div style="display:grid;gap:10px;min-width:0"><h2>Courtyard</h2>
       <p>An open courtyard on the pale gray rock of the comet, with the Nebrom system hanging overhead. In the middle, a circle of blue crystals hums: the Teleportation Station.</p>
       <div class="btns"><button class="btn primary" type="button" id="tb">Talk to Bruxanna</button><button class="btn" type="button" id="tw">Talk to Wexler</button><button class="btn primary" type="button" id="tdown">${S.trip ? "Back down to " + S.trip.where : S.farluckDone ? "Go back down to Talus" : "Begin the Farluck Farm mission"}</button>${!S.trip && (S.anchors || []).includes("farluck-hearth") ? `<button class="btn" type="button" id="thearth">To Cecil's hearth</button>` : ""}<button class="btn" type="button" id="back">Back to the castle</button></div>
     </div></div></div>`;
@@ -1079,7 +1335,7 @@ function showPast(lf = S.hero.lf || "Sapien", role = S.hero.role || "Brawler") {
     <div class="eyebrow">Lifeform</div><div class="pickGrid">${Object.entries(LIFEFORMS).map(([n, L]) => card("lf", n, `${L.t}<br>${bon(L.b)}`, n === lf)).join("")}</div>
     <div class="eyebrow">Role</div><div class="pickGrid">${Object.entries(ROLES).map(([n, R]) => card("role", n, `${R.t}<br>Life ${R.life}, ${bon(R.b)}`, n === role)).join("")}</div>
     <div class="btns"><button class="btn primary" type="button" id="live">Live your last day as a ${lf} ${role}</button>
-      <button class="btn" type="button" id="skip">Skip to the castle (demo)</button></div></div>`;
+      <button class="btn" type="button" id="skip">Skip to the castle (demo)</button><button class="btn" type="button" id="opening">Watch the opening again</button></div></div>`;
   $("#view").querySelectorAll("[data-lf]").forEach(b => b.onclick = () => showPast(b.dataset.lf, role));
   $("#view").querySelectorAll("[data-role]").forEach(b => b.onclick = () => showPast(lf, b.dataset.role));
   $("#live").onclick = () => {
@@ -1090,6 +1346,7 @@ function showPast(lf = S.hero.lf || "Sapien", role = S.hero.role || "Brawler") {
     openTalk("past", role + "1");
   };
   $("#skip").onclick = () => { S.hero = { ...S.hero, lf, role, past: { lf, role } }; S.style = S.style || "Serious"; S.hero.style = S.style; S.phase = "avatar"; save(); renderStyle(); showAvatar(true); };
+  $("#opening").onclick = showWorldIntro;
 }
 /* Role intros (design doc tab "Role intros"): gentle, near Farluck Farm, each ends protecting someone. Answers vote for a Style. */
 const V = (Serious, Silly, Shy, Smug, go) => [
@@ -1318,7 +1575,7 @@ function showBarracks(view = "") {
     ${CORRIDORS.map(([n, w, t, s]) => { const v = s(); return `<tr><td>${n}</td><td>${w}</td><td>${t}</td><td class="${v === "Built" ? "ok" : v === "You choose" ? "pickme" : ""}">${v}</td></tr>`; }).join("")}</tbody></table></div>
     <p class="note">From Bruxanna's plans (the 2021 Game Bible). On the Comet you choose which sections to build on the open plots, once the Kitchen is up.</p>`;
   $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Castle Comet</div>
-    <div class="room">${portrait("you", 120)}<div style="display:grid;gap:10px;min-width:0"><h2>Barracks</h2>
+    ${sceneSVG("barracks")}<div class="room solo"><div style="display:grid;gap:10px;min-width:0"><h2>Barracks</h2>
       <p>Your room, fashioned like a ${R}'s quarters: a bed, a storage chest, a table and chair, and a long mirror. Off the common room, the long wooden table where the custodians eat their paste.</p>
       <div class="btns">
         <button class="btn primary" type="button" id="rest">Sleep in your bed</button>
@@ -1370,7 +1627,7 @@ function showSection(r) {
   if (k === "tavern") body = `<p class="note">Tata's brew and stage minigames come next. For now you can help wipe the tables once a day.</p><button class="btn" type="button" id="shift" ${S.tavernDay === S.day ? "disabled" : ""}>Help out for a shift (+4 Icosa Coins)</button>`;
   if (k === "boutique") body = `<p class="note">You have <b>${S.coins}</b> Icosa Coins. Pick and buy Crit Dice styles at the long mirror; Bruxanna delivers.</p><button class="btn primary" type="button" id="dice">Choose your Crit Dice</button>`;
   if (k === "mystic" || k === "spiritual") body = `<p class="note">${s.name} minigames come later. ${PEOPLE[s.who].name} is settling in.</p>`;
-  $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Castle Comet</div><div class="room">${portrait(s.who, 120)}<div style="display:grid;gap:10px;min-width:0"><h2>${s.name}</h2><p>${s.text}</p>
+  $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Castle Comet</div>${sceneSVG(s.who)}<div class="room solo"><div style="display:grid;gap:10px;min-width:0"><h2>${s.name}</h2><p>${s.text}</p>
     <div class="btns"><button class="btn" type="button" id="talk">Talk to ${PEOPLE[s.who].name}</button><button class="btn" type="button" id="back">Back to the castle</button></div></div></div>${body}<p class="note" id="secMsg"></p></div>`;
   $("#talk").onclick = () => openTalk(s.talk || s.who); $("#back").onclick = showHub;
   if ($("#shift")) $("#shift").onclick = () => { S.tavernDay = S.day; S.coins += 4; save(); toast("Tata pays you 4 Icosa Coins. \"Come back tomorrow!\""); showSection(r); };
@@ -1465,7 +1722,7 @@ function showRoom(id) {
   if (st === "buildable") return showBuild(r);
   const who = r.who;
   $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Castle Comet</div>
-    <div class="room">${portrait(who, 120)}
+    ${sceneSVG(["scrap", "farm", "kitchen", "training"].includes(id) ? id : who)}<div class="room solo">
       <div style="display:grid;gap:10px;min-width:0"><h2>${r.name}</h2><p>${r.text}</p>${S.warm[who] ? `<p class="warm">${PERKS[who]}</p>` : ""}
         <div class="btns">
           ${who === "you" ? '<button class="btn primary" type="button" id="rest">Rest a night</button><button class="btn" type="button" id="loadoutBtn">Set your loadout</button>' : ""}
@@ -1511,7 +1768,7 @@ let raf = null, timers = [];
 function stopGame() { cancelAnimationFrame(raf); raf = null; timers.forEach(clearInterval); timers = []; document.onkeydown = null; document.onkeyup = null; }
 function gameShell(id, title, body) {
   const r = room(id);
-  $("#view").innerHTML = `<div class="panel game"><div class="head"><div><div class="eyebrow">${r.name}</div><h2>${title}</h2></div>
+  $("#view").innerHTML = `<div class="panel game"><div class="head"><div class="gameWho">${portrait(r.who, 64)}<div><div class="eyebrow">${r.name}</div><h2>${title}</h2></div></div>
     <button class="btn" type="button" id="leave">Back to the ${r.name}</button></div>${body}</div>`;
   $("#leave").onclick = () => showRoom(id);
 }
@@ -1733,8 +1990,26 @@ function cook(rec) {
 invInit();
 renderPouch();
 renderStyle();
+/* scene hotspots press the button they stand for (if that button is on the page right now) */
+const pressFor = el => { const b = document.getElementById(el.dataset.btn); if (b && !b.disabled) b.click(); };
+$("#view").addEventListener("click", e => { const h = e.target.closest(".scene [data-btn]"); if (h) pressFor(h); });
+$("#view").addEventListener("keydown", e => { const h = e.target.closest(".scene [data-btn]"); if (h && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pressFor(h); } });
+$("#hbHall").onclick = () => { closeTalk(); hubView = "hall"; showHub(); };
+$("#hbYard").onclick = () => { closeTalk(); showCourtyard(); };
+$("#hbBarracks").onclick = () => { closeTalk(); showBarracks(); };
 $("#styleChip").onclick = () => { if (S.phase === "castle") showAvatar(false); else toast("Your Style comes from how you answer in your past life."); };
-if (S.phase === "past") showPast();
+/* The whole intro demo (N8 2026-11-12): world intro > Create Your Past > Role intro > Castle Comet > Farluck Farm.
+   world-intro.html comes from the Crit Quest thread and posts {type: "cq-intro-done"} when it ends. */
+const WORLD_INTRO = true; // world-intro.html (Crit Quest thread, 9a33597) is published next to this page
+function showWorldIntro() {
+  stopGame(); closeTalk(); dropFarluck();
+  $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Crit Quest</div><h2>The story so far</h2><p class="note">The opening is playing.</p></div>`;
+  const fr = document.createElement("iframe"); fr.className = "arena full"; fr.id = "fullFrame"; fr.title = "Crit Quest: the opening"; fr.src = "world-intro.html";
+  document.body.appendChild(fr); fr.focus();
+}
+addEventListener("message", e => { if ((e.data || {}).type === "cq-intro-done") { dropFarluck(); S.introSeen = true; save(); showPast(); } });
+if (S.phase === "past" && WORLD_INTRO && !S.introSeen) showWorldIntro();
+else if (S.phase === "past") showPast();
 else if (S.phase === "wake") { showBarracks(); openTalk("bruxanna", "wake1"); }
 else if (S.phase === "avatar") showAvatar(true);
 else showHub();
