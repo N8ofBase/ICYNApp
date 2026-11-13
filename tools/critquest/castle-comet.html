@@ -848,7 +848,7 @@ function showCourtyard() {
 }
 
 /* ---------- inventory (N8 2026-11-12): loadout = 1 Weapon, 1 Armor, 2 Ready slots (stacks of up to 3).
-   The Pack holds what you find on Talus: 8 slots, stacks of 10. It comes home through any Icosa Crystal.
+   The Pack holds what you find on Talus: 8 slots, stacks of 10. It comes home with you through your Return Shard or any Icosa Crystal in a town.
    Knocked out: you keep your loadout; the Pack stays where you fell and can be recovered once. */
 const PACK_SLOTS = 8, PACK_STACK = 10, READY_STACK = 3;
 function invInit() {
@@ -923,7 +923,7 @@ function showTrip(msg = "") {
       ${S.dropped ? `<p class="warn">Your Pack is still lying in ${S.dropped.where}, where you were knocked out. You can go back for it once.</p>` : ""}
       <div class="btns"><button class="btn primary" type="button" id="go">Step into the crystals: ${dest.region}</button>
         <button class="btn" type="button" id="lo">Change loadout in the Barracks</button><button class="btn" type="button" id="back">Back to the Courtyard</button></div></div>`;
-    $("#go").onclick = () => { if (S.tier < dest.tier) discover(dest.tier); S.trip = { where: dest.region, tier: dest.tier }; S.pack = []; save(); showTrip(S.mission && !S.farluckDone ? `The crystals hum, the courtyard folds away, and you step out at the crystal clearing above Farluck Farm. An old farmer in a patched hat waves you down. "A Light Keeper? Oh, thank the stars. I'm Cecil. The gremlins are in the gorgrain again..."` : `The crystals hum, the courtyard folds away, and you step out in ${dest.region} with an empty Pack.`); };
+    $("#go").onclick = () => { if (S.tier < dest.tier) discover(dest.tier); S.trip = { where: dest.region, tier: dest.tier }; S.pack = []; save(); showTrip(S.mission && !S.farluckDone ? `The crystals hum, the courtyard folds away, and you step out on the forest lane above Farluck Farm. An old farmer in a patched hat waves you down. "A Light Keeper? Oh, thank the stars. I'm Cecil. The gremlins are in the gorgrain again..."` : `The crystals hum, the courtyard folds away, and you step out in ${dest.region} with an empty Pack.`); };
     $("#lo").onclick = showLoadout; $("#back").onclick = showCourtyard;
     return;
   }
@@ -936,7 +936,7 @@ function showTrip(msg = "") {
       <button class="btn" type="button" id="gather">Gather and fight (find things)</button>
       <button class="btn" type="button" id="use" ${L.ready.some(Boolean) ? "" : "disabled"}>Use a Ready item</button>
       ${S.dropped && S.dropped.where === t.where ? '<button class="btn" type="button" id="recover">Go back for your dropped Pack</button>' : ""}
-      <button class="btn primary" type="button" id="home">Return through an Icosa Crystal</button>
+      <button class="btn primary" type="button" id="home">Crack your Return Shard</button>
       <button class="btn" type="button" id="ko">Get knocked out (demo)</button></div></div>`;
   $("#gather").onclick = () => {
     const k = pick(findable), n = 1 + Math.floor(Math.random() * 3), left = packAdd(k, n); save();
@@ -1191,7 +1191,7 @@ TALK.boutique = {
   coins: { face: "bruxanna", t: "Looks only! Dice, decorations, the fun stuff. Never power. You earn them helping out around the castle and on Talus.", c: [ { t: "Show me the dice.", go: "close" } ] }
 };
 Object.assign(TALK.wexler, {
-  mission: { t: "Farluck Farm, below the forest. The crops are failing, plague gremlins are in the fields, and something is hammering under the hill. Help the farmer. The first fights there are gentle ones, a good place to learn. When you're done, come home through any Icosa Crystal.", c: [
+  mission: { t: "Farluck Farm, below the forest. The crops are failing, plague gremlins are in the fields, and something is hammering under the hill. Help the farmer. The first fights there are gentle ones, a good place to learn. Take this Return Shard. There are no Icosa Crystals out by the farm, only in the towns. Crack the shard any time and it pulls you, and your Pack, home.", c: [
     { t: "Send me down.", go: "trip" },
     { t: "Not yet.", go: "close" } ] }
 });
@@ -1408,7 +1408,7 @@ function showFarluck() {
   stopGame();
   const cfg = { ...heroCfg(), style: S.hero.style || S.style, ready: S.loadout.ready };
   $("#view").innerHTML = `<div class="panel game"><div class="head"><div><div class="eyebrow">Mission</div><h2>Farluck Farm</h2></div>
-    <button class="btn" type="button" id="leave">Step back through the crystals</button></div>
+    <button class="btn" type="button" id="leave">Crack your Return Shard</button></div>
     <iframe class="arena" src="farluck-adventure.html#${encodeURIComponent(JSON.stringify(cfg))}" title="Farluck Farm"></iframe></div>`;
   $("#leave").onclick = showCourtyard;
 }
