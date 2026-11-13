@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Farluck Farm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#1c1712; --parch:#f3e6c8; --parch2:#e6d3a8; --ink:#2b1d10; --ink2:#5a4630;
+  --edge:#8a6a3a; --gold:#c99a3c; --hover:#fff4d8; --accent:#7a2e1c; --bar:#2b2219; --barInk:#f3e6c8;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --parch:#3a2f22; --parch2:#2f261b; --ink:#f1e4c6; --ink2:#c9b38a; --edge:#a9844a; --hover:#4a3c2b; --accent:#e08a6a; }
+}
+:root[data-theme="dark"]{ --parch:#3a2f22; --parch2:#2f261b; --ink:#f1e4c6; --ink2:#c9b38a; --edge:#a9844a; --hover:#4a3c2b; --accent:#e08a6a; }
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;overflow-x:hidden}
+.wrap{max-width:980px;margin:0 auto;padding:10px 16px 24px}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;color:var(--barInk);font-family:"Alegreya SC",serif}
+.top h1{font-size:19px;margin:4px 0}
+.top span{font-size:14px;opacity:.8}
+.stage{position:relative;width:100%;aspect-ratio:16/9;border:3px solid var(--edge);border-radius:10px;overflow:hidden;background:#000;box-shadow:0 0 0 2px #000}
+.stage svg{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer}
+.hot{cursor:pointer}
+.hot:hover .hl, .hot:focus .hl{stroke:#ffe9a8;stroke-width:3;stroke-dasharray:6 4}
+.label{position:absolute;left:50%;top:8px;transform:translateX(-50%);background:rgba(0,0,0,.55);color:#f3e6c8;font-family:"Alegreya SC",serif;padding:2px 10px;border-radius:6px;font-size:15px;pointer-events:none;white-space:nowrap}
+.fade{position:absolute;inset:0;background:#fff7dc;opacity:0;pointer-events:none;transition:opacity 2.2s}
+.fade.on{opacity:1}
+.bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.bar button,.inv button{font:inherit;font-family:"Alegreya SC",serif;font-size:15px;background:var(--bar);color:var(--barInk);border:1px solid var(--gold);border-radius:7px;padding:5px 12px;cursor:pointer}
+.bar button[aria-pressed="true"]{background:var(--gold);color:#2b1d10}
+.inv{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.inv button[aria-pressed="true"]{outline:2px solid #ffe9a8}
+.narr{margin-top:8px;min-height:2.8em;color:#efe1bf;font-size:16px;line-height:1.4}
+.narr em{color:#d9c08a}
+.box{display:none;margin-top:8px;background:linear-gradient(var(--parch),var(--parch2));border:3px solid var(--edge);border-radius:12px;padding:12px 14px;box-shadow:0 0 0 2px #000}
+.box.on{display:block}
+.head{display:flex;gap:12px;align-items:flex-start}
+.portrait{flex:0 0 auto;width:70px;height:70px;border-radius:10px;border:2px solid var(--gold);background:#201810;overflow:hidden}
+.portrait svg{width:100%;height:100%}
+.plate{font-family:"Alegreya SC",serif;font-weight:700;font-size:17px;color:var(--accent);margin:0 0 2px}
+.say{margin:0;font-size:16px;line-height:1.45}
+.choices{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:4px}
+.choices button{width:100%;text-align:left;font:inherit;font-size:16px;color:var(--ink);background:transparent;border:1px solid transparent;border-radius:8px;padding:6px 10px;cursor:pointer;display:flex;gap:8px}
+.choices button:hover,.choices button:focus-visible{background:var(--hover);border-color:var(--edge);outline:none}
+.k{font-family:"Alegreya SC",serif;color:var(--ink2)}
+.notes{margin-top:14px;color:#cdbb95;font-size:14px;line-height:1.45}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;z-index:20;padding:10px}.ov.on{display:block}.ov iframe{width:100%;height:100%;border:3px solid var(--gold);border-radius:10px;background:#efe3c6}
+.toast{position:fixed;left:50%;top:16px;transform:translate(-50%,-20px);opacity:0;transition:.4s;background:linear-gradient(var(--parch),var(--parch2));border:2px solid var(--gold);border-radius:10px;padding:8px 16px;text-align:center;z-index:30;max-width:calc(100% - 32px);color:var(--ink)}.toast.show{opacity:1;transform:translate(-50%,0)}.toast b{font-family:"Alegreya SC",serif;color:var(--accent);display:block}
+.setup{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:#efe1bf;font-size:14px;margin:6px 0}.setup select{font:inherit;background:var(--bar);color:var(--barInk);border:1px solid var(--gold);border-radius:6px;padding:2px 6px}
+.tag{font-family:"Alegreya SC",serif;font-size:12px;border:1px solid currentColor;border-radius:999px;padding:0 7px;margin-left:6px;color:var(--accent)}
+.notes b{font-family:"Alegreya SC",serif;color:#f3e6c8}
+@media (max-width:560px){ .portrait{width:54px;height:54px} .bar button,.inv button{font-size:14px;padding:5px 9px} .label{font-size:13px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><h1>Chapter 1 · Farluck Farm</h1><span id="where"></span></div>
+  <div class="setup">Your Light Keeper:
+    <select id="selLf" aria-label="Lifeform"><option>Leyf</option><option>Sapien</option><option>Lizerus</option><option>Melkin</option><option>Dimoneesh</option></select>
+    <select id="selRole" aria-label="Role"><option>Maverick</option><option>Brawler</option><option>Champion</option><option>Soul Seer</option><option>Whisper</option></select>
+    <select id="selStyle" aria-label="Style"><option>Serious</option><option>Silly</option><option>Shy</option><option>Smug</option></select>
+  </div>
+  <div class="stage" id="stage">
+    <svg id="svg" viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice" aria-label="Scene"></svg>
+    <div class="label" id="label" hidden></div>
+    <div class="fade" id="fade"></div>
+  </div>
+  <div class="bar" id="verbs"></div>
+  <div class="narr" id="narr" aria-live="polite"></div>
+  <div class="box" id="box" role="dialog">
+    <div class="head"><div class="portrait" id="portrait"></div>
+      <div style="flex:1;min-width:0"><p class="plate" id="plate"></p><p class="say" id="say"></p></div></div>
+    <ul class="choices" id="choices"></ul>
+  </div>
+  <div class="notes">
+    <b>How to play:</b> pick an action, then tap something in the scene. Tap the ground to walk. With Walk on, tapping something does the obvious thing.<br>
+    <b>About this mockup:</b> Talus is explored in painted screens like this one, and fights open on the hex battle map. The setup row above stands in for your Hero from the Castle Comet. Your Style adds one bonus answer when you talk, and Cecil warms to Silly and Shy. Art is simple placeholder shapes.
+  </div>
+</div>
+<div class="ov" id="ov"><iframe id="ovf" title="Battle"></iframe></div>
+<div class="toast" id="toast"><b id="toastT"></b><span id="toastS"></span></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const SVGNS="http://www.w3.org/2000/svg";
+const VERBS=["Walk","Look","Use","Talk","Take"];
+let verb="Walk", item=null, busy=false, scene=null, flags={}, inv=["Weapon"], pack={}, journal=[];
+/* Castle Comet hand-off: the castle opens this page with #<encodeURIComponent(JSON hero config)> and listens for
+   cq-mission-done / cq-mission-close / cq-mission-ko. Standalone, the setup row stands in for the Hero. */
+let HERO=null; try{ HERO=JSON.parse(decodeURIComponent(location.hash.slice(1))); }catch(e){}
+const EMBED=parent!==window;
+let READY=(HERO&&HERO.ready)||[null,null];
+const PACK_KEYS={"Gorgrain seeds":"gorgrain","Char Bean seeds":"charbean"}; // gifts are reported separately
+function post(msg){ if(EMBED) parent.postMessage(msg,"*"); }
+function packOut(){ return Object.entries(pack).filter(([k])=>PACK_KEYS[k]===undefined&&!k.startsWith("Recipe")&&k!=="Char Bean Soup"&&k!=="Red cloak thread").map(([k,n])=>({k,n})); }
+
+/* ---------- hero ---------- */
+const hero={x:150,y:430,tx:150,ty:430,face:1,step:0,el:null,cb:null};
+function heroSVG(){
+  return `<g id="heroInner">
+   <ellipse cx="0" cy="0" rx="22" ry="7" fill="rgba(0,0,0,.35)"/>
+   <g id="legs"><rect id="legL" x="-9" y="-30" width="7" height="30" rx="3" fill="#4a3a26"/><rect id="legR" x="2" y="-30" width="7" height="30" rx="3" fill="#4a3a26"/></g>
+   <path d="M-16 -30 Q-18 -68 0 -74 Q18 -68 16 -30 Z" fill="#3f6b45"/>
+   <path d="M-16 -30 L-20 -12 L-4 -24 Z" fill="#335a3a"/>
+   <circle cx="0" cy="-84" r="12" fill="#7fa36a"/>
+   <path d="M-12 -86 Q0 -104 12 -86 Q6 -92 0 -92 Q-6 -92 -12 -86Z" fill="#2f4d32"/>
+   <circle cx="5" cy="-85" r="2" fill="#1b140c"/>
+   <path d="M18 -86 Q34 -56 18 -24" fill="none" stroke="#8a5a2a" stroke-width="3"/>
+   <line x1="18" y1="-86" x2="18" y2="-24" stroke="#e8dcc0" stroke-width="1"/>
+  </g>`;
+}
+function placeHero(){
+  const s=0.75+(hero.y-330)/190*0.45;
+  hero.el.setAttribute("transform",`translate(${hero.x} ${hero.y}) scale(${hero.face*s} ${s})`);
+  const sw=Math.sin(hero.step)*5;
+  const L=hero.el.querySelector("#legL"),R=hero.el.querySelector("#legR");
+  if(L){L.setAttribute("transform",`translate(0 ${-Math.max(0,sw)})`);R.setAttribute("transform",`translate(0 ${-Math.max(0,-sw)})`);}
+}
+function walkTo(x,y,cb){
+  const b=scene.bounds; hero.tx=Math.max(b[0],Math.min(b[2],x)); hero.ty=Math.max(b[1],Math.min(b[3],y)); hero.cb=cb||null;
+}
+let last=performance.now();
+function tick(t){
+  const dt=Math.min(.05,(t-last)/1000); last=t;
+  if(hero.el){
+    const dx=hero.tx-hero.x, dy=hero.ty-hero.y, d=Math.hypot(dx,dy);
+    if(d>2){ const sp=220*dt; hero.x+=dx/d*Math.min(sp,d); hero.y+=dy/d*Math.min(sp,d); if(Math.abs(dx)>1) hero.face=dx>0?1:-1; hero.step+=dt*14; placeHero(); }
+    else if(hero.cb){ const c=hero.cb; hero.cb=null; hero.step=0; placeHero(); c(); }
+  }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+
+/* ---------- Farluck Farm screens (original placeholder art) ---------- */
+function crystal(x,y){ return `<ellipse cx="${x}" cy="${y+6}" rx="60" ry="14" fill="rgba(0,0,0,.25)"/><circle cx="${x}" cy="${y-60}" r="70" fill="#bfe4ff" opacity=".18"/><polygon points="${x},${y-130} ${x+34},${y-70} ${x+22},${y} ${x-22},${y} ${x-34},${y-70}" fill="#bfe4ff" stroke="#fff" stroke-width="2"/><polygon points="${x},${y-130} ${x+10},${y-70} ${x},${y} ${x-10},${y-70}" fill="#eaf7ff" opacity=".7"/>`; }
+function stalks(x0,x1,y,dry){ let s=""; for(let x=x0;x<x1;x+=22){ s+=`<path d="M${x} ${y} q${dry?6:2} -30 ${dry?14:0} -${dry?34:44}" stroke="${dry?'#b59a55':'#6e8f3a'}" stroke-width="4" fill="none"/>`; } return s; }
+function cecilArt(x,y){ return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="22" ry="7" fill="rgba(0,0,0,.3)"/>
+  <rect x="-10" y="-34" width="8" height="34" rx="3" fill="#4a3a2a"/><rect x="2" y="-34" width="8" height="34" rx="3" fill="#4a3a2a"/>
+  <path d="M-17 -34 Q-18 -76 0 -80 Q18 -76 17 -34Z" fill="#4f6f8f"/><rect x="-9" y="-66" width="18" height="24" fill="#6f8fae"/>
+  <circle cx="0" cy="-90" r="13" fill="#d9a57c"/><path d="M-8 -84 q8 6 16 0" stroke="#e8e0d0" stroke-width="4" fill="none"/>
+  <ellipse cx="0" cy="-101" rx="24" ry="5" fill="#d8b65a"/><path d="M-12 -101 Q0 -118 12 -101Z" fill="#d8b65a"/></g>`; }
+function gremlinArt(x,y){ return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="10" ry="3" fill="rgba(0,0,0,.3)"/><path d="M-9 0 Q-10 -20 0 -22 Q10 -20 9 0Z" fill="#5f8a2e"/><path d="M-8 -18 l-8 -8 M8 -18 l8 -8" stroke="#5f8a2e" stroke-width="4"/><circle cx="-3" cy="-14" r="2" fill="#ffe24a"/><circle cx="3" cy="-14" r="2" fill="#ffe24a"/></g>`; }
+const SCENES={
+  clearing:{
+    name:"The crystal clearing", bounds:[40,370,920,515], start:[300,460],
+    art:()=>`<rect width="960" height="540" fill="#9cc7d8"/><path d="M0 0 H960 V230 Q480 200 0 240Z" fill="#cfe6ee"/>
+      <path d="M0 330 Q480 290 960 330 V540 H0Z" fill="#6f8a48"/><path d="M0 390 Q480 370 960 395 V540 H0Z" fill="#5c7a3a"/>
+      ${tree(60,380,"#2f5a2c")}${tree(180,360,"#35632f")}${tree(800,365,"#7a6a3a",true)}
+      ${crystal(480,400)}
+      <path d="M690 420 q14 -18 30 -4" stroke="#7a1414" stroke-width="4" fill="none" opacity="${flags.thread?0:1}"/>
+      <path d="M880 340 L960 330 V540 H880Z" fill="#c9b47a" opacity=".55"/>`,
+    hot:[
+      {id:"crystal",name:"Icosa Crystal",shape:`<rect x="430" y="260" width="100" height="150" fill="transparent"/>`,stand:[400,470],
+        Look:()=>say("The Icosa Crystal that set you down here. It hums softly. Through any crystal like it, you can always go home to the Comet."),
+        Use:()=>leaveByCrystal(),
+        Talk:()=>say("\"Hello, Wexler?\" The crystal hums back something that might be \"calibrating.\"")},
+      {id:"thread",name:"Something red on a branch",shape:`<rect x="670" y="390" width="70" height="50" fill="transparent"/>`,stand:[680,470],
+        Look:()=>say(flags.thread?"Just a branch now.":"A thread of dark red cloth, snagged on a twig. Someone in a red cloak passed this way."),
+        Take:()=>{ if(flags.thread) return say("You already have it."); flags.thread=1; addPack("Red cloak thread",1); note("A red cloak thread, snagged near the crystal clearing."); load("clearing",true); say("You tuck the red thread into your Pack."); }},
+      {id:"east",name:"Path to the farm",shape:`<rect x="880" y="300" width="80" height="230" fill="transparent"/>`,stand:[930,450],exit:"lane"}
+    ]
+  },
+  lane:{
+    name:"Farm lane", bounds:[40,380,920,515], start:[70,450],
+    art:()=>`<rect width="960" height="540" fill="#e9c98a"/><path d="M0 300 Q480 270 960 300 V540 H0Z" fill="#a89a5a"/>
+      ${stalks(40,420,360,true)}${stalks(520,900,360,true)}
+      <path d="M0 400 Q480 380 960 400 V540 H0Z" fill="#8d7a4a"/>
+      <path d="M100 330 h340 M100 345 h340 M520 330 h340 M520 345 h340" stroke="#6b4a2a" stroke-width="5"/>
+      <g transform="translate(640 300)"><rect x="-3" y="0" width="6" height="70" fill="#6b4a2a"/><rect x="-26" y="12" width="52" height="6" fill="#6b4a2a"/><circle cx="0" cy="-6" r="12" fill="#d8b65a"/><path d="M-14 18 L14 18 L18 48 L-18 48Z" fill="#8a5a2a"/></g>
+      <g fill="#5f8a2e">${[0,1,2,3,4].map(k=>`<circle cx="${330+k*40}" cy="${470+(k%2)*10}" r="5"/>`).join("")}</g>`,
+    hot:[
+      {id:"west",name:"Back to the clearing",shape:`<rect x="0" y="300" width="50" height="230" fill="transparent"/>`,stand:[40,450],exit:"clearing"},
+      {id:"crops",name:"Dry Gorgrain field",shape:`<rect x="40" y="300" width="400" height="70" fill="transparent"/>`,stand:[240,420],
+        Look:()=>say("Rows of Gorgrain, brown and brittle. Whatever grain was here has been nibbled to stubs."),
+        Take:()=>say("Nothing left worth taking. Not even a seed.")},
+      {id:"scare",name:"Scarecrow",shape:`<rect x="610" y="280" width="60" height="100" fill="transparent"/>`,stand:[640,430],
+        Look:()=>say("A patient scarecrow. Its straw hat has little bite marks in it."),
+        Talk:()=>say("\"Seen anything strange?\" The scarecrow keeps its secrets.")},
+      {id:"prints",name:"Little green prints",shape:`<rect x="310" y="455" width="220" height="40" fill="transparent"/>`,stand:[300,470],
+        Look:()=>{ say("Tiny clawed prints, smudged green. They lead toward the farmyard, and they smell like old cabbage."); note("Green clawed prints in the fields: some kind of gremlin."); }},
+      {id:"east",name:"On to the farmyard",shape:`<rect x="880" y="300" width="80" height="230" fill="transparent"/>`,stand:[930,450],exit:"yard"}
+    ]
+  },
+  yard:{
+    name:"Farluck Farm", bounds:[40,400,920,515], start:[70,460],
+    art:()=>`<rect width="960" height="540" fill="#f0c98a"/><path d="M0 300 Q480 280 960 300 V540 H0Z" fill="#9a8a52"/>
+      <rect x="90" y="190" width="230" height="160" fill="#a3753f"/><path d="M70 195 L205 110 L340 195Z" fill="#7a3a24"/><rect x="185" y="270" width="40" height="80" fill="#3b2a1a"/><rect x="110" y="230" width="44" height="34" fill="#f3d98a"/><rect x="250" y="230" width="44" height="34" fill="#f3d98a"/>
+      <path d="M290 150 q-8 -20 6 -36 q-10 -18 2 -32" fill="none" stroke="#efe6d6" stroke-width="6" opacity=".6"/>
+      <rect x="680" y="220" width="200" height="150" fill="#7d5a34"/><path d="M665 225 L780 165 L895 225Z" fill="#5a3a22"/>
+      <g id="shedDoor"><rect x="750" y="280" width="60" height="90" fill="${flags.cleared?'#3b2a1a':'#5a3a22'}" transform="${flags.cleared?'':'rotate(-2 780 370)'}"/></g>
+      ${flags.cleared?'':`${gremlinArt(735,372)}`}
+      <path d="M0 400 Q480 385 960 400 V540 H0Z" fill="#857244"/>
+      <g transform="translate(480 400)"><ellipse cx="0" cy="0" rx="46" ry="14" fill="#6b6b6b"/><rect x="-46" y="-30" width="92" height="30" fill="#8a8a8a"/><ellipse cx="0" cy="-30" rx="46" ry="14" fill="#5a5a5a"/><ellipse cx="0" cy="-30" rx="36" ry="9" fill="#2a2a2a"/><rect x="-40" y="-90" width="6" height="60" fill="#6b4a2a"/><rect x="34" y="-90" width="6" height="60" fill="#6b4a2a"/><rect x="-44" y="-96" width="88" height="8" fill="#7a3a24"/></g>
+      ${cecilArt(600,470)}`,
+    hot:[
+      {id:"west",name:"Back to the lane",shape:`<rect x="0" y="300" width="50" height="230" fill="transparent"/>`,stand:[40,460],exit:"lane"},
+      {id:"house",name:"Farmhouse",shape:`<rect x="70" y="110" width="270" height="240" fill="transparent"/>`,stand:[205,440],
+        Look:()=>say("A snug farmhouse with a smoking chimney. It smells like bean soup."),
+        Use:()=>say(flags.met?"\"Make yourself at home after,\" Cecil calls. \"Gremlins first.\"":"It's not your house. Maybe talk to the farmer first.")},
+      {id:"well",name:"Well",shape:`<rect x="430" y="300" width="100" height="120" fill="transparent"/>`,stand:[470,460],
+        Look:()=>{ say("You lean over the well. It's bone dry. From somewhere deep below comes a faint, steady hammering."); note("The well at Farluck Farm is dry, and something is hammering deep under it."); },
+        Use:()=>say("You drop a pebble. Clack. No splash.")},
+      {id:"cecil",name:"Farmer",shape:`<rect x="570" y="360" width="70" height="120" fill="transparent"/>`,stand:[555,470],
+        any:(v)=>{ if(v==="Take") return say("Best not."); talkCecil(); }},
+      {id:"shed",name:"Seed shed",shape:`<rect x="680" y="165" width="210" height="210" fill="transparent"/>`,stand:[760,450],
+        any:(v)=>{
+          if(flags.cleared) return say("The shed is quiet now. Seed sacks lie chewed open on the floor.");
+          if(!flags.met) return say("The shed door rattles. Something inside squeaks. Maybe ask the farmer about it first.");
+          ask("Narrator","The door rattles. Squeaking, chewing, and a smell like old cabbage. Open it?",[
+            ["Open the door, weapon ready.","",startBattle],["Not yet.","",()=>say("You step back. The squeaking gets louder.")]]);
+        }}
+    ]
+  }
+};
+
+function tree(x,y,c,wilt){ return `<rect x="${x-6}" y="${y-140}" width="12" height="140" fill="#3b2a1a"/>`+
+  (wilt? `<path d="M${x} ${y-140} q-40 10 -46 50 M${x} ${y-120} q40 10 44 52 M${x} ${y-100} q-30 20 -30 50" stroke="${c}" stroke-width="10" fill="none" stroke-linecap="round"/>`
+       : `<circle cx="${x}" cy="${y-150}" r="46" fill="${c}"/><circle cx="${x-30}" cy="${y-120}" r="32" fill="${c}"/><circle cx="${x+30}" cy="${y-118}" r="34" fill="${c}"/>`); }
+function fern(x,y){ return `<path d="M${x} ${y} q-30 -40 -50 -46 M${x} ${y} q-6 -50 4 -70 M${x} ${y} q30 -36 50 -40" stroke="#3f6b2f" stroke-width="7" fill="none" stroke-linecap="round"/>`; }
+/* ---------- scene setup ---------- */
+function load(id,keep){
+  scene=SCENES[id]; $("where").textContent=scene.name;
+  const s=$("svg"); s.innerHTML=scene.art();
+  scene.hot.forEach(h=>{ const g=document.createElementNS(SVGNS,"g"); g.setAttribute("class","hot"); g.setAttribute("tabindex","0"); g.setAttribute("role","button"); g.setAttribute("aria-label",h.name);
+    g.innerHTML=h.shape.replace("fill=\"transparent\"","fill=\"transparent\" class=\"hl\" stroke=\"transparent\"");
+    g.addEventListener("click",e=>{e.stopPropagation(); act(h);});
+    g.addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();act(h);} });
+    g.addEventListener("mouseenter",()=>showLabel(h)); g.addEventListener("mouseleave",()=>$("label").hidden=true);
+    s.appendChild(g); });
+  const hg=document.createElementNS(SVGNS,"g"); hg.innerHTML=heroSVG(); s.appendChild(hg); hero.el=hg;
+  if(!keep){ hero.x=hero.tx=scene.start[0]; hero.y=hero.ty=scene.start[1]; } hero.face=1; hero.cb=null; placeHero();
+  if(scene.enter) scene.enter();
+}
+function showLabel(h){ const l=$("label"); l.textContent=(item?`Use ${item} on `:(verb==="Walk"?"":verb+" "))+h.name; l.hidden=false; }
+$("svg").addEventListener("click",e=>{
+  if(busy||$("box").classList.contains("on")) return;
+  const s=$("svg"), pt=s.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY; const p=pt.matrixTransform(s.getScreenCTM().inverse());
+  walkTo(p.x,p.y);
+});
+function act(h){
+  if(busy||$("box").classList.contains("on")) return;
+  const v=verb, it=item; setItem(null);
+  walkTo(h.stand[0],h.stand[1],()=>{
+    if(h.exit && (v==="Walk")) return load(h.exit);
+    if(h.any) return h.any(v,it);
+    if(it) return say(`Using the ${it.toLowerCase()} on that doesn't do anything useful.`);
+    const f=h[v==="Walk"?"Look":v];
+    if(f) f(); else say(v==="Talk"?"It doesn't answer.":v==="Take"?"You can't take that.":v==="Use"?"Nothing happens.":"Nothing special.");
+  });
+}
+
+
+/* ---------- story ---------- */
+let STYLE="Serious";
+function talkCecil(){
+  if(flags.cleared && !flags.gifts) return giveGifts();
+  if(flags.cleared) return say("\"Plant those seeds somewhere they'll be loved,\" Cecil says. \"And come back. I've a feeling about that well.\"");
+  if(flags.met) return say("\"The shed,\" Cecil says, nodding at it. \"They're in there chewing my last seeds.\"");
+  flags.met=1;
+  ask("Cecil","\"Well now, a stranger who came down from the crystal clearing! I'm Cecil, and this is Farluck Farm, what's left of it. Gremlins got into my seed shed, and the well's gone dry besides.\"",[
+    ["\"I'm here to help. Tell me what you need.\"",""],
+    ["\"Gremlins? How many are we talking?\"",""],
+    ["\"Dry wells and hungry gremlins. Sounds like a bad week.\"","Serious"],
+    ["\"Don't worry, Cecil. I'm great with pests. I've been called one.\"","Silly",null,true],
+    ["(Quietly roll up your sleeves and nod toward the shed.)","Shy",null,true],
+    ["\"Lucky you. You got the best Light Keeper on the Comet.\"","Smug"]],
+    ()=>say("\"Three of the little biters, I reckon,\" Cecil says. \"Drive them off and I'll make it worth your while. Shed's over there.\""));
+}
+function startBattle(){
+  busy=true;
+  say("You pull the door open, and three plague gremlins burst out!");
+  const cfg=HERO&&HERO.role?HERO:{lf:$("selLf").value,role:$("selRole").value};
+  setTimeout(()=>{ $("ovf").src="farluck-battle.html#"+encodeURIComponent(JSON.stringify(cfg)); $("ov").classList.add("on"); },900);
+}
+window.addEventListener("message",e=>{
+  if(!e.data||e.data.type!=="cq-battle-close") return;
+  $("ov").classList.remove("on"); $("ovf").src="about:blank"; busy=false;
+  if(!e.data.won){ // knocked out: wake at the crystal; the Pack stays by the shed (one recovery)
+    if(EMBED) return post({type:"cq-mission-ko",pack:packOut()});
+    load("clearing"); return say("You wake by the Icosa Crystal, a little dizzy. Your Pack is back by the seed shed. Try the shed again when you're ready.");
+  }
+  if(e.data.won){ flags.cleared=1; load("yard"); hero.x=hero.tx=700; hero.y=hero.ty=460; placeHero();
+    say("The gremlins scurry off into the fields, squeaking. Cecil waves you over."); }
+});
+function giveGifts(){
+  flags.gifts=1;
+  ask("Cecil","\"Well I'll be! Not a scratch on the shed, either. Here: the last of my seeds, some soup for the road, and how to make it. My grandmother's recipe, so don't go changing it.\"",[["\"Thank you, Cecil.\"",""]],()=>{
+    addPack("Gorgrain seeds",3); addPack("Char Bean seeds",3); addPack("Char Bean Soup",2); addPack("Recipe: Char Bean Soup",1);
+    toast("Gifts from Cecil","Gorgrain and Char Bean seeds, 2 Char Bean Soup, and his recipe. Use them once you build the Farm and Kitchen.");
+    note("Cecil's gifts: seeds for the Farm, a recipe for the Kitchen.");
+    setTimeout(()=>toast("New quest: The dry well","Find out what is hammering under Farluck Farm."),3200);
+    say("Your Pack: Gorgrain seeds x3, Char Bean seeds x3, Char Bean Soup x2, Recipe: Char Bean Soup. The soup can go in a Ready slot.");
+  });
+}
+function leaveByCrystal(){
+  if(flags.gifts){
+    ask("Narrator","Step into the Icosa Crystal and go home to the Castle Comet with Cecil's gifts?",[["Go home to the Comet.","",()=>{
+      const msg={type:"cq-mission-done",mission:"farluck",pack:packOut(),gifts:{seeds:{gorgrain:pack["Gorgrain seeds"]||0,charbean:pack["Char Bean seeds"]||0},dishes:Array(pack["Char Bean Soup"]||0).fill("Cecil's Char Bean Soup"),recipes:pack["Recipe: Char Bean Soup"]?["soup"]:[]},ready:READY,clues:journal};
+      if(EMBED) post(msg); else { $("fade").classList.add("on"); say("Light folds around you, and you're home on the Comet. (In the full game, the castle takes your Pack and gifts from here.)"); }
+    }],["Not yet.",""]]);
+  } else {
+    ask("Narrator","The crystal hums. Go back to the Comet now? Farluck still needs help.",[["Leave for now.","",()=>{ if(EMBED) post({type:"cq-mission-close"}); else say("(In the full game, this takes you home without finishing.)"); }],["Stay.",""]]);
+  }
+}
+function addPack(name,n){ pack[name]=(pack[name]||0)+n; buildBar(); }
+function note(t){ if(!journal.includes(t)) journal.push(t); }
+let tt; function toast(t,s){ $("toastT").textContent=t; $("toastS").textContent=s; const el=$("toast"); el.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>el.classList.remove("show"),3000); }
+
+
+/* ---------- ui ---------- */
+function say(t){ $("narr").innerHTML=t; }
+const FACE={Narrator:`<svg viewBox="0 0 70 70"><rect width="70" height="70" fill="#1d2633"/><polygon points="35,8 54,30 47,62 23,62 16,30" fill="#bfe4ff" stroke="#fff" stroke-width="1.5"/></svg>`,
+  Cecil:`<svg viewBox="0 0 70 70"><rect width="70" height="70" fill="#3a4a2a"/><path d="M8 70c3-14 12-20 27-20s24 6 27 20z" fill="#4f6f8f"/><circle cx="35" cy="34" r="15" fill="#d9a57c"/><path d="M26 42 q9 6 18 0" stroke="#e8e0d0" stroke-width="4" fill="none"/><circle cx="30" cy="32" r="1.8" fill="#2b1d10"/><circle cx="40" cy="32" r="1.8" fill="#2b1d10"/><ellipse cx="35" cy="21" rx="26" ry="6" fill="#d8b65a"/><path d="M22 21 Q35 2 48 21Z" fill="#d8b65a"/></svg>`};
+// opts: [text, style("" = plain), fn, worksOnSpeaker]
+function ask(who,text,opts,after){
+  const box=$("box"); box.classList.add("on"); $("portrait").innerHTML=FACE[who]||FACE.Narrator; $("plate").textContent=who==="Narrator"?"":who; $("say").innerHTML=text;
+  const ul=$("choices"); ul.innerHTML="";
+  opts.filter(o=>!o[1]||o[1]===STYLE).forEach((o,i)=>{ const li=document.createElement("li"), b=document.createElement("button"); b.type="button";
+    b.innerHTML=`<span class="k">${i+1}.</span><span>${o[0]}${o[1]?`<span class="tag">${o[1]}</span>`:""}</span>`;
+    b.onclick=()=>{ box.classList.remove("on"); if(o[3]) toast(`${who} warmed to you`,`${o[1]} works on ${who}.`); if(o[2]) o[2](); if(after) after(); };
+    li.appendChild(b); ul.appendChild(li); });
+  ul.querySelector("button").focus({preventScroll:true});
+}
+function setItem(it){ item=it; document.querySelectorAll(".inv button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.it===it)); }
+function buildBar(){
+  const bar=$("verbs"); bar.innerHTML="";
+  VERBS.forEach(v=>{ const b=document.createElement("button"); b.type="button"; b.textContent=v; b.setAttribute("aria-pressed",v===verb);
+    b.onclick=()=>{ verb=v; setItem(null); bar.querySelectorAll(":scope > button").forEach(x=>x.setAttribute("aria-pressed",x.textContent===v)); }; bar.appendChild(b); });
+  const inv=document.createElement("div"); inv.className="inv";
+  const pk=document.createElement("button"); pk.type="button"; pk.textContent="Pack ("+Object.keys(pack).length+"/8)";
+  pk.onclick=()=>say(Object.keys(pack).length?"Your Pack: "+Object.entries(pack).map(([k,n])=>`${k} x${n}`).join(", ")+(journal.length?"<br><em>Journal:</em> "+journal.join(" · "):""):"Your Pack is empty."+(journal.length?"<br><em>Journal:</em> "+journal.join(" · "):""));
+  inv.appendChild(pk); bar.appendChild(inv);
+}
+
+
+document.addEventListener("keydown",e=>{
+  if(!$("box").classList.contains("on")) return; const n=parseInt(e.key,10); const bs=$("choices").querySelectorAll("button"); if(n>=1&&n<=bs.length) bs[n-1].click();
+});
+$("selStyle").onchange=e=>STYLE=e.target.value;
+if(HERO&&HERO.role){ $("selLf").value=HERO.lf; $("selRole").value=HERO.role; if(HERO.style){ $("selStyle").value=HERO.style; STYLE=HERO.style; } document.querySelector(".setup").hidden=true; }
+buildBar(); load("clearing");
+say("<em>Chapter 1.</em> The Icosa Crystal sets you down in a quiet clearing. Somewhere east, a chimney is smoking. Look around, then follow the path.");
+</script>
+</body>
+</html>

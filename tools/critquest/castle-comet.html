@@ -586,7 +586,7 @@ function route(go) {
   if (go === "close") return closeTalk();
   if (go === "restyle") { afterStyle = null; return openTalk("narrator", "change"); }
   if (go === "rest") { closeTalk(); return rest(); }
-  const special = { future: showFuture, avatar: () => showAvatar(true), weapons: showRack, battle, yard: showCourtyard, trip: () => { S.mission = "Farluck Farm"; save(); showTrip(); } };
+  const special = { future: showFuture, avatar: () => showAvatar(true), weapons: showRack, battle, yard: showCourtyard, trip: () => { S.mission = "Farluck Farm"; save(); S.farluckDone ? showTrip() : showFarluck(); } };
   if (special[go]) { closeTalk(); return special[go](); }
   if (go.startsWith("talk:")) { const [, who, key] = go.split(":"); return openTalk(who, key || "start"); }
   if (go.startsWith("play:")) { closeTalk(); return startGame(go.slice(5)); }
@@ -956,13 +956,9 @@ function showTrip(msg = "") {
     S.pack.forEach(sl => { if (CROP[sl.k]) S.crops[sl.k] = C(sl.k) + sl.n; else addM(sl.k, sl.n); });
     S.pack = []; S.trip = null;
     const firstFarluck = S.mission === "Farluck Farm" && !S.farluckDone;
-    if (firstFarluck) {
-      S.farluckDone = true; S.seeds.gorgrain = SD("gorgrain") + 3; S.seeds.charbean = SD("charbean") + 3;
-      S.dishes.push("Cecil's Char Bean Soup", "Cecil's Char Bean Soup"); S.recipes = [...(S.recipes || []), "soup"];
-      addClue("Cecil's recipe card: Char Bean Soup, the way his family makes it.");
-    }
+    const giftMsg = firstFarluck ? farluckGifts() : "";
     save();
-    toast(firstFarluck ? "Cecil's thank-you gifts: 3 Gorgrain seeds, 3 Char Bean seeds, 2 bowls of his Char Bean Soup, and his recipe card." : got.length ? "Back on the Comet. Unpacked: " + got.join(", ") : "Back on the Comet with an empty Pack.");
+    toast(firstFarluck ? giftMsg : got.length ? "Back on the Comet. Unpacked: " + got.join(", ") : "Back on the Comet with an empty Pack.");
     showCourtyard();
     if (firstFarluck) openTalk("bruxanna", "salvage1");
   };
@@ -1401,11 +1397,33 @@ function showRack() {
 }
 /* The practice battle uses the 3v3 sparring map's engine and look (N8 prefers it): training-ground.html is a copy of
    hex-3v3.html (commit 05909b0) with a Training Ground mode. Your Hero, weapon and armor go in through the URL hash. */
+function heroCfg() {
+  const h = S.hero, w = GEAR[S.loadout.weapon], a = GEAR[S.loadout.armor];
+  return { lf: h.lf, role: h.role, focus: L1[h.role][h.focus] ? h.focus : Object.keys(L1[h.role])[0], ab: h.ab || 0,
+    weapon: w ? w.name : undefined, wRange: w ? w.range : undefined, def: (a ? a.def : 0) + (w && w.def || 0), color: ROLES[h.role].hue };
+}
+/* Farluck Farm: the painted-screen adventure (farluck-adventure.html, from the Crit Quest thread) with its hex battle.
+   Your Hero and Ready items go in through the URL hash; your Pack, Cecil's gifts and what's left of your Ready items come back by postMessage. */
+function showFarluck() {
+  stopGame();
+  const cfg = { ...heroCfg(), style: S.hero.style || S.style, ready: S.loadout.ready };
+  $("#view").innerHTML = `<div class="panel game"><div class="head"><div><div class="eyebrow">Mission</div><h2>Farluck Farm</h2></div>
+    <button class="btn" type="button" id="leave">Step back through the crystals</button></div>
+    <iframe class="arena" src="farluck-adventure.html#${encodeURIComponent(JSON.stringify(cfg))}" title="Farluck Farm"></iframe></div>`;
+  $("#leave").onclick = showCourtyard;
+}
+function farluckGifts(g = {}) {
+  const seeds = g.seeds || { gorgrain: 3, charbean: 3 }, dishes = g.dishes || ["Cecil's Char Bean Soup", "Cecil's Char Bean Soup"], recipes = [...(g.recipes || []), "soup"];
+  S.farluckDone = true; S.tier = Math.max(S.tier, 1);
+  Object.entries(seeds).forEach(([k, n]) => S.seeds[k] = SD(k) + n);
+  S.dishes.push(...dishes); S.recipes = [...new Set([...(S.recipes || []), ...recipes])];
+  addClue("Cecil's recipe card: Char Bean Soup, the way his family makes it.");
+  return `Cecil's thank-you gifts: ${Object.entries(seeds).map(([k, n]) => `${n} ${CROP[k] ? CROP[k].name : k} seeds`).join(", ")}, ${dishes.length} bowls of his Char Bean Soup, and his recipe card.`;
+}
+function unpack(pack) { (pack || []).forEach(sl => { if (CROP[sl.k]) S.crops[sl.k] = C(sl.k) + sl.n; else if (MATS[sl.k]) addM(sl.k, sl.n); }); }
 function battle() {
   stopGame();
-  const h = S.hero, w = GEAR[S.loadout.weapon], a = GEAR[S.loadout.armor];
-  const cfg = { lf: h.lf, role: h.role, focus: L1[h.role][h.focus] ? h.focus : Object.keys(L1[h.role])[0], ab: h.ab || 0,
-    weapon: w ? w.name : undefined, wRange: w ? w.range : undefined, def: (a ? a.def : 0) + (w && w.def || 0), color: ROLES[h.role].hue };
+  const cfg = heroCfg();
   $("#view").innerHTML = `<div class="panel game"><div class="head"><div><div class="eyebrow">Training Ground</div><h2>Practice battle: Treywind</h2></div>
     <button class="btn" type="button" id="leave">Back to the Training Ground</button></div>
     <iframe class="arena" src="training-ground.html#${encodeURIComponent(JSON.stringify(cfg))}" title="Practice battle with Treywind"></iframe></div>`;
@@ -1415,6 +1433,17 @@ addEventListener("message", e => {
   const d = e.data || {};
   if (d.type === "cq-training") { if (d.won && !S.trainWon) { S.trainWon = true; S.coins += 10; toast("Treywind yields! +10 Icosa Coins."); } S.trained = true; save(); }
   if (d.type === "cq-training-close") { showRoom("training"); if (d.won) openTalk("treywind", "done"); }
+  if (d.type === "cq-mission-done") {
+    unpack(d.pack); if (Array.isArray(d.ready)) S.loadout.ready = d.ready; (d.clues || []).forEach(c => { if (!S.clues.includes(c)) S.clues.push(c); });
+    const first = !S.farluckDone, msg = first ? farluckGifts(d.gifts) : "Back on the Comet."; S.trip = null; save();
+    toast(msg); showCourtyard(); if (first) openTalk("bruxanna", "salvage1");
+  }
+  if (d.type === "cq-mission-ko") {
+    if (Array.isArray(d.ready)) S.loadout.ready = d.ready;
+    const lostOld = !!S.dropped; S.dropped = d.pack && d.pack.length ? { where: "Farluck Farm", pack: d.pack } : null; save();
+    toast(`You wake on your bed in the Barracks with your loadout.${S.dropped ? " Your Pack is still on Farluck Farm." : ""}${lostOld ? " The Pack you dropped before is gone for good." : ""}`); showBarracks();
+  }
+  if (d.type === "cq-mission-close") showCourtyard();
 });
 
 /* ---------- room view, with the build step for unbuilt rooms */
