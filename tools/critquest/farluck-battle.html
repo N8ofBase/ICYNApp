@@ -3,7 +3,7 @@
 <title>Farluck Battle</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya+Sans:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,600;1,400&family=Alegreya+SC:wght@500;700&family=Alegreya+Sans:wght@400;500;700&display=swap">
 <style>
 /* Same field-journal look as the first hex prototype: one warm daylight parchment theme on purpose. */
 :root {
@@ -115,6 +115,99 @@ button:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
 .tip .t2 { color: var(--ink-soft); }
 .tip .ab { border-top: 1px solid var(--rule); padding-top: 3px; }
 @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+/* ---------- world-style battle screen (matches farluck-adventure.html) */
+body.inBattle { overflow: hidden; }
+#battleView { --role: #a8821f; --gold2: #c99a3c; --stone1: #2a231d; --stone2: #17120e; --barInk: #f3e6c8;
+  position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; background: #141010; font-family: Alegreya, Georgia, serif; }
+#battleView .frame { position: relative; flex: 1; min-height: 0; border: 10px solid var(--role); box-shadow: inset 0 0 0 2px #000, 0 0 0 2px #000; background: radial-gradient(ellipse at 50% 45%, #6f7a3e, #3c4422 70%, #22270f); }
+#battleView .frame::before { content: ""; position: absolute; inset: -6px; border: 2px solid var(--gold2); pointer-events: none; z-index: 6; border-radius: 2px; opacity: .85; }
+#battleView .corner { position: absolute; width: 46px; height: 46px; z-index: 7; pointer-events: none; }
+#battleView .corner svg { width: 100%; height: 100%; }
+.c-tl { left: -22px; top: -22px; } .c-tr { right: -22px; top: -22px; transform: scaleX(-1); } .c-bl { left: -22px; bottom: -22px; transform: scaleY(-1); } .c-br { right: -22px; bottom: -22px; transform: scale(-1, -1); }
+#board.stage { position: absolute; inset: 0; overflow: hidden; border: 0; border-radius: 0; background: none; }
+#board.stage svg#map { position: absolute; inset: 0; width: 100%; height: 100%; }
+.plateTop { position: absolute; left: 14px; top: 12px; z-index: 5; background: rgba(15, 10, 6, .78); border: 1px solid var(--gold2); border-radius: 8px; padding: 5px 12px; color: #f3e6c8; font-family: "Alegreya SC", serif; max-width: min(60%, 520px); }
+.plateTop b { display: block; font-size: 16px; }
+.plateTop .rnd { font-size: 13px; opacity: .9; }
+.plateTop .order { margin-top: 4px; }
+#battleView .chip { background: #2a221a; color: #f3e6c8; border-color: #6b5537; font-family: Alegreya, serif; }
+#battleView .chip.A { border-color: var(--gold2); } #battleView .chip.B { border-color: #b5462a; }
+#battleView .chip.now { background: var(--gold2); color: #22170d; border-color: #ffe2a0; }
+.hintStrip { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 5; max-width: min(640px, 88%); background: rgba(15, 10, 6, .78); color: #f3e6c8; border: 1px solid var(--gold2); border-radius: 8px; padding: 4px 12px; font-size: 14px; text-align: center; }
+.hintStrip:empty { display: none; }
+/* action text over the unit */
+#caption.bubble { position: absolute; z-index: 6; min-height: 0; max-width: min(380px, 80%); background: rgba(20, 14, 9, .9); color: #f6ead0; border: 1px solid var(--gold2); border-radius: 10px; padding: 7px 11px; font-size: 14.5px; line-height: 1.35; pointer-events: none; transform: translate(-50%, -100%); display: grid; gap: 2px; transition: opacity .2s; }
+#caption.bubble:empty { opacity: 0; }
+#caption.bubble.mine { border-color: var(--gold2); } #caption.bubble.rival { border-color: #b5462a; }
+#caption.bubble::after { content: ""; position: absolute; left: var(--tail, 50%); bottom: -7px; transform: translateX(-50%) rotate(45deg); width: 12px; height: 12px; background: rgba(20, 14, 9, .9); border-right: 1px solid var(--gold2); border-bottom: 1px solid var(--gold2); }
+#caption.bubble .hd b { font-family: "Alegreya SC", serif; color: #ffe2a0; }
+#caption.bubble .who { color: #cdb98e; font-size: 12px; }
+#caption.bubble b { color: #ffe2a0; }
+#caption.bubble .ctl { pointer-events: auto; display: flex; justify-content: flex-end; }
+/* turn pop-up beside the active Hero */
+.turnPop { position: absolute; z-index: 6; transform: translate(0, -50%); display: grid; gap: 3px; background: rgba(20, 14, 9, .9); border: 1px solid var(--gold2); border-radius: 10px; padding: 6px; min-width: 120px; }
+.turnPop .tp { font: 11px "Alegreya SC", serif; color: #bfa77a; text-align: center; }
+.turnPop button { font: 13px/1.1 "Alegreya SC", serif; color: #f3e6c8; background: #3a2e24; border: 1px solid #6b5537; border-radius: 6px; padding: 4px 8px; cursor: pointer; text-align: left; }
+.turnPop button[aria-pressed="true"] { background: var(--gold2); color: #22170d; border-color: #ffe2a0; }
+.turnPop button:disabled { display: none; }
+.turnPop button small { color: #cdb98e; font-family: Alegreya, serif; }
+.turnPop.left { transform: translate(-100%, -50%); }
+/* rolling Crit Dice */
+.tray { position: absolute; z-index: 5; display: flex; gap: 4px; transform: translate(-50%, -50%); pointer-events: none; }
+.die { --sz: var(--dz, 46px); width: var(--sz); height: var(--sz); position: relative; filter: drop-shadow(0 5px 5px rgba(0, 0, 0, .6)); }
+.die.sm { --sz: calc(var(--dz, 46px) * .75); }
+.die svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.die.rolling { animation: tumble var(--t, 800ms) cubic-bezier(.2, .7, .3, 1) both; }
+@keyframes tumble { 0% { transform: translate(var(--fx, -50px), -40px) rotate(-560deg) scale(.5); opacity: 0 } 15% { opacity: 1 } 60% { transform: translate(0, 4px) rotate(-30deg) scale(1.08) } 80% { transform: translate(0, 0) rotate(8deg) scale(.97) } 100% { transform: none } }
+.die.crit::after { content: ""; position: absolute; inset: -30%; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 220, 120, .85), transparent); z-index: -1; animation: burst 1s ease-out forwards; }
+.die.fumble svg { filter: grayscale(.6) brightness(.7); }
+.die.fumble::after { content: ""; position: absolute; inset: -20%; border-radius: 50%; background: radial-gradient(closest-side, rgba(220, 30, 40, .7), transparent); z-index: -1; animation: burst 1s ease-out forwards; }
+@keyframes burst { 0% { transform: scale(.4); opacity: 1 } 100% { transform: scale(1.5); opacity: 0 } }
+.die .lbl { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); font: 11px/1 "Alegreya SC", serif; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .die.rolling { animation: none; } }
+/* bottom action bar */
+.hud2 { flex: 0 0 auto; min-height: 112px; display: flex; align-items: stretch; justify-content: safe center; background: linear-gradient(180deg, var(--stone1), var(--stone2)); border-top: 3px solid var(--role); box-shadow: inset 0 2px 0 var(--gold2); color: var(--barInk); font-family: "Alegreya SC", serif; overflow-x: auto; }
+.hud2 .sec { display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 8px 12px; border-right: 2px solid #000; box-shadow: 1px 0 0 #3a2f25; }
+.hud2 .sec:first-child { border-left: 2px solid #000; }
+.hud2 .sec:last-child { border-right: 0; box-shadow: none; }
+.hud2 h4 { margin: 0; font-size: 11px; letter-spacing: .08em; color: #bfa77a; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.hud2 .who { min-width: 150px; max-width: 210px; }
+.hud2 .who b { font-size: 15px; } .hud2 .who small { font-size: 12px; color: #cdb98e; font-family: Alegreya, serif; }
+.hud2 .tags .tag { background: #2a221a; color: #f3e6c8; border-color: #6b5537; font-family: Alegreya, serif; }
+.hud2 .tags .tag.bad { border-color: #b5462a; color: #f2a08a; } .hud2 .tags .tag.good { border-color: #6fa8c8; color: #a8d4f0; }
+.lifebar { position: relative; height: 16px; border: 1px solid #000; border-radius: 8px; background: #2a1612; overflow: hidden; box-shadow: inset 0 1px 2px #000; min-width: 170px; }
+.lifebar i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(#e0584a, #8a1e18); border-radius: 8px; transition: width .3s; }
+.lifebar span { position: relative; display: block; text-align: center; font: 11px/16px Alegreya, serif; color: #fff; text-shadow: 0 1px 1px #000; }
+.stg { display: grid; grid-template-columns: repeat(6, auto); gap: 4px; }
+.stg div { display: flex; flex-direction: column; align-items: center; min-width: 28px; padding: 2px 3px; border: 1px solid #6b5537; border-radius: 5px; background: #2a221a; font-size: 9px; color: #bfa77a; line-height: 1.1; }
+.stg div b { font: 600 15px/1.1 Alegreya, serif; color: var(--barInk); } .stg div.main { border-color: var(--gold2); box-shadow: 0 0 0 1px var(--gold2) inset; }
+.hud2 .pips { gap: 4px; } .hud2 .pip { border-color: #bfa77a; width: 10px; height: 10px; } .hud2 .pip.on { background: var(--gold2); border-color: #ffe2a0; }
+.hud2 .acts { display: flex; flex-wrap: wrap; gap: 5px; max-width: 520px; }
+.hud2 .acts button { font: 14px/1.1 "Alegreya SC", serif; color: var(--barInk); background: #3a2e24; border: 1px solid #6b5537; border-radius: 6px; padding: 5px 9px; cursor: pointer; text-align: center; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08); }
+.hud2 .acts button small { display: block; font: 10.5px/1.1 Alegreya, serif; color: #cdb98e; }
+.hud2 .acts button[aria-pressed="true"] { background: var(--gold2); color: #22170d; border-color: #ffe2a0; }
+.hud2 .acts button[aria-pressed="true"] small { color: #3a2a14; }
+.hud2 .acts button:disabled { opacity: .4; cursor: default; }
+.hud2 .acts .combo { background: #4a3a1e; border-color: var(--gold2); }
+.icons { display: grid; grid-template-columns: repeat(3, 44px); gap: 6px; }
+.ibtn { width: 44px; height: 44px; border: 2px solid #6b5537; border-radius: 8px; background: #120d0a; box-shadow: inset 0 0 10px #000; display: grid; place-items: center; cursor: pointer; padding: 0; color: #f3e6c8; position: relative; }
+.ibtn svg { width: 28px; height: 28px; }
+.ibtn:hover, .ibtn:focus-visible, .ibtn[aria-expanded="true"] { border-color: var(--gold2); outline: none; }
+.ibtn .n { position: absolute; right: 2px; bottom: 0; font: 10px Alegreya, serif; color: #ffe2a0; }
+/* parchment windows */
+.win { display: none; position: fixed; z-index: 15; left: 50%; top: 45%; transform: translate(-50%, -50%); width: min(520px, 94vw); max-height: 74vh; overflow: auto; background: linear-gradient(#f3e6c8, #e6d3a8); border: 3px solid #8a6a3a; border-radius: 12px; box-shadow: 0 0 0 2px #000, 0 20px 50px rgba(0, 0, 0, .7); padding: 12px 16px; color: #2b1d10; }
+.win.on { display: block; }
+.win h3 { display: flex; justify-content: space-between; align-items: center; font-family: "Alegreya SC", serif; margin-bottom: 8px; }
+.win h3 button { font: 13px "Alegreya SC", serif; background: #3a2e24; color: #f3e6c8; border: 1px solid #6b5537; border-radius: 6px; padding: 3px 10px; cursor: pointer; }
+.win .log { max-height: 50vh; }
+#board .banner { z-index: 8; background: #0008; }
+#board .banner div { background: linear-gradient(#f3e6c8, #e6d3a8); border: 3px solid #8a6a3a; box-shadow: 0 0 0 2px #000, 0 20px 50px rgba(0, 0, 0, .7); }
+@media (max-width: 760px) {
+  #battleView .frame { border-width: 6px; } #battleView .corner { width: 30px; height: 30px; }
+  .hud2 { flex-wrap: wrap; justify-content: center; } .hud2 .sec { padding: 6px 8px; border-right: 0; box-shadow: none; } .hud2 .sec:first-child { border-left: 0; }
+  .hud2 .who { display: none; } .icons { grid-template-columns: repeat(5, 40px); } .ibtn { width: 40px; height: 40px; }
+  .plateTop { max-width: 70%; padding: 4px 8px; } .plateTop b { font-size: 14px; }
+}
 </style>
 
 <div class="top">
@@ -135,44 +228,50 @@ button:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
 
 <!-- ======================= battle -->
 <section id="battleView" hidden>
-  <div class="wrap">
-    <div class="board" id="board">
-      <div class="caption" id="caption"></div>
-      <svg id="map" viewBox="0 0 768 395" role="img" aria-label="Hex map of the sparring field"></svg>
-      <div class="status"><span id="status"></span><span class="order" id="order"></span></div>
-    </div>
-    <div class="side">
-      <section class="card" id="actCard">
-        <h2 id="actName">Hero</h2>
-        <div class="bar" id="actBarWrap"><i id="actBar"></i></div>
-        <div class="row" id="actStats"></div>
-        <div class="tags" id="actTags"></div>
-        <div class="row"><span>Actions <span class="pips" id="pips"></span></span></div>
-        <div class="acts" id="acts"></div>
-        <p class="note" id="hint"></p>
-      </section>
-      <section class="card">
-        <h3>Computer speed</h3>
-        <div class="choices" id="paceChoices"></div>
-        <p class="note">Step by step waits for you to press Next after each thing a Rival does.</p>
-      </section>
-      <section class="card"><div class="roster" id="rosters"></div></section>
-      <section class="card"><h3>Chronicle</h3><div class="log" id="log" aria-live="polite"></div></section>
-      <section class="card">
-        <h3>Reading the map</h3>
-        <div class="legend">
-          <span><i style="background:#b8a565"></i>Grass</span>
-          <span><i style="background:#4f6b3a"></i>Trees: cover +2, 2 to enter</span>
-          <span><i style="background:#c9ae74"></i>Hill: +1 to hit from above, 2 to climb</span>
-          <span><i style="background:#9c8562"></i>Dry creek: 2 to enter</span>
-          <span><i style="background:#7c7468"></i>Rocks: block moving and sight</span>
-          <span><i style="background:#8a6a3c"></i>Fence: blocks moving, cover +2 behind it</span>
-        </div>
-        <p class="note">Hover (or tap) any Hero to see their stats, abilities and what is affecting them.</p>
-      </section>
+  <div class="frame" id="frame">
+    <div class="corner c-tl"></div><div class="corner c-tr"></div><div class="corner c-bl"></div><div class="corner c-br"></div>
+    <div class="stage" id="board">
+      <svg id="map" viewBox="0 0 768 395" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Hex map of the battlefield"></svg>
+      <div class="plateTop"><b id="bTitle">Sparring on the Comet</b><span class="rnd" id="status"></span><div class="order" id="order"></div></div>
+      <div class="caption bubble" id="caption"></div>
+      <div class="hintStrip" id="hint"></div>
+      <div class="turnPop" id="turnPop" hidden></div>
     </div>
   </div>
+  <div class="hud2" id="hud2">
+    <div id="actCard" style="display:contents">
+      <div class="sec who"><h4>Light Keeper</h4><b id="actName">Hero</b><small id="actSub"></small><div class="tags" id="actTags"></div></div>
+      <div class="sec"><h4>Stats</h4><div class="lifebar" id="actBarWrap"><i id="actBar"></i><span id="actLife"></span></div><div class="stg" id="actStats"></div></div>
+      <div class="sec"><h4>Actions <span class="pips" id="pips"></span></h4><div class="acts" id="acts"></div></div>
+    </div>
+    <div class="sec"><h4>Battle</h4><div class="icons">
+      <button type="button" class="ibtn" data-win="rosterWin" title="Heroes and foes" aria-label="Heroes and foes"><svg viewBox="0 0 32 32"><path d="M16 3 L27 7 V15 Q27 24 16 29 Q5 24 5 15 V7Z" fill="#7a2e1c" stroke="#e8c260" stroke-width="2"/><path d="M11 15 l4 4 l7 -8" stroke="#e8c260" stroke-width="2.5" fill="none"/></svg></button>
+      <button type="button" class="ibtn" data-win="logWin" title="Chronicle" aria-label="Chronicle"><svg viewBox="0 0 32 32"><rect x="7" y="5" width="18" height="22" rx="2" fill="#e6d3a8" stroke="#8a6a3a" stroke-width="2"/><path d="M11 11h10M11 15h10M11 19h7" stroke="#5a4630" stroke-width="1.8"/><circle cx="7" cy="7" r="3" fill="#c99a3c"/><circle cx="7" cy="25" r="3" fill="#c99a3c"/></svg></button>
+      <button type="button" class="ibtn" data-win="keyWin" title="Map key" aria-label="Map key"><svg viewBox="0 0 32 32"><polygon points="16,4 27,10 27,22 16,28 5,22 5,10" fill="#8aa04a" stroke="#e8c260" stroke-width="2"/><circle cx="16" cy="14" r="5" fill="#3f6b2f"/><rect x="15" y="18" width="2" height="5" fill="#5b4026"/></svg></button>
+      <button type="button" class="ibtn" data-win="paceWin" title="Computer speed" aria-label="Computer speed"><svg viewBox="0 0 32 32"><path d="M9 4h14M9 28h14M10 4 Q10 13 16 16 Q10 19 10 28 M22 4 Q22 13 16 16 Q22 19 22 28" stroke="#e8c260" stroke-width="2" fill="none"/><path d="M12 25 Q16 20 20 25Z" fill="#c99a3c"/></svg></button>
+      <button type="button" class="ibtn" data-win="helpWin" title="How to play" aria-label="How to play"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#3a2e24" stroke="#e8c260" stroke-width="2"/><text x="16" y="22" text-anchor="middle" font-size="17" font-family="Alegreya SC, serif" fill="#f3e6c8">?</text></svg></button>
+    </div></div>
+  </div>
+  <div class="win" id="rosterWin" role="dialog" aria-label="Heroes and foes"><h3>Heroes and foes <button type="button" data-close>Close</button></h3><div class="roster" id="rosters"></div></div>
+  <div class="win" id="logWin" role="dialog" aria-label="Chronicle"><h3>Chronicle <button type="button" data-close>Close</button></h3><div class="log" id="log" aria-live="polite"></div></div>
+  <div class="win" id="keyWin" role="dialog" aria-label="Map key"><h3>Map key <button type="button" data-close>Close</button></h3>
+    <div class="legend">
+      <span><i style="background:#a8b05a"></i>Grass</span>
+      <span><i style="background:#4f6b3a"></i>Trees: cover +2, 2 to enter</span>
+      <span><i style="background:#c9ae74"></i>Hill: +1 to hit from above, 2 to climb</span>
+      <span><i style="background:#9c8562"></i>Dry creek: 2 to enter</span>
+      <span><i style="background:#7c7468"></i>Rocks: block moving and sight</span>
+      <span><i style="background:#8a6a3c"></i>Fence: blocks moving, cover +2 behind it</span>
+    </div>
+    <p class="note" style="margin-top:8px">Hover (or tap) any Hero or foe to see their stats and what is affecting them.</p></div>
+  <div class="win" id="paceWin" role="dialog" aria-label="Computer speed"><h3>Computer speed <button type="button" data-close>Close</button></h3><div class="choices" id="paceChoices"></div><p class="note" style="margin-top:8px">Step by step waits for you to press Next after each thing a foe does.</p></div>
+  <div class="win" id="helpWin" role="dialog" aria-label="How to play"><h3>How to play <button type="button" data-close>Close</button></h3>
+    <p>Each turn you get <b>one free Move plus two actions</b>. You may Attack twice, but only one ability (or Combo) a round.</p>
+    <p>Press an action in the bar, then tap a lit hex or a circled target. Hover a button or a Hero for a reminder.</p>
+    <p>Your <b>Crit Dice</b> roll on the field: a D20 to hit (beat the target's Defense), then the damage dice. A natural 20 is a crit and doubles the damage dice. A natural 1 misses and brings a Calamity.</p>
+    <p>Trees give cover, hills give +1 to hit from above, rocks block sight. The Chronicle keeps every roll.</p></div>
 </section>
+
 <div class="tip" id="tip" hidden></div>
 
 <script>
@@ -325,8 +424,8 @@ const MAP = [
 const START = { A: [[1, 3], [0, 5], [1, 7]], B: [[13, 3], [14, 5], [13, 7]] };
 const COLS = MAP[0].length, ROWS = MAP.length;
 const TER = {
-  '.': { cost: 1, fill: '#b8a565' }, T: { cost: 2, cover: true, fill: '#a8955a' }, H: { cost: 2, high: true, fill: '#c9ae74' },
-  C: { cost: 2, fill: '#9c8562' }, R: { block: true, sight: true, fill: '#a8955a' }, F: { block: true, lowCover: true, fill: '#b8a565' },
+  '.': { cost: 1, fill: '#a9a85c' }, T: { cost: 2, cover: true, fill: '#919d55' }, H: { cost: 2, high: true, fill: '#c9ae74' },
+  C: { cost: 2, fill: '#9c8562' }, R: { block: true, sight: true, fill: '#a0a060' }, F: { block: true, lowCover: true, fill: '#a9a85c' },
 };
 const ter = (c, r) => (MAP[r] && TER[MAP[r][c]]) || TER['.'];
 const HS = 30, HW = HS * 1.5, HH = Math.sqrt(3) * HS * 0.62;
@@ -380,7 +479,7 @@ let reduce = false; try { reduce = matchMedia('(prefers-reduced-motion: reduce)'
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 let contResolve = null;
 async function beat(ms, major) {
-  if (G.pace === 'step' && major && !G.autoA) { $('caption').insertAdjacentHTML('beforeend', '<div class="ctl"><button class="btn primary" id="contBtn" type="button">Next ▸</button></div>'); $('contBtn').onclick = () => contResolve && contResolve(); $('contBtn').focus({ preventScroll: true }); return new Promise(res => { contResolve = () => { contResolve = null; res(); }; }); }
+  if (G.pace === 'step' && major && !G.autoA) { $('caption').insertAdjacentHTML('beforeend', '<div class="ctl"><button class="btn primary" id="contBtn" type="button">Next ▸</button></div>'); placeCaption(G.capU); $('contBtn').onclick = () => contResolve && contResolve(); $('contBtn').focus({ preventScroll: true }); return new Promise(res => { contResolve = () => { contResolve = null; res(); }; }); }
   return sleep(ms * PACE[G.pace]);
 }
 
@@ -548,7 +647,7 @@ function hurt(t, n, src) {
   if (src && src.team !== t.team) t.lastHitBy = src;
   t.life = Math.max(0, t.life - n);
   floatOn(t, '-' + n, 'dmg');
-  if (t.life === 0) { t.alive = false; t.out = 'ko'; notes.push(`${t.name} is out of the bout`); }
+  if (t.life === 0) { t.alive = false; t.out = 'ko'; notes.push(`${t.name} is inspired and gives up`); }
   if (src && src.alive && t.fx.thorns) { const d = rollDice([[t.fx.thornsN || 1, 6]]); notes.push(`thorns sting ${src.name} for ${d}`); const r = hurt(src, d, null); notes.push(...r); }
   return notes;
 }
@@ -567,6 +666,7 @@ async function strike(att, tgt, sp) {
     const m = mods(att, tgt, sp.statKey, sp);
     const r = d20(att, res.lines);
     att.fx.fumble = 0;
+    await showRoll(att, tgt, [{ s: 20, v: r, cls: r === 1 && !sp.sure ? 'fumble' : (r !== 1 && r >= (sp.critMin || 20) ? 'crit' : ''), lbl: 'to hit' }]);
     const total = r + m.sum, crit = r !== 1 && r >= (sp.critMin || 20), hit = sp.sure || (r !== 1 && (crit || total > m.def));
     G.beams = [{ a: pos(att), b: pos(tgt), team: att.team }];
     let line = `${sp.label} → ${tgt.name}: rolled <b>${r}</b>${m.parts.length ? ' ' + m.parts.join(' ') : ''} = ${total} vs Defense ${m.def}${m.dp.length ? ' (' + m.dp.join(', ') + ')' : ''}`;
@@ -580,7 +680,8 @@ async function strike(att, tgt, sp) {
     if (sp.extraDie) dice[0][0] += sp.extraDie;
     if (crit) dice = dice.map(([n, s]) => [n * 2, s]);
     const add = (sp.dmgStat ? stat(att, sp.dmgStat) : 0) + (sp.bonus || 0) + (att.fx.dmgUp ? att.fx.dmgUp[0] : 0) - (att.fx.weak ? att.fx.weak[0] : 0);
-    let dmg = Math.max(1, rollDice(dice) + add);
+    const dl = rollList(dice); if (dl.length) dl[0].lbl = 'damage'; await showRoll(att, tgt, dl, true);
+    let dmg = Math.max(1, dl.reduce((t, d) => t + d.v, 0) + add);
     let gnote = '';
     if (tgt.fx.guard && dmg > 1) { dmg -= 1; delete tgt.fx.guard; gnote = ' (Defend took 1 off)'; }
     const notes = hurt(tgt, dmg, att);
@@ -688,7 +789,7 @@ function abTargets(u, a) {
   return foes;
 }
 function burstFoes(u, radius, max) { const f = enemiesOf(u).filter(e => inReach(u, e, radius)).sort((a, b) => a.life - b.life); return max ? f.slice(0, max) : f; }
-function talkTargets(u) { return enemiesOf(u).filter(f => f.life <= Math.ceil(f.max / 4) && inReach(u, f, 4)); }
+function talkTargets(u) { return []; } // map Talk removed (N8, Nov 12): at 0 Life a Hero or foe is inspired and gives up
 function talkChance(u, f) { const need = 10 + stat(f, 'C') - stat(u, 'C') - (f.fx.talk || 0); return clamp(21 - need, 1, 19) / 20; }
 function famReady(u, fam) { const i = u.abs.findIndex(a => a.fam === fam); return i >= 0 && !u.cd[i] ? i : -1; }
 function comboList(u) {
@@ -829,9 +930,10 @@ function endTurnTick(u) {
 
 // ============================================================ rounds and turns
 function say(u, lines) {
-  const cap = $('caption');
-  cap.className = 'caption ' + (u ? (u.team === 'A' ? 'mine' : 'rival') : '');
-  cap.innerHTML = (u ? `<div class="hd"><b>${u.name}</b> <span class="who">${u.lf} · ${u.branch}${u.team === 'B' ? ' · computer' : ''}</span></div>` : '') + lines.map(l => `<div>${l}</div>`).join('');
+  const cap = $('caption'); G.capU = u;
+  cap.className = 'caption bubble ' + (u ? (u.team === 'A' ? 'mine' : 'rival') : '');
+  cap.innerHTML = (u ? `<div class="hd"><b>${u.name}</b></div>` : '') + lines.map(l => `<div>${l}</div>`).join('');
+  placeCaption(u);
 }
 function log(u, lines) {
   const p = document.createElement('p'); p.className = u ? u.team : 'sys';
@@ -842,9 +944,9 @@ function startBout() {
   const A = G.team.map((sp, i) => buildUnit(sp, 'A', i)), B = G.rivals.map((sp, i) => buildUnit(sp, 'B', i));
   nameTeam(A, 'Your'); nameTeam(B, 'Rival');
   G.units = [...A, ...B]; G.round = 0; G.over = false; G.mode = null; G.floats = []; G.beams = [];
-  $('setupView').hidden = true; $('battleView').hidden = false;
+  $('setupView').hidden = true; $('battleView').hidden = false; document.body.classList.add('inBattle'); clearTrays();
   $('log').innerHTML = ''; document.querySelectorAll('.banner').forEach(b => b.remove());
-  log(null, [document.title === 'Farluck Battle' ? 'Plague gremlins burst out of the seed shed! Bring each one to 0 Life and it gives up and scurries off.' : 'The bout begins. Knock a Rival out, or Talk them into yielding once they are below a quarter of their Life.']);
+  log(null, [document.title === 'Farluck Battle' ? 'Plague gremlins burst out of the seed shed! Bring each one to 0 Life and it gives up and scurries off.' : 'The bout begins. At 0 Life a Keeper is inspired and gives up the bout.']);
   draw(); nextRound();
 }
 async function nextRound() {
@@ -860,6 +962,7 @@ async function nextTurn() {
   if (checkEnd()) return;
   G.turn++;
   if (G.turn >= G.order.length) return nextRound();
+  clearTrays();
   const u = G.order[G.turn];
   if (!u.alive) return nextTurn();
   G.mode = null; G.beams = []; G.busy = true;
@@ -873,7 +976,7 @@ async function nextTurn() {
   if (u.fx.winded) { u.actions = 1; u.fx.winded = 0; pre.push('Winded: only 1 action this turn.'); }
   if (u.team === 'A' && !G.autoA) {
     if (pre.length) log(u, pre);
-    say(u, [...pre, 'Your turn: one free Move plus two actions. Hover any Hero or button for a reminder.']);
+    say(u, [...pre, 'Your turn: a free Move plus two actions.']);
     G.busy = false; draw(); return;
   }
   if (pre.length) log(u, pre);
@@ -897,7 +1000,7 @@ function banner(title, text) {
   b.innerHTML = `<div><h2>${title}</h2><p>${text}</p><button class="btn primary" type="button" id="againBtn">Same teams again</button><button class="btn" type="button" id="newBtn">Change Heroes</button></div>`;
   $('board').appendChild(b);
   $('againBtn').onclick = () => { b.remove(); startBout(); };
-  $('newBtn').onclick = () => { b.remove(); $('battleView').hidden = true; $('setupView').hidden = false; renderSetup(); };
+  $('newBtn').onclick = () => { b.remove(); $('battleView').hidden = true; document.body.classList.remove('inBattle'); $('setupView').hidden = false; renderSetup(); };
 }
 
 // ============================================================ your turn
@@ -1121,8 +1224,8 @@ function placeTip(x, y) {
 let tipTimer;
 function showTip(html, x, y, ms) { tip.innerHTML = html; tip.hidden = false; placeTip(x, y); clearTimeout(tipTimer); if (ms) tipTimer = setTimeout(() => tip.hidden = true, ms); }
 function showUnitTip(u, ev) {
-  const [x, y] = center(u.c, u.r), box = $('map').getBoundingClientRect(), s = box.width / 768;
-  showTip(unitTip(u), ev ? ev.clientX : box.left + x * s, ev ? ev.clientY : box.top + (y - 20) * s, ev ? 0 : 4000);
+  const [x, y] = unitXY(u), B = $('board').getBoundingClientRect();
+  showTip(unitTip(u), ev ? ev.clientX : B.left + x, ev ? ev.clientY : B.top + y - 30, ev ? 0 : 4000);
 }
 document.addEventListener('mouseover', e => { const el = e.target.closest('[data-tip]'); if (el) showTip(TIPS[el.dataset.tip] || '', e.clientX, e.clientY); });
 document.addEventListener('mousemove', e => { if (!tip.hidden && e.target.closest('[data-tip], g.unit')) placeTip(e.clientX, e.clientY); });
@@ -1149,12 +1252,15 @@ function modeTargets() {
 }
 function draw() {
   svg.innerHTML = '';
-  el('rect', { x: 0, y: 0, width: 768, height: 395, fill: '#cdbb8a' });
+  el('rect', { x: -400, y: -300, width: 1568, height: 995, fill: '#55602e' });
+  el('ellipse', { cx: 384, cy: 200, rx: 470, ry: 260, fill: '#7d8740', opacity: .55 });
   const MT = modeTargets();
   for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
     const [x, y] = center(c, r), t = ter(c, r), lf = lift(c, r);
     if (t.high) el('polygon', { points: hexPts(x, y + 2), fill: '#a48a55' });
-    el('polygon', { points: hexPts(x, y - lf), fill: t.fill, stroke: '#00000022', 'stroke-width': 1 });
+    el('polygon', { points: hexPts(x, y - lf), fill: t.fill, stroke: '#2a2a1066', 'stroke-width': 1 });
+    el('polygon', { points: hexPts(x, y - lf - 2, HS - 6), fill: '#fff', opacity: .07 });
+    if (MAP[r][c] === '.' || MAP[r][c] === 'H') { const q = (c * 7 + r * 13) % 5; for (let k = 0; k < 2; k++) { const tx = x - 12 + ((q + k * 3) % 5) * 6, ty = y - lf - 2 + ((q + k) % 3) * 4; el('path', { d: `M${tx} ${ty} l-2 -5 M${tx} ${ty} l0 -6 M${tx} ${ty} l3 -5`, stroke: '#5f6a2a', 'stroke-width': 1.3, 'stroke-linecap': 'round', opacity: .7 }); } }
     if (MAP[r][c] === 'C') el('path', { d: `M${x - 18} ${y - 2} q9 -5 18 0 t18 0`, stroke: '#7d6747', 'stroke-width': 2, fill: 'none', opacity: .7 });
     if (MT.hexes && MT.hexes.has(key(c, r))) el('polygon', { points: hexPts(x, y - lf, HS - 3), fill: '#ffffff55', stroke: '#2c2416', 'stroke-width': 1.5, 'stroke-dasharray': '3 3' });
     const hit = el('polygon', { points: hexPts(x, y - lf), fill: 'transparent', style: 'cursor:pointer' });
@@ -1167,9 +1273,11 @@ function draw() {
   items.sort((a, b) => center(a.c, a.r)[1] - center(b.c, b.r)[1]);
   for (const it of items) {
     const [x, y0] = center(it.c, it.r), y = y0 - lift(it.c, it.r);
-    if (it.prop === 'T') { el('ellipse', { cx: x + 4, cy: y + 6, rx: 20, ry: 7, fill: '#00000026' }); el('rect', { x: x - 3, y: y - 14, width: 6, height: 18, fill: '#5b4026' }); el('circle', { cx: x, cy: y - 24, r: 17, fill: '#4f6b3a', opacity: .92 }); el('circle', { cx: x - 7, cy: y - 29, r: 9, fill: '#5f7d45', opacity: .92 }); }
-    if (it.prop === 'R') { el('path', { d: `M${x - 20} ${y + 6} L${x - 14} ${y - 14} L${x + 2} ${y - 20} L${x + 18} ${y - 8} L${x + 20} ${y + 6} Z`, fill: '#7c7468' }); el('path', { d: `M${x - 14} ${y - 14} L${x + 2} ${y - 20} L${x + 18} ${y - 8} L${x} ${y - 6} Z`, fill: '#958c7e' }); }
-    if (it.prop === 'F') { for (const dx of [-14, 0, 14]) el('rect', { x: x + dx - 2, y: y - 16, width: 4, height: 20, fill: '#8a6a3c' }); el('rect', { x: x - 18, y: y - 12, width: 36, height: 3, fill: '#8a6a3c' }); el('rect', { x: x - 18, y: y - 4, width: 36, height: 3, fill: '#8a6a3c' }); }
+    if (it.prop === 'T') { el('ellipse', { cx: x + 4, cy: y + 6, rx: 20, ry: 7, fill: '#00000033' }); el('path', { d: `M${x - 4} ${y + 2} L${x - 2} ${y - 16} L${x + 2} ${y - 16} L${x + 4} ${y + 2}Z`, fill: '#5b4026', stroke: '#1d140c', 'stroke-width': 1.2 });
+      el('circle', { cx: x, cy: y - 26, r: 17, fill: '#3a5a2a', stroke: '#1d140c', 'stroke-width': 1.4 }); el('circle', { cx: x - 9, cy: y - 20, r: 10, fill: '#3a5a2a', stroke: '#1d140c', 'stroke-width': 1.2 }); el('circle', { cx: x + 9, cy: y - 21, r: 11, fill: '#3a5a2a', stroke: '#1d140c', 'stroke-width': 1.2 });
+      el('circle', { cx: x - 2, cy: y - 29, r: 13, fill: '#4f7a3a' }); el('circle', { cx: x - 6, cy: y - 34, r: 6, fill: '#6f9a4a', opacity: .8 }); }
+    if (it.prop === 'R') { el('ellipse', { cx: x + 3, cy: y + 7, rx: 22, ry: 6, fill: '#00000033' }); el('path', { d: `M${x - 20} ${y + 6} L${x - 14} ${y - 14} L${x + 2} ${y - 20} L${x + 18} ${y - 8} L${x + 20} ${y + 6} Z`, fill: '#7c7468', stroke: '#1d140c', 'stroke-width': 1.4 }); el('path', { d: `M${x - 14} ${y - 14} L${x + 2} ${y - 20} L${x + 18} ${y - 8} L${x} ${y - 6} Z`, fill: '#958c7e' }); }
+    if (it.prop === 'F') { el('rect', { x: x - 19, y: y - 13, width: 38, height: 4, fill: '#9a7444', stroke: '#1d140c', 'stroke-width': 1 }); el('rect', { x: x - 19, y: y - 5, width: 38, height: 4, fill: '#9a7444', stroke: '#1d140c', 'stroke-width': 1 }); for (const dx of [-14, 0, 14]) el('rect', { x: x + dx - 2.5, y: y - 18, width: 5, height: 22, rx: 1, fill: '#7a5630', stroke: '#1d140c', 'stroke-width': 1 }); }
     if (it.unit) drawUnit(it.unit, x, y, MT.units.includes(it.unit));
   }
   for (const b of G.beams) {
@@ -1181,10 +1289,11 @@ function draw() {
   for (const f of G.floats) {
     const u = G.units.find(x => x.id === f.id); if (!u) continue;
     const [x, y] = center(u.c, u.r);
-    const t = el('text', { x, y: y - 58 - lift(u.c, u.r) - G.floats.filter(g => g.id === f.id).indexOf(f) * 15, 'text-anchor': 'middle', 'font-family': 'Alegreya SC, Georgia, serif', 'font-size': 17, 'font-weight': 700, fill: f.cls === 'heal' ? '#2b5f82' : f.cls === 'miss' ? '#2c2416' : '#a8321a', stroke: '#efe5cc', 'stroke-width': 3, 'paint-order': 'stroke' });
+    const t = el('text', { x, y: y - 70 - lift(u.c, u.r) - G.floats.filter(g => g.id === f.id).indexOf(f) * 15, 'text-anchor': 'middle', 'font-family': 'Alegreya SC, Georgia, serif', 'font-size': 17, 'font-weight': 700, fill: f.cls === 'heal' ? '#2b5f82' : f.cls === 'miss' ? '#2c2416' : '#a8321a', stroke: '#efe5cc', 'stroke-width': 3, 'paint-order': 'stroke' });
     t.textContent = f.text;
   }
   hud();
+  if (G.capU !== undefined) placeCaption(G.capU);
 }
 function drawUnit(u, x, y, targetable) {
   const teamCol = u.team === 'A' ? '#c9922c' : '#b5462a';
@@ -1194,19 +1303,18 @@ function drawUnit(u, x, y, targetable) {
   if (targetable) el('ellipse', { cx: x, cy: y - 14, rx: 23, ry: 24, fill: 'none', stroke: u.team === cur().team ? '#3f6f8f' : '#b5462a', 'stroke-width': 3, 'stroke-dasharray': '5 3' });
   if (u.fx.root || u.fx.held) el('ellipse', { cx: x, cy: y + 2, rx: 15, ry: 5, fill: 'none', stroke: '#4f6b3a', 'stroke-width': 3, 'stroke-dasharray': '2 2' });
   const g = el('g', { class: 'unit', style: 'cursor:pointer' });
-  el('path', { d: `M${x - 13} ${y + 2} Q${x - 15} ${y - 22} ${x} ${y - 30} Q${x + 15} ${y - 22} ${x + 13} ${y + 2} Z`, fill: u.color, stroke: '#2c2416', 'stroke-width': 1.5 }, g);
-  el('circle', { cx: x, cy: y - 30, r: 9, fill: '#e7c27a', stroke: '#2c2416', 'stroke-width': 1.5 }, g);
-  el('path', { d: `M${x - 6} ${y - 41} l6 -6 l6 6`, stroke: teamCol, 'stroke-width': 3, fill: 'none', 'stroke-linecap': 'round' }, g);
-  const t = el('text', { x, y: y - 8, 'text-anchor': 'middle', 'font-family': 'Alegreya SC, Georgia, serif', 'font-size': 13, 'font-weight': 700, fill: '#fff' }, g);
-  t.textContent = u.gremlin ? 'G' : u.role === 'Soul Seer' ? 'SS' : u.role[0];
+  const k = u.gremlin ? .78 : .42, art = el('g', { transform: `translate(${x} ${y + 4}) scale(${(u.team === 'A' ? 1 : -1) * k} ${k})` }, g);
+  art.innerHTML = u.gremlin ? gremlinArt(0, 0) : heroSVG(unitLook(u));
+  el('rect', { x: x - 16, y: y - 48, width: 32, height: 54, fill: 'transparent' }, g);
   if (u.fx.stun) { const z = el('text', { x: x + 14, y: y - 34, 'font-size': 13, 'font-weight': 700, fill: '#2c2416' }, g); z.textContent = 'zz'; }
   g.addEventListener('click', ev => { ev.stopPropagation(); if (myTurn() && G.mode) clickHex(u.c, u.r); else showUnitTip(u, null); });
   g.addEventListener('mouseenter', ev => { hoverHex = [u.c, u.r]; readout(); showUnitTip(u, ev); });
   g.addEventListener('mouseleave', () => tip.hidden = true);
-  const w = 32, top = y - 54;
+  const w = 32, top = y - 58;
   el('rect', { x: x - w / 2, y: top, width: w, height: 5, rx: 2, fill: '#2c241699' });
   el('rect', { x: x - w / 2, y: top, width: w * u.life / u.max, height: 5, rx: 2, fill: teamCol });
 }
+function unitLook(u) { return { lf: u.lf, role: u.role, skin: SKIN[u.lf] || '#8a5e3c', cloak: (u.sp && u.sp.color) || ROLE_LOOK[u.role] || '#3f6b45', size: u.lf === 'Melkin' ? .62 : u.lf === 'Dimoneesh' ? .9 : 1 }; }
 function readout() {
   const u = cur(); if (!myTurn() || !hoverHex || !G.mode) return;
   const [c, r] = hoverHex, t = occupied(c, r), m = G.mode;
@@ -1223,27 +1331,27 @@ function readout() {
   $('hint').textContent = `${label} on ${t.name}: ${Math.round(hitP(u, t, sp) * 100)}% to hit (Defense ${M.def}${M.dp.length ? ': ' + M.dp.join(', ') : ''}). ${t.life}/${t.max} Life.`;
 }
 function hud() {
-  const u = cur();
-  $('order').innerHTML = G.order.filter(x => x.alive).map(x => `<span class="chip ${x.team} ${x === u ? 'now' : ''} ${G.order.indexOf(x) < G.turn ? 'done' : ''}">${x.name.replace('Your ', '').replace('Rival ', 'Rival ')}</span>`).join('');
+  const actor = cur(); let u = actor;
+  if (u && u.team !== 'A') u = G.units.find(x => x.team === 'A' && x.alive) || u;
+  $('order').innerHTML = G.order.filter(x => x.alive).map(x => `<span class="chip ${x.team} ${x === actor ? 'now' : ''} ${G.order.indexOf(x) < G.turn ? 'done' : ''}">${x.name.replace('Your ', '').replace('Rival ', 'Rival ')}</span>`).join('');
   $('status').innerHTML = G.over ? '<b>The bout is over.</b>' : `<b>Round ${G.round}</b>`;
   TIPS = {};
   // rosters
   $('rosters').innerHTML = ['A', 'B'].map(team => `<h3>${team === 'A' ? 'Your Keepers' : (G.units.some(x => x.gremlin) ? 'Foes' : 'Rival Keepers')}</h3>` + G.units.filter(x => x.team === team).map(x => {
     TIPS['u' + x.id] = unitTip(x);
-    return `<div class="unit ${x === u ? 'now' : ''} ${x.alive ? '' : 'out'}" data-tip="u${x.id}"><div class="nm"><b>${x.name}</b><span>${x.alive ? `${x.life}/${x.max}` : x.out === 'talk' ? 'yielded' : 'out'}</span></div><div class="bar ${team}"><i style="width:${100 * x.life / x.max}%"></i></div>${x.alive && fxTags(x).length ? `<div class="tags">${tagsHTML(x)}</div>` : ''}</div>`;
+    return `<div class="unit ${x === actor ? 'now' : ''} ${x.alive ? '' : 'out'}" data-tip="u${x.id}"><div class="nm"><b>${x.name}</b><span>${x.alive ? `${x.life}/${x.max}` : x.out === 'talk' ? 'yielded' : 'out'}</span></div><div class="bar ${team}"><i style="width:${100 * x.life / x.max}%"></i></div>${x.alive && fxTags(x).length ? `<div class="tags">${tagsHTML(x)}</div>` : ''}</div>`;
   }).join('')).join('');
   // action card
   const card = $('actCard');
-  if (!u || G.over) { card.hidden = true; return; }
+  if (!u || G.over) { card.hidden = true; turnPop(null); return; }
   card.hidden = false;
-  const mine = u.team === 'A' && !G.autoA, my = myTurn();
-  $('actName').textContent = mine ? `${u.name} · your turn` : `${u.name} · computer`;
-  $('actBarWrap').className = 'bar ' + u.team;
-  $('actBar').style.width = (100 * u.life / u.max) + '%';
-  $('actStats').innerHTML = `<span>Life <b>${u.life}/${u.max}</b></span><span>Defense <b>${u.def + (u.fx.defUp ? u.fx.defUp[0] : 0) + (u.fx.def ? u.fx.def[0] : 0)}</b></span>` + 'PESC'.split('').map(k => `<span>${k} <b>${stat(u, k)}</b></span>`).join('') + `<span>Move <b>${moveRange(u)}</b></span>`;
+  const mine = actor.team === 'A' && !G.autoA, my = myTurn();
+  $('actName').textContent = u.name; $('actSub').textContent = `${u.lf} · ${u.branch}${mine ? ' · your turn' : ''}`;
+  $('actBar').style.width = (100 * u.life / u.max) + '%'; $('actLife').textContent = `Life ${u.life} / ${u.max}`;
+  $('actStats').innerHTML = `<div title="Defense"><b>${u.def + (u.fx.defUp ? u.fx.defUp[0] : 0) + (u.fx.def ? u.fx.def[0] : 0)}</b>Def</div>` + 'PESC'.split('').map(k => `<div class="${k === u.main ? 'main' : ''}" title="${STATN[k]}"><b>${stat(u, k)}</b>${STATN[k].slice(0, 3)}</div>`).join('') + `<div title="Move"><b>${moveRange(u)}</b>Move</div>`;
   $('actTags').innerHTML = tagsHTML(u);
   $('pips').innerHTML = `<span class="pip ${u.freeMove ? 'on' : ''}" title="Free move"></span><span class="pipgap"></span>` + [0, 1].map(i => `<span class="pip ${i < (u.actions || 0) ? 'on' : ''}" title="Action"></span>`).join('');
-  if (!mine) { $('acts').innerHTML = ''; $('hint').textContent = 'The computer is taking its turn. Watch the box above the map.'; return; }
+
   const btn = (act, label, sub, ok, tipKey, cls = '') => `<button type="button" class="${cls}" data-act="${act}" ${tipKey ? `data-tip="${tipKey}"` : ''} aria-pressed="${G.mode === act}" ${my && ok ? '' : 'disabled'}>${label}<small>${sub}</small></button>`;
   TIPS.move = `<b>${u.freeMove ? 'Free move' : 'Move again'}</b><div>Walk up to your Move in hexes, all at once. Trees, hills and the creek cost 2. ${u.freeMove ? 'Your free Move can come before or after your actions, but it isn’t split up.' : 'Moving again costs an action.'}</div>`;
   TIPS.attack = `<b>Attack</b><div>${u.weapon}: 1d6+${STATN[u.main]}${u.roleDmg ? '+1' : ''} at range ${weaponRange(u)}. Beat the foe’s Defense with D20 + ${STATN[u.main]}.</div>`;
@@ -1254,27 +1362,215 @@ function hud() {
   let h = btn('move', u.freeMove ? 'Free move' : 'Move again', u.fx.root ? 'can’t move' : `${moveRange(u)} hexes${u.freeMove ? '' : ' · 1 action'}`, moveRange(u) > 0 && (u.freeMove || act), 'move')
     + btn('attack', 'Attack', `${u.weapon}, range ${weaponRange(u)}`, act && weaponTargets(u).length, 'attack')
     + u.abs.map((a, i) => { TIPS['ab' + i] = abTip(a, u); const ok = act && !u.abUsed && !u.cd[i] && abTargets(u, a).length; return btn('ab' + i, a.name, u.cd[i] ? `resting ${u.cd[i]}` : u.abUsed ? 'one ability a round' : rangeTxt(a).replace(' · ', '') || (a.kind === 'fly' ? `fly ${a.fly}` : 'ready'), ok, 'ab' + i); }).join('')
-    + (G.units.some(x => x.gremlin) ? '' : btn('talk', 'Talk', talkTargets(u).length ? 'a foe can yield' : 'foe below ¼ Life', act && talkTargets(u).length, 'talk'))
     + btn('defend', 'Defend', 'next hit -1', act && !u.fx.guard, 'defend')
     + btn('end', 'End turn', `${u.actions || 0} action${u.actions === 1 ? '' : 's'}${u.freeMove ? ' + Move' : ''} left`, true, 'end');
   comboList(u).forEach((K, j) => { TIPS['combo' + j] = `<b>Combo: ${K.C.name}</b><div>${K.C.t}</div><div class="t2">Uses your ${u.abs[K.i].name} and ${K.partner.name}’s ${K.partner.abs[K.j].name}. Counts as your one ability this round; +2 to hit for teamwork, and Combo dice add no stat. ${K.partner.name} gives up their next turn.</div>`; h += btn('combo' + j, `Combo: ${K.C.name}`, `with ${K.partner.name} · they skip a turn`, act && comboTargets(u, K).length, 'combo' + j, 'combo'); });
   $('acts').innerHTML = h;
   $('acts').querySelectorAll('button').forEach(b => b.onclick = () => pressAct(b.dataset.act));
-  if (!G.mode) $('hint').textContent = my ? 'One free Move plus two actions. You may Attack twice, but only one ability or Combo a round. Hover a button or a Hero for a reminder.' : '';
+  turnPop(my ? u : null);
+  if (!G.mode) $('hint').textContent = my ? 'One free Move plus two actions. Pick one beside your Hero or in the bar.' : (mine || G.autoA ? '' : 'The foes are moving…');
   else if (G.mode.startsWith('ab')) { const a = u.abs[+G.mode[2]]; $('hint').textContent = `${a.name}: ${a.t} ${a.kind === 'fly' ? 'Tap a lit hex.' : 'Tap a circled Hero.'}`; }
   else if (G.mode.startsWith('combo')) { const K = comboList(u)[+G.mode.slice(5)]; $('hint').textContent = K ? `${K.C.name}: ${K.C.t} ${comboInstant(K.C) ? '' : ' Tap a circled target.'}` : ''; }
   else $('hint').textContent = { move: 'Tap a lit hex to move there.', attack: 'Tap a circled foe. Hover one first to see your odds.', talk: 'Tap a circled foe to Talk.' }[G.mode] || '';
+}
+function turnPop(u) {
+  const P = $('turnPop');
+  if (!u) { P.hidden = true; return; }
+  P.innerHTML = `<div class="tp">Your turn</div>` + [...$('acts').querySelectorAll('button')].map(b => `<button type="button" data-act="${b.dataset.act}" aria-pressed="${b.getAttribute('aria-pressed')}" ${b.disabled ? 'disabled' : ''}>${b.firstChild.textContent} <small>${b.querySelector('small') ? b.querySelector('small').textContent : ''}</small></button>`).join('');
+  P.querySelectorAll('button').forEach(b => b.onclick = () => pressAct(b.dataset.act));
+  P.hidden = false;
+  const [x, y, k] = unitXY(u), B = $('board').getBoundingClientRect(), off = 28 * (k || 1.5);
+  const right = x + off + P.offsetWidth < B.width - 8;
+  P.classList.toggle('left', !right);
+  P.style.left = (right ? x + off : x - off) + 'px'; P.style.top = clamp(y - 20 * (k || 1.5), P.offsetHeight / 2 + 8, B.height - P.offsetHeight / 2 - 8) + 'px';
 }
 function renderPace() {
   $('paceChoices').innerHTML = [['slow', 'Slow'], ['normal', 'Normal'], ['fast', 'Fast'], ['step', 'Step by step']].map(([k, l]) => `<button type="button" data-pace="${k}" aria-pressed="${G.pace === k}">${l}</button>`).join('');
   $('paceChoices').querySelectorAll('button').forEach(b => b.onclick = () => { G.pace = b.dataset.pace; try { localStorage.setItem('cq-pace', G.pace); } catch (e) {} renderPace(); if (G.pace !== 'step' && contResolve) contResolve(); });
 }
 
+const SKIN={Leyf:"#7fa36a",Sapien:"#8a5e3c",Lizerus:"#8fae5a",Melkin:"#c9a0d8",Dimoneesh:"#8fa8d0"};
+const ROLE_LOOK={Maverick:"#3f6b45",Brawler:"#8a4a2a",Champion:"#b08a2a","Soul Seer":"#5a4a8a",Whisper:"#2f3a4a"};
+function shade(c,f){ const n=parseInt(c.slice(1),16); let r=n>>16,g=n>>8&255,b=n&255; r=Math.min(255,Math.round(r*f)); g=Math.min(255,Math.round(g*f)); b=Math.min(255,Math.round(b*f)); return "#"+((1<<24)|(r<<16)|(g<<8)|b).toString(16).slice(1); }
+const OL="#1d140c";
+function heroSVG(L){
+  const lf=L.lf, role=L.role, sk=L.skin, skD=shade(sk,.72), skL=shade(sk,1.18);
+  const cl=L.cloak, clD=shade(cl,.62), clL=shade(cl,1.3);
+  const robe=role==="Soul Seer", hooded=role==="Whisper"||role==="Soul Seer", armored=role==="Champion", brawl=role==="Brawler";
+  const tun=armored?"#b9bcc6":brawl?"#6a4a2c":role==="Maverick"?"#7a5634":shade(cl,.8), tunD=shade(tun,.7);
+  const hoof=lf==="Dimoneesh";
+  const sw=`stroke="${OL}" stroke-width="1.6" stroke-linejoin="round"`;
+  const leg=(id,x,dark)=>`<g id="${id}"><path d="M${x-4} -36 L${x+4} -36 L${x+4} -8 L${x-4} -8Z" fill="${dark?shade("#4a3a28",.75):"#4a3a28"}" ${sw}/>${hoof?`<path d="M${x-5} -9 h10 l1 9 h-12z" fill="#2a2420" ${sw}/><path d="M${x} -6 v6" stroke="#5a5048" stroke-width="1"/>`:`<path d="M${x-5} -12 h9 q6 0 7 8 v4 h-16z" fill="${dark?"#3a2616":"#5a3a1e"}" ${sw}/><path d="M${x-4} -10 h8" stroke="#8a6a3a" stroke-width="1.4"/>`}</g>`;
+  // head per Lifeform (faces right)
+  let head;
+  if(lf==="Leyf") head=`<path d="M-8 -84 Q-12 -104 4 -106 Q20 -106 22 -92 Q24 -84 16 -80 L-4 -78Z" fill="${sk}" ${sw}/>
+    <path d="M10 -86 Q20 -86 22 -90" stroke="${skD}" stroke-width="1.6" fill="none"/>
+    <path d="M-4 -102 q6 -3 12 0 M-6 -96 q6 -3 12 0" stroke="${skD}" stroke-width="1.2" fill="none" opacity=".7"/>
+    <ellipse cx="11" cy="-95" rx="4.2" ry="4.6" fill="#fff" ${sw}/><circle cx="12.5" cy="-95" r="2.4" fill="#1b140c"/><circle cx="13.3" cy="-96" r=".8" fill="#fff"/>
+    <path d="M5 -101 Q12 -104 16 -99" fill="none" stroke="${skL}" stroke-width="2" opacity=".7"/>`;
+  else if(lf==="Lizerus") head=`<path d="M-8 -82 Q-10 -102 4 -104 Q14 -104 18 -96 L30 -92 Q32 -86 26 -84 L6 -80Z" fill="${sk}" ${sw}/>
+    <path d="M10 -103 Q4 -116 -6 -118 L-4 -110 Q-12 -114 -18 -108 L-13 -103 Q-20 -102 -22 -94 L-14 -93 Q-12 -100 -4 -104 Q2 -106 10 -103Z" fill="${shade(sk,.78)}" ${sw}/>
+    <path d="M6 -105 L-4 -116 M0 -106 L-15 -109 M-6 -103 L-20 -96" stroke="${shade(sk,.5)}" stroke-width="1.3"/>
+    <path d="M14 -86 L28 -87" stroke="${OL}" stroke-width="1.2"/><circle cx="27" cy="-91" r=".9" fill="${OL}"/>
+    <ellipse cx="10" cy="-96" rx="3.4" ry="3" fill="#f2d23a" ${sw}/><rect x="9.6" y="-98.4" width="1.2" height="4.8" fill="#1b140c"/>
+    ${[0,1,2].map(k=>`<circle cx="${-2+k*5}" cy="${-90+k%2*3}" r="1.3" fill="${skD}"/>`).join("")}`;
+  else if(lf==="Sapien"){
+    const locks=(ox,oy,sc)=>{ let d=`M${ox+11*sc} ${oy-13*sc}`; const pts=[[16,-6],[14,4],[17,12],[10,10],[11,20],[4,14],[2,24],[-4,16],[-8,24],[-11,14],[-17,18],[-16,6],[-20,2],[-16,-6],[-18,-14],[-12,-14],[-12,-22],[-4,-18],[-2,-26],[4,-18],[10,-22],[10,-14]];
+      pts.forEach(([x,y])=>{ const a=Math.atan2(y,x), bx=Math.cos(a)*15, by=Math.sin(a)*17; x=bx+(x-bx)*.45; y=by+(y-by)*.45; d+=` L${(ox+x*sc).toFixed(1)} ${(oy+y*sc).toFixed(1)}`; }); return d+"Z"; };
+    head=`<path d="${locks(1,-92,1.05)}" fill="${skD}" ${sw}/><path d="${locks(1.5,-93,.9)}" fill="${sk}"/>
+    <path d="M5 -96 Q15 -98 19 -90 Q20 -82 12 -81 Q4 -82 5 -96Z" fill="${skL}" ${sw}/>
+    <path d="M5 -100 q7 -4 13 -1" stroke="${skD}" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <circle cx="12" cy="-95" r="2" fill="#1b140c"/><circle cx="12.6" cy="-95.6" r=".7" fill="#fff"/>
+    <ellipse cx="18" cy="-89" rx="2.4" ry="1.8" fill="#2a1a10"/><path d="M11 -84 q4 2 7 0" stroke="${OL}" stroke-width="1.3" fill="none"/>
+    ${[[-10,-98],[-6,-104],[0,-108],[-12,-88],[-6,-86],[-2,-100],[2,-78],[-4,-76]].map(([x,y])=>`<path d="M${x} ${y} q2 5 0 10" stroke="${skL}" stroke-width="1.3" fill="none" opacity=".75"/>`).join("")}`; }
+  else if(lf==="Melkin") head=`<path d="M-10 -86 Q-12 -106 4 -108 Q20 -106 20 -90 Q18 -78 4 -78 Q-8 -78 -10 -86Z" fill="${sk}" ${sw}/>
+    <path d="M-6 -100 L-20 -112 L-4 -94Z" fill="${sk}" ${sw}/><path d="M-8 -100 L-16 -108" stroke="${skD}" stroke-width="2"/>
+    <ellipse cx="11" cy="-94" rx="4.6" ry="5.4" fill="#fff" ${sw}/><circle cx="12.4" cy="-93.4" r="3" fill="#3a2a5a"/><circle cx="13.4" cy="-95" r="1" fill="#fff"/>
+    <path d="M12 -84 q3 1 5 -1" stroke="${OL}" stroke-width="1.2" fill="none"/><circle cx="6" cy="-86" r="2.4" fill="#e88aa8" opacity=".5"/>`;
+  else head=`<path d="M-10 -82 Q-12 -104 4 -106 Q20 -104 20 -90 Q20 -78 6 -77 Q-6 -76 -10 -82Z" fill="${sk}" ${sw}/>
+    <path d="M-4 -102 Q-14 -114 -4 -120 Q-8 -112 2 -104Z" fill="#e8e0d0" ${sw}/><path d="M6 -105 Q4 -118 14 -120 Q8 -112 12 -104Z" fill="#e8e0d0" ${sw}/>
+    <ellipse cx="12" cy="-93" rx="3.6" ry="3.2" fill="#e8f4ff" ${sw}/><circle cx="13" cy="-93" r="1.8" fill="#4a6aa8"/>
+    <path d="M12 -84 q4 1 6 -1" stroke="${OL}" stroke-width="1.2" fill="none"/><path d="M-2 -98 q4 4 2 10" stroke="${skL}" stroke-width="2" fill="none" opacity=".6"/>`;
+  const hood="";
+  const mask="";
+  const tail="";
+  // body
+  const cape=`<path d="M-12 -76 Q-30 -56 -30 -22 Q-22 -16 -14 -22 Q-10 -18 -4 -24 L4 -74Z" fill="${cl}" ${sw}/>
+    <path d="M-20 -60 Q-24 -40 -22 -22 M-12 -58 Q-14 -40 -12 -24" stroke="${clD}" stroke-width="2" fill="none" opacity=".8"/>
+    <path d="M-10 -74 Q-22 -60 -26 -40" stroke="${clL}" stroke-width="2" fill="none" opacity=".6"/>`;
+  const torso=robe?`<path d="M-12 -76 L14 -76 Q18 -40 20 -6 Q2 0 -16 -6 Q-16 -40 -12 -76Z" fill="${cl}" ${sw}/><path d="M2 -74 L4 -6" stroke="${clL}" stroke-width="2.5"/><path d="M-6 -60 Q-8 -30 -10 -8" stroke="${clD}" stroke-width="2" fill="none"/>`
+    :`<path d="M-12 -76 L13 -76 Q16 -56 14 -32 L15 -26 Q0 -22 -14 -26 L-13 -32 Q-15 -56 -12 -76Z" fill="${tun}" ${sw}/>
+    <path d="M6 -74 Q10 -54 9 -34" stroke="${shade(tun,1.3)}" stroke-width="3" fill="none" opacity=".6"/><path d="M-8 -72 Q-10 -52 -9 -34" stroke="${tunD}" stroke-width="3" fill="none" opacity=".6"/>
+    ${armored?`<path d="M-11 -74 Q2 -66 13 -74 L12 -50 Q0 -44 -11 -50Z" fill="#d8dae2" ${sw}/><circle cx="1" cy="-60" r="4" fill="#e8b83a" ${sw}/>`:""}
+    ${brawl?`<path d="M-14 -78 Q0 -70 16 -78 L14 -68 Q0 -62 -14 -68Z" fill="#8a6a3a" ${sw}/>${[-10,-4,2,8].map(x=>`<path d="M${x} -66 l2 6 l2 -6" fill="#8a6a3a" ${sw}/>`).join("")}`:""}
+    <rect x="-14" y="-38" width="29" height="6" fill="#3a2414" ${sw}/><rect x="-1" y="-39" width="7" height="8" rx="1" fill="#d8b04a" ${sw}/>`;
+  const furMantle=lf==="Sapien"?`<path d="M-15 -80 L-15 -70 L-12 -72 L-10 -67 L-6 -71 L-3 -66 L0 -71 L3 -67 L6 -72 L9 -68 L12 -73 L15 -70 L16 -80 Q0 -86 -15 -80Z" fill="${sk}" ${sw}/>`:"";
+  const collar=lf==="Sapien"?furMantle:`<path d="M-13 -78 Q0 -70 15 -78 Q12 -84 0 -82 Q-10 -84 -13 -78Z" fill="${clD}" ${sw}/>`;
+  const armBack=`<path d="M8 -72 Q14 -60 16 -48" stroke="${OL}" stroke-width="8.5" stroke-linecap="round" fill="none"/><path d="M8 -72 Q14 -60 16 -48" stroke="${shade(robe?cl:tun,.7)}" stroke-width="6" stroke-linecap="round" fill="none"/><circle cx="16.5" cy="-46" r="3.6" fill="${skD}" ${sw}/>`;
+  const armFront=`<path d="M-2 -72 Q2 -56 12 -50" stroke="${OL}" stroke-width="9.5" stroke-linecap="round" fill="none"/><path d="M-2 -72 Q2 -56 12 -50" stroke="${robe?cl:brawl?sk:tun}" stroke-width="7" stroke-linecap="round" fill="none"/>${brawl?`<path d="M6 -54 l6 3" stroke="#e8e0cc" stroke-width="5"/>`:""}<circle cx="14" cy="-49" r="4.2" fill="${sk}" ${sw}/>${lf==="Sapien"?`<path d="M6 -56 l3 4 l1 -5 l3 5 l1 -4" stroke="${skD}" stroke-width="2" fill="none" stroke-linejoin="round"/>`:""}`;
+  // role props, drawn in hand at (14,-49)
+  let back="", front="";
+  if(role==="Maverick"){ back=`<rect x="-16" y="-80" width="8" height="30" rx="2" fill="#6a4426" ${sw} transform="rotate(-18 -12 -65)"/>${[0,1,2].map(k=>`<path d="M${-16+k*3} -82 l-2 -9 M${-16+k*3} -91 l-2 3 m2 -3 l2 3" stroke="#e8e0cc" stroke-width="1.4" transform="rotate(-18 -12 -65)"/>`).join("")}`;
+    front=`<path d="M22 -90 Q36 -50 22 -10" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/><path d="M22 -90 Q36 -50 22 -10" fill="none" stroke="#9a6a34" stroke-width="3" stroke-linecap="round"/><line x1="22" y1="-90" x2="22" y2="-10" stroke="#efe6cc" stroke-width="1"/><path d="M28 -52 h6" stroke="#5a3a1e" stroke-width="4"/>`; }
+  else if(role==="Champion"){ back=`<path d="M19 -50 L44 -86 L47 -84 L22 -47Z" fill="#e6e8f0" ${sw}/><path d="M21 -51 L45 -85" stroke="#fff" stroke-width="1"/><path d="M13 -52 L25 -42" stroke="#7a5a2a" stroke-width="4" stroke-linecap="round"/><circle cx="16" cy="-48" r="3" fill="${skD}" ${sw}/><circle cx="12" cy="-53" r="2.2" fill="#d8b04a" ${sw}/>`;
+    front=`<path d="M8 -70 h22 v20 q-11 18 -22 0z" fill="#c9a03c" ${sw}/><circle cx="19" cy="-58" r="5.5" fill="#f2d86a" ${sw}/>${[0,45,90,135,180,225,270,315].map(a=>`<path d="M${(19+Math.cos(a*Math.PI/180)*6).toFixed(1)} ${(-58+Math.sin(a*Math.PI/180)*6).toFixed(1)} l${(Math.cos(a*Math.PI/180)*4).toFixed(1)} ${(Math.sin(a*Math.PI/180)*4).toFixed(1)}" stroke="#7a5a22" stroke-width="1.3"/>`).join("")}<path d="M10 -68 v14" stroke="#e8c868" stroke-width="1.5" opacity=".7"/>`; }
+  else if(role==="Soul Seer"){ front=`<rect x="22" y="-82" width="4" height="82" rx="2" fill="#6b4a2a" ${sw}/><path d="M20 -82 q4 -6 8 0" fill="none" stroke="#6b4a2a" stroke-width="2.5"/><path d="M24 -94 l4.5 7 l-4.5 6 l-4.5 -6z" fill="#bfe4ff" ${sw}/><circle cx="24" cy="-87" r="9" fill="#bfe4ff" opacity=".25"/><circle cx="33" cy="-78" r="2.4" fill="#e8f6ff" opacity=".8"/><path d="M14 -49 L22 -50" stroke="${OL}" stroke-width="1"/>`; }
+  else if(role==="Whisper"){ back=`<path d="M-14 -40 q-6 -6 0 -12 q6 -6 12 0" fill="none" stroke="#a88a5a" stroke-width="3"/>`;
+    front=`<path d="M16 -52 L32 -66 L34 -63 L19 -49Z" fill="#d8dae4" ${sw}/><path d="M12 -52 l6 4" stroke="#3a2414" stroke-width="4"/><path d="M14 -42 L22 -26 L19 -25 L12 -40Z" fill="#c8cad4" ${sw}/>`; }
+  else { front=`<circle cx="14" cy="-49" r="6" fill="${sk}" ${sw}/><path d="M9 -52 h10 M9 -48 h10" stroke="#e8e0cc" stroke-width="2"/>${[0,1,2].map(k=>`<path d="M${11+k*3} -55 l1 -4 l1 4" fill="#c8c8d0" ${sw}/>`).join("")}`; }
+  return `<g id="heroInner"><g transform="scale(${L.size})">
+   <ellipse cx="0" cy="0" rx="24" ry="6.5" fill="rgba(0,0,0,.35)"/>
+   ${cape}${tail}${back}${armBack}
+   <g id="legs">${leg("legR",4,true)}${leg("legL",-5,false)}</g>
+   ${torso}${collar}${hood}${head}${mask}${armFront}${front}
+  </g></g>`;
+}
+function cecilArt(x,y){ const sw=`stroke="${OL}" stroke-width="1.6" stroke-linejoin="round"`; return `<g transform="translate(${x} ${y}) scale(-1 1)"><ellipse cx="0" cy="0" rx="24" ry="6.5" fill="rgba(0,0,0,.3)"/>
+  <path d="M26 -10 L34 -112" stroke="${OL}" stroke-width="5"/><path d="M26 -10 L34 -112" stroke="#8a6a3a" stroke-width="3"/><path d="M24 -112 h20 l-2 10 h-16z" fill="#8a8a92" ${sw}/>
+  <path d="M-9 -36 h8 v28 h-8z M2 -36 h8 v28 h-8z" fill="#3e5a7a" ${sw}/><path d="M-11 -10 h10 q4 0 4 6 v4 h-14z M1 -10 h10 q4 0 4 6 v4 h-14z" fill="#4a2e18" ${sw}/>
+  <path d="M-15 -78 Q-18 -56 -15 -34 L15 -34 Q18 -56 15 -78 Q0 -84 -15 -78Z" fill="#b84a3a" ${sw}/>
+  <path d="M-15 -66 h30 M-15 -54 h30 M-6 -80 v46 M6 -80 v46" stroke="#7a2a20" stroke-width="1.6" opacity=".7"/>
+  <path d="M-12 -62 h24 v26 h-24z" fill="#4f6f8f" ${sw}/><path d="M-10 -62 L-12 -80 M10 -62 L12 -80" stroke="#4f6f8f" stroke-width="4"/><rect x="-5" y="-56" width="10" height="7" fill="#3e5a7a" ${sw}/><circle cx="-8" cy="-60" r="1.6" fill="#d8b04a"/><circle cx="8" cy="-60" r="1.6" fill="#d8b04a"/>
+  <path d="M12 -74 Q22 -60 26 -50" stroke="${OL}" stroke-width="9" stroke-linecap="round" fill="none"/><path d="M12 -74 Q22 -60 26 -50" stroke="#b84a3a" stroke-width="6.5" stroke-linecap="round" fill="none"/><circle cx="27" cy="-48" r="4" fill="#8a5a3a" ${sw}/>
+  <path d="M-12 -82 Q-14 -104 2 -106 Q16 -104 15 -88 Q14 -78 2 -78 Q-10 -78 -12 -82Z" fill="#8a5a3a" ${sw}/>
+  <path d="M-8 -86 Q2 -66 14 -86 Q10 -80 2 -80 Q-4 -80 -8 -86Z" fill="#eeeae2" ${sw}/><path d="M-4 -88 q6 -3 12 0" stroke="#eeeae2" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="-3" cy="-94" r="1.6" fill="#1b140c"/><circle cx="8" cy="-94" r="1.6" fill="#1b140c"/><path d="M-6 -98 q3 -2 6 0 M5 -98 q3 -2 6 0" stroke="#eeeae2" stroke-width="1.6" fill="none"/><circle cx="2" cy="-90" r="2.6" fill="#6e4228"/>
+  <ellipse cx="2" cy="-102" rx="26" ry="6" fill="#d8b65a" ${sw}/><path d="M-11 -102 Q-10 -120 2 -120 Q14 -120 15 -102Z" fill="#e2c46a" ${sw}/><path d="M-11 -106 h26" stroke="#8a3a2a" stroke-width="3"/>
+  <path d="M-20 -101 l4 2 M-10 -98 l2 3 M14 -98 l-1 3 M24 -101 l-4 2" stroke="#a8863a" stroke-width="1.2"/></g>`; }
+function gremlinArt(x,y){ const sw=`stroke="#1e2a0c" stroke-width="1.5" stroke-linejoin="round"`; return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="13" ry="3.5" fill="rgba(0,0,0,.3)"/>
+  <path d="M-6 -2 l-3 2 M-4 -2 l0 2 M5 -2 l3 2 M3 -2 l0 2" stroke="#1e2a0c" stroke-width="1.4"/>
+  <path d="M-10 -1 Q-13 -16 -6 -22 Q0 -26 6 -22 Q13 -16 10 -1Z" fill="#5f8a2e" ${sw}/><path d="M-4 -4 Q-6 -14 0 -18" stroke="#8fbf4e" stroke-width="2" fill="none"/>
+  <circle cx="-5" cy="-10" r="1.6" fill="#a8c84a"/><circle cx="5" cy="-6" r="1.3" fill="#a8c84a"/><circle cx="2" cy="-14" r="1.1" fill="#7a4a8a"/>
+  <path d="M-7 -20 L-20 -30 L-9 -16Z M7 -20 L20 -30 L9 -16Z" fill="#6f9a3a" ${sw}/><path d="M-8 -20 L-16 -26 M8 -20 L16 -26" stroke="#c87a8a" stroke-width="1.5"/>
+  <ellipse cx="-3.5" cy="-17" rx="2.6" ry="3" fill="#ffe24a" ${sw}/><ellipse cx="3.5" cy="-17" rx="2.6" ry="3" fill="#ffe24a" ${sw}/><circle cx="-3" cy="-16.5" r="1" fill="#1e2a0c"/><circle cx="4" cy="-16.5" r="1" fill="#1e2a0c"/>
+  <path d="M-4 -11 Q0 -8 4 -11" fill="#3a1a14" ${sw}/><path d="M-2 -10.5 l1 2 l1 -2 M1 -10.5 l1 2 l1 -2" fill="#fff"/>
+  <path d="M-10 -10 l-6 4 l2 -1 l-1 3 M10 -10 l6 4 l-2 -1 l1 3" stroke="#5f8a2e" stroke-width="3" fill="none" stroke-linecap="round"/></g>`; }
+const ROLE_FRAME={Maverick:"#3f6b45",Brawler:"#8a4a2a",Champion:"#a8821f","Soul Seer":"#5a4a8a",Whisper:"#3d4b5c"};
+function cornerSVG(role){
+  const c="#e8c260";
+  const g={Maverick:`<path d="M8 38 Q10 10 38 8 Q30 22 20 26 Q26 30 8 38Z" fill="${c}"/>`,
+    Brawler:`<rect x="6" y="6" width="16" height="16" rx="3" fill="${c}"/><circle cx="30" cy="10" r="5" fill="${c}"/><circle cx="10" cy="30" r="5" fill="${c}"/>`,
+    Champion:`<circle cx="18" cy="18" r="9" fill="${c}"/>${[0,45,90,135,180,225,270,315].map(a=>`<rect x="17" y="2" width="2" height="7" fill="${c}" transform="rotate(${a} 18 18)"/>`).join("")}`,
+    "Soul Seer":`<polygon points="18,2 22,14 34,18 22,22 18,34 14,22 2,18 14,14" fill="${c}"/>`,
+    Whisper:`<path d="M30 6 A16 16 0 1 0 30 34 A12 12 0 1 1 30 6Z" fill="${c}"/>`};
+  return `<svg viewBox="0 0 40 40">${g[role]||g.Maverick}</svg>`;
+}
+
+// ============================================================ Crit Dice on the field (look follows the duel and Starvos dice)
+const DICE_LOOK = { A: { body: '#f0c04f', num: '#0c0f1f', finish: 'plain' }, B: { body: '#7f9e3a', num: '#16200a', finish: 'plain' } };
+let dieN = 0;
+function dieSVG(s, v, look) {
+  const id = 'dg' + (++dieN), b = look.body, n = look.num, ed = shade(b, .55);
+  const grad = `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${shade(b, 1.25)}"/><stop offset=".55" stop-color="${b}"/><stop offset="1" stop-color="${shade(b, .7)}"/></linearGradient></defs>`;
+  const fin = look.finish === 'marbled' ? `<path d="M10 30 Q40 20 55 45 T92 60" stroke="#fff" stroke-width="5" fill="none" opacity=".35"/><path d="M12 70 Q38 58 60 74" stroke="#000" stroke-width="4" fill="none" opacity=".15"/>`
+    : look.finish === 'starlit' ? [[30, 30], [70, 58], [45, 80], [74, 30], [24, 62]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.8" fill="#fff" opacity=".9"/>`).join('') : '';
+  const num = (y, fs) => `<text x="50" y="${y}" text-anchor="middle" dominant-baseline="middle" font-family="Alegreya SC,Georgia,serif" font-weight="700" font-size="${fs}" fill="${n}" stroke="rgba(0,0,0,.25)" stroke-width=".6" paint-order="stroke">${v}</text>`;
+  if (s === 20) { const HEX = '50,3 91,26.5 91,73.5 50,97 9,73.5 9,26.5';
+    return `<svg viewBox="0 0 100 100">${grad}<polygon points="${HEX}" fill="url(#${id})"/>
+      <polygon points="50,3 91,26.5 50,22 9,26.5" fill="#fff" opacity=".18"/><polygon points="9,26.5 23,67 9,73.5" fill="#000" opacity=".2"/><polygon points="91,26.5 77,67 91,73.5" fill="#000" opacity=".28"/>
+      <polygon points="9,73.5 23,67 50,97" fill="#000" opacity=".26"/><polygon points="91,73.5 77,67 50,97" fill="#000" opacity=".36"/><polygon points="50,22 77,67 23,67" fill="#fff" opacity=".1"/>${fin}
+      <g fill="none" stroke="${ed}" stroke-width="1.4" stroke-linejoin="round" opacity=".85"><polygon points="${HEX}"/><polygon points="50,22 77,67 23,67"/><path d="M50 22 9 26.5M50 22 91 26.5M50 22 50 3M23 67 9 26.5M23 67 9 73.5M23 67 50 97M77 67 91 26.5M77 67 91 73.5M77 67 50 97"/></g>
+      ${num(v > 9 ? 55 : 56, v > 9 ? 22 : 25)}</svg>`; }
+  if (s === 6) { const P = { 1: [[50, 50]], 2: [[30, 30], [70, 70]], 3: [[28, 28], [50, 50], [72, 72]], 4: [[30, 30], [70, 30], [30, 70], [70, 70]], 5: [[28, 28], [72, 28], [50, 50], [28, 72], [72, 72]], 6: [[30, 26], [70, 26], [30, 50], [70, 50], [30, 74], [70, 74]] };
+    return `<svg viewBox="0 0 100 100">${grad}<rect x="6" y="6" width="88" height="88" rx="18" fill="url(#${id})" stroke="${ed}" stroke-width="2"/>${fin}<rect x="14" y="14" width="72" height="72" rx="12" fill="#fff" opacity=".08"/>${P[v].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="8" fill="${n}"/>`).join('')}</svg>`; }
+  const shape = s === 4 ? '50,6 94,88 6,88' : s === 8 ? '50,4 94,50 50,96 6,50' : s === 10 ? '50,4 92,42 50,96 8,42' : '50,4 93,35 77,90 23,90 7,35';
+  return `<svg viewBox="0 0 100 100">${grad}<polygon points="${shape}" fill="url(#${id})" stroke="${ed}" stroke-width="2" stroke-linejoin="round"/>${fin}
+    <polygon points="${shape}" fill="none" stroke="#fff" stroke-width="1" opacity=".25" transform="translate(50 50) scale(.8) translate(-50 -50)"/>${num(s === 4 ? 66 : 52, 26)}</svg>`;
+}
+function unitXY(u) {
+  const [x, y] = center(u.c, u.r), m = svg.getScreenCTM(), B = $('board').getBoundingClientRect();
+  if (!m) return [B.width / 2, B.height / 2];
+  const p = svg.createSVGPoint(); p.x = x; p.y = y - lift(u.c, u.r); const q = p.matrixTransform(m);
+  return [q.x - B.left, q.y - B.top, m.a];
+}
+function clearTrays() { document.querySelectorAll('#board .tray').forEach(t => t.remove()); G.tray = null; }
+// dice: [{ s, v, cls, lbl }]. A new tray lands beside the roller, toward the target; add = put more dice in the same tray.
+async function showRoll(u, tgt, dice, add) {
+  const t = reduce ? 0 : Math.round(800 * PACE[G.pace]);
+  if (!add || !G.tray) {
+    clearTrays();
+    const [x, y, k] = unitXY(u), dir = tgt && tgt !== u ? Math.sign(center(tgt.c, tgt.r)[0] - center(u.c, u.r)[0]) || 1 : 1;
+    const tray = document.createElement('div'); tray.className = 'tray';
+    tray.style.left = (x + dir * 46 * Math.max(.7, k || 1)) + 'px'; tray.style.top = (y + 4) + 'px';
+    tray.style.setProperty('--fx', (-dir * 50) + 'px');
+    tray.style.setProperty('--dz', Math.round(clamp(30 * (k || 1.5), 24, 52)) + 'px');
+    $('board').appendChild(tray); G.tray = tray;
+  }
+  const look = u.team === 'A' ? (G.diceLook || DICE_LOOK.A) : DICE_LOOK.B;
+  for (const d of dice) {
+    const e = document.createElement('div'); e.className = `die ${u.gremlin ? 'sm' : ''} ${d.cls || ''} ${t ? 'rolling' : ''}`;
+    e.style.setProperty('--t', t + 'ms'); e.innerHTML = dieSVG(d.s, d.v, look) + (d.lbl ? `<span class="lbl">${d.lbl}</span>` : '');
+    G.tray.appendChild(e);
+  }
+  if (t) await sleep(t + 120);
+}
+function rollList(list) { const out = []; for (const [n, s] of list) for (let i = 0; i < n; i++) out.push({ s, v: rng(s) }); return out; }
+
+// ============================================================ action text over the unit
+function placeCaption(u) {
+  const cap = $('caption'); if (!cap.innerHTML) return;
+  const B = $('board').getBoundingClientRect();
+  let x = B.width / 2, y = 90;
+  if (u && u.alive !== undefined) { const p = unitXY(u); x = p[0]; y = p[1] - 58 * (p[2] || 1); }
+  const w = cap.offsetWidth, h = cap.offsetHeight;
+  const cx = clamp(x, w / 2 + 8, B.width - w / 2 - 8), cy = Math.max(h + 8, y);
+  cap.style.left = cx + 'px'; cap.style.top = cy + 'px'; cap.style.setProperty('--tail', clamp(50 + (x - cx) / w * 100, 10, 90) + '%');
+}
+addEventListener('resize', () => { placeCaption(G.capU); });
+
 // ============================================================ go
 try { const p = localStorage.getItem('cq-pace'); if (p && PACE[p]) G.pace = p; } catch (e) {}
 G.team = [defaultSpec('Lizerus', 'Champion', 'Honor'), defaultSpec('Dimoneesh', 'Soul Seer', 'Nature'), defaultSpec('Leyf', 'Maverick', 'Wayfinder')];
 G.rivals = randomRivals();
 renderSetup(); renderPace();
+document.querySelectorAll('#battleView .corner').forEach(c => c.innerHTML = cornerSVG('Champion'));
+document.querySelectorAll('.ibtn[data-win]').forEach(b => b.onclick = () => {
+  const w = $(b.dataset.win), on = !w.classList.contains('on');
+  document.querySelectorAll('.win.on').forEach(x => x.classList.remove('on')); document.querySelectorAll('.ibtn').forEach(x => x.setAttribute('aria-expanded', 'false'));
+  if (on) { w.classList.add('on'); b.setAttribute('aria-expanded', 'true'); }
+});
+document.querySelectorAll('.win [data-close]').forEach(b => b.onclick = () => { b.closest('.win').classList.remove('on'); document.querySelectorAll('.ibtn').forEach(x => x.setAttribute('aria-expanded', 'false')); });
+addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.win.on').forEach(x => x.classList.remove('on')); });
 
 // ============================================================ Farluck Farm battle mode
 // A copy of the 3v3 sparring map (hex-3v3.html, commit 05909b0), used by farluck-adventure.html when exploration turns into a fight.
@@ -1283,6 +1579,10 @@ renderSetup(); renderPace();
   let cfg = null; try { cfg = JSON.parse(decodeURIComponent(location.hash.slice(1))); } catch (e) {}
   if (!cfg || !cfg.role) return;
   document.title = 'Farluck Battle';
+  $('battleView').style.setProperty('--role', ROLE_FRAME[cfg.role] || '#a8821f');
+  document.querySelectorAll('#battleView .corner').forEach(c => c.innerHTML = cornerSVG(cfg.role));
+  $('bTitle').textContent = 'Battle at the seed shed';
+  if (cfg.dice) G.diceLook = { ...DICE_LOOK.A, ...cfg.dice };
   document.querySelector('.top h1').textContent = 'Battle at the seed shed';
   document.querySelector('.top .sub').textContent = 'One free Move plus two actions each turn. At 0 Life a foe is inspired and gives up.';
   const baseBuild = buildUnit;
@@ -1301,8 +1601,8 @@ renderSetup(); renderPace();
   banner = () => {
     const won = G.units.some(u => u.team === 'A' && u.alive);
     const b = document.createElement('div'); b.className = 'banner';
-    b.innerHTML = `<div><h2>${won ? 'The gremlins scatter!' : 'Knocked out'}</h2><p>${won ? 'Their fear melts away, and they scurry off into the fields, squeaking.' : 'You wake by the Icosa Crystal. Your Pack waits by the shed.'} ${G.round} rounds.</p>
-      <button class="btn primary" type="button" id="newBtn">${won ? 'Back to the farm' : 'Wake at the crystal'}</button></div>`;
+    b.innerHTML = `<div><h2>${won ? 'The gremlins scatter!' : 'Knocked out'}</h2><p>${won ? 'Their fear melts away, and they scurry off into the fields, squeaking.' : 'The Castle Comet pulls you home. Your Pack stays behind by the shed.'} ${G.round} rounds.</p>
+      <button class="btn primary" type="button" id="newBtn">${won ? 'Back to the farm' : 'Wake on the Comet'}</button></div>`;
     $('board').appendChild(b);
     $('newBtn').onclick = () => { if (parent !== window) parent.postMessage({ type: 'cq-battle-close', won }, '*'); else { b.remove(); startBout(); } };
     parent.postMessage({ type: 'cq-battle', won }, '*');
