@@ -173,7 +173,17 @@ function dragon(x,y,s){ return `<g transform="translate(${x} ${y}) scale(${s})">
   <path d="M-200 -70 L-150 -20 M-120 -60 L-100 -10 M200 -70 L150 -20 M120 -60 L100 -10" stroke="#5a0e08" stroke-width="2" opacity=".8"/>
   <path d="M-10 30 L0 60 L10 30" stroke="#ff4a1a" stroke-width="2" fill="none" opacity=".6" class="flick"/></g>`; }
 const SC=[
- { t:"Far out in the Nebrom system turns a world of forests and farms, old stone roads and singing rivers. Its people call it <b>Talus</b>.",
+ { t:"Before the stars, before any world, there was <b>Love</b>. Not a passing feeling, but Love that is unwavering, unconditional and unending. Everything was made from it.",
+   art:()=>{ const r=rnd(41); let motes=""; for(let i=0;i<70;i++){ const a=r()*Math.PI*2, d=40+r()*420, x=480+Math.cos(a)*d, y=270+Math.sin(a)*d*.62; motes+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r()*2.2+.6).toFixed(2)}" fill="#fff4d0" class="tw" style="animation-delay:${(r()*3).toFixed(2)}s"/>`; }
+   return `<defs><radialGradient id="lv" cx=".5" cy=".5" r=".62"><stop offset="0" stop-color="#fffbe8"/><stop offset=".12" stop-color="#ffe6a0"/><stop offset=".38" stop-color="#c9823a" stop-opacity=".75"/><stop offset=".75" stop-color="#3a1a2a" stop-opacity=".6"/><stop offset="1" stop-color="#07060f"/></radialGradient></defs>
+   <rect width="960" height="540" fill="#07060f"/><rect width="960" height="540" fill="url(#lv)"/>
+   <g class="drift">${[60,110,170,240,320].map((rr,i)=>`<ellipse cx="480" cy="270" rx="${rr}" ry="${rr*.62}" fill="none" stroke="#ffe6a0" stroke-width="${2-i*.3}" opacity="${.5-i*.08}" class="flick" style="animation-delay:${i*.5}s"/>`).join("")}
+   <circle cx="480" cy="270" r="34" fill="#fffbe8"/>${motes}</g>`; } },
+ { t:"A spark of that Love lives in every being, on trillions of worlds. Each spark sees the universe in its own way, and each one is finding its way back home to the Love that made it.",
+   art:()=>{ const r=rnd(57); let w="", th=""; for(let i=0;i<46;i++){ const x=r()*960, y=r()*540; if(Math.hypot(x-480,y-270)<70) continue; th+=`<path d="M${x.toFixed(0)} ${y.toFixed(0)} Q${((x+480)/2+(r()-.5)*120).toFixed(0)} ${((y+270)/2+(r()-.5)*120).toFixed(0)} 480 270" stroke="#ffd98a" stroke-width=".8" fill="none" opacity=".22"/>`; w+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r()*3+2).toFixed(1)}" fill="${["#7fc8ff","#9fd27a","#f2a65a","#c9a0d8","#ffe6a0"][i%5]}" opacity=".9"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.2" fill="#fff" class="tw" style="animation-delay:${(r()*3).toFixed(2)}s"/>`; }
+   return `<rect width="960" height="540" fill="#06060e"/>${stars(61,180)}<g class="drift">${th}
+   <circle cx="480" cy="270" r="90" fill="#ffe6a0" opacity=".12"/><circle cx="480" cy="270" r="46" fill="#ffe6a0" opacity=".25"/><circle cx="480" cy="270" r="18" fill="#fffbe8"/>${w}</g>`; } },
+ { t:"One of those worlds turns far out in the Nebrom system: a moon of forests and farms, old stone roads and singing rivers. Its people call it <b>Talus</b>.",
    art:()=>`<rect width="960" height="540" fill="#070816"/>${stars(3,220)}
    <g class="drift"><defs><radialGradient id="atm" cx=".5" cy=".5" r=".5"><stop offset=".86" stop-color="#7fc8ff" stop-opacity="0"/><stop offset=".95" stop-color="#7fc8ff" stop-opacity=".55"/><stop offset="1" stop-color="#7fc8ff" stop-opacity="0"/></radialGradient>
    <radialGradient id="sea" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#4f9ad0"/><stop offset=".7" stop-color="#1f4f88"/><stop offset="1" stop-color="#0a1c3a"/></radialGradient>
@@ -183,31 +193,31 @@ const SC=[
    <path d="M440 300 Q560 280 700 300 T860 290" stroke="#fff" stroke-width="14" opacity=".25" fill="none"/><path d="M420 380 Q560 360 860 390" stroke="#fff" stroke-width="10" opacity=".2" fill="none"/>
    <circle cx="760" cy="420" r="210" fill="#000" opacity=".45"/></g>
    <circle cx="230" cy="150" r="26" fill="#d8d4c8"/><circle cx="222" cy="144" r="6" fill="#b8b4a8"/><circle cx="238" cy="158" r="4" fill="#b8b4a8"/></g>` },
- { t:"Five peoples share Talus: the Sapien, the Leyf, the Lizerus, the Melkin and the Dimoneesh. Some plant, some trade, some guard the roads, and most just want a quiet supper.",
+ { t:"Five peoples share Talus: the Sapien, the Leyf, the Lizerus, the Melkin and the Dimoneesh. Some plant, some trade, some guard the roads, and each carries that same spark of Love.",
    art:()=>`<defs><linearGradient id="sk2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2a65a"/><stop offset=".6" stop-color="#ffd9a0"/><stop offset="1" stop-color="#fbe7c0"/></linearGradient></defs>
    <rect width="960" height="540" fill="url(#sk2)"/><circle cx="760" cy="170" r="70" fill="#fff1c8" opacity=".9"/>
    <g class="drift"><path d="${hillsP(300,60,5)}" fill="#c99a6a" opacity=".55"/><path d="${hillsP(350,50,9)}" fill="#8aa05a"/><path d="M0 370 Q480 340 960 370 V540 H0Z" fill="#6f8a3e"/>
    <g transform="translate(150 300) scale(.5)"><rect x="-40" y="-50" width="80" height="50" fill="#b8844a" stroke="#3a2412" stroke-width="3"/><path d="M-50 -48 L0 -86 L50 -48Z" fill="#9a4a2c" stroke="#3a1a0c" stroke-width="3"/><rect x="-8" y="-28" width="16" height="28" fill="#3b2a1a"/></g>
    ${[["Sapien","Brawler",250],["Leyf","Maverick",370],["Lizerus","Champion",490],["Melkin","Whisper",600],["Dimoneesh","Soul Seer",710]].map(([lf,ro,x],i)=>`<g class="rise" style="animation-delay:${.3+i*.35}s"><g transform="translate(${x} 385) scale(1.25)">${heroSVG(L(lf,ro))}</g></g>`).join("")}</g>` },
- { t:"But lately, figures in <b>red cloaks</b> walk the roads at dusk. No one knows whom they serve. Where they pass, a cold Fear settles in, and good folk stop helping one another.",
+ { t:"But Love can be forgotten. Figures in <b>red cloaks</b> now walk the roads at dusk, and no one knows whom they serve. Where they pass, a cold <b>Fear</b> settles in. Good folk forget the spark inside them and stop helping one another.",
    art:()=>`<defs><linearGradient id="sk3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2440"/><stop offset=".7" stop-color="#7a4a5a"/><stop offset="1" stop-color="#c06a4a"/></linearGradient></defs>
    <rect width="960" height="540" fill="url(#sk3)"/>${stars(7,60,220)}
    <g class="drift"><path d="${hillsP(330,70,11)}" fill="#3a2f3a"/><path d="M0 410 Q480 380 960 410 V540 H0Z" fill="#2a2228"/>
    <path d="M330 540 Q440 400 500 350 Q560 320 620 310" stroke="#5a4848" stroke-width="40" fill="none" opacity=".7"/>
    ${redCloak(430,390,1.2,1)}${redCloak(530,350,.9,1)}${redCloak(600,320,.7,-1)}
    <rect width="960" height="540" fill="#0a0812" opacity=".18"/></g>` },
- { t:"The Fear comes from the <b>Legion of Starvos</b>. They want to call down Starvos, the death dragon, to burn Talus away. Many who stood against them passed on.",
+ { t:"The Fear comes from the <b>Legion of Starvos</b>. They want to call down Starvos, the death dragon, to burn Talus away. Their Fear tore open a <b>Fear Rift</b>, and Talus's Celestial Guardians fell silent. Many who stood against the Legion passed on.",
    art:()=>`<defs><radialGradient id="fire" cx=".5" cy="1" r=".9"><stop offset="0" stop-color="#ff7a2a"/><stop offset=".45" stop-color="#8a1a10"/><stop offset="1" stop-color="#140608"/></radialGradient></defs>
    <rect width="960" height="540" fill="url(#fire)"/>
    <g class="drift">${dragon(480,230,1.1)}
    <path d="M0 470 L60 430 L120 460 L200 410 L280 450 L360 420 L440 455 L520 415 L600 450 L700 410 L800 455 L880 425 L960 450 V540 H0Z" fill="#0c0606"/>
    ${[80,230,380,520,690,850].map((x,i)=>`<path d="M${x} 460 q-10 -30 4 -50 q4 20 14 26 q8 -24 -2 -44 q24 20 16 60Z" fill="#ff8a2a" opacity=".8" class="flick" style="animation-delay:${i*.27}s"/>`).join("")}</g>` },
- { t:"The Celestials will not reach down and fix it. Free will must stay free. But high above, a <b>comet</b> circles Talus, and on it stands a tired old stone castle.",
+ { t:"Love never forces, so the Celestials will not reach down and fix it. Free will must stay free. But high above, a <b>comet</b> circles Talus, and on it stands a tired old stone castle.",
    art:()=>`<rect width="960" height="540" fill="#05060f"/>${stars(13,240)}
    <g class="drift"><circle cx="840" cy="560" r="230" fill="#1f4f88" opacity=".9"/><circle cx="840" cy="560" r="236" fill="none" stroke="#7fc8ff" stroke-width="6" opacity=".35"/>
    <g class="streak"><path d="M380 230 Q200 260 -40 350 L-40 400 Q220 310 400 260Z" fill="#bfe4ff" opacity=".25"/><path d="M380 236 Q240 260 40 330" stroke="#e8f6ff" stroke-width="3" opacity=".5" fill="none"/>
    ${castleOnRock(440,230,1)}</g></g>` },
- { t:"Those who pass on while doing good wake up there, on the <b>Castle Comet</b>. They choose a new self, and they go back down to help. They are the <b>Light Keepers</b>.",
+ { t:"Those who pass on while doing good wake up there, on the <b>Castle Comet</b>. They choose a new self and go back down to carry Love where Fear has taken root, and to wake the silent Guardians. They are the <b>Light Keepers</b>.",
    art:()=>`<defs><radialGradient id="lk" cx=".5" cy=".55" r=".6"><stop offset="0" stop-color="#fff2c8"/><stop offset=".35" stop-color="#e8b85a"/><stop offset="1" stop-color="#1a1208"/></radialGradient></defs>
    <rect width="960" height="540" fill="url(#lk)"/>
    <g class="drift">${[-60,-20,20,60].map((a,i)=>`<path d="M480 300 L${480+Math.sin(a*Math.PI/180)*700} -40 L${480+Math.sin((a+10)*Math.PI/180)*700} -40Z" fill="#fff8e0" opacity=".18" class="flick" style="animation-delay:${i*.4}s"/>`).join("")}
