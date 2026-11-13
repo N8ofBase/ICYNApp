@@ -138,6 +138,9 @@ img.mini { width: 20px; height: 20px; vertical-align: -5px; margin-right: 4px; o
 .avatar { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 16px; align-items: start; }
 .avForm { display: grid; gap: 10px; min-width: 0; }
 .avSheet { position: sticky; top: 12px; display: grid; gap: 8px; justify-items: start; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--void); }
+.skinRow { display: flex; gap: 8px; align-items: center; }
+.skinSw { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #8a6a3a; box-shadow: 0 0 0 1px #1d140c; cursor: pointer; padding: 0; }
+.skinSw.on { outline: 3px solid #7a2e1c; outline-offset: 2px; }
 .mirrorView { position: relative; width: 100%; max-width: 220px; justify-self: center; border-radius: 110px 110px 12px 12px; border: 4px solid #8a6a3a; background: linear-gradient(#cfe0ec, #9fb8cc); box-shadow: 0 0 0 2px #1d140c; }
 .mirrorView svg { display: block; width: 100%; height: auto; }
 .mirrorView .d20 { position: absolute; right: 6px; bottom: 6px; }
@@ -448,8 +451,8 @@ const OL="#1d140c";
 function charSVG(L, opt = {}){
   const lf=L.lf, role=L.role, sk=L.skin, skD=shade(sk,.72), skL=shade(sk,1.18);
   const cl=L.cloak, clD=shade(cl,.62), clL=shade(cl,1.3);
-  const robe=role==="Soul Seer", hooded=role==="Whisper"||role==="Soul Seer", armored=role==="Champion", brawl=role==="Brawler";
-  const tun=armored?"#b9bcc6":brawl?"#6a4a2c":role==="Maverick"?"#7a5634":shade(cl,.8), tunD=shade(tun,.7);
+  const folk=role==="Folk", robe=role==="Soul Seer"||(folk&&lf==="Dimoneesh"), hooded=role==="Whisper"||role==="Soul Seer", armored=role==="Champion", brawl=role==="Brawler";
+  const tun=folk?cl:armored?"#b9bcc6":brawl?"#6a4a2c":role==="Maverick"?"#7a5634":shade(cl,.8), tunD=shade(tun,.7);
   const hoof=lf==="Dimoneesh";
   const sw=`stroke="${OL}" stroke-width="1.6" stroke-linejoin="round"`;
   const leg=(id,x,dark)=>`<g><path d="M${x-4} -36 L${x+4} -36 L${x+4} -8 L${x-4} -8Z" fill="${dark?shade("#4a3a28",.75):"#4a3a28"}" ${sw}/>${hoof?`<path d="M${x-5} -9 h10 l1 9 h-12z" fill="#2a2420" ${sw}/><path d="M${x} -6 v6" stroke="#5a5048" stroke-width="1"/>`:`<path d="M${x-5} -12 h9 q6 0 7 8 v4 h-16z" fill="${dark?"#3a2616":"#5a3a1e"}" ${sw}/><path d="M${x-4} -10 h8" stroke="#8a6a3a" stroke-width="1.4"/>`}</g>`;
@@ -490,6 +493,8 @@ function charSVG(L, opt = {}){
   const cape=`<path d="M-12 -76 Q-30 -56 -30 -22 Q-22 -16 -14 -22 Q-10 -18 -4 -24 L4 -74Z" fill="${cl}" ${sw}/>
     <path d="M-20 -60 Q-24 -40 -22 -22 M-12 -58 Q-14 -40 -12 -24" stroke="${clD}" stroke-width="2" fill="none" opacity=".8"/>
     <path d="M-10 -74 Q-22 -60 -26 -40" stroke="${clL}" stroke-width="2" fill="none" opacity=".6"/>`;
+  const folkWear=!folk?"":lf==="Sapien"?`<path d="M-8 -76 L-6 -36 M8 -76 L6 -36" stroke="#5a3a1e" stroke-width="3.5"/><rect x="-10" y="-58" width="20" height="22" rx="3" fill="#4a6a8a" ${sw}/><circle cx="-6" cy="-56" r="1.6" fill="#d8b04a"/><circle cx="6" cy="-56" r="1.6" fill="#d8b04a"/>`:lf==="Lizerus"?`<path d="M-10 -66 L12 -66 L14 -22 Q0 -18 -12 -22Z" fill="#e6d8b8" ${sw}/><path d="M-10 -66 Q0 -78 12 -66" stroke="#e6d8b8" stroke-width="2" fill="none"/><rect x="-4" y="-48" width="10" height="8" rx="2" fill="#c9b48a" ${sw}/>`:lf==="Leyf"?`<path d="M-12 -76 L14 -40" stroke="#4f7a2a" stroke-width="6" stroke-linecap="round"/>${[0,1,2].map(k=>`<path d="M${-8+k*8} ${-70+k*10} q6 -6 10 0 q-4 6 -10 0Z" fill="#7aaa3a" ${sw}/>`).join("")}`:lf==="Melkin"?`<path d="M-11 -64 L13 -64 L14 -30 Q0 -26 -12 -30Z" fill="#d88a5a" ${sw}/>${["#e84a4a","#4a8ae8","#e8c24a"].map((c,k)=>`<circle cx="${-6+k*6}" cy="${-50+k%2*4}" r="2" fill="${c}"/>`).join("")}`:`<path d="M-8 -76 L-2 -8 M10 -76 L6 -8" stroke="#d8b04a" stroke-width="3"/>`;
+  const capeOut=folk?"":cape;
   const torso=robe?`<path d="M-12 -76 L14 -76 Q18 -40 20 -6 Q2 0 -16 -6 Q-16 -40 -12 -76Z" fill="${cl}" ${sw}/><path d="M2 -74 L4 -6" stroke="${clL}" stroke-width="2.5"/><path d="M-6 -60 Q-8 -30 -10 -8" stroke="${clD}" stroke-width="2" fill="none"/>`
     :`<path d="M-12 -76 L13 -76 Q16 -56 14 -32 L15 -26 Q0 -22 -14 -26 L-13 -32 Q-15 -56 -12 -76Z" fill="${tun}" ${sw}/>
     <path d="M6 -74 Q10 -54 9 -34" stroke="${shade(tun,1.3)}" stroke-width="3" fill="none" opacity=".6"/><path d="M-8 -72 Q-10 -52 -9 -34" stroke="${tunD}" stroke-width="3" fill="none" opacity=".6"/>
@@ -507,15 +512,16 @@ function charSVG(L, opt = {}){
   else if(role==="Champion"){ back=`<path d="M19 -50 L44 -86 L47 -84 L22 -47Z" fill="#e6e8f0" ${sw}/><path d="M21 -51 L45 -85" stroke="#fff" stroke-width="1"/><path d="M13 -52 L25 -42" stroke="#7a5a2a" stroke-width="4" stroke-linecap="round"/><circle cx="16" cy="-48" r="3" fill="${skD}" ${sw}/><circle cx="12" cy="-53" r="2.2" fill="#d8b04a" ${sw}/>`;
     front=`<path d="M8 -70 h22 v20 q-11 18 -22 0z" fill="#c9a03c" ${sw}/><circle cx="19" cy="-58" r="5.5" fill="#f2d86a" ${sw}/>${[0,45,90,135,180,225,270,315].map(a=>`<path d="M${(19+Math.cos(a*Math.PI/180)*6).toFixed(1)} ${(-58+Math.sin(a*Math.PI/180)*6).toFixed(1)} l${(Math.cos(a*Math.PI/180)*4).toFixed(1)} ${(Math.sin(a*Math.PI/180)*4).toFixed(1)}" stroke="#7a5a22" stroke-width="1.3"/>`).join("")}<path d="M10 -68 v14" stroke="#e8c868" stroke-width="1.5" opacity=".7"/>`; }
   else if(role==="Soul Seer"){ front=`<rect x="22" y="-82" width="4" height="82" rx="2" fill="#6b4a2a" ${sw}/><path d="M20 -82 q4 -6 8 0" fill="none" stroke="#6b4a2a" stroke-width="2.5"/><path d="M24 -94 l4.5 7 l-4.5 6 l-4.5 -6z" fill="#bfe4ff" ${sw}/><circle cx="24" cy="-87" r="9" fill="#bfe4ff" opacity=".25"/><circle cx="33" cy="-78" r="2.4" fill="#e8f6ff" opacity=".8"/><path d="M14 -49 L22 -50" stroke="${OL}" stroke-width="1"/>`; }
+  else if(folk){ front=lf==="Dimoneesh"?`<rect x="8" y="-58" width="14" height="18" rx="2" fill="#7a2e1c" ${sw}/><path d="M10 -56 h10" stroke="#e8d8a8" stroke-width="1.5"/>`:lf==="Melkin"?`<path d="M12 -50 L26 -66" stroke="#8a5a2a" stroke-width="3" stroke-linecap="round"/><path d="M26 -66 l3 -5" stroke="#e84a4a" stroke-width="3.5" stroke-linecap="round"/>`:lf==="Sapien"?`<path d="M4 -48 h22 l-3 12 h-16z" fill="#a8763a" ${sw}/><circle cx="10" cy="-50" r="3.5" fill="#e85a3a" ${sw}/><circle cx="18" cy="-50" r="3.5" fill="#f2a63a" ${sw}/>`:""; }
   else if(role==="Whisper"){ back=`<path d="M-14 -40 q-6 -6 0 -12 q6 -6 12 0" fill="none" stroke="#a88a5a" stroke-width="3"/>`;
     front=`<path d="M16 -52 L32 -66 L34 -63 L19 -49Z" fill="#d8dae4" ${sw}/><path d="M12 -52 l6 4" stroke="#3a2414" stroke-width="4"/><path d="M14 -42 L22 -26 L19 -25 L12 -40Z" fill="#c8cad4" ${sw}/>`; }
   else { front=`<circle cx="14" cy="-49" r="6" fill="${sk}" ${sw}/><path d="M9 -52 h10 M9 -48 h10" stroke="#e8e0cc" stroke-width="2"/>${[0,1,2].map(k=>`<path d="M${11+k*3} -55 l1 -4 l1 4" fill="#c8c8d0" ${sw}/>`).join("")}`; }
   if (opt.noProp) { back = ""; front = ""; }
   return `<g><g transform="scale(${L.size})">
    <ellipse cx="0" cy="0" rx="24" ry="6.5" fill="rgba(0,0,0,.35)"/>
-   ${cape}${tail}${back}${armBack}
+   ${capeOut}${tail}${back}${armBack}
    <g>${leg("legR",4,true)}${leg("legL",-5,false)}</g>
-   ${torso}${collar}${hood}${head}${mask}${opt.extra || ""}${armFront}${front}
+   ${torso}${folkWear}${collar}${hood}${head}${mask}${opt.extra || ""}${armFront}${front}
   </g></g>`;
 }
 
@@ -524,6 +530,8 @@ function charSVG(L, opt = {}){
    N8's art rules: pigmented skin only (greenish is fine for Leyf and Lizerus), no hoods, masks or tails. */
 const SKIN = {Leyf:"#7fa36a",Sapien:"#8a5e3c",Lizerus:"#8fae5a",Melkin:"#c9a0d8",Dimoneesh:"#8fa8d0"};
 const ROLE_LOOK = {Maverick:"#3f6b45",Brawler:"#8a4a2a",Champion:"#b08a2a","Soul Seer":"#5a4a8a",Whisper:"#2f3a4a"};
+const LF_COLORS={Sapien:["#8a5e3c","#5e3f2a","#a2703f","#5a5a7a"],Lizerus:["#8fae5a","#5f8a4a","#b0884a","#7a6aa8"],Leyf:["#7fa36a","#5f7f4a","#8a7a4a","#4f8a7a"],Dimoneesh:["#8fa8d0","#5a6a8a","#4a7a6a","#3e3a4e"],Melkin:["#c9a0d8","#c9a04a","#8a6a4a","#5a3e4a"]};
+const FOLK_CLOTH={Sapien:"#7a8a5a",Lizerus:"#5a6a8a",Leyf:"#8a6a3a",Dimoneesh:"#3f5a7a",Melkin:"#6a8a9a"};
 const SIZE = lf => lf === "Melkin" ? .62 : lf === "Dimoneesh" ? .9 : 1;
 const crown = `<path d="M-6 -110 l3 -9 3 6 3 -9 3 9 3 -6 3 9z" fill="#e8c260" stroke="#1d140c" stroke-width="1.4"/>`;
 const specs = `<circle cx="11" cy="-93" r="5" fill="none" stroke="#c99a3c" stroke-width="1.6"/><path d="M5 -93 h-8" stroke="#c99a3c" stroke-width="1.4"/>`;
@@ -544,7 +552,7 @@ const CAST = {
 };
 function lookOf(id) {
   if (id === "you" || !CAST[id]) { const h = S.hero || {}, lf = h.lf || "Sapien", role = h.role || "Champion";
-    return { lf, role, skin: SKIN[lf], cloak: (ROLES[role] && ROLES[role].hue) || ROLE_LOOK[role], size: SIZE(lf) }; }
+    return { lf, role, skin: h.skin || SKIN[lf], cloak: (ROLES[role] && ROLES[role].hue) || ROLE_LOOK[role], size: SIZE(lf) }; }
   const c = CAST[id]; return { lf: c.lf, role: c.role, skin: SKIN[c.lf], cloak: c.cloak, size: SIZE(c.lf), opt: { extra: c.extra, noProp: c.noProp } };
 }
 /* a figure standing at (x, y), feet on y; s scales it, flip faces it left */
@@ -556,8 +564,8 @@ function faceSVG(id, bg) {
 }
 
 /* small headshot icons for pick lists (N8 2026-11-12): a Lifeform's face, or a Role's bust with its gear in view */
-function headshot(lf, role, bust = false, bg = "#4a3c2b") {
-  const L = { lf, role, skin: SKIN[lf], cloak: (ROLES[role] && ROLES[role].hue) || ROLE_LOOK[role], size: 1 };
+function headshot(lf, role, bust = false, bg = "#4a3c2b", skin = null) {
+  const L = { lf, role, skin: skin || SKIN[lf], cloak: role === "Folk" ? FOLK_CLOTH[lf] : (ROLES[role] && ROLES[role].hue) || ROLE_LOOK[role], size: 1 };
   const vb = bust ? "-42 -128 84 84" : "-26 -124 52 52";
   return `<span class="hs" aria-hidden="true"><svg viewBox="${vb}" preserveAspectRatio="xMidYMid slice" style="background:radial-gradient(circle at 50% 35%, ${bg}, #17120e)">${charSVG(L)}</svg></span>`;
 }
@@ -930,7 +938,7 @@ function sidePanel() {
       <div class="eyebrow">Rooms</div>
       <div class="roomList">
         <button type="button" data-yard="1">${keeperShot("wexler")}<span>Courtyard<br><small>Bruxanna and Wexler, at the Teleportation Station</small></span></button>
-        ${built.map(r => `<button type="button" data-id="${r.id}">${r.who === "you" ? headshot(S.hero.lf || "Sapien", S.hero.role || "Champion") : keeperShot(r.who)}<span>${r.name}<br><small>${r.who === "you" ? "Bed, chest, table, mirror, loadout" : PEOPLE[r.who].name}</small></span>${r.game ? '<span class="tag">Minigame</span>' : ""}</button>`).join("")}
+        ${built.map(r => `<button type="button" data-id="${r.id}">${r.who === "you" ? headshot(S.hero.lf || "Sapien", S.hero.role || "Champion", false, "#4a3c2b", S.hero.skin) : keeperShot(r.who)}<span>${r.name}<br><small>${r.who === "you" ? "Bed, chest, table, mirror, loadout" : PEOPLE[r.who].name}</small></span>${r.game ? '<span class="tag">Minigame</span>' : ""}</button>`).join("")}
         ${toBuild.map(r => `<button type="button" data-id="${r.id}"><span class="hs" style="background:#3a2f25"></span><span>${r.section ? "Open plot" : r.name}<br><small>${r.section ? "Choose what to build" : "Ready to build"}</small></span><span class="tag dim">Build</span></button>`).join("")}
       </div>
       <p class="note" id="plotNote">Open plots wait for new rooms as the story goes on.</p>
@@ -1507,7 +1515,7 @@ TALK.sloan = { start: { t: "Breathe in. Breathe out. Talus is loud, and the Come
 /* ---------- the long mirror: build your new self */
 function showAvatar(first = false, h0 = null) {
   stopGame();
-  const h = h0 || { lf: S.hero.lf, role: S.hero.role, style: S.hero.style || S.style || "Serious", feature: S.hero.feature || "Lucky", focus: S.hero.focus, ab: S.hero.ab || 0 };
+  const h = h0 || { lf: S.hero.lf, role: S.hero.role, skin: S.hero.skin || LF_COLORS[S.hero.lf][0], style: S.hero.style || S.style || "Serious", feature: S.hero.feature || "Lucky", focus: S.hero.focus, ab: S.hero.ab || 0 };
   if (!L1[h.role][h.focus]) { h.focus = Object.keys(L1[h.role])[0]; h.ab = 0; }
   const d = { ...S.dice, own: S.dice.own };
   const st = heroStats(h), ab = abilityOf(h);
@@ -1521,8 +1529,9 @@ function showAvatar(first = false, h0 = null) {
     <p class="note" style="max-width:66ch">${first ? `Your first life is filled in. Change anything you like: this is your new, enhanced self.` : "Change your look and your choices any time you're in the Barracks."}</p>
     <div class="avatar">
       <div class="avForm">
-        <div class="eyebrow">Lifeform ${past.lf ? `<small>first life: ${past.lf}</small>` : ""}</div><div class="pickGrid sm">${Object.entries(LIFEFORMS).map(([n, L]) => card("lf", n, n, bon(L.b), h.lf === n, `title="${L.t}"`, headshot(n, h.role))).join("")}</div>
-        <div class="eyebrow">Role ${past.role ? `<small>first life: ${past.role}</small>` : ""}</div><div class="pickGrid sm">${Object.entries(ROLES).map(([n, R]) => card("role", n, n, `Life ${R.life}`, h.role === n, `title="${R.t}"`, headshot(h.lf, n, true))).join("")}</div>
+        <div class="eyebrow">Lifeform ${past.lf ? `<small>first life: ${past.lf}</small>` : ""}</div><div class="pickGrid sm">${Object.entries(LIFEFORMS).map(([n, L]) => card("lf", n, n, bon(L.b), h.lf === n, `title="${L.t}"`, headshot(n, "Folk", false, "#4a3c2b", n === h.lf ? h.skin : null))).join("")}</div>
+        <div class="skinRow" role="group" aria-label="${h.lf} color"><span class="eyebrow">Color</span>${LF_COLORS[h.lf].map(c => `<button type="button" class="skinSw ${c === h.skin ? "on" : ""}" data-g="skin" data-v="${c}" style="background:${c}" aria-label="Color ${c}" aria-pressed="${c === h.skin}"></button>`).join("")}</div>
+        <div class="eyebrow">Role ${past.role ? `<small>first life: ${past.role}</small>` : ""}</div><div class="pickGrid sm">${Object.entries(ROLES).map(([n, R]) => card("role", n, n, `Life ${R.life}`, h.role === n, `title="${R.t}"`, headshot(h.lf, n, true, "#4a3c2b", h.skin))).join("")}</div>
         <div class="eyebrow">Style ${S.hero.votes ? `<small>your answers chose ${S.style}</small>` : ""}</div><div class="pickGrid sm">${STYLES.map(n => card("style", n, n, { Serious: "steady, few words", Silly: "jokes, makes friends fast", Shy: "quiet, notices things", Smug: "confident, secretly kind" }[n], h.style === n)).join("")}</div>
         <div class="eyebrow">Feature <small>+2 on matching rolls, and one action per fight</small></div><div class="pickGrid feat">${Object.entries(FEATURES).map(([n, f]) => card("feature", n, n, `${f[0]}: ${f[1]}`, h.feature === n)).join("")}</div>
         <div class="eyebrow">First ability <small>pick 1 from your Role's Focuses</small></div>
@@ -1531,7 +1540,7 @@ function showAvatar(first = false, h0 = null) {
         <div class="diceRow">${["body", "num", "finish"].map(p => Object.keys(DICE[p]).map(k => diceOpt(p, k)).join("")).join('<span class="brk"></span>')}</div>
       </div>
       <aside class="avSheet">
-        <div class="mirrorView"><svg viewBox="-60 -150 120 160" role="img" aria-label="Your reflection: ${h.lf} ${h.role}">${charSVG({ lf: h.lf, role: h.role, skin: SKIN[h.lf], cloak: ROLES[h.role].hue, size: SIZE(h.lf) })}</svg><span class="d20" style="${diceCSS()}">20</span></div>
+        <div class="mirrorView"><svg viewBox="-60 -150 120 160" role="img" aria-label="Your reflection: ${h.lf} ${h.role}">${charSVG({ lf: h.lf, role: h.role, skin: h.skin || SKIN[h.lf], cloak: ROLES[h.role].hue, size: SIZE(h.lf) })}</svg><span class="d20" style="${diceCSS()}">20</span></div>
         <h3>${h.lf} ${h.role}</h3><p class="note">${h.style} Style, ${h.feature}</p><p class="note"><b>${h.lf}:</b> ${LIFEFORMS[h.lf].t}<br><b>${h.role}:</b> ${ROLES[h.role].t}</p>
         <div class="statGrid"><span>Life <b>${st.life}</b></span><span>Defense <b>${st.def}</b></span>${Object.keys(STATN).map(k => `<span>${STATN[k]} <b>${st[k]}</b></span>`).join("")}${st.dmg ? `<span>Damage <b>+${st.dmg}</b></span>` : ""}</div>
         <p class="note"><b>${ab.name}</b> (${h.focus}): ${ab.t}</p>
@@ -1545,6 +1554,7 @@ function showAvatar(first = false, h0 = null) {
     const g = b.dataset.g, v = b.dataset.v, n = { ...h };
     if (g === "ab") { const [fo, i] = v.split("|"); n.focus = fo; n.ab = +i; } else n[g] = v;
     if (g === "role") { n.focus = Object.keys(L1[v])[0]; n.ab = 0; }
+    if (g === "lf") n.skin = LF_COLORS[v][0];
     showAvatar(first, n);
   });
   $("#view").querySelectorAll("[data-dice]").forEach(b => b.onclick = () => {
@@ -1684,7 +1694,7 @@ function showRack() {
 function heroCfg() {
   const h = S.hero, w = GEAR[S.loadout.weapon], a = GEAR[S.loadout.armor];
   return { lf: h.lf, role: h.role, focus: L1[h.role][h.focus] ? h.focus : Object.keys(L1[h.role])[0], ab: h.ab || 0,
-    weapon: w ? w.name : undefined, wRange: w ? w.range : undefined, def: (a ? a.def : 0) + (w && w.def || 0), color: ROLES[h.role].hue,
+    weapon: w ? w.name : undefined, wRange: w ? w.range : undefined, def: (a ? a.def : 0) + (w && w.def || 0), color: ROLES[h.role].hue, skin: h.skin,
     dice: S.dice && DICE.body[S.dice.body] ? { body: DICE.body[S.dice.body][1], num: DICE.num[S.dice.num][1], finish: S.dice.finish } : undefined };
 }
 /* Farluck Farm: the painted-screen adventure (farluck-adventure.html, from the Path of the Light Keeper thread) with its hex battle.
@@ -2051,7 +2061,7 @@ addEventListener("message", e => {
   if (d.type === "cq-intro-done") { dropFarluck(); S.introSeen = true; save(); showCreatePast(); }
   if (d.type === "cq-past-done") {
     dropFarluck(); const lf = d.lf || "Sapien", role = d.role || "Brawler";
-    S.hero = { ...S.hero, lf, role, past: { lf, role } };
+    S.hero = { ...S.hero, lf, role, skin: d.skin || LF_COLORS[lf][0], past: { lf, role, skin: d.skin || LF_COLORS[lf][0] } };
     if (d.clue) addClue(d.clue);
     if (d.skipped) { S.style = S.style || d.style || "Serious"; S.hero.style = S.style; S.phase = "avatar"; save(); renderStyle(); return showAvatar(true); }
     votes = Array.isArray(d.votes) ? d.votes.slice() : []; save(); showFuture();
