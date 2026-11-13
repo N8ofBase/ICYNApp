@@ -69,7 +69,7 @@ body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;ov
   </div>
   <div class="notes">
     <b>How to play:</b> pick an action, then tap something in the scene. Tap the ground to walk. With Walk on, tapping something does the obvious thing (look, or go that way). Items work too: pick the knife, then tap what you want to use it on.<br>
-    <b>About this mockup:</b> it's an original, painted-screen adventure scene built from the Maverick intro (scouting the dying hill). Four answers quietly count toward your Style, and the last one counts double. Art is simple placeholder shapes.
+    <b>About this mockup:</b> it's an original, painted-screen adventure scene built from the Maverick intro (bringing strayed sheep home). Four answers quietly count toward your Style, and the last one counts double. Art is simple placeholder shapes.
   </div>
 </div>
 
@@ -133,24 +133,29 @@ const SCENES={
       <path d="M0 400 Q480 380 960 400 V540 H0Z" fill="#3e4a28"/>
       ${tree(60,380,"#2f5a2c")}${tree(330,370,"#7a6a3a",true)}${tree(560,375,"#806b3e",true)}${tree(880,385,"#2f5a2c")}
       <path d="M600 470 q20 -6 40 0 M650 486 q20 -6 40 0 M700 470 q20 -6 40 0" stroke="#2a2015" stroke-width="4" fill="none" stroke-linecap="round"/>
-      <path d="M900 330 L960 300 V540 H900Z" fill="#33401f" opacity=".8"/>`,
+      <path d="M900 330 L960 300 V540 H900Z" fill="#33401f" opacity=".8"/>
+      ${sheepArt(250,470,1)}${sheepArt(300,495,1.1)}`,
     hot:[
       {id:"farm",name:"Farluck Farm, far below",shape:`<rect x="30" y="250" width="320" height="110" fill="transparent"/>`,stand:[200,420],
-        Look:()=>{ say("Far below, smoke curls from a farmhouse chimney. You've never met the farmer, but the fields look as thirsty as this hill."); if(!flags.mood){flags.mood=1; ask("Narrator","Watching the farm, a thought comes to you.",[
-          ["Somebody should find out why the land is so dry.","Serious"],
-          ["If the soup down there is this dry too, I'm moving out.","Silly"],
-          ["(You wish you could help, but you'd never knock.)","Shy"],
-          ["Lucky for them, the best hunter on the hill is on duty.","Smug"]]);} }},
+        Look:()=>{ say("Far below, smoke curls from a farmhouse chimney. Word in the village was that this farm lost three sheep up the hill, and you're good at finding things."); if(!flags.mood){flags.mood=1; ask("Narrator","Two sheep found, one to go. A thought comes to you.",[
+          ["A job half done isn't done. Find the last one.","Serious"],
+          ["\"Baa-ck home soon, girls. Get it? Baa-ck?\"","Silly"],
+          ["(Leave the sheep at the farm gate later, and slip off before anyone thanks you.)","Shy"],
+          ["Lucky for them, the best tracker on the hill took the job.","Smug"]]);} }},
+      {id:"sheep",name:"Two found sheep",shape:`<rect x="220" y="430" width="110" height="75" fill="transparent"/>`,stand:[200,480],
+        Look:()=>say("Two of the three strays, munching happily. They don't seem worried about anything."),
+        Talk:()=>say("\"Stay put. I'll be right back with your little one.\" One of them chews at you."),
+        Take:()=>say("They're heavier than they look. Better to finish the job, then herd all three home.")},
       {id:"tree",name:"Wilting tree",shape:`<rect x="300" y="200" width="70" height="180" fill="transparent"/>`,stand:[350,440],
         Look:()=>say("Its leaves are curled and grey. Something is drinking the life out of this hill."),
         Use:()=>{ say("You climb up into the branches, the way Leyf do, and look east. A red shimmer flickers between the rocks, like heat over a fire."); flags.shimmer=1; },
         Take:()=>say("You pinch a grey leaf. It crumbles to dust and smells faintly of rot.")},
       {id:"tracks",name:"Strange tracks",shape:`<rect x="590" y="455" width="160" height="45" fill="transparent"/>`,stand:[620,470],
-        Look:()=>{ say("Boot prints, and the drag of long cloaks, heading east into the rocks. Nobody walks up here. Then you notice smaller prints on top of them: Tam, the village kid who follows you everywhere, has run ahead!"); if(!flags.hunt){flags.hunt=1; ask("Narrator","Tam has run off after the tracks. What do you do?",[
-          ["Follow fast, but read every print. No mistakes.","Serious"],
-          ["\"Tam! If you find the trouble first, I want half!\"","Silly"],
+        Look:()=>{ say("Little hoofprints from the missing lamb, heading east into the rocks. And beside them, boot prints and the drag of long cloaks. Nobody walks up here."); if(!flags.hunt){flags.hunt=1; ask("Narrator","The lamb went the same way as the cloaks. How do you follow?",[
+          ["Fast, but read every print. No mistakes.","Serious"],
+          ["Bleat like a lamb and hope it bleats back.","Silly"],
           ["Keep low and quiet along the ferns, and catch up unseen.","Shy"],
-          ["\"Run all you like, kid. Nobody outpaces me.\"","Smug"]]);} }},
+          ["\"Run all you like, little one. Nobody outpaces me.\"","Smug"]]);} }},
       {id:"east",name:"Path east, into the rocks",shape:`<rect x="880" y="300" width="80" height="230" fill="transparent"/>`,stand:[930,440],exit:"rock"}
     ]
   },
@@ -167,7 +172,7 @@ const SCENES={
       ${fern(110,420)}${fern(170,440)}${fern(80,470)}
       ${tree(300,375,"#806b3e",true)}
       <g id="snare"><path d="M470 470 L520 420 L530 470" fill="none" stroke="#6a4a2a" stroke-width="4"/></g>
-      <g id="geev" transform="translate(${flags.freed?1200:500} 470)">${geev(flags.caught&&!flags.freed)}</g>
+      <g id="geev" transform="translate(${flags.freed?1200:500} 470) scale(1.6)">${geev(flags.caught&&!flags.freed)}</g>
       <g id="cloaks" opacity="${flags.cloaks&&!flags.done?1:0}">${cloak(690,370)}${cloak(735,375)}${cloak(780,368)}</g>`,
     hot:[
       {id:"west",name:"Back west",shape:`<rect x="0" y="300" width="50" height="230" fill="transparent"/>`,stand:[40,450],exit:"edge"},
@@ -175,20 +180,20 @@ const SCENES={
         Look:()=>say(flags.melted?"Where the rock was, there's a dark tunnel. From deep under the hill comes a soft, steady hammering.":"Old red stone, warm to look at. Oddly warm."),
         Use:()=>say(flags.melted?"The edge still glows. You keep your hands to yourself.":"You lay a palm on it. It's hot, like a hearthstone."),
         Talk:()=>say(flags.melted?"\"Hello down there?\" The hammering stops for a breath, then starts again.":"Rocks are poor listeners.")},
-      {id:"geevH",name:"Tam",shape:`<rect x="440" y="400" width="130" height="90" fill="transparent"/>`,stand:[420,470],
+      {id:"geevH",name:"Lamb",shape:`<rect x="440" y="400" width="130" height="90" fill="transparent"/>`,stand:[420,470],
         any:(v,it)=>{
-          if(!flags.caught) return say("Tam is staring at the rock.");
-          if(flags.freed) return say("Tam is safe away.");
-          if(it==="Stringbow") return say("Not at Tam! Help them out of the snare first.");
+          if(!flags.caught) return say("The lamb is nibbling the dry grass by the rock.");
+          if(flags.freed) return say("The lamb is safe away.");
+          if(it==="Stringbow") return say("Not at the lamb! Get it out of the snare first.");
           freeGeev(v,it);
         }},
       {id:"ferns",name:"Ferns",shape:`<rect x="50" y="380" width="180" height="110" fill="transparent"/>`,stand:[150,470],
         Look:()=>say("Thick ferns. A good place to stay out of sight."),Take:()=>say("You pick a fern frond and tuck it behind your ear. Very stylish.")}
     ],
     enter:()=>{ if(flags.caught) return; busy=true;
-      say("You find Tam crouched by a big red rock, staring at it...");
+      say("There! The lost lamb, nibbling grass by a big red rock...");
       setTimeout(()=>{ const h=$("hole"); flags.melted=1; h.style.transition="opacity 1.4s"; h.setAttribute("opacity",1);
-        say("...and the rock face glows red and melts away! Tam scrambles back, right into a snare hidden in the grass.");
+        say("...and the rock face glows red and melts away! The lamb bolts, right into a snare hidden in the grass.");
         const g=$("geev"); flags.caught=1; g.innerHTML=geev(true); busy=false; },1300);
     }
   }
@@ -197,12 +202,15 @@ function tree(x,y,c,wilt){ return `<rect x="${x-6}" y="${y-140}" width="12" heig
   (wilt? `<path d="M${x} ${y-140} q-40 10 -46 50 M${x} ${y-120} q40 10 44 52 M${x} ${y-100} q-30 20 -30 50" stroke="${c}" stroke-width="10" fill="none" stroke-linecap="round"/>`
        : `<circle cx="${x}" cy="${y-150}" r="46" fill="${c}"/><circle cx="${x-30}" cy="${y-120}" r="32" fill="${c}"/><circle cx="${x+30}" cy="${y-118}" r="34" fill="${c}"/>`); }
 function fern(x,y){ return `<path d="M${x} ${y} q-30 -40 -50 -46 M${x} ${y} q-6 -50 4 -70 M${x} ${y} q30 -36 50 -40" stroke="#3f6b2f" stroke-width="7" fill="none" stroke-linecap="round"/>`; }
-function geev(caught){ return `<ellipse cx="0" cy="0" rx="16" ry="5" fill="rgba(0,0,0,.3)"/>
-  <rect x="-7" y="-22" width="5" height="22" fill="#5a4a36"/><rect x="2" y="-22" width="5" height="22" fill="#5a4a36" ${caught?'transform="rotate(-30 4 -22)"':''}/>
-  <path d="M-11 -22 Q-12 -50 0 -54 Q12 -50 11 -22Z" fill="#c9893f"/>
-  <circle cx="0" cy="-62" r="9" fill="#d9a57c"/><path d="M-9 -64 Q0 -76 9 -64Z" fill="#6b3d1e"/>
-  <circle cx="3" cy="-62" r="1.6" fill="#1b140c"/>
-  ${caught?'<path d="M-2 -2 Q8 -14 16 -2" stroke="#c9b28a" stroke-width="3" fill="none"/>':''}`; }
+function sheepArt(x,y,sc){ return `<g transform="translate(${x} ${y}) scale(${sc})"><ellipse cx="0" cy="0" rx="24" ry="6" fill="rgba(0,0,0,.3)"/>
+  <rect x="-16" y="-18" width="5" height="18" fill="#3a2e24"/><rect x="10" y="-18" width="5" height="18" fill="#3a2e24"/>
+  <circle cx="-12" cy="-28" r="12" fill="#f1ece0"/><circle cx="2" cy="-32" r="14" fill="#f1ece0"/><circle cx="14" cy="-26" r="11" fill="#f1ece0"/>
+  <ellipse cx="27" cy="-34" rx="8" ry="7" fill="#3a2e24"/><circle cx="30" cy="-35" r="1.5" fill="#fff"/></g>`; }
+function geev(caught){ return `<ellipse cx="0" cy="0" rx="18" ry="5" fill="rgba(0,0,0,.3)"/>
+  <rect x="-11" y="-14" width="4" height="14" fill="#3a2e24"/><rect x="8" y="-14" width="4" height="14" fill="#3a2e24" ${caught?'transform="rotate(-30 10 -14)"':''}/>
+  <circle cx="-8" cy="-21" r="9" fill="#f6f2e8"/><circle cx="3" cy="-24" r="10" fill="#f6f2e8"/><circle cx="11" cy="-19" r="8" fill="#f6f2e8"/>
+  <ellipse cx="21" cy="-26" rx="6" ry="5.5" fill="#4a3c30"/><circle cx="23" cy="-27" r="1.2" fill="#fff"/>
+  ${caught?'<path d="M2 -2 Q10 -12 16 -2" stroke="#c9b28a" stroke-width="3" fill="none"/>':''}`; }
 function cloak(x,y){ return `<path d="M${x-16} ${y} Q${x-18} ${y-70} ${x} ${y-80} Q${x+18} ${y-70} ${x+16} ${y}Z" fill="#7a1414"/><path d="M${x-9} ${y-66} Q${x} ${y-84} ${x+9} ${y-66}Z" fill="#2a0606"/>`; }
 
 /* ---------- scene setup ---------- */
@@ -239,27 +247,27 @@ function act(h){
 
 /* ---------- story beats ---------- */
 function freeGeev(v,it){
-  ask("Tam","\"It's got my foot! It's got my foot!\"",[
+  ask("Narrator","The lamb kicks and cries in the snare.",[
     ["Cut it free. Quick and clean.","Serious",()=>flags.how="cut"],
-    ["\"Good news: the snare likes you. Bad news: I like you more. Hold still.\"","Silly",()=>flags.how="calm"],
-    ["(Kneel, take Tam's hand, and breathe slowly until they breathe with you.)","Shy",()=>flags.how="calm"],
+    ["\"Shh, shh. You're much too fluffy for this.\"","Silly",()=>flags.how="calm"],
+    ["(Kneel, and hum low until it stops shaking.)","Shy",()=>flags.how="calm"],
     ["\"Hold still. I'm extremely good at this.\"","Smug",()=>flags.how="cut"]],()=>{
-      say(flags.how==="calm"?"Tam calms down. You ease the loop off their ankle with your hunting knife.":"One stroke of your hunting knife and the snare falls loose. Tam is free.");
+      say(flags.how==="calm"?"The lamb settles under your hand. You ease the loop off its leg with your hunting knife.":"One stroke of your hunting knife and the snare falls loose. The lamb is free.");
       setTimeout(cloaksAppear,1400);
     });
 }
 function cloaksAppear(){
   flags.cloaks=1; const c=$("cloaks"); c.style.transition="opacity 1.2s"; c.setAttribute("opacity",1);
-  say("Figures in dark red cloaks step out of the glowing tunnel. Their hoods turn toward Tam, and toward you.");
-  setTimeout(()=>ask("Narrator","Tam is free but frozen with fear. The cloaks are coming.",[
-    ["\"Run for the farm, Tam. Now.\" Then loose a shot into the stone above the cloaks.","Serious",()=>flags.end="shot"],
+  say("Figures in dark red cloaks step out of the glowing tunnel. Their hoods turn toward the lamb, and toward you.");
+  setTimeout(()=>ask("Narrator","The lamb is free but frozen with fear. The cloaks are coming.",[
+    ["Send the lamb running home, then loose a shot into the stone above the cloaks.","Serious",()=>flags.end="shot"],
     ["\"Over here, red hoods! Bet you can't catch me!\"","Silly",()=>flags.end="shot"],
-    ["(Pull Tam into the ferns, point downhill, and stay behind so they can slip away.)","Shy",()=>flags.end="hide"],
+    ["(Tuck the lamb into the ferns, nudge it downhill, and stay behind so it can slip away.)","Shy",()=>flags.end="hide"],
     ["Shoot the rock above them. One arrow, perfect. Obviously.","Smug",()=>flags.end="shot"]],ending,2),1500);
 }
 function ending(){
-  flags.freed=1; const g=$("geev"); g.style.transition="transform 1.6s"; g.setAttribute("transform","translate(1200 440)");
-  say(flags.end==="hide"?"Tam slips away down the hill toward the farm. The cloaks pass the ferns... then stop at you. The rock face crumbles in a rush of red dust.":"Your arrow strikes true and stone rains down between them and Tam, who runs down the hill toward the farm. The rock face crumbles in a rush of red dust.");
+  flags.freed=1; const g=$("geev"); g.style.transition="transform 1.6s"; g.setAttribute("transform","translate(1200 440) scale(1.6)");
+  say(flags.end==="hide"?"The lamb slips away down the hill toward the farm. The cloaks pass the ferns... then stop at you. The rock face crumbles in a rush of red dust.":"Your arrow strikes true and stone rains down between them and the lamb, which runs down the hill toward the farm. The rock face crumbles in a rush of red dust.");
   busy=true;
   setTimeout(()=>{ say("The forest goes quiet and golden around you. It doesn't hurt. A light grows, warm as a hearth..."); $("fade").classList.add("on"); },2600);
   setTimeout(()=>{ const best=pickStyle(); flags.done=1;
@@ -295,7 +303,7 @@ document.addEventListener("keydown",e=>{
   if(!$("box").classList.contains("on")) return; const n=parseInt(e.key,10); const bs=$("choices").querySelectorAll("button"); if(n>=1&&n<=bs.length) bs[n-1].click();
 });
 buildBar(); load("edge");
-say("<em>Your first life.</em> Evening at the edge of the forest above Farluck Farm. Your hunting hill is dying, and you've come to find out why. Tam, a village kid, tagged along. Try looking at the farm, and find the tracks.");
+say("<em>Your first life.</em> Evening at the edge of the forest above Farluck Farm. You're bringing a farm's strayed sheep home at dusk. Two found, one lamb still missing. Try looking at the farm, and find the tracks.");
 </script>
 </body>
 </html>
