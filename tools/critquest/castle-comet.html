@@ -179,8 +179,15 @@ img.mini { width: 20px; height: 20px; vertical-align: -5px; margin-right: 4px; o
 /* room */
 .room { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; align-items: start; }
 .room.solo { grid-template-columns: minmax(0, 1fr); }
-.scene .hot { cursor: pointer; transition: filter .15s; }
-.scene .hot:hover, .scene .hot:focus-visible { filter: drop-shadow(0 0 5px #f0c04f) drop-shadow(0 0 2px #fff4d8); outline: none; }
+.scene .hot, .hdoor { cursor: pointer; }
+.scene .hot:focus, .hdoor:focus { outline: none; }
+.hl { fill: transparent; stroke: none; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.hot:hover .hl, .hot:focus-visible .hl, .hdoor:hover .hl { fill: url(#auraG); opacity: 1; }
+@media (max-height: 520px) {
+  .hud { flex-wrap: nowrap !important; max-height: 84px; overflow: hidden; } .sec { width: auto !important; } .hud .sec:first-child { display: none; }
+  .sec h4 { display: none; } .hud .pouch { flex-wrap: nowrap; overflow-x: auto; } main .top { display: none; }
+  .hud .hudBtns { flex-wrap: nowrap; } .hud .hb { padding: 4px 9px; white-space: nowrap; } .hud .styleChip { white-space: nowrap; }
+}
 .scene { display: block; width: 100%; height: auto; max-height: 46vh; border-radius: 8px; box-shadow: 0 0 0 2px #000, 0 0 0 4px var(--edge, #8a6a3a); background: #17120e; }
 @media (max-width: 520px) { .room { grid-template-columns: minmax(0, 1fr); } }
 .room p { margin: 0; max-width: 62ch; line-height: 1.45; }
@@ -332,6 +339,7 @@ main { padding-top: 2px; }
 }
 </style>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><radialGradient id="auraG"><stop offset="0" stop-color="#fff4c8" stop-opacity=".38"/><stop offset=".6" stop-color="#ffe9a0" stop-opacity=".16"/><stop offset="1" stop-color="#ffe9a0" stop-opacity="0"/></radialGradient></defs></svg>
 <div id="shell">
 <div class="frame" id="frame">
   <div class="corner c-tl"></div><div class="corner c-tr"></div><div class="corner c-bl"></div><div class="corner c-br"></div>
@@ -538,6 +546,8 @@ function faceSVG(id, bg) {
 
 /* ---------- room scenes, drawn in the same outlined style as Farluck Farm */
 const OLs = `stroke="#1d140c" stroke-width="2" stroke-linejoin="round"`;
+const ICO_GEAR = `<svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><path d="M6 26 L22 10 L25 7 L26 6 L25 9 L22 12 L8 26Z" fill="#d8dae2" stroke="#1d140c" stroke-width="1.5"/><path d="M5 21 l6 6 M7 25 l-3 3" stroke="#7a5634" stroke-width="3" stroke-linecap="round"/></svg>`;
+const ICO_BOWL = `<svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><path d="M4 15 h24 q-2 11 -12 11 q-10 0 -12 -11z" fill="#c96b3a" stroke="#1d140c" stroke-width="1.5"/><ellipse cx="16" cy="15" rx="12" ry="3" fill="#7a3a22" stroke="#1d140c" stroke-width="1.5"/><path d="M12 10 q2 -3 0 -6 M18 10 q2 -3 0 -6" stroke="#efe0b8" stroke-width="1.5" fill="none"/></svg>`;
 function sceneWall(top = "#4a4060", bot = "#2f2a3c") {
   let bricks = ""; for (let r = 0; r < 6; r++) for (let c = -1; c < 11; c++) bricks += `<rect x="${c * 80 + (r % 2) * 40}" y="${r * 36}" width="78" height="34" rx="3" fill="${r % 2 ? top : bot}" opacity=".55"/>`;
   return `<rect width="800" height="300" fill="${bot}"/>${bricks}`;
@@ -1001,19 +1011,16 @@ function hallDoor(id) {
     return `<g data-door="yard" class="hdoor"><path d="M${x - 120} ${FLOOR} V120 Q${x} 30 ${x + 120} 120 V${FLOOR}z" fill="url(#sky)" stroke="#f0c04f" stroke-width="3"/>
       <circle cx="${x + 60}" cy="104" r="26" fill="#6c6f8f"/><circle cx="${x + 52}" cy="98" r="26" fill="url(#sky)" opacity=".55"/>
       <g class="crystals">${cr}</g>
-      <text x="${x}" y="22" class="sign">Courtyard</text><text x="${x}" y="40" class="signSub">Teleportation Station</text>
       ${figure("bruxanna", x - 88, false)}${figure("wexler", x + 92, true)}</g>`;
   }
   const r = room(id), st = plotState(r);
   const arch = `M${x - 62} ${FLOOR} V160 Q${x} 104 ${x + 62} 160 V${FLOOR}z`;
   let body = "";
   if (st === "built") body = `<path d="${arch}" fill="#5a3e26" stroke="#c99a3c" stroke-width="3"/><line x1="${x}" y1="128" x2="${x}" y2="${FLOOR}" stroke="#3a2818" stroke-width="3"/>
-      <circle cx="${x - 10}" cy="250" r="4" fill="#c9c2b0"/><circle cx="${x + 10}" cy="250" r="4" fill="#c9c2b0"/>
-      <rect x="${x - 70}" y="72" width="140" height="28" rx="4" fill="#2a2540" stroke="#c99a3c"/><text x="${x}" y="91" class="sign">${r.name}</text>`;
+      <circle cx="${x - 10}" cy="250" r="4" fill="#c9c2b0"/><circle cx="${x + 10}" cy="250" r="4" fill="#c9c2b0"/>`;
   else if (st === "buildable") body = `<path d="${arch}" fill="#1d2240" stroke="#f0c04f" stroke-width="2.5" stroke-dasharray="8 6"/>
-      <path d="M${x - 50} ${FLOOR} L${x + 50} 180 M${x + 50} ${FLOOR} L${x - 50} 180 M${x - 55} 250 H${x + 55}" stroke="#6d5a2e" stroke-width="4"/>
-      <rect x="${x - 70}" y="72" width="140" height="28" rx="4" fill="#2a2540" stroke="#f0c04f" stroke-dasharray="4 3"/><text x="${x}" y="91" class="sign">${r.section ? "Build: you choose" : "Build: " + r.name}</text>`;
-  else body = `<path d="${arch}" fill="#171b33" stroke="#3b4370" stroke-width="2" stroke-dasharray="6 6"/><text x="${x}" y="250" class="signSub">Open plot</text>`;
+      <path d="M${x - 50} ${FLOOR} L${x + 50} 180 M${x + 50} ${FLOOR} L${x - 50} 180 M${x - 55} 250 H${x + 55}" stroke="#6d5a2e" stroke-width="4"/>`;
+  else body = `<path d="${arch}" fill="#171b33" stroke="#3b4370" stroke-width="2" stroke-dasharray="6 6"/>`;
   const npc = st === "built" ? (id === "scrap" ? figure("shnee", x + 96, true) : id === "farm" ? figure("faux", x + 96, true) : "") : "";
   return `<g data-door="${id}" class="hdoor">${body}${npc}</g>`;
 }
@@ -1567,7 +1574,7 @@ function showBarracks(view = "") {
   let extra = "";
   if (view === "chest") {
     const things = [...gear.map(n => ["gear", n]), ...S.dishes.map(n => ["dish", n])];
-    let cells = ""; for (let i = 0; i < 20; i++) { const t = things[i]; cells += t ? `<div class="slot"><span class="ico">${t[0] === "gear" ? "⚔" : "🍲"}</span><span>${t[1]}</span></div>` : `<div class="slot empty"><span>Empty</span></div>`; }
+    let cells = ""; for (let i = 0; i < 20; i++) { const t = things[i]; cells += t ? `<div class="slot"><span class="ico">${t[0] === "gear" ? ICO_GEAR : ICO_BOWL}</span><span>${t[1]}</span></div>` : `<div class="slot empty"><span>Empty</span></div>`; }
     extra = `<div class="eyebrow">Storage chest: 20 spaces</div><div class="slots packSlots">${cells}</div>${things.length > 20 ? `<p class="warn">${things.length - 20} more things are piled on top. The Boutique could add a bigger chest later.</p>` : ""}<p class="note">Materials and seeds are in your satchel on the castle screen.</p>`;
   }
   if (view === "table") extra = `<div class="eyebrow">Plans on the table: the Corridors of the Castle Comet</div>
@@ -1990,6 +1997,11 @@ function cook(rec) {
 invInit();
 renderPouch();
 renderStyle();
+/* every hotspot (room scenes, hall doors) gets a soft aura that shows only on hover or focus */
+function addAuras() { document.querySelectorAll("#view .scene .hot, #view .hdoor").forEach(g => { if (g.querySelector(":scope > .hl")) return; let b; try { b = g.getBBox(); } catch (e) { return; } if (!b.width) return;
+  const el = document.createElementNS("http://www.w3.org/2000/svg", "ellipse"); el.setAttribute("class", "hl");
+  el.setAttribute("cx", b.x + b.width / 2); el.setAttribute("cy", b.y + b.height / 2); el.setAttribute("rx", b.width / 2 + 18); el.setAttribute("ry", b.height / 2 + 14); g.insertBefore(el, g.firstChild); }); }
+new MutationObserver(() => addAuras()).observe($("#view"), { childList: true, subtree: true });
 /* scene hotspots press the button they stand for (if that button is on the page right now) */
 const pressFor = el => { const b = document.getElementById(el.dataset.btn); if (b && !b.disabled) b.click(); };
 $("#view").addEventListener("click", e => { const h = e.target.closest(".scene [data-btn]"); if (h) pressFor(h); });

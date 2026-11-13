@@ -29,7 +29,11 @@ body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;ov
 .stage{position:absolute;inset:0;overflow:hidden}
 #svg{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer}
 .hot{cursor:pointer}
-.hot:hover .hl,.hot:focus .hl{stroke:#ffe9a8;stroke-width:2.5;fill:rgba(255,233,168,.10);rx:14px;filter:drop-shadow(0 0 6px #ffd76a)}
+.hl{transition:opacity .25s;opacity:0}
+.hot.exitE{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2232%22%20height%3D%2232%22%3E%3Cpath%20d%3D%22M6%2016%20H22%20M15%208%20L23%2016%20L15%2024%22%20stroke%3D%22%231d140c%22%20stroke-width%3D%226%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3Cpath%20d%3D%22M6%2016%20H22%20M15%208%20L23%2016%20L15%2024%22%20stroke%3D%22%23ffe9a8%22%20stroke-width%3D%223%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E") 16 16, pointer}.hot.exitW{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2232%22%20height%3D%2232%22%3E%3Cpath%20d%3D%22M26%2016%20H10%20M17%208%20L9%2016%20L17%2024%22%20stroke%3D%22%231d140c%22%20stroke-width%3D%226%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3Cpath%20d%3D%22M26%2016%20H10%20M17%208%20L9%2016%20L17%2024%22%20stroke%3D%22%23ffe9a8%22%20stroke-width%3D%223%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E") 16 16, pointer}
+.edge{transition:opacity .3s;opacity:.55}
+.chev{display:none}@media (hover:none){.chev{display:inline}}.hot.exitE:hover~.edge.E,.hot.exitW:hover~.edge.W{opacity:1}
+.hot:hover .hl,.hot:focus .hl{fill:url(#auraG);stroke:none;opacity:1}
 .hl{rx:14px}
 .glint{animation:twinkle 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 @keyframes twinkle{0%,100%{opacity:.25;scale:.6}45%{opacity:1;scale:1.1}60%{opacity:.85;scale:.9}}
@@ -116,6 +120,18 @@ button.slot:hover,button.slot:focus-visible{border-color:var(--gold);outline:non
   .portrait{width:52px;height:52px}
   .setup{max-width:none;left:14px;top:74px;justify-content:flex-start}
 }
+@media (max-height:520px){
+  :root{--hudH:auto}
+  .hud{flex-wrap:nowrap;max-height:84px}
+  .who{display:none}
+  .sec{padding:4px 8px;gap:3px}.sec h4{font-size:10px}
+  .verbs{flex-wrap:nowrap}.verbs button{font-size:12px;padding:4px 7px}
+  .slot{width:44px;height:44px}.slot .ic{font-size:16px}.pack{width:50px;height:50px}.pack svg{width:30px;height:30px}
+  .hud .isvg{width:20px;height:20px}
+  .frame{border-width:5px}.corner{width:26px;height:26px}
+  .portrait{width:48px;height:48px}
+  .artSec{display:none}
+}
 </style>
 </head>
 <body>
@@ -146,7 +162,7 @@ button.slot:hover,button.slot:focus-visible{border-color:var(--gold);outline:non
     <div class="sec"><h4>Actions</h4><div class="verbs" id="verbs"></div></div>
     <div class="sec"><h4>Gear and Ready</h4><div class="slots" id="slots"></div></div>
     <div class="sec"><h4>Pack</h4><button type="button" class="slot pack" id="packBtn" aria-label="Open Pack"></button></div>
-    <div class="sec"><h4>Art</h4><button type="button" class="artbtn" id="artBtn" title="Switch character art">Classic</button><button type="button" class="artbtn" id="bgBtn" title="Switch scene art" style="margin-top:4px">Painted</button></div>
+    <div class="sec artSec"><h4>Art</h4><button type="button" class="artbtn" id="artBtn" title="Switch character art">Classic</button><button type="button" class="artbtn" id="bgBtn" title="Switch scene art" style="margin-top:4px">Painted</button></div>
     <div class="sec"><button type="button" class="help" id="helpBtn" aria-label="How to play" title="How to play">?</button></div>
   </div>
 </div>
@@ -362,19 +378,20 @@ const SCENES={
       ${clouds(11)}
       ${hills(260,"#86a6a8",.55,3)}${hills(300,"#6f9468",.85,7)}
       <path d="M0 330 Q480 292 960 330 V540 H0Z" fill="url(#gA_clr)"/>
-      ${tree(60,385,"#2f5a2c",false,1.15)}${tree(180,362,"#35632f",false,.95)}${tree(800,368,"#7a6a3a",true,1)}
+      ${tree(60,385,"#2f5a2c",false,1.15)}${tree(180,362,"#35632f",false,.95)}
       <path d="M0 395 Q480 372 960 398 V540 H0Z" fill="url(#gB_clr)"/>
       ${tufts(21,0,960,400,530,70,"#3f6a2c","#7fa05a")}${flowers(5,380,520,24)}
-      <path d="M840 400 Q900 380 960 384 V540 H880 Q860 470 840 400Z" fill="#b8a46a" opacity=".55"/>
+      <path d="M600 470 Q760 470 860 440 Q920 424 960 420 L960 452 Q900 460 860 470 Q760 500 610 492Z" fill="#b8a46a" opacity=".7"/>
       ${stones(480,440)}
-      ${flags.thread?'':`<g transform="translate(700 404)"><path d="M-14 6 Q0 -6 20 2" stroke="#4a3018" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M2 0 Q8 10 4 22 L8 20 L9 28 L13 21 L16 25 Q16 12 12 0Z" fill="#a8241c" stroke="#3a0c08" stroke-width="1.4" stroke-linejoin="round"><animateTransform attributeName="transform" type="rotate" values="-6 8 0;8 8 0;-6 8 0" dur="2.6s" repeatCount="indefinite"/></path><path d="M6 4 Q9 12 7 18" stroke="#d8483a" stroke-width="1.5" fill="none" opacity=".8"/></g>`}
+      ${tree(770,470,"#7a6a3a",true,1.3)}
+      ${flags.thread?'':`<g transform="translate(800 306)"><path d="M-14 6 Q0 -6 20 2" stroke="#4a3018" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M2 0 Q8 10 4 22 L8 20 L9 28 L13 21 L16 25 Q16 12 12 0Z" fill="#a8241c" stroke="#3a0c08" stroke-width="1.4" stroke-linejoin="round"><animateTransform attributeName="transform" type="rotate" values="-6 8 0;8 8 0;-6 8 0" dur="2.6s" repeatCount="indefinite"/></path><path d="M6 4 Q9 12 7 18" stroke="#d8483a" stroke-width="1.5" fill="none" opacity=".8"/></g>`}
       ${light("clr",780,90,"#fff2c8",.45)}`,
     hot:[
       {id:"stones",name:"Old landing stones",shape:`<rect x="360" y="380" width="240" height="90" fill="transparent"/>`,stand:[330,470],
         Look:()=>say("A ring of old standing stones, still faintly glowing where Wexler's beam set you down. The beam only works one way. To go home, break your Return Shard, or find an Icosa Crystal in a town."),
         Use:()=>say("You stand in the middle and wait. Nothing. The stones are for landing, not leaving."),
         Talk:()=>say("\"Wexler? Can you hear me?\" A pebble falls off one stone. Probably not an answer.")},
-      {id:"thread",clue:true,show:()=>!flags.thread,name:"Something red on a branch",shape:`<rect x="670" y="390" width="70" height="50" fill="transparent"/>`,stand:[680,470],
+      {id:"thread",clue:true,show:()=>!flags.thread,name:"Something red on a branch",shape:`<rect x="770" y="285" width="80" height="80" fill="transparent"/>`,stand:[790,485],
         Look:()=>say(flags.thread?"Just a branch now.":"A thread of dark red cloth, snagged on a twig. Someone in a red cloak passed this way."),
         Take:()=>{ if(flags.thread) return say("You already have it."); flags.thread=1; addPack("Red cloak thread",1); note("A red cloak thread, snagged near the landing stones."); load("clearing",true); say("You tuck the red thread into your Pack."); }},
       {id:"east",name:"Path to the farm",shape:`<rect x="880" y="300" width="80" height="230" fill="transparent"/>`,stand:[930,450],exit:"lane"}
@@ -459,6 +476,13 @@ function tree(x,y,c,wilt,sc){ sc=sc||1; const T=`<ellipse cx="${x+10}" cy="${y+2
   return T+`<g><circle cx="${x}" cy="${y-150*sc}" r="${48*sc}" fill="${D}"/><circle cx="${x-32*sc}" cy="${y-120*sc}" r="${34*sc}" fill="${D}"/><circle cx="${x+32*sc}" cy="${y-118*sc}" r="${36*sc}" fill="${D}"/>
   <circle cx="${x-6*sc}" cy="${y-160*sc}" r="${40*sc}" fill="${c}"/><circle cx="${x-34*sc}" cy="${y-128*sc}" r="${26*sc}" fill="${c}"/><circle cx="${x+28*sc}" cy="${y-128*sc}" r="${28*sc}" fill="${c}"/>
   <circle cx="${x-14*sc}" cy="${y-172*sc}" r="${20*sc}" fill="${L}" opacity=".7"/><circle cx="${x+18*sc}" cy="${y-142*sc}" r="${12*sc}" fill="${L}" opacity=".5"/></g>`; }
+function signpost(x,y,label,dir){ const w=Math.max(84,label.length*8.4+30);
+  // board reaches inward from the post; its point aims off-screen toward the next place
+  const pts=dir>0?[[-w+12,-74],[6,-74],[18,-62],[6,-50],[-w+12,-50]]:[[w-12,-74],[-6,-74],[-18,-62],[-6,-50],[w-12,-50]];
+  const tx=dir>0?(-w+12+6)/2:(w-12-6)/2;
+  return `<g transform="translate(${x} ${y})" pointer-events="none"><ellipse cx="0" cy="2" rx="16" ry="4" fill="#000" opacity=".25"/><rect x="-3.5" y="-78" width="7" height="80" fill="#6a4426" stroke="#1d140c" stroke-width="1.5"/>
+  <polygon points="${pts.map(p=>p.join(",")).join(" ")}" fill="#b8844a" stroke="#1d140c" stroke-width="1.6" stroke-linejoin="round"/>
+  <text x="${tx}" y="-57" text-anchor="middle" font-family="Alegreya SC,serif" font-size="13" fill="#2b1d10">${label}</text></g>`; }
 function fern(x,y){ return `<path d="M${x} ${y} q-30 -40 -50 -46 M${x} ${y} q-6 -50 4 -70 M${x} ${y} q30 -36 50 -40" stroke="#3f6b2f" stroke-width="7" fill="none" stroke-linecap="round"/>`; }
 /* ---------- scene setup ---------- */
 function load(id,keep){
@@ -468,13 +492,15 @@ function load(id,keep){
   scene.bounds=P?P.bounds:scene.V.bounds; scene.start=P?P.start:scene.V.start;
   scene.hot.forEach(h=>{ const q=P&&P.hot[h.id]; if(q){ h.shape=`<rect x="${q[0][0]}" y="${q[0][1]}" width="${q[0][2]}" height="${q[0][3]}" fill="transparent"/>`; h.stand=q[1]; } else { [h.shape,h.stand]=scene.V.hot[h.id]; } });
   const s=$("svg"); s.innerHTML=P?`<image href="art/farluck-${id}.jpg" x="0" y="0" width="960" height="540" preserveAspectRatio="xMidYMid slice" onerror="bgFail()"/>${P.over()}`:scene.art();
-  scene.hot.forEach(h=>{ const g=document.createElementNS(SVGNS,"g"); g.setAttribute("class","hot"); g.setAttribute("tabindex","0"); g.setAttribute("role","button"); g.setAttribute("aria-label",h.name);
+  scene.hot.forEach(h=>{ const g=document.createElementNS(SVGNS,"g"); g.setAttribute("class","hot"+(h.exit?(hotCenter(h)[0]>480?" exitE":" exitW"):"")); g.setAttribute("tabindex","0"); g.setAttribute("role","button"); g.setAttribute("aria-label",h.name);
     g.innerHTML=h.shape.replace("fill=\"transparent\"","fill=\"transparent\" class=\"hl\" stroke=\"transparent\"");
     g.addEventListener("click",e=>{e.stopPropagation(); act(h);});
     g.addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();act(h);} });
     g.addEventListener("mouseenter",()=>showLabel(h)); g.addEventListener("mouseleave",()=>$("label").hidden=true);
     s.appendChild(g); });
-  const gl=document.createElementNS(SVGNS,"g"); gl.innerHTML=`<defs><radialGradient id="glintG"><stop offset="0" stop-color="#ffe9a0" stop-opacity=".9"/><stop offset="1" stop-color="#ffe9a0" stop-opacity="0"/></radialGradient></defs>`+scene.hot.filter(h=>h.clue&&!SEEN[h.id]&&(!h.show||h.show())).map(glintSVG).join(""); s.appendChild(gl);
+  scene.hot.filter(h=>h.exit).forEach(h=>{ const E=hotCenter(h)[0]>480, e=document.createElementNS(SVGNS,"g"); e.setAttribute("class","edge "+(E?"E":"W")); e.setAttribute("pointer-events","none");
+    e.innerHTML=`<defs><linearGradient id="edg${E?"E":"W"}" x1="${E?1:0}" y1="0" x2="${E?0:1}" y2="0"><stop offset="0" stop-color="#fff4c8" stop-opacity=".45"/><stop offset="1" stop-color="#fff4c8" stop-opacity="0"/></linearGradient></defs><rect x="${E?880:0}" y="330" width="80" height="210" fill="url(#edg${E?"E":"W"})"/><path class="chev" d="${E?"M928 418 l12 14 l-12 14":"M32 418 l-12 14 l12 14"}" stroke="#fff4c8" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>`; s.appendChild(e); });
+  const gl=document.createElementNS(SVGNS,"g"); gl.innerHTML=`<defs><radialGradient id="glintG"><stop offset="0" stop-color="#ffe9a0" stop-opacity=".9"/><stop offset="1" stop-color="#ffe9a0" stop-opacity="0"/></radialGradient></defs>`+`<defs><radialGradient id="auraG"><stop offset="0" stop-color="#fff4c8" stop-opacity=".38"/><stop offset=".6" stop-color="#ffe9a0" stop-opacity=".16"/><stop offset="1" stop-color="#ffe9a0" stop-opacity="0"/></radialGradient></defs>`; s.appendChild(gl);
   const hg=document.createElementNS(SVGNS,"g"); hg.innerHTML=ART==="pixel"?heroPixSVG():heroSVG(); s.appendChild(hg); hero.el=hg;
   if(!keep){ hero.x=hero.tx=scene.start[0]; hero.y=hero.ty=scene.start[1]; } hero.face=1; hero.cb=null; placeHero();
   if(scene.enter) scene.enter();
