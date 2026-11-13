@@ -203,7 +203,7 @@ img.mini { width: 20px; height: 20px; vertical-align: -5px; margin-right: 4px; o
 .cost .short { border-color: var(--ember); color: var(--ember); }
 .portrait { display: block; }
 
-/* dialog window: the shared Crit Quest parchment box (headshot, nameplate, line, numbered answers, Style tags, checks) */
+/* dialog window: the shared Path of the Light Keeper parchment box (headshot, nameplate, line, numbered answers, Style tags, checks) */
 .dlgBack { position: fixed; inset: 0; z-index: 20; background: rgba(6, 8, 18, .55); display: flex; align-items: flex-end; justify-content: center;
   padding: 0 max(12px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
 .dlg { --parch: #f3e6c8; --parch2: #e6d3a8; --pink: #2b1d10; --pink2: #5a4630; --edge: #8a6a3a; --pgold: #c99a3c; --phover: #fff4d8; --paccent: #7a2e1c;
@@ -782,7 +782,7 @@ const TALK = {
   }
 };
 
-/* ---------- dialog engine (shared Crit Quest format) */
+/* ---------- dialog engine (shared Path of the Light Keeper format) */
 let typing = null, full = "", node = null, nodeWho = null, shown = [], afterStyle = null, votes = [];
 const STYLES = ["Serious", "Silly", "Shy", "Smug"];
 function openTalk(id, key = "start") {
@@ -1669,7 +1669,7 @@ function heroCfg() {
     weapon: w ? w.name : undefined, wRange: w ? w.range : undefined, def: (a ? a.def : 0) + (w && w.def || 0), color: ROLES[h.role].hue,
     dice: S.dice && DICE.body[S.dice.body] ? { body: DICE.body[S.dice.body][1], num: DICE.num[S.dice.num][1], finish: S.dice.finish } : undefined };
 }
-/* Farluck Farm: the painted-screen adventure (farluck-adventure.html, from the Crit Quest thread) with its hex battle.
+/* Farluck Farm: the painted-screen adventure (farluck-adventure.html, from the Path of the Light Keeper thread) with its hex battle.
    Your Hero and Ready items go in through the URL hash; your Pack, Cecil's gifts and what's left of your Ready items come back by postMessage. */
 function showFarluck(start) {
   stopGame();
@@ -2011,12 +2011,12 @@ $("#hbYard").onclick = () => { closeTalk(); showCourtyard(); };
 $("#hbBarracks").onclick = () => { closeTalk(); showBarracks(); };
 $("#styleChip").onclick = () => { if (S.phase === "castle") showAvatar(false); else toast("Your Style comes from how you answer in your past life."); };
 /* The whole intro demo (N8 2026-11-12): world intro > Create Your Past > Role intro > Castle Comet > Farluck Farm.
-   world-intro.html comes from the Crit Quest thread and posts {type: "cq-intro-done"} when it ends. */
-const WORLD_INTRO = true; // world-intro.html (Crit Quest thread, 9a33597) is published next to this page
+   world-intro.html comes from the Path of the Light Keeper thread and posts {type: "cq-intro-done"} when it ends. */
+const WORLD_INTRO = true; // world-intro.html (Path of the Light Keeper thread, cec2409) is published next to this page
 function showWorldIntro() {
   stopGame(); closeTalk(); dropFarluck();
-  $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Crit Quest</div><h2>The story so far</h2><p class="note">The opening is playing.</p></div>`;
-  const fr = document.createElement("iframe"); fr.className = "arena full"; fr.id = "fullFrame"; fr.title = "Crit Quest: the opening"; fr.src = "world-intro.html";
+  $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Path of the Light Keeper</div><h2>The story so far</h2><p class="note">The opening is playing.</p></div>`;
+  const fr = document.createElement("iframe"); fr.className = "arena full"; fr.id = "fullFrame"; fr.title = "Path of the Light Keeper: the opening"; fr.src = "world-intro.html";
   document.body.appendChild(fr); fr.focus();
 }
 addEventListener("message", e => { if ((e.data || {}).type === "cq-intro-done") { dropFarluck(); S.introSeen = true; save(); showPast(); } });

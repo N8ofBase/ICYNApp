@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Crit Quest Opening</title>
+<title>Path of the Light Keeper Opening</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
@@ -39,6 +39,8 @@ button{font:inherit;cursor:pointer}
 .skip{position:absolute;right:20px;top:18px;z-index:8;font-family:"Alegreya SC",serif;font-size:14px;background:rgba(15,10,6,.7);color:var(--parch);border:1px solid var(--gold);border-radius:8px;padding:4px 12px}
 .title{position:absolute;inset:0;display:grid;place-items:center;z-index:4;text-align:center;pointer-events:none}
 .title h1{font-family:"Alegreya SC",serif;font-size:clamp(44px,9vw,104px);margin:0;color:#ffe2a0;letter-spacing:.04em;text-shadow:0 0 30px rgba(255,200,90,.55),0 4px 0 #3a2410}
+.title h1 small{display:block;font-size:.38em;letter-spacing:.18em;color:#f3e6c8;margin-bottom:-.1em}
+@media (max-height:520px){.title h1{font-size:46px}.title p{font-size:14px}.title{transform:translateY(-5%)}}
 .title p{margin:6px 0 0;font-size:clamp(16px,2.4vw,22px);color:#f3e6c8;font-style:italic}
 .typed{white-space:pre-wrap}
 @media (max-width:700px){ .frame{border-width:6px} .corner{width:30px;height:30px} .narr{font-size:16px;bottom:14px;padding:10px 12px 8px} }
@@ -231,7 +233,7 @@ const SC=[
 let at=-1, typing=null;
 function corner(){ return `<svg viewBox="0 0 40 40"><path d="M6 34 Q8 12 30 8 Q22 16 22 22 Q30 22 34 14 Q30 32 6 34Z" fill="#e8c260"/><circle cx="31" cy="9" r="3" fill="#fff2c8"/></svg>`; }
 document.querySelectorAll(".corner").forEach(c=>c.innerHTML=corner());
-$("scenes").innerHTML=SC.map((s,i)=>`<div class="scene" id="sc${i}"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>${s.title?`<div class="title"><div><h1>Crit Quest</h1><p>A Light Keeper story on Talus</p></div></div>`:""}</div>`).join("");
+$("scenes").innerHTML=SC.map((s,i)=>`<div class="scene" id="sc${i}"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>${s.title?`<div class="title"><div><h1><small>Path of the</small>Light Keeper</h1><p>A story of Love on Talus</p></div></div>`:""}</div>`).join("");
 $("dots").innerHTML=SC.map(()=>"<i></i>").join("");
 function type(html){ clearInterval(typing); const el=$("txt"); const plain=html; let n=0; const tmp=document.createElement("div"); tmp.innerHTML=plain; const total=tmp.textContent.length;
   if(matchMedia("(prefers-reduced-motion: reduce)").matches){ el.innerHTML=plain; return; }
