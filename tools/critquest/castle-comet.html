@@ -124,12 +124,23 @@ img.mini { width: 20px; height: 20px; vertical-align: -5px; margin-right: 4px; o
 .pickGrid.feat { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
 .pickCard { text-align: left; display: grid; gap: 3px; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--line); background: var(--stone); color: var(--ink); cursor: pointer; font: inherit; }
 .pickCard small { color: var(--soft); font-size: .8rem; line-height: 1.3; }
+.pickCard.ico { grid-template-columns: 48px minmax(0, 1fr); column-gap: 10px; align-items: center; }
+.pickCard.ico .hs { grid-row: span 2; }
+.hs { display: block; width: 48px; height: 48px; border-radius: 50%; overflow: hidden; border: 2px solid #8a6a3a; box-shadow: 0 0 0 1px #1d140c; flex: none; }
+.hs svg { display: block; width: 100%; height: 100%; }
+.pickGrid.sm .pickCard.ico { grid-template-columns: 40px minmax(0, 1fr); } .pickGrid.sm .hs { width: 40px; height: 40px; }
+.roomList button .hs, .secCard .hs { width: 40px; height: 40px; }
+.roomList button { grid-template-columns: auto minmax(0, 1fr) auto !important; }
+.secCard .who { display: flex; gap: 10px; align-items: center; }
 .pickCard.on { border-color: var(--comet); box-shadow: inset 0 0 0 1px var(--comet); background: #2f2a3c; }
 .pickCard:hover { border-color: var(--soft); }
 .eyebrow small { text-transform: none; letter-spacing: 0; margin-left: 6px; color: var(--soft); font-size: .8rem; }
 .avatar { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 16px; align-items: start; }
 .avForm { display: grid; gap: 10px; min-width: 0; }
 .avSheet { position: sticky; top: 12px; display: grid; gap: 8px; justify-items: start; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--void); }
+.mirrorView { position: relative; width: 100%; max-width: 220px; justify-self: center; border-radius: 110px 110px 12px 12px; border: 4px solid #8a6a3a; background: linear-gradient(#cfe0ec, #9fb8cc); box-shadow: 0 0 0 2px #1d140c; }
+.mirrorView svg { display: block; width: 100%; height: auto; }
+.mirrorView .d20 { position: absolute; right: 6px; bottom: 6px; }
 .avSheet h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 1.3rem; }
 .avSheet p { margin: 0; }
 @media (max-width: 760px) { .avatar { grid-template-columns: minmax(0, 1fr); } .avSheet { position: static; } }
@@ -544,6 +555,13 @@ function faceSVG(id, bg) {
   return `<svg viewBox="-34 ${top.toFixed(1)} 72 ${h.toFixed(1)}" preserveAspectRatio="xMidYMid slice" style="display:block;width:100%;height:100%;background:radial-gradient(circle at 50% 35%, ${bg || "#4a3c2b"}, #17120e)">${charSVG(L, L.opt || {})}</svg>`;
 }
 
+/* small headshot icons for pick lists (N8 2026-11-12): a Lifeform's face, or a Role's bust with its gear in view */
+function headshot(lf, role, bust = false, bg = "#4a3c2b") {
+  const L = { lf, role, skin: SKIN[lf], cloak: (ROLES[role] && ROLES[role].hue) || ROLE_LOOK[role], size: 1 };
+  const vb = bust ? "-42 -128 84 84" : "-26 -124 52 52";
+  return `<span class="hs" aria-hidden="true"><svg viewBox="${vb}" preserveAspectRatio="xMidYMid slice" style="background:radial-gradient(circle at 50% 35%, ${bg}, #17120e)">${charSVG(L)}</svg></span>`;
+}
+const keeperShot = id => CAST[id] ? `<span class="hs" aria-hidden="true">${faceSVG(id, PEOPLE[id] && PEOPLE[id].hue)}</span>` : "";
 /* ---------- room scenes, drawn in the same outlined style as Farluck Farm */
 const OLs = `stroke="#1d140c" stroke-width="2" stroke-linejoin="round"`;
 const ICO_GEAR = `<svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><path d="M6 26 L22 10 L25 7 L26 6 L25 9 L22 12 L8 26Z" fill="#d8dae2" stroke="#1d140c" stroke-width="1.5"/><path d="M5 21 l6 6 M7 25 l-3 3" stroke="#7a5634" stroke-width="3" stroke-linecap="round"/></svg>`;
@@ -911,9 +929,9 @@ function sidePanel() {
       <div class="nextStep"><b>Next:</b> ${nextStep()}</div>
       <div class="eyebrow">Rooms</div>
       <div class="roomList">
-        <button type="button" data-yard="1"><span>Courtyard<br><small>Bruxanna and Wexler, at the Teleportation Station</small></span></button>
-        ${built.map(r => `<button type="button" data-id="${r.id}"><span>${r.name}<br><small>${r.who === "you" ? "Bed, chest, table, mirror, loadout" : PEOPLE[r.who].name}</small></span>${r.game ? '<span class="tag">Minigame</span>' : ""}</button>`).join("")}
-        ${toBuild.map(r => `<button type="button" data-id="${r.id}"><span>${r.section ? "Open plot" : r.name}<br><small>${r.section ? "Choose what to build" : "Ready to build"}</small></span><span class="tag dim">Build</span></button>`).join("")}
+        <button type="button" data-yard="1">${keeperShot("wexler")}<span>Courtyard<br><small>Bruxanna and Wexler, at the Teleportation Station</small></span></button>
+        ${built.map(r => `<button type="button" data-id="${r.id}">${r.who === "you" ? headshot(S.hero.lf || "Sapien", S.hero.role || "Champion") : keeperShot(r.who)}<span>${r.name}<br><small>${r.who === "you" ? "Bed, chest, table, mirror, loadout" : PEOPLE[r.who].name}</small></span>${r.game ? '<span class="tag">Minigame</span>' : ""}</button>`).join("")}
+        ${toBuild.map(r => `<button type="button" data-id="${r.id}"><span class="hs" style="background:#3a2f25"></span><span>${r.section ? "Open plot" : r.name}<br><small>${r.section ? "Choose what to build" : "Ready to build"}</small></span><span class="tag dim">Build</span></button>`).join("")}
       </div>
       <p class="note" id="plotNote">Open plots wait for new rooms as the story goes on.</p>
       ${satchel()}
@@ -957,7 +975,7 @@ function discover(t) {
 function wirePanel() {
   if ($("#demoNext")) $("#demoNext").onclick = () => { discover(S.tier + 1); showHub(); };
   $("#demoAll").onclick = () => { for (let t = S.tier + 1; t < TIERS.length; t++) discover(t); Object.keys(CROP).forEach(k => { S.seeds[k] = SD(k) + 3; S.crops[k] = C(k) + 3; }); Object.keys(MATS).forEach(k => addM(k, 5)); save(); showHub(); };
-  $("#demoReset").onclick = () => { S = structuredClone(START); invInit(); hallX = null; votes = []; save(); renderStyle(); showPast(); };
+  $("#demoReset").onclick = () => { S = structuredClone(START); invInit(); hallX = null; votes = []; save(); renderStyle(); WORLD_INTRO ? showWorldIntro() : showCreatePast(); };
   $("#view").querySelectorAll(".panel [data-id]").forEach(el => el.addEventListener("click", () => goPlot(el.dataset.id)));
   $("[data-yard]").addEventListener("click", showCourtyard);
   $("#view").querySelectorAll("[data-view]").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
@@ -1335,12 +1353,12 @@ const abilityOf = (h = S.hero) => { const f = L1[h.role][h.focus] || Object.valu
 /* ---------- Create Your Past */
 function showPast(lf = S.hero.lf || "Sapien", role = S.hero.role || "Brawler") {
   stopGame();
-  const card = (group, name, info, on) => `<button type="button" class="pickCard ${on ? "on" : ""}" data-${group}="${name}" aria-pressed="${on}"><b>${name}</b><small>${info}</small></button>`;
+  const card = (group, name, info, on, ico = "") => `<button type="button" class="pickCard ${ico ? "ico" : ""} ${on ? "on" : ""}" data-${group}="${name}" aria-pressed="${on}">${ico}<b>${name}</b><small>${info}</small></button>`;
   const bon = b => Object.entries(b).map(([k, v]) => `${k === "def" ? "Defense" : STATN[k]} +${v}`).join(", ");
   $("#view").innerHTML = `<div class="panel title"><div class="eyebrow">Part one</div><h2 class="big">Create Your Past</h2>
     <p class="lead">Before the Comet, you lived on Talus. Choose who you were, then live the last day of that life. How you answer shapes your Style.</p>
-    <div class="eyebrow">Lifeform</div><div class="pickGrid">${Object.entries(LIFEFORMS).map(([n, L]) => card("lf", n, `${L.t}<br>${bon(L.b)}`, n === lf)).join("")}</div>
-    <div class="eyebrow">Role</div><div class="pickGrid">${Object.entries(ROLES).map(([n, R]) => card("role", n, `${R.t}<br>Life ${R.life}, ${bon(R.b)}`, n === role)).join("")}</div>
+    <div class="eyebrow">Lifeform</div><div class="pickGrid">${Object.entries(LIFEFORMS).map(([n, L]) => card("lf", n, `${L.t}<br>${bon(L.b)}`, n === lf, headshot(n, role))).join("")}</div>
+    <div class="eyebrow">Role</div><div class="pickGrid">${Object.entries(ROLES).map(([n, R]) => card("role", n, `${R.t}<br>Life ${R.life}, ${bon(R.b)}`, n === role, headshot(lf, n, true))).join("")}</div>
     <div class="btns"><button class="btn primary" type="button" id="live">Live your last day as a ${lf} ${role}</button>
       <button class="btn" type="button" id="skip">Skip to the castle (demo)</button><button class="btn" type="button" id="opening">Watch the opening again</button></div></div>`;
   $("#view").querySelectorAll("[data-lf]").forEach(b => b.onclick = () => showPast(b.dataset.lf, role));
@@ -1493,7 +1511,7 @@ function showAvatar(first = false, h0 = null) {
   if (!L1[h.role][h.focus]) { h.focus = Object.keys(L1[h.role])[0]; h.ab = 0; }
   const d = { ...S.dice, own: S.dice.own };
   const st = heroStats(h), ab = abilityOf(h);
-  const card = (grp, val, title, info, on, extra = "") => `<button type="button" class="pickCard ${on ? "on" : ""}" data-g="${grp}" data-v="${val}" aria-pressed="${on}" ${extra}><b>${title}</b><small>${info}</small></button>`;
+  const card = (grp, val, title, info, on, extra = "", ico = "") => `<button type="button" class="pickCard ${ico ? "ico" : ""} ${on ? "on" : ""}" data-g="${grp}" data-v="${val}" aria-pressed="${on}" ${extra}>${ico}<b>${title}</b><small>${info}</small></button>`;
   const bon = b => Object.entries(b).map(([k, v]) => `${k === "def" ? "Defense" : STATN[k]} +${v}`).join(", ");
   const past = S.hero.past || {};
   const diceOpt = (part, key) => { const o = DICE[part][key], price = o[o.length - 1], have = owns(part, key), on = S.dice[part] === key;
@@ -1503,8 +1521,8 @@ function showAvatar(first = false, h0 = null) {
     <p class="note" style="max-width:66ch">${first ? `Your first life is filled in. Change anything you like: this is your new, enhanced self.` : "Change your look and your choices any time you're in the Barracks."}</p>
     <div class="avatar">
       <div class="avForm">
-        <div class="eyebrow">Lifeform ${past.lf ? `<small>first life: ${past.lf}</small>` : ""}</div><div class="pickGrid sm">${Object.entries(LIFEFORMS).map(([n, L]) => card("lf", n, n, bon(L.b), h.lf === n)).join("")}</div>
-        <div class="eyebrow">Role ${past.role ? `<small>first life: ${past.role}</small>` : ""}</div><div class="pickGrid sm">${Object.entries(ROLES).map(([n, R]) => card("role", n, n, `Life ${R.life}`, h.role === n)).join("")}</div>
+        <div class="eyebrow">Lifeform ${past.lf ? `<small>first life: ${past.lf}</small>` : ""}</div><div class="pickGrid sm">${Object.entries(LIFEFORMS).map(([n, L]) => card("lf", n, n, bon(L.b), h.lf === n, "", headshot(n, h.role))).join("")}</div>
+        <div class="eyebrow">Role ${past.role ? `<small>first life: ${past.role}</small>` : ""}</div><div class="pickGrid sm">${Object.entries(ROLES).map(([n, R]) => card("role", n, n, `Life ${R.life}`, h.role === n, "", headshot(h.lf, n, true))).join("")}</div>
         <div class="eyebrow">Style ${S.hero.votes ? `<small>your answers chose ${S.style}</small>` : ""}</div><div class="pickGrid sm">${STYLES.map(n => card("style", n, n, { Serious: "steady, few words", Silly: "jokes, makes friends fast", Shy: "quiet, notices things", Smug: "confident, secretly kind" }[n], h.style === n)).join("")}</div>
         <div class="eyebrow">Feature <small>+2 on matching rolls, and one action per fight</small></div><div class="pickGrid feat">${Object.entries(FEATURES).map(([n, f]) => card("feature", n, n, `${f[0]}: ${f[1]}`, h.feature === n)).join("")}</div>
         <div class="eyebrow">First ability <small>pick 1 from your Role's Focuses</small></div>
@@ -1513,7 +1531,7 @@ function showAvatar(first = false, h0 = null) {
         <div class="diceRow">${["body", "num", "finish"].map(p => Object.keys(DICE[p]).map(k => diceOpt(p, k)).join("")).join('<span class="brk"></span>')}</div>
       </div>
       <aside class="avSheet">
-        <span class="d20 big" style="${diceCSS()}">20</span>
+        <div class="mirrorView"><svg viewBox="-60 -150 120 160" role="img" aria-label="Your reflection: ${h.lf} ${h.role}">${charSVG({ lf: h.lf, role: h.role, skin: SKIN[h.lf], cloak: ROLES[h.role].hue, size: SIZE(h.lf) })}</svg><span class="d20" style="${diceCSS()}">20</span></div>
         <h3>${h.lf} ${h.role}</h3><p class="note">${h.style} Style, ${h.feature}</p>
         <div class="statGrid"><span>Life <b>${st.life}</b></span><span>Defense <b>${st.def}</b></span>${Object.keys(STATN).map(k => `<span>${STATN[k]} <b>${st[k]}</b></span>`).join("")}${st.dmg ? `<span>Damage <b>+${st.dmg}</b></span>` : ""}</div>
         <p class="note"><b>${ab.name}</b> (${h.focus}): ${ab.t}</p>
@@ -1611,7 +1629,7 @@ function showChoose(r) {
   const opts = Object.entries(SECTIONS).filter(([k]) => !taken.includes(k));
   $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Open plot</div><h2>Choose what to build here</h2>
     <p class="note" style="max-width:62ch">The castle forms whatever you bring it the makings for. Pick a section. There are more sections than open plots for now, so choose what you want first.</p>
-    <div class="secGrid">${opts.map(([k, s]) => { const ok = canAfford(s.cost); return `<div class="secCard"><b>${s.name}</b> <small>${PEOPLE[s.who].name}</small><p class="note">${s.text}</p>
+    <div class="secGrid">${opts.map(([k, s]) => { const ok = canAfford(s.cost); return `<div class="secCard"><div class="who">${keeperShot(s.who)}<div><b>${s.name}</b><br><small>${PEOPLE[s.who].name}</small></div></div><p class="note">${s.text}</p>
       <div class="cost">${Object.entries(s.cost).map(([m, v]) => `<span class="${M(m) >= v ? "ok" : "short"}"><img class="mini" src="${iconOf(m)}" alt="">${MATS[m]} ${Math.min(M(m), v)}/${v}</span>`).join("")}</div>
       <button class="btn ${ok ? "primary" : ""}" type="button" data-sec="${k}" ${ok ? "" : "disabled"}>Build the ${s.name}</button></div>`; }).join("") || '<p class="note">Every section is built. More come with the story.</p>'}</div>
     <div class="btns"><button class="btn" type="button" id="toScrap">Go to the Scrap Yard</button><button class="btn" type="button" id="back">Back to the castle</button></div></div>`;
@@ -2019,9 +2037,28 @@ function showWorldIntro() {
   const fr = document.createElement("iframe"); fr.className = "arena full"; fr.id = "fullFrame"; fr.title = "Path of the Light Keeper: the opening"; fr.src = "world-intro.html";
   document.body.appendChild(fr); fr.focus();
 }
-addEventListener("message", e => { if ((e.data || {}).type === "cq-intro-done") { dropFarluck(); S.introSeen = true; save(); showPast(); } });
+/* Create Your Past and the Role intros: create-past.html (Path of the Light Keeper thread, d9da7e2), drawn full screen like the explore screens.
+   It posts {type: "cq-past-done", lf, role, votes, style, clue, skipped?}. The older in-castle panel (showPast) stays as a fallback. */
+function showCreatePast() {
+  stopGame(); closeTalk(); dropFarluck();
+  $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Part one</div><h2>Create Your Past</h2><p class="note">Your first life on Talus.</p></div>`;
+  const pick = {}; if (S.hero.lf) pick.lf = S.hero.lf; if (S.hero.role) pick.role = S.hero.role;
+  const fr = document.createElement("iframe"); fr.className = "arena full"; fr.id = "fullFrame"; fr.title = "Create Your Past";
+  fr.src = "create-past.html#" + encodeURIComponent(JSON.stringify(pick)); document.body.appendChild(fr); fr.focus();
+}
+addEventListener("message", e => {
+  const d = e.data || {};
+  if (d.type === "cq-intro-done") { dropFarluck(); S.introSeen = true; save(); showCreatePast(); }
+  if (d.type === "cq-past-done") {
+    dropFarluck(); const lf = d.lf || "Sapien", role = d.role || "Brawler";
+    S.hero = { ...S.hero, lf, role, past: { lf, role } };
+    if (d.clue) addClue(d.clue);
+    if (d.skipped) { S.style = S.style || d.style || "Serious"; S.hero.style = S.style; S.phase = "avatar"; save(); renderStyle(); return showAvatar(true); }
+    votes = Array.isArray(d.votes) ? d.votes.slice() : []; save(); showFuture();
+  }
+});
 if (S.phase === "past" && WORLD_INTRO && !S.introSeen) showWorldIntro();
-else if (S.phase === "past") showPast();
+else if (S.phase === "past") showCreatePast();
 else if (S.phase === "wake") { showBarracks(); openTalk("bruxanna", "wake1"); }
 else if (S.phase === "avatar") showAvatar(true);
 else showHub();
