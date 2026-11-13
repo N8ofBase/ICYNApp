@@ -30,6 +30,9 @@ body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;ov
 #svg{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer}
 .hot{cursor:pointer}
 .hl{transition:opacity .25s;opacity:0}
+.hot.exitE{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2232%22%20height%3D%2232%22%3E%3Cpath%20d%3D%22M6%2016%20H22%20M15%208%20L23%2016%20L15%2024%22%20stroke%3D%22%231d140c%22%20stroke-width%3D%226%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3Cpath%20d%3D%22M6%2016%20H22%20M15%208%20L23%2016%20L15%2024%22%20stroke%3D%22%23ffe9a8%22%20stroke-width%3D%223%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E") 16 16, pointer}.hot.exitW{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2232%22%20height%3D%2232%22%3E%3Cpath%20d%3D%22M26%2016%20H10%20M17%208%20L9%2016%20L17%2024%22%20stroke%3D%22%231d140c%22%20stroke-width%3D%226%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3Cpath%20d%3D%22M26%2016%20H10%20M17%208%20L9%2016%20L17%2024%22%20stroke%3D%22%23ffe9a8%22%20stroke-width%3D%223%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E") 16 16, pointer}
+.edge{transition:opacity .3s;opacity:.55}
+.chev{display:none}@media (hover:none){.chev{display:inline}}.hot.exitE:hover~.edge.E,.hot.exitW:hover~.edge.W{opacity:1}
 .hot:hover .hl,.hot:focus .hl{fill:url(#auraG);stroke:none;opacity:1}
 .hl{rx:14px}
 .glint{animation:twinkle 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
@@ -117,6 +120,18 @@ button.slot:hover,button.slot:focus-visible{border-color:var(--gold);outline:non
   .portrait{width:52px;height:52px}
   .setup{max-width:none;left:14px;top:74px;justify-content:flex-start}
 }
+@media (max-height:520px){
+  :root{--hudH:auto}
+  .hud{flex-wrap:nowrap;max-height:84px}
+  .who{display:none}
+  .sec{padding:4px 8px;gap:3px}.sec h4{font-size:10px}
+  .verbs{flex-wrap:nowrap}.verbs button{font-size:12px;padding:4px 7px}
+  .slot{width:44px;height:44px}.slot .ic{font-size:16px}.pack{width:50px;height:50px}.pack svg{width:30px;height:30px}
+  .hud .isvg{width:20px;height:20px}
+  .frame{border-width:5px}.corner{width:26px;height:26px}
+  .portrait{width:48px;height:48px}
+  .artSec{display:none}
+}
 </style>
 </head>
 <body>
@@ -147,7 +162,7 @@ button.slot:hover,button.slot:focus-visible{border-color:var(--gold);outline:non
     <div class="sec"><h4>Actions</h4><div class="verbs" id="verbs"></div></div>
     <div class="sec"><h4>Gear and Ready</h4><div class="slots" id="slots"></div></div>
     <div class="sec"><h4>Pack</h4><button type="button" class="slot pack" id="packBtn" aria-label="Open Pack"></button></div>
-    <div class="sec"><h4>Art</h4><button type="button" class="artbtn" id="artBtn" title="Switch character art">Classic</button><button type="button" class="artbtn" id="bgBtn" title="Switch scene art" style="margin-top:4px">Painted</button></div>
+    <div class="sec artSec"><h4>Art</h4><button type="button" class="artbtn" id="artBtn" title="Switch character art">Classic</button><button type="button" class="artbtn" id="bgBtn" title="Switch scene art" style="margin-top:4px">Painted</button></div>
     <div class="sec"><button type="button" class="help" id="helpBtn" aria-label="How to play" title="How to play">?</button></div>
   </div>
 </div>
@@ -366,7 +381,7 @@ const SCENES={
       ${tree(60,385,"#2f5a2c",false,1.15)}${tree(180,362,"#35632f",false,.95)}
       <path d="M0 395 Q480 372 960 398 V540 H0Z" fill="url(#gB_clr)"/>
       ${tufts(21,0,960,400,530,70,"#3f6a2c","#7fa05a")}${flowers(5,380,520,24)}
-      <path d="M600 470 Q760 470 860 440 Q920 424 960 420 L960 452 Q900 460 860 470 Q760 500 610 492Z" fill="#b8a46a" opacity=".7"/>${signpost(915,452,"Farluck Farm",1)}
+      <path d="M600 470 Q760 470 860 440 Q920 424 960 420 L960 452 Q900 460 860 470 Q760 500 610 492Z" fill="#b8a46a" opacity=".7"/>
       ${stones(480,440)}
       ${tree(770,470,"#7a6a3a",true,1.3)}
       ${flags.thread?'':`<g transform="translate(800 306)"><path d="M-14 6 Q0 -6 20 2" stroke="#4a3018" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M2 0 Q8 10 4 22 L8 20 L9 28 L13 21 L16 25 Q16 12 12 0Z" fill="#a8241c" stroke="#3a0c08" stroke-width="1.4" stroke-linejoin="round"><animateTransform attributeName="transform" type="rotate" values="-6 8 0;8 8 0;-6 8 0" dur="2.6s" repeatCount="indefinite"/></path><path d="M6 4 Q9 12 7 18" stroke="#d8483a" stroke-width="1.5" fill="none" opacity=".8"/></g>`}
@@ -386,7 +401,7 @@ const SCENES={
 
     P:{bounds:[40,340,920,520],start:[70,440],
       over:()=>`<g>${[0,1,2,3,4].map(k=>`<path d="M${330+k*40} ${455+(k%2)*10} l-5 -6 m5 6 l0 -8 m0 8 l5 -6" stroke="#4f9a22" stroke-width="3"/>`).join("")}</g>`,
-      hot:{west:[[0,260,50,280],[40,440]],crops:[[0,180,580,70],[300,360]],scare:[[600,95,150,175],[660,370]],prints:[[310,440,220,40],[300,460]],east:[[890,260,70,280],[930,440]]}},    name:"Farm lane", bounds:[40,380,920,515], start:[140,470],
+      hot:{west:[[0,260,50,280],[40,440]],crops:[[0,180,580,70],[300,360]],scare:[[600,95,150,175],[660,370]],prints:[[310,440,220,40],[300,460]],east:[[890,260,70,280],[930,440]]}},    name:"Farm lane", bounds:[40,380,920,515], start:[70,450],
     art:()=>`${defs("lane","#e9a868","#f7dfae")}
       <rect width="960" height="540" fill="url(#sky_lane)"/>
       <circle cx="820" cy="120" r="52" fill="#fff0c0" opacity=".9"/>
@@ -400,7 +415,6 @@ const SCENES={
       ${tufts(31,0,960,405,530,45,"#7a6a3a","#b8a066")}
       <g transform="translate(640 300)"><rect x="-3" y="0" width="6" height="70" fill="#5a3a1e"/><rect x="-28" y="12" width="56" height="6" fill="#5a3a1e"/><circle cx="0" cy="-6" r="12" fill="#e2c26a"/><ellipse cx="0" cy="-14" rx="20" ry="5" fill="#c9a24a"/><path d="M-14 18 L14 18 L19 50 L-19 50Z" fill="#8a5a2a"/><path d="M-26 14 l-6 8 M26 14 l6 8" stroke="#e2c26a" stroke-width="3"/></g>
       <g>${[0,1,2,3,4].map(k=>{ const x=330+k*42, y=470+(k%2)*12; return `<g transform="translate(${x} ${y}) rotate(${80+k*3}) scale(1.1)"><ellipse cx="0" cy="2" rx="9" ry="6" fill="#8fcf3a" opacity=".25"/><ellipse cx="0" cy="2" rx="4.5" ry="3.4" fill="#3f6a1a" stroke="#22380c" stroke-width="1"/>${[-35,0,35].map(a=>`<path d="M0 0 L0 -9" transform="rotate(${a})" stroke="#3f6a1a" stroke-width="2.4" stroke-linecap="round"/><circle cx="0" cy="-10" r="1.3" transform="rotate(${a})" fill="#b8ef5a"/>`).join("")}</g>`; }).join("")}</g>
-      ${signpost(48,452,"Landing stones",-1)}${signpost(912,452,"Farmyard",1)}
       ${light("lane",820,120,"#ffe0a0",.5)}`,
     hot:[
       {id:"west",name:"Back to the clearing",shape:`<rect x="0" y="300" width="50" height="230" fill="transparent"/>`,stand:[40,450],exit:"clearing"},
@@ -419,7 +433,7 @@ const SCENES={
 
     P:{bounds:[40,420,920,520],start:[70,470],
       over:()=>`${flags.cleared?'':(ART==="pixel"?gremPix(800,392):gremlinArt(800,392))}${ART==="pixel"?cecilPix(680,450):cecilArt(680,450)}`,
-      hot:{west:[[0,300,50,240],[40,470]],house:[[20,60,330,320],[200,440]],well:[[460,175,170,225],[545,445]],cecil:[[645,330,70,125],[620,465]],shed:[[720,180,240,210],[820,440]]}},    name:"Farluck Farm", bounds:[40,400,920,515], start:[140,480],
+      hot:{west:[[0,300,50,240],[40,470]],house:[[20,60,330,320],[200,440]],well:[[460,175,170,225],[545,445]],cecil:[[645,330,70,125],[620,465]],shed:[[720,180,240,210],[820,440]]}},    name:"Farluck Farm", bounds:[40,400,920,515], start:[70,460],
     art:()=>`${defs("yard","#f0b878","#fbe2b4")}
       <rect width="960" height="540" fill="url(#sky_yard)"/>
       ${clouds(41)}
@@ -433,7 +447,6 @@ const SCENES={
       ${tufts(47,0,960,405,530,40,"#6e6036","#a8935a")}
       ${well(480,400)}
       ${ART==="pixel"?cecilPix(600,470):cecilArt(600,470)}
-      ${signpost(48,470,"Farm lane",-1)}
       ${light("yard",300,60,"#ffe6b0",.4)}`,
     hot:[
       {id:"west",name:"Back to the lane",shape:`<rect x="0" y="300" width="50" height="230" fill="transparent"/>`,stand:[40,460],exit:"lane"},
@@ -479,12 +492,14 @@ function load(id,keep){
   scene.bounds=P?P.bounds:scene.V.bounds; scene.start=P?P.start:scene.V.start;
   scene.hot.forEach(h=>{ const q=P&&P.hot[h.id]; if(q){ h.shape=`<rect x="${q[0][0]}" y="${q[0][1]}" width="${q[0][2]}" height="${q[0][3]}" fill="transparent"/>`; h.stand=q[1]; } else { [h.shape,h.stand]=scene.V.hot[h.id]; } });
   const s=$("svg"); s.innerHTML=P?`<image href="art/farluck-${id}.jpg" x="0" y="0" width="960" height="540" preserveAspectRatio="xMidYMid slice" onerror="bgFail()"/>${P.over()}`:scene.art();
-  scene.hot.forEach(h=>{ const g=document.createElementNS(SVGNS,"g"); g.setAttribute("class","hot"); g.setAttribute("tabindex","0"); g.setAttribute("role","button"); g.setAttribute("aria-label",h.name);
+  scene.hot.forEach(h=>{ const g=document.createElementNS(SVGNS,"g"); g.setAttribute("class","hot"+(h.exit?(hotCenter(h)[0]>480?" exitE":" exitW"):"")); g.setAttribute("tabindex","0"); g.setAttribute("role","button"); g.setAttribute("aria-label",h.name);
     g.innerHTML=h.shape.replace("fill=\"transparent\"","fill=\"transparent\" class=\"hl\" stroke=\"transparent\"");
     g.addEventListener("click",e=>{e.stopPropagation(); act(h);});
     g.addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();act(h);} });
     g.addEventListener("mouseenter",()=>showLabel(h)); g.addEventListener("mouseleave",()=>$("label").hidden=true);
     s.appendChild(g); });
+  scene.hot.filter(h=>h.exit).forEach(h=>{ const E=hotCenter(h)[0]>480, e=document.createElementNS(SVGNS,"g"); e.setAttribute("class","edge "+(E?"E":"W")); e.setAttribute("pointer-events","none");
+    e.innerHTML=`<defs><linearGradient id="edg${E?"E":"W"}" x1="${E?1:0}" y1="0" x2="${E?0:1}" y2="0"><stop offset="0" stop-color="#fff4c8" stop-opacity=".45"/><stop offset="1" stop-color="#fff4c8" stop-opacity="0"/></linearGradient></defs><rect x="${E?880:0}" y="330" width="80" height="210" fill="url(#edg${E?"E":"W"})"/><path class="chev" d="${E?"M928 418 l12 14 l-12 14":"M32 418 l-12 14 l12 14"}" stroke="#fff4c8" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>`; s.appendChild(e); });
   const gl=document.createElementNS(SVGNS,"g"); gl.innerHTML=`<defs><radialGradient id="glintG"><stop offset="0" stop-color="#ffe9a0" stop-opacity=".9"/><stop offset="1" stop-color="#ffe9a0" stop-opacity="0"/></radialGradient></defs>`+`<defs><radialGradient id="auraG"><stop offset="0" stop-color="#fff4c8" stop-opacity=".38"/><stop offset=".6" stop-color="#ffe9a0" stop-opacity=".16"/><stop offset="1" stop-color="#ffe9a0" stop-opacity="0"/></radialGradient></defs>`; s.appendChild(gl);
   const hg=document.createElementNS(SVGNS,"g"); hg.innerHTML=ART==="pixel"?heroPixSVG():heroSVG(); s.appendChild(hg); hero.el=hg;
   if(!keep){ hero.x=hero.tx=scene.start[0]; hero.y=hero.ty=scene.start[1]; } hero.face=1; hero.cb=null; placeHero();
