@@ -233,7 +233,7 @@ const SC=[
 let at=-1, typing=null;
 function corner(){ return `<svg viewBox="0 0 40 40"><path d="M6 34 Q8 12 30 8 Q22 16 22 22 Q30 22 34 14 Q30 32 6 34Z" fill="#e8c260"/><circle cx="31" cy="9" r="3" fill="#fff2c8"/></svg>`; }
 document.querySelectorAll(".corner").forEach(c=>c.innerHTML=corner());
-$("scenes").innerHTML=SC.map((s,i)=>`<div class="scene" id="sc${i}"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>${s.title?`<div class="title"><div><h1><small>Path of the</small>Light Keeper</h1><p>A story of Love on Talus</p></div></div>`:""}</div>`).join("");
+$("scenes").innerHTML=SC.map((s,i)=>`<div class="scene" id="sc${i}"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>${s.title?`<div class="title"><div><h1><small>Path of the</small>Light Keeper</h1><p>A story on Talus</p></div></div>`:""}</div>`).join("");
 $("dots").innerHTML=SC.map(()=>"<i></i>").join("");
 function type(html){ clearInterval(typing); const el=$("txt"); const plain=html; let n=0; const tmp=document.createElement("div"); tmp.innerHTML=plain; const total=tmp.textContent.length;
   if(matchMedia("(prefers-reduced-motion: reduce)").matches){ el.innerHTML=plain; return; }
