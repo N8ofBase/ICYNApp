@@ -170,6 +170,7 @@ img.mini { width: 20px; height: 20px; vertical-align: -5px; margin-right: 4px; o
 .turnPop button:disabled { opacity: .45; cursor: default; }
 .turnPop small { color: #5a4630; font-size: .78rem; }
 @media (max-width: 560px) { .turnPop { position: static; transform: none; width: auto; margin-top: 8px; } }
+.arena.full { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; border-radius: 0; z-index: 60; }
 .arena { width: 100%; height: min(1180px, 160vh); border: 0; border-radius: 8px; background: var(--void); display: block; }
 .nextStep { border: 1px solid var(--comet); border-radius: 8px; padding: 10px 12px; background: #2a2540; }
 .nextStep b { color: var(--comet); }
@@ -1409,10 +1410,12 @@ function showFarluck(start) {
   stopGame();
   if (!(S.returnShards > 0)) { S.returnShards = 1; save(); toast("Wexler presses a Return Shard into your hand."); }
   const cfg = { ...heroCfg(), style: S.hero.style || S.style, ready: S.loadout.ready, returnShards: S.returnShards, anchors: S.anchors || [], ...(start ? { start } : {}) };
-  $("#view").innerHTML = `<div class="panel game"><div class="head"><div><div class="eyebrow">Mission</div><h2>Farluck Farm</h2></div>
-</div>
-    <iframe class="arena" src="farluck-adventure.html#${encodeURIComponent(JSON.stringify(cfg))}" title="Farluck Farm"></iframe></div>`;
+  closeTalk(); dropFarluck();
+  $("#view").innerHTML = `<div class="panel"><div class="eyebrow">Mission</div><h2>Farluck Farm</h2><p class="note">You're on Talus.</p></div>`;
+  const fr = document.createElement("iframe"); fr.className = "arena full"; fr.id = "farluckFrame"; fr.title = "Farluck Farm";
+  fr.src = "farluck-adventure.html#" + encodeURIComponent(JSON.stringify(cfg)); document.body.appendChild(fr); fr.focus();
 }
+function dropFarluck() { const fr = document.getElementById("farluckFrame"); if (fr) fr.remove(); }
 function farluckGifts(g = {}) {
   const seeds = g.seeds || { gorgrain: 3, charbean: 3 }, dishes = g.dishes || ["Cecil's Char Bean Soup", "Cecil's Char Bean Soup"], recipes = [...(g.recipes || []), "soup"];
   S.farluckDone = true; S.tier = Math.max(S.tier, 1);
@@ -1434,6 +1437,7 @@ function battle() {
 }
 addEventListener("message", e => {
   const d = e.data || {};
+  if (/^cq-mission-/.test(d.type || "")) dropFarluck();
   if (d.type === "cq-training") { if (d.won && !S.trainWon) { S.trainWon = true; S.coins += 10; toast("Treywind yields! +10 Icosa Coins."); } S.trained = true; save(); }
   if (d.type === "cq-training-close") { showRoom("training"); if (d.won) openTalk("treywind", "done"); }
   if (d.type === "cq-mission-done") {

@@ -8,35 +8,44 @@
 <link href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#1c1712; --parch:#f3e6c8; --parch2:#e6d3a8; --ink:#2b1d10; --ink2:#5a4630;
-  --edge:#8a6a3a; --gold:#c99a3c; --hover:#fff4d8; --accent:#7a2e1c; --bar:#2b2219; --barInk:#f3e6c8;
+  --bg:#141010; --parch:#f3e6c8; --parch2:#e6d3a8; --ink:#2b1d10; --ink2:#5a4630;
+  --edge:#8a6a3a; --gold:#c99a3c; --hover:#fff4d8; --accent:#7a2e1c; --bar:#231b15; --barInk:#f3e6c8;
+  --stone1:#2a231d; --stone2:#17120e; --role:#3f6b45; --hudH:112px;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){ --parch:#3a2f22; --parch2:#2f261b; --ink:#f1e4c6; --ink2:#c9b38a; --edge:#a9844a; --hover:#4a3c2b; --accent:#e08a6a; }
 }
 :root[data-theme="dark"]{ --parch:#3a2f22; --parch2:#2f261b; --ink:#f1e4c6; --ink2:#c9b38a; --edge:#a9844a; --hover:#4a3c2b; --accent:#e08a6a; }
 *{box-sizing:border-box}
-html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;overflow-x:hidden}
-.wrap{max-width:980px;margin:0 auto;padding:10px 16px 24px}
-.top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;color:var(--barInk);font-family:"Alegreya SC",serif}
-.top h1{font-size:19px;margin:4px 0}
-.top span{font-size:14px;opacity:.8}
-.stage{position:relative;width:100%;aspect-ratio:16/9;border:3px solid var(--edge);border-radius:10px;overflow:hidden;background:#000;box-shadow:0 0 0 2px #000}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;overflow:hidden}
+.game{position:fixed;inset:0;display:flex;flex-direction:column}
+/* role frame around the scene */
+.frame{position:relative;flex:1;min-height:0;border:10px solid var(--role);box-shadow:inset 0 0 0 2px #000,0 0 0 2px #000,inset 0 0 40px rgba(0,0,0,.55);background:#000}
+.frame::before{content:"";position:absolute;inset:-6px;border:2px solid var(--gold);pointer-events:none;z-index:3;border-radius:2px;opacity:.85}
+.corner{position:absolute;width:46px;height:46px;z-index:4;pointer-events:none}
+.corner svg{width:100%;height:100%}
+.c-tl{left:-22px;top:-22px}.c-tr{right:-22px;top:-22px;transform:scaleX(-1)}.c-bl{left:-22px;bottom:-22px;transform:scaleY(-1)}.c-br{right:-22px;bottom:-22px;transform:scale(-1,-1)}
+.stage{position:absolute;inset:0;overflow:hidden}
 .stage svg{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer}
 .hot{cursor:pointer}
-.hot:hover .hl, .hot:focus .hl{stroke:#ffe9a8;stroke-width:3;stroke-dasharray:6 4}
-.label{position:absolute;left:50%;top:8px;transform:translateX(-50%);background:rgba(0,0,0,.55);color:#f3e6c8;font-family:"Alegreya SC",serif;padding:2px 10px;border-radius:6px;font-size:15px;pointer-events:none;white-space:nowrap}
-.fade{position:absolute;inset:0;background:#fff7dc;opacity:0;pointer-events:none;transition:opacity 2.2s}
+.hot:hover .hl,.hot:focus .hl{stroke:#ffe9a8;stroke-width:3;stroke-dasharray:6 4}
+.plateTop{position:absolute;left:14px;top:12px;z-index:5;background:rgba(15,10,6,.72);border:1px solid var(--gold);border-radius:8px;padding:4px 12px;color:#f3e6c8;font-family:"Alegreya SC",serif;pointer-events:none}
+.plateTop b{display:block;font-size:16px}.plateTop span{font-size:13px;opacity:.85}
+.setup{position:absolute;right:14px;top:12px;z-index:6;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;background:rgba(15,10,6,.72);border:1px solid var(--gold);border-radius:8px;padding:5px 8px;color:#efe1bf;font-size:13px;max-width:60%}
+.setup[hidden]{display:none}
+.setup select{font:inherit;background:var(--bar);color:var(--barInk);border:1px solid var(--gold);border-radius:6px;padding:1px 4px}
+.label{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#f3e6c8;font-family:"Alegreya SC",serif;padding:2px 10px;border-radius:6px;font-size:15px;pointer-events:none;white-space:nowrap;z-index:5}
+.fade{position:absolute;inset:0;background:#fff7dc;opacity:0;pointer-events:none;transition:opacity 2.2s;z-index:6}
 .fade.on{opacity:1}
-.bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}
-.bar button,.inv button{font:inherit;font-family:"Alegreya SC",serif;font-size:15px;background:var(--bar);color:var(--barInk);border:1px solid var(--gold);border-radius:7px;padding:5px 12px;cursor:pointer}
-.bar button[aria-pressed="true"]{background:var(--gold);color:#2b1d10}
-.inv{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
-.inv button[aria-pressed="true"]{outline:2px solid #ffe9a8}
-.narr{margin-top:8px;min-height:2.8em;color:#efe1bf;font-size:16px;line-height:1.4}
-.narr em{color:#d9c08a}
-.box{display:none;margin-top:8px;background:linear-gradient(var(--parch),var(--parch2));border:3px solid var(--edge);border-radius:12px;padding:12px 14px;box-shadow:0 0 0 2px #000}
+/* action text over the Hero */
+.bubble{position:absolute;z-index:5;max-width:min(340px,80%);background:rgba(20,14,9,.86);color:#f6ead0;border:1px solid var(--gold);border-radius:10px;padding:7px 11px;font-size:16px;line-height:1.35;pointer-events:none;opacity:0;transition:opacity .25s;transform:translate(-50%,-100%)}
+.bubble.on{opacity:1}
+.bubble::after{content:"";position:absolute;left:50%;bottom:-7px;transform:translateX(-50%) rotate(45deg);width:12px;height:12px;background:rgba(20,14,9,.86);border-right:1px solid var(--gold);border-bottom:1px solid var(--gold)}
+.bubble em{color:#e2c98a}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* dialog window, inside the scene */
+.box{display:none;position:absolute;left:50%;bottom:14px;transform:translateX(-50%);width:min(780px,94%);z-index:7;background:linear-gradient(var(--parch),var(--parch2));border:3px solid var(--edge);border-radius:12px;padding:12px 14px;box-shadow:0 0 0 2px #000,0 10px 30px rgba(0,0,0,.6);max-height:70%;overflow:auto}
 .box.on{display:block}
 .head{display:flex;gap:12px;align-items:flex-start}
 .portrait{flex:0 0 auto;width:70px;height:70px;border-radius:10px;border:2px solid var(--gold);background:#201810;overflow:hidden}
@@ -47,43 +56,98 @@ body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;ov
 .choices button{width:100%;text-align:left;font:inherit;font-size:16px;color:var(--ink);background:transparent;border:1px solid transparent;border-radius:8px;padding:6px 10px;cursor:pointer;display:flex;gap:8px}
 .choices button:hover,.choices button:focus-visible{background:var(--hover);border-color:var(--edge);outline:none}
 .k{font-family:"Alegreya SC",serif;color:var(--ink2)}
-.notes{margin-top:14px;color:#cdbb95;font-size:14px;line-height:1.45}
-.ov{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;z-index:20;padding:10px}.ov.on{display:block}.ov iframe{width:100%;height:100%;border:3px solid var(--gold);border-radius:10px;background:#efe3c6}
-.toast{position:fixed;left:50%;top:16px;transform:translate(-50%,-20px);opacity:0;transition:.4s;background:linear-gradient(var(--parch),var(--parch2));border:2px solid var(--gold);border-radius:10px;padding:8px 16px;text-align:center;z-index:30;max-width:calc(100% - 32px);color:var(--ink)}.toast.show{opacity:1;transform:translate(-50%,0)}.toast b{font-family:"Alegreya SC",serif;color:var(--accent);display:block}
-.setup{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:#efe1bf;font-size:14px;margin:6px 0}.setup[hidden]{display:none}.setup select{font:inherit;background:var(--bar);color:var(--barInk);border:1px solid var(--gold);border-radius:6px;padding:2px 6px}
 .tag{font-family:"Alegreya SC",serif;font-size:12px;border:1px solid currentColor;border-radius:999px;padding:0 7px;margin-left:6px;color:var(--accent)}
-.notes b{font-family:"Alegreya SC",serif;color:#f3e6c8}
-@media (max-width:560px){ .portrait{width:54px;height:54px} .bar button,.inv button{font-size:14px;padding:5px 9px} .label{font-size:13px} }
+/* bottom action panel */
+.hud{flex:0 0 auto;min-height:var(--hudH);display:flex;align-items:stretch;gap:0;background:linear-gradient(180deg,var(--stone1),var(--stone2));border-top:3px solid var(--role);box-shadow:inset 0 2px 0 var(--gold);color:var(--barInk);font-family:"Alegreya SC",serif;overflow-x:auto}
+.sec{display:flex;flex-direction:column;justify-content:center;gap:6px;padding:8px 12px;border-right:2px solid #000;box-shadow:1px 0 0 #3a2f25}
+.sec:last-child{border-right:0;box-shadow:none}
+.sec h4{margin:0;font-size:11px;letter-spacing:.08em;color:#bfa77a;font-weight:500}
+.who{min-width:150px}
+.who b{font-size:15px}.who small{font-size:12px;color:#cdb98e;font-family:Alegreya,serif}
+.verbs{display:flex;gap:5px;flex-wrap:wrap}
+.hud button{font:inherit;color:var(--barInk);cursor:pointer}
+.hud button.slot{font-family:Alegreya,serif;font-size:10px;line-height:1.1}
+.verbs button{font-size:14px;background:#3a2e24;border:1px solid #6b5537;border-radius:6px;padding:6px 10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.verbs button[aria-pressed="true"]{background:var(--gold);color:#22170d;border-color:#ffe2a0}
+.slots{display:flex;gap:6px}
+.slot{width:62px;height:62px;border:2px solid #6b5537;border-radius:8px;background:#120d0a;box-shadow:inset 0 0 10px #000;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;line-height:1.1;text-align:center;padding:3px;position:relative;font-family:Alegreya,serif}
+.slot .ic{font-size:22px;line-height:1}
+.slot .n{position:absolute;right:4px;bottom:2px;font-size:11px;color:#ffe2a0}
+.slot.empty{color:#6e5d48}
+button.slot:hover,button.slot:focus-visible{border-color:var(--gold);outline:none}
+.pack{width:74px;height:74px}
+.pack svg{width:44px;height:44px}
+.help{width:44px;height:44px;border-radius:50%;border:2px solid var(--gold);background:#3a2e24;font-size:20px}
+/* windows */
+.win{display:none;position:fixed;z-index:15;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,94vw);max-height:80vh;overflow:auto;background:linear-gradient(var(--parch),var(--parch2));border:3px solid var(--edge);border-radius:12px;box-shadow:0 0 0 2px #000,0 20px 50px rgba(0,0,0,.7);padding:14px 16px;color:var(--ink)}
+.win.on{display:block}
+.win h3{font-family:"Alegreya SC",serif;margin:0 0 8px;color:var(--accent);display:flex;justify-content:space-between;align-items:center}
+.win h3 button{font:inherit;font-size:14px;background:var(--bar);color:var(--barInk);border:1px solid var(--gold);border-radius:6px;padding:2px 10px;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cell{aspect-ratio:1;border:2px solid var(--edge);border-radius:8px;background:rgba(0,0,0,.08);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:12px;padding:4px;position:relative}
+.cell .ic{font-size:24px}
+.cell .n{position:absolute;right:5px;bottom:3px;font-family:"Alegreya SC",serif;font-size:12px;color:var(--accent)}
+.win ul{margin:6px 0 0;padding-left:18px;line-height:1.45}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;z-index:20;padding:10px}.ov.on{display:block}.ov iframe{width:100%;height:100%;border:3px solid var(--gold);border-radius:10px;background:#efe3c6}
+.toast{position:fixed;left:50%;top:16px;transform:translate(-50%,-20px);opacity:0;transition:.4s;background:linear-gradient(var(--parch),var(--parch2));border:2px solid var(--gold);border-radius:10px;padding:8px 16px;text-align:center;z-index:30;max-width:calc(100% - 32px);color:var(--ink);pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}.toast b{font-family:"Alegreya SC",serif;color:var(--accent);display:block}
+@media (max-width:700px){
+  :root{--hudH:auto}
+  .hud{flex-wrap:wrap}
+  .sec{padding:6px 8px;border-right:0;box-shadow:none}
+  .who{display:none}
+  .verbs button{font-size:13px;padding:5px 8px}
+  .slot{width:50px;height:50px}.pack{width:56px;height:56px}
+  .frame{border-width:6px}.corner{width:30px;height:30px}.c-tl,.c-tr,.c-bl,.c-br{margin:7px}
+  .portrait{width:52px;height:52px}
+  .setup{max-width:none;left:14px;top:74px;justify-content:flex-start}
+}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="top"><h1>Chapter 1 · Farluck Farm</h1><span id="where"></span></div>
-  <div class="setup">Your Light Keeper:
-    <select id="selLf" aria-label="Lifeform"><option>Leyf</option><option>Sapien</option><option>Lizerus</option><option>Melkin</option><option>Dimoneesh</option></select>
-    <select id="selRole" aria-label="Role"><option>Maverick</option><option>Brawler</option><option>Champion</option><option>Soul Seer</option><option>Whisper</option></select>
-    <select id="selStyle" aria-label="Style"><option>Serious</option><option>Silly</option><option>Shy</option><option>Smug</option></select>
+<div class="game" id="game">
+  <div class="frame" id="frame">
+    <div class="corner c-tl"></div><div class="corner c-tr"></div><div class="corner c-bl"></div><div class="corner c-br"></div>
+    <div class="stage" id="stage">
+      <svg id="svg" viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice" aria-label="Scene"></svg>
+      <div class="plateTop"><b>Chapter 1 · Farluck Farm</b><span id="where"></span></div>
+      <div class="setup">Try as:
+        <select id="selLf" aria-label="Lifeform"><option>Leyf</option><option>Sapien</option><option>Lizerus</option><option>Melkin</option><option>Dimoneesh</option></select>
+        <select id="selRole" aria-label="Role"><option>Maverick</option><option>Brawler</option><option>Champion</option><option>Soul Seer</option><option>Whisper</option></select>
+        <select id="selStyle" aria-label="Style"><option>Serious</option><option>Silly</option><option>Shy</option><option>Smug</option></select>
+      </div>
+      <div class="label" id="label" hidden></div>
+      <div class="bubble" id="bubble"></div>
+      <div class="box" id="box" role="dialog">
+        <div class="head"><div class="portrait" id="portrait"></div>
+          <div style="flex:1;min-width:0"><p class="plate" id="plate"></p><p class="say" id="say"></p></div></div>
+        <ul class="choices" id="choices"></ul>
+      </div>
+      <div class="fade" id="fade"></div>
+    </div>
   </div>
-  <div class="stage" id="stage">
-    <svg id="svg" viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice" aria-label="Scene"></svg>
-    <div class="label" id="label" hidden></div>
-    <div class="fade" id="fade"></div>
-  </div>
-  <div class="bar" id="verbs"></div>
-  <div class="narr" id="narr" aria-live="polite"></div>
-  <div class="box" id="box" role="dialog">
-    <div class="head"><div class="portrait" id="portrait"></div>
-      <div style="flex:1;min-width:0"><p class="plate" id="plate"></p><p class="say" id="say"></p></div></div>
-    <ul class="choices" id="choices"></ul>
-  </div>
-  <div class="notes">
-    <b>How to play:</b> pick an action, then tap something in the scene. Tap the ground to walk. With Walk on, tapping something does the obvious thing.<br>
-    <b>About this mockup:</b> Talus is explored in painted screens like this one, and fights open on the hex battle map. The setup row above stands in for your Hero from the Castle Comet. Your Style adds one bonus answer when you talk, and Cecil warms to Silly and Shy. Art is simple placeholder shapes.
+  <div class="hud" id="hud">
+    <div class="sec who"><h4>Light Keeper</h4><b id="whoName"></b><small id="whoSub"></small></div>
+    <div class="sec"><h4>Actions</h4><div class="verbs" id="verbs"></div></div>
+    <div class="sec"><h4>Gear and Ready</h4><div class="slots" id="slots"></div></div>
+    <div class="sec"><h4>Pack</h4><button type="button" class="slot pack" id="packBtn" aria-label="Open Pack"></button></div>
+    <div class="sec"><button type="button" class="help" id="helpBtn" aria-label="How to play" title="How to play">?</button></div>
   </div>
 </div>
+<div class="sr" id="narr" aria-live="polite"></div>
+<div class="win" id="invWin" role="dialog" aria-label="Pack"><h3>Pack <button type="button" data-close>Close</button></h3><div class="grid" id="invGrid"></div><h3 style="margin-top:12px">Journal</h3><ul id="jList"></ul></div>
+<div class="win" id="helpWin" role="dialog" aria-label="How to play"><h3>How to play <button type="button" data-close>Close</button></h3>
+  <ul>
+    <li><b>Pick an action</b> on the bar (Walk, Look, Use, Talk, Take), then tap something in the scene. Tap the ground to walk there.</li>
+    <li>With <b>Walk</b> on, tapping something does the obvious thing: look at it, or go that way.</li>
+    <li>What your Light Keeper notices and says appears <b>above their head</b>.</li>
+    <li><b>Talking</b> opens a window with answers. Your Style adds one bonus answer, and some people warm to it.</li>
+    <li>Your <b>Ready slots</b> hold food or potions for the road. Open the <b>Pack</b> to see what you've found and your Journal.</li>
+    <li>The <b>Return Shard</b> takes you home to the Castle Comet at any time, with your Pack. Once you help someone, their <b>hearth</b> becomes a free way home.</li>
+    <li>When a fight starts, the game switches to the <b>hex battle map</b>.</li>
+  </ul>
+  <p style="font-size:14px;color:var(--ink2)">This is a mockup: the art is simple placeholder shapes, and the frame color and corner marks change with your Role.</p></div>
 <div class="ov" id="ov"><iframe id="ovf" title="Battle"></iframe></div>
 <div class="toast" id="toast"><b id="toastT"></b><span id="toastS"></span></div>
-</div>
 
 <script>
 const $=id=>document.getElementById(id);
@@ -142,7 +206,8 @@ function tick(t){
   if(hero.el){
     const dx=hero.tx-hero.x, dy=hero.ty-hero.y, d=Math.hypot(dx,dy);
     if(d>2){ const sp=220*dt; hero.x+=dx/d*Math.min(sp,d); hero.y+=dy/d*Math.min(sp,d); if(Math.abs(dx)>1) hero.face=dx>0?1:-1; hero.step+=dt*14; placeHero(); }
-    else if(hero.cb){ const c=hero.cb; hero.cb=null; hero.step=0; placeHero(); c(); }
+    if(bubOn) posBubble();
+    if(d<=2 && hero.cb){ const c=hero.cb; hero.cb=null; hero.step=0; placeHero(); c(); }
   }
   requestAnimationFrame(tick);
 }
@@ -150,23 +215,66 @@ requestAnimationFrame(tick);
 
 
 /* ---------- Farluck Farm screens (original placeholder art) ---------- */
-function stones(x,y){ let g=`<ellipse cx="${x}" cy="${y}" rx="120" ry="28" fill="#bfe4ff" opacity="${flags.landed?0.12:0.35}"/>`; [[-110,0],[-70,-18],[0,-26],[70,-18],[110,0],[60,18],[-60,18]].forEach(([dx,dy])=>{ g+=`<path d="M${x+dx-10} ${y+dy} L${x+dx-8} ${y+dy-44} Q${x+dx} ${y+dy-52} ${x+dx+8} ${y+dy-44} L${x+dx+10} ${y+dy}Z" fill="#8a8a7a" stroke="#5a5a4e" stroke-width="2"/>`; }); return g; }
+function rnd(seed){ let a=seed>>>0; return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function defs(id,top,bottom){ return `<defs>
+  <linearGradient id="sky_${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bottom}"/></linearGradient>
+  <linearGradient id="gA_${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${id==="clr"?"#7c9a52":id==="lane"?"#b4a064":"#a89660"}"/><stop offset="1" stop-color="${id==="clr"?"#4f6e34":id==="lane"?"#8a7444":"#7e6c40"}"/></linearGradient>
+  <linearGradient id="gB_${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${id==="clr"?"#5f8a3c":id==="lane"?"#9a8250":"#8e7a4a"}"/><stop offset="1" stop-color="${id==="clr"?"#2f4a20":id==="lane"?"#5e4a2a":"#5a4a2c"}"/></linearGradient>
+  <radialGradient id="sun_${id}"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  <radialGradient id="vig_${id}" cx=".5" cy=".45" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></radialGradient>
+  <linearGradient id="trunk" x1="0" x2="1"><stop offset="0" stop-color="#2a1c10"/><stop offset=".5" stop-color="#5a3c22"/><stop offset="1" stop-color="#2a1c10"/></linearGradient>
+  <linearGradient id="stoneG" x1="0" x2="1"><stop offset="0" stop-color="#b4b0a0"/><stop offset=".6" stop-color="#8a8676"/><stop offset="1" stop-color="#5e5a4e"/></linearGradient>
+  <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8844a"/><stop offset="1" stop-color="#8a5e30"/></linearGradient>
+  <linearGradient id="roof" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a4a2c"/><stop offset="1" stop-color="#6a2c18"/></linearGradient>
+  <radialGradient id="beam"><stop offset="0" stop-color="#d8f0ff" stop-opacity=".8"/><stop offset="1" stop-color="#bfe4ff" stop-opacity="0"/></radialGradient>
+  </defs>`; }
+function light(id,x,y,c,o){ return `<circle cx="${x}" cy="${y}" r="260" fill="url(#sun_${id})" opacity="${o*.5}"/><rect width="960" height="540" fill="${c}" opacity=".06" style="mix-blend-mode:screen"/><rect width="960" height="540" fill="url(#vig_${id})" pointer-events="none"/>`; }
+function hills(y,c,o,seed){ const r=rnd(seed); let d=`M0 ${y+30}`; for(let x=0;x<=960;x+=80){ d+=` Q${x+40} ${y-10-r()*50} ${x+80} ${y+r()*20}`; } return `<path d="${d} V540 H0Z" fill="${c}" opacity="${o}"/>`; }
+function clouds(seed){ const r=rnd(seed); let g=""; for(let i=0;i<4;i++){ const x=r()*900, y=40+r()*110, w=60+r()*80; g+=`<g opacity=".75"><ellipse cx="${x}" cy="${y}" rx="${w}" ry="${w*.22}" fill="#fff"/><ellipse cx="${x-w*.35}" cy="${y-6}" rx="${w*.45}" ry="${w*.2}" fill="#fff"/><ellipse cx="${x+w*.3}" cy="${y-9}" rx="${w*.4}" ry="${w*.24}" fill="#fff"/></g>`; } return g; }
+function tufts(seed,x0,x1,y0,y1,n,dark,light){ const r=rnd(seed); let g=""; for(let i=0;i<n;i++){ const x=x0+r()*(x1-x0), y=y0+r()*(y1-y0), h=6+r()*10*(y/400); g+=`<path d="M${x} ${y} l-3 -${h} M${x} ${y} l1 -${h*1.2} M${x} ${y} l4 -${h*.9}" stroke="${r()<.5?dark:light}" stroke-width="2" stroke-linecap="round"/>`; } return g; }
+function flowers(seed,y0,y1,n){ const r=rnd(seed); let g=""; for(let i=0;i<n;i++){ const x=r()*960, y=y0+r()*(y1-y0); if(x>360&&x<620&&y<470) continue; g+=`<circle cx="${x}" cy="${y}" r="2.6" fill="${["#f4e27a","#f2f0ea","#d99ad8"][Math.floor(r()*3)]}"/>`; } return g; }
+function house(){ return `<g>
+  <rect x="90" y="190" width="230" height="160" fill="url(#wood)"/>${[0,1,2,3,4,5,6,7].map(k=>`<line x1="90" y1="${200+k*19}" x2="320" y2="${200+k*19}" stroke="#6a4420" stroke-width="2" opacity=".5"/>`).join("")}
+  <rect x="90" y="190" width="230" height="160" fill="none" stroke="#4a2e16" stroke-width="3"/>
+  <path d="M70 195 L205 108 L340 195Z" fill="url(#roof)" stroke="#3a1a0c" stroke-width="3"/>${[0,1,2,3].map(k=>{ const y=182-k*18, hw=135*(y-108)/87-4; return `<path d="M${205-hw} ${y} L${205+hw} ${y}" stroke="#4a1e0e" stroke-width="2" opacity=".5"/>`; }).join("")}
+  <rect x="272" y="120" width="26" height="50" fill="#6a5a50" stroke="#3a2e28" stroke-width="2"/>
+  <rect x="185" y="270" width="40" height="80" fill="#3b2a1a" stroke="#22160c" stroke-width="3"/><circle cx="216" cy="312" r="3" fill="#c99a3c"/>
+  ${[110,250].map(x=>`<rect x="${x}" y="230" width="44" height="34" fill="#ffe8a0"/><rect x="${x}" y="230" width="44" height="34" fill="none" stroke="#4a2e16" stroke-width="3"/><line x1="${x+22}" y1="230" x2="${x+22}" y2="264" stroke="#4a2e16" stroke-width="2"/><circle cx="${x+22}" cy="247" r="40" fill="#ffd27a" opacity=".12"/>`).join("")}
+  <ellipse cx="205" cy="352" rx="130" ry="10" fill="#000" opacity=".2"/></g>`; }
+function shed(){ return `<g>
+  <rect x="680" y="220" width="200" height="150" fill="#7d5a34"/>${[0,1,2,3,4,5,6,7,8,9].map(k=>`<line x1="${690+k*20}" y1="222" x2="${690+k*20}" y2="370" stroke="#4a3018" stroke-width="2" opacity=".55"/>`).join("")}
+  <path d="M665 225 L780 165 L895 225Z" fill="#5a3a22" stroke="#2e1c10" stroke-width="3"/>
+  <g id="shedDoor"><rect x="750" y="280" width="60" height="90" fill="${flags.cleared?'#2a1c10':'#5a3a22'}" stroke="#2e1c10" stroke-width="3" transform="${flags.cleared?'':'rotate(-2 780 370)'}"/>${flags.cleared?'':'<path d="M752 300 L808 360 M808 300 L752 360" stroke="#3a2412" stroke-width="4"/>'}</g>
+  <ellipse cx="780" cy="372" rx="110" ry="8" fill="#000" opacity=".2"/></g>`; }
+function well(x,y){ return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="4" rx="56" ry="14" fill="#000" opacity=".25"/>
+  <rect x="-46" y="-30" width="92" height="30" fill="url(#stoneG)"/>${[0,1].map(r=>[0,1,2,3].map(c=>`<rect x="${-46+c*23+(r?11:0)}" y="${-30+r*15}" width="23" height="15" fill="none" stroke="#4e4a40" stroke-width="1.5"/>`).join("")).join("")}
+  <ellipse cx="0" cy="0" rx="46" ry="14" fill="none" stroke="#4e4a40" stroke-width="2"/>
+  <ellipse cx="0" cy="-30" rx="46" ry="14" fill="#6a665a"/><ellipse cx="0" cy="-30" rx="36" ry="9" fill="#120e0a"/>
+  <rect x="-40" y="-92" width="6" height="62" fill="url(#trunk)"/><rect x="34" y="-92" width="6" height="62" fill="url(#trunk)"/>
+  <path d="M-52 -92 L0 -116 L52 -92Z" fill="url(#roof)" stroke="#3a1a0c" stroke-width="2"/><line x1="-34" y1="-74" x2="34" y2="-74" stroke="#5a3a1e" stroke-width="4"/><line x1="0" y1="-74" x2="0" y2="-44" stroke="#c9b28a" stroke-width="2"/><rect x="-6" y="-46" width="12" height="10" fill="#7a5a34"/></g>`; }
+function stones(x,y){ let g=`<ellipse cx="${x}" cy="${y}" rx="140" ry="34" fill="url(#beam)" opacity=".9"/><ellipse cx="${x}" cy="${y}" rx="118" ry="26" fill="none" stroke="#d8f0ff" stroke-width="2" opacity=".5"/>`; [[-110,0],[-70,-18],[0,-26],[70,-18],[110,0],[60,18],[-60,18]].sort((a,b)=>a[1]-b[1]).forEach(([dx,dy])=>{ const X=x+dx, Y=y+dy; g+=`<ellipse cx="${X+6}" cy="${Y+2}" rx="14" ry="4" fill="#000" opacity=".25"/><path d="M${X-11} ${Y} L${X-9} ${Y-46} Q${X} ${Y-56} ${X+9} ${Y-46} L${X+11} ${Y}Z" fill="url(#stoneG)" stroke="#4e4a40" stroke-width="2"/><path d="M${X-5} ${Y-36} l6 6 l-2 8" stroke="#bfe4ff" stroke-width="2" fill="none" opacity=".8"/><path d="M${X-9} ${Y-8} q4 -4 8 0" stroke="#5f8a3c" stroke-width="3" fill="none"/>`; }); return g; }
 function stalks(x0,x1,y,dry){ let s=""; for(let x=x0;x<x1;x+=22){ s+=`<path d="M${x} ${y} q${dry?6:2} -30 ${dry?14:0} -${dry?34:44}" stroke="${dry?'#b59a55':'#6e8f3a'}" stroke-width="4" fill="none"/>`; } return s; }
 function cecilArt(x,y){ return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="22" ry="7" fill="rgba(0,0,0,.3)"/>
   <rect x="-10" y="-34" width="8" height="34" rx="3" fill="#4a3a2a"/><rect x="2" y="-34" width="8" height="34" rx="3" fill="#4a3a2a"/>
   <path d="M-17 -34 Q-18 -76 0 -80 Q18 -76 17 -34Z" fill="#4f6f8f"/><rect x="-9" y="-66" width="18" height="24" fill="#6f8fae"/>
   <circle cx="0" cy="-90" r="13" fill="#d9a57c"/><path d="M-8 -84 q8 6 16 0" stroke="#e8e0d0" stroke-width="4" fill="none"/>
   <ellipse cx="0" cy="-101" rx="24" ry="5" fill="#d8b65a"/><path d="M-12 -101 Q0 -118 12 -101Z" fill="#d8b65a"/></g>`; }
-function gremlinArt(x,y){ return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="10" ry="3" fill="rgba(0,0,0,.3)"/><path d="M-9 0 Q-10 -20 0 -22 Q10 -20 9 0Z" fill="#5f8a2e"/><path d="M-8 -18 l-8 -8 M8 -18 l8 -8" stroke="#5f8a2e" stroke-width="4"/><circle cx="-3" cy="-14" r="2" fill="#ffe24a"/><circle cx="3" cy="-14" r="2" fill="#ffe24a"/></g>`; }
+function gremlinArt(x,y){ return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="10" ry="3" fill="rgba(0,0,0,.3)"/><path d="M-9 0 Q-10 -20 0 -22 Q10 -20 9 0Z" fill="#5f8a2e" stroke="#2f4a14" stroke-width="1.5"/><path d="M-4 -4 Q-4 -16 2 -18" stroke="#8fbf4e" stroke-width="2" fill="none"/><path d="M-8 -18 l-8 -8 M8 -18 l8 -8" stroke="#5f8a2e" stroke-width="4"/><circle cx="-3" cy="-14" r="2" fill="#ffe24a"/><circle cx="3" cy="-14" r="2" fill="#ffe24a"/></g>`; }
 const SCENES={
   clearing:{
     name:"The old landing stones", bounds:[40,370,920,515], start:[300,460],
-    art:()=>`<rect width="960" height="540" fill="#9cc7d8"/><path d="M0 0 H960 V230 Q480 200 0 240Z" fill="#cfe6ee"/>
-      <path d="M0 330 Q480 290 960 330 V540 H0Z" fill="#6f8a48"/><path d="M0 390 Q480 370 960 395 V540 H0Z" fill="#5c7a3a"/>
-      ${tree(60,380,"#2f5a2c")}${tree(180,360,"#35632f")}${tree(800,365,"#7a6a3a",true)}
+    art:()=>`${defs("clr","#7fb6d6","#e8f2ea")}
+      <rect width="960" height="540" fill="url(#sky_clr)"/>
+      ${clouds(11)}
+      ${hills(260,"#86a6a8",.55,3)}${hills(300,"#6f9468",.85,7)}
+      <path d="M0 330 Q480 292 960 330 V540 H0Z" fill="url(#gA_clr)"/>
+      ${tree(60,385,"#2f5a2c",false,1.15)}${tree(180,362,"#35632f",false,.95)}${tree(800,368,"#7a6a3a",true,1)}
+      <path d="M0 395 Q480 372 960 398 V540 H0Z" fill="url(#gB_clr)"/>
+      ${tufts(21,0,960,400,530,70,"#3f6a2c","#7fa05a")}${flowers(5,380,520,24)}
+      <path d="M840 400 Q900 380 960 384 V540 H880 Q860 470 840 400Z" fill="#b8a46a" opacity=".55"/>
       ${stones(480,440)}
-      <path d="M690 420 q14 -18 30 -4" stroke="#7a1414" stroke-width="4" fill="none" opacity="${flags.thread?0:1}"/>
-      <path d="M880 340 L960 330 V540 H880Z" fill="#c9b47a" opacity=".55"/>`,
+      <path d="M690 420 q14 -18 30 -4" stroke="#8a1a14" stroke-width="4" fill="none" opacity="${flags.thread?0:1}"/>
+      ${light("clr",780,90,"#fff2c8",.45)}`,
     hot:[
       {id:"stones",name:"Old landing stones",shape:`<rect x="360" y="380" width="240" height="90" fill="transparent"/>`,stand:[330,470],
         Look:()=>say("A ring of old standing stones, still faintly glowing where Wexler's beam set you down. The beam only works one way. To go home, break your Return Shard, or find an Icosa Crystal in a town."),
@@ -180,12 +288,20 @@ const SCENES={
   },
   lane:{
     name:"Farm lane", bounds:[40,380,920,515], start:[70,450],
-    art:()=>`<rect width="960" height="540" fill="#e9c98a"/><path d="M0 300 Q480 270 960 300 V540 H0Z" fill="#a89a5a"/>
-      ${stalks(40,420,360,true)}${stalks(520,900,360,true)}
-      <path d="M0 400 Q480 380 960 400 V540 H0Z" fill="#8d7a4a"/>
-      <path d="M100 330 h340 M100 345 h340 M520 330 h340 M520 345 h340" stroke="#6b4a2a" stroke-width="5"/>
-      <g transform="translate(640 300)"><rect x="-3" y="0" width="6" height="70" fill="#6b4a2a"/><rect x="-26" y="12" width="52" height="6" fill="#6b4a2a"/><circle cx="0" cy="-6" r="12" fill="#d8b65a"/><path d="M-14 18 L14 18 L18 48 L-18 48Z" fill="#8a5a2a"/></g>
-      <g fill="#5f8a2e">${[0,1,2,3,4].map(k=>`<circle cx="${330+k*40}" cy="${470+(k%2)*10}" r="5"/>`).join("")}</g>`,
+    art:()=>`${defs("lane","#e9a868","#f7dfae")}
+      <rect width="960" height="540" fill="url(#sky_lane)"/>
+      <circle cx="820" cy="120" r="52" fill="#fff0c0" opacity=".9"/>
+      ${hills(250,"#c99a6a",.6,13)}${hills(285,"#a8905a",.85,17)}
+      <path d="M0 300 Q480 270 960 300 V540 H0Z" fill="url(#gA_lane)"/>
+      ${stalks(40,420,362,true)}${stalks(520,900,362,true)}
+      <path d="M100 330 h340 M100 345 h340 M520 330 h340 M520 345 h340" stroke="#5a3a1e" stroke-width="5" stroke-linecap="round"/>
+      ${[100,170,240,310,380,440,520,590,660,730,800,860].map(x=>`<rect x="${x-3}" y="318" width="6" height="36" fill="#4a2e18"/>`).join("")}
+      <path d="M0 400 Q480 380 960 400 V540 H0Z" fill="url(#gB_lane)"/>
+      <path d="M0 470 Q300 440 480 452 T960 462 V540 H0Z" fill="#a08658" opacity=".6"/>
+      ${tufts(31,0,960,405,530,45,"#7a6a3a","#b8a066")}
+      <g transform="translate(640 300)"><rect x="-3" y="0" width="6" height="70" fill="#5a3a1e"/><rect x="-28" y="12" width="56" height="6" fill="#5a3a1e"/><circle cx="0" cy="-6" r="12" fill="#e2c26a"/><ellipse cx="0" cy="-14" rx="20" ry="5" fill="#c9a24a"/><path d="M-14 18 L14 18 L19 50 L-19 50Z" fill="#8a5a2a"/><path d="M-26 14 l-6 8 M26 14 l6 8" stroke="#e2c26a" stroke-width="3"/></g>
+      <g fill="#4f7a22">${[0,1,2,3,4].map(k=>`<path d="M${330+k*40} ${470+(k%2)*10} l-5 -6 m5 6 l0 -8 m0 8 l5 -6" stroke="#4f7a22" stroke-width="3"/>`).join("")}</g>
+      ${light("lane",820,120,"#ffe0a0",.5)}`,
     hot:[
       {id:"west",name:"Back to the clearing",shape:`<rect x="0" y="300" width="50" height="230" fill="transparent"/>`,stand:[40,450],exit:"clearing"},
       {id:"crops",name:"Dry Gorgrain field",shape:`<rect x="40" y="300" width="400" height="70" fill="transparent"/>`,stand:[240,420],
@@ -201,15 +317,20 @@ const SCENES={
   },
   yard:{
     name:"Farluck Farm", bounds:[40,400,920,515], start:[70,460],
-    art:()=>`<rect width="960" height="540" fill="#f0c98a"/><path d="M0 300 Q480 280 960 300 V540 H0Z" fill="#9a8a52"/>
-      <rect x="90" y="190" width="230" height="160" fill="#a3753f"/><path d="M70 195 L205 110 L340 195Z" fill="#7a3a24"/><rect x="185" y="270" width="40" height="80" fill="#3b2a1a"/><rect x="110" y="230" width="44" height="34" fill="#f3d98a"/><rect x="250" y="230" width="44" height="34" fill="#f3d98a"/>
-      <path d="M290 150 q-8 -20 6 -36 q-10 -18 2 -32" fill="none" stroke="#efe6d6" stroke-width="6" opacity=".6"/>
-      <rect x="680" y="220" width="200" height="150" fill="#7d5a34"/><path d="M665 225 L780 165 L895 225Z" fill="#5a3a22"/>
-      <g id="shedDoor"><rect x="750" y="280" width="60" height="90" fill="${flags.cleared?'#3b2a1a':'#5a3a22'}" transform="${flags.cleared?'':'rotate(-2 780 370)'}"/></g>
+    art:()=>`${defs("yard","#f0b878","#fbe2b4")}
+      <rect width="960" height="540" fill="url(#sky_yard)"/>
+      ${clouds(41)}
+      ${hills(250,"#c2a070",.55,43)}
+      <path d="M0 300 Q480 280 960 300 V540 H0Z" fill="url(#gA_yard)"/>
+      ${house()}
+      <path d="M290 150 q-8 -20 6 -36 q-10 -18 2 -32" fill="none" stroke="#f6efe2" stroke-width="7" opacity=".55" stroke-linecap="round"/>
+      ${shed()}
       ${flags.cleared?'':`${gremlinArt(735,372)}`}
-      <path d="M0 400 Q480 385 960 400 V540 H0Z" fill="#857244"/>
-      <g transform="translate(480 400)"><ellipse cx="0" cy="0" rx="46" ry="14" fill="#6b6b6b"/><rect x="-46" y="-30" width="92" height="30" fill="#8a8a8a"/><ellipse cx="0" cy="-30" rx="46" ry="14" fill="#5a5a5a"/><ellipse cx="0" cy="-30" rx="36" ry="9" fill="#2a2a2a"/><rect x="-40" y="-90" width="6" height="60" fill="#6b4a2a"/><rect x="34" y="-90" width="6" height="60" fill="#6b4a2a"/><rect x="-44" y="-96" width="88" height="8" fill="#7a3a24"/></g>
-      ${cecilArt(600,470)}`,
+      <path d="M0 400 Q480 385 960 400 V540 H0Z" fill="url(#gB_yard)"/>
+      ${tufts(47,0,960,405,530,40,"#6e6036","#a8935a")}
+      ${well(480,400)}
+      ${cecilArt(600,470)}
+      ${light("yard",300,60,"#ffe6b0",.4)}`,
     hot:[
       {id:"west",name:"Back to the lane",shape:`<rect x="0" y="300" width="50" height="230" fill="transparent"/>`,stand:[40,460],exit:"lane"},
       {id:"house",name:"Farmhouse",shape:`<rect x="70" y="110" width="270" height="240" fill="transparent"/>`,stand:[205,440],
@@ -231,9 +352,13 @@ const SCENES={
   }
 };
 
-function tree(x,y,c,wilt){ return `<rect x="${x-6}" y="${y-140}" width="12" height="140" fill="#3b2a1a"/>`+
-  (wilt? `<path d="M${x} ${y-140} q-40 10 -46 50 M${x} ${y-120} q40 10 44 52 M${x} ${y-100} q-30 20 -30 50" stroke="${c}" stroke-width="10" fill="none" stroke-linecap="round"/>`
-       : `<circle cx="${x}" cy="${y-150}" r="46" fill="${c}"/><circle cx="${x-30}" cy="${y-120}" r="32" fill="${c}"/><circle cx="${x+30}" cy="${y-118}" r="34" fill="${c}"/>`); }
+function shade(c,f){ const n=parseInt(c.slice(1),16); let r=n>>16,g=n>>8&255,b=n&255; r=Math.min(255,Math.round(r*f)); g=Math.min(255,Math.round(g*f)); b=Math.min(255,Math.round(b*f)); return "#"+((1<<24)|(r<<16)|(g<<8)|b).toString(16).slice(1); }
+function tree(x,y,c,wilt,sc){ sc=sc||1; const T=`<ellipse cx="${x+10}" cy="${y+2}" rx="${46*sc}" ry="${9*sc}" fill="#000" opacity=".22"/><path d="M${x-8*sc} ${y} Q${x-5*sc} ${y-70*sc} ${x-3*sc} ${y-140*sc} L${x+3*sc} ${y-140*sc} Q${x+5*sc} ${y-70*sc} ${x+8*sc} ${y}Z" fill="url(#trunk)"/>`;
+  if(wilt) return T+`<path d="M${x} ${y-140*sc} q-40 10 -46 50 M${x} ${y-120*sc} q40 10 44 52 M${x} ${y-100*sc} q-30 20 -30 50" stroke="${c}" stroke-width="${9*sc}" fill="none" stroke-linecap="round"/><path d="M${x} ${y-140*sc} q-40 10 -46 50 M${x} ${y-120*sc} q40 10 44 52" stroke="${shade(c,1.3)}" stroke-width="${3*sc}" fill="none" stroke-linecap="round" opacity=".6"/>${[[-44,-86],[42,-66],[-28,-48]].map(([dx,dy])=>`<path d="M${x+dx*sc} ${y+dy*sc} l-3 8 l4 -2 l2 8" stroke="#9a8e6a" stroke-width="2" fill="none"/>`).join("")}`;
+  const D=shade(c,.7), L=shade(c,1.35);
+  return T+`<g><circle cx="${x}" cy="${y-150*sc}" r="${48*sc}" fill="${D}"/><circle cx="${x-32*sc}" cy="${y-120*sc}" r="${34*sc}" fill="${D}"/><circle cx="${x+32*sc}" cy="${y-118*sc}" r="${36*sc}" fill="${D}"/>
+  <circle cx="${x-6*sc}" cy="${y-160*sc}" r="${40*sc}" fill="${c}"/><circle cx="${x-34*sc}" cy="${y-128*sc}" r="${26*sc}" fill="${c}"/><circle cx="${x+28*sc}" cy="${y-128*sc}" r="${28*sc}" fill="${c}"/>
+  <circle cx="${x-14*sc}" cy="${y-172*sc}" r="${20*sc}" fill="${L}" opacity=".7"/><circle cx="${x+18*sc}" cy="${y-142*sc}" r="${12*sc}" fill="${L}" opacity=".5"/></g>`; }
 function fern(x,y){ return `<path d="M${x} ${y} q-30 -40 -50 -46 M${x} ${y} q-6 -50 4 -70 M${x} ${y} q30 -36 50 -40" stroke="#3f6b2f" stroke-width="7" fill="none" stroke-linecap="round"/>`; }
 /* ---------- scene setup ---------- */
 function load(id,keep){
@@ -309,7 +434,7 @@ function giveGifts(){
     note("Cecil's gifts: seeds for the Farm, a recipe for the Kitchen.");
     setTimeout(()=>toast("Hearth anchor: Cecil's farm","\"Mark my hearth, friend. Come and go as you need.\" Use the farmhouse to go home."),3200);
     setTimeout(()=>toast("New quest: The dry well","Find out what is hammering under Farluck Farm."),6400);
-    say("Your Pack: Gorgrain seeds x3, Char Bean seeds x3, Char Bean Soup x2, Recipe: Char Bean Soup. The soup can go in a Ready slot.");
+    say("Cecil's gifts are in your Pack. Open it to see them.");
   });
 }
 function missionDone(how){
@@ -335,7 +460,18 @@ let tt; function toast(t,s){ $("toastT").textContent=t; $("toastS").textContent=
 
 
 /* ---------- ui ---------- */
-function say(t){ $("narr").innerHTML=t; }
+let bubT=null, bubOn=false;
+function say(t){
+  $("narr").innerHTML=t; const b=$("bubble"); b.innerHTML=t; b.classList.add("on"); bubOn=true; posBubble();
+  clearTimeout(bubT); const plain=b.textContent.length; bubT=setTimeout(()=>{ b.classList.remove("on"); bubOn=false; },Math.max(3500,plain*55));
+}
+function posBubble(){
+  if(!bubOn||!hero.el) return; const s=$("svg"), st=$("stage").getBoundingClientRect();
+  const sc=0.75+(hero.y-330)/190*0.45; const pt=s.createSVGPoint(); pt.x=hero.x; pt.y=hero.y-118*sc*(heroLook().size);
+  const q=pt.matrixTransform(s.getScreenCTM()); const b=$("bubble"), w=b.offsetWidth;
+  const x=Math.max(w/2+8,Math.min(st.width-w/2-8,q.x-st.left)); const y=Math.max(b.offsetHeight+8,q.y-st.top);
+  b.style.left=x+"px"; b.style.top=y+"px";
+}
 const FACE={Narrator:`<svg viewBox="0 0 70 70"><rect width="70" height="70" fill="#1d2633"/><polygon points="35,8 54,30 47,62 23,62 16,30" fill="#bfe4ff" stroke="#fff" stroke-width="1.5"/></svg>`,
   Cecil:`<svg viewBox="0 0 70 70"><rect width="70" height="70" fill="#3a4a2a"/><path d="M8 70c3-14 12-20 27-20s24 6 27 20z" fill="#4f6f8f"/><circle cx="35" cy="34" r="15" fill="#d9a57c"/><path d="M26 42 q9 6 18 0" stroke="#e8e0d0" stroke-width="4" fill="none"/><circle cx="30" cy="32" r="1.8" fill="#2b1d10"/><circle cx="40" cy="32" r="1.8" fill="#2b1d10"/><ellipse cx="35" cy="21" rx="26" ry="6" fill="#d8b65a"/><path d="M22 21 Q35 2 48 21Z" fill="#d8b65a"/></svg>`};
 // opts: [text, style("" = plain), fn, worksOnSpeaker]
@@ -349,23 +485,54 @@ function ask(who,text,opts,after){
   ul.querySelector("button").focus({preventScroll:true});
 }
 function setItem(it){ item=it; document.querySelectorAll(".inv button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.it===it)); }
+const ICON={"Return Shard":"✦","Gorgrain seeds":"🌾","Char Bean seeds":"🫘","Char Bean Soup":"🍲","Recipe: Char Bean Soup":"📜","Red cloak thread":"🧵","Mint Tea":"🍵"};
+const ROLE_FRAME={Maverick:"#3f6b45",Brawler:"#8a4a2a",Champion:"#a8821f","Soul Seer":"#5a4a8a",Whisper:"#3d4b5c"};
+const ROLE_WEAPON={Maverick:"Stringbow",Brawler:"Fists",Champion:"Sword and shield","Soul Seer":"Staff",Whisper:"Knives"};
+function cornerSVG(role){
+  const c="#e8c260";
+  const g={Maverick:`<path d="M8 38 Q10 10 38 8 Q30 22 20 26 Q26 30 8 38Z" fill="${c}"/>`,
+    Brawler:`<rect x="6" y="6" width="16" height="16" rx="3" fill="${c}"/><circle cx="30" cy="10" r="5" fill="${c}"/><circle cx="10" cy="30" r="5" fill="${c}"/>`,
+    Champion:`<circle cx="18" cy="18" r="9" fill="${c}"/>${[0,45,90,135,180,225,270,315].map(a=>`<rect x="17" y="2" width="2" height="7" fill="${c}" transform="rotate(${a} 18 18)"/>`).join("")}`,
+    "Soul Seer":`<polygon points="18,2 22,14 34,18 22,22 18,34 14,22 2,18 14,14" fill="${c}"/>`,
+    Whisper:`<path d="M30 6 A16 16 0 1 0 30 34 A12 12 0 1 1 30 6Z" fill="${c}"/>`};
+  return `<svg viewBox="0 0 40 40">${g[role]||g.Maverick}</svg>`;
+}
+function applyRole(){
+  const L=heroLook(); document.documentElement.style.setProperty("--role",ROLE_FRAME[L.role]||"#3f6b45");
+  document.querySelectorAll(".corner").forEach(c=>c.innerHTML=cornerSVG(L.role));
+  $("whoName").textContent=`${L.lf} ${L.role}`; $("whoSub").textContent=`Style: ${STYLE}`;
+}
+function slotHTML(name,n,label){ return name?`<span class="ic">${ICON[name]||"◆"}</span>${label||name}${n>1?`<span class="n">${n}</span>`:""}`:`<span class="ic">·</span>${label||"Empty"}`; }
 function buildBar(){
   const bar=$("verbs"); bar.innerHTML="";
   VERBS.forEach(v=>{ const b=document.createElement("button"); b.type="button"; b.textContent=v; b.setAttribute("aria-pressed",v===verb);
-    b.onclick=()=>{ verb=v; setItem(null); bar.querySelectorAll(":scope > button").forEach(x=>x.setAttribute("aria-pressed",x.textContent===v)); }; bar.appendChild(b); });
-  const inv=document.createElement("div"); inv.className="inv";
-  const pk=document.createElement("button"); pk.type="button"; pk.textContent="Pack ("+Object.keys(pack).length+"/8)";
-  pk.onclick=()=>say(Object.keys(pack).length?"Your Pack: "+Object.entries(pack).map(([k,n])=>`${k} x${n}`).join(", ")+(journal.length?"<br><em>Journal:</em> "+journal.join(" · "):""):"Your Pack is empty."+(journal.length?"<br><em>Journal:</em> "+journal.join(" · "):""));
-  if(pack["Return Shard"]){ const rs=document.createElement("button"); rs.type="button"; rs.textContent="Return Shard ("+pack["Return Shard"]+")"; rs.onclick=()=>{ if(!busy&&!$("box").classList.contains("on")) goHome("shard"); }; inv.appendChild(rs); }
-  inv.appendChild(pk); bar.appendChild(inv);
+    b.onclick=()=>{ verb=v; setItem(null); bar.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x.textContent===v)); }; bar.appendChild(b); });
+  const sl=$("slots"); sl.innerHTML=""; const L=heroLook();
+  const w=document.createElement("div"); w.className="slot"; w.title="Weapon"; w.innerHTML=`<span class="ic">⚔</span>${(HERO&&HERO.weapon)||ROLE_WEAPON[L.role]}`; sl.appendChild(w);
+  READY.forEach((r,i)=>{ const d=document.createElement("div"); d.className="slot"+(r?"":" empty"); d.title="Ready slot "+(i+1); d.innerHTML=r?slotHTML(r.name,r.n):slotHTML(null,0,"Ready "+(i+1)); sl.appendChild(d); });
+  const rs=document.createElement("button"); rs.type="button"; rs.className="slot"+(pack["Return Shard"]?"":" empty"); rs.title="Return Shard: go home any time";
+  rs.innerHTML=slotHTML(pack["Return Shard"]?"Return Shard":null,pack["Return Shard"]||0,"Return Shard"); rs.onclick=()=>{ if(pack["Return Shard"]&&!busy&&!$("box").classList.contains("on")) goHome("shard"); else if(!pack["Return Shard"]) say("No Return Shard left. Find a hearth or a town's Icosa Crystal."); };
+  sl.appendChild(rs);
+  const used=Object.keys(pack).filter(k=>k!=="Return Shard").length;
+  $("packBtn").innerHTML=`<svg viewBox="0 0 48 48"><path d="M12 18 Q12 8 24 8 Q36 8 36 18 L38 42 Q24 46 10 42Z" fill="#8a5a2a" stroke="#3a2414" stroke-width="2"/><path d="M16 18 Q24 24 32 18" fill="none" stroke="#3a2414" stroke-width="2"/><rect x="20" y="24" width="8" height="6" rx="1" fill="#c99a3c"/><path d="M18 12 Q24 2 30 12" fill="none" stroke="#5a3a1e" stroke-width="3"/></svg><span class="n">${used}/8</span>`;
+  applyRole();
 }
+function openPack(){
+  const items=Object.entries(pack).filter(([k])=>k!=="Return Shard"); const g=$("invGrid"); g.innerHTML="";
+  for(let i=0;i<8;i++){ const it=items[i]; const c=document.createElement("div"); c.className="cell"; c.innerHTML=it?`<span class="ic">${ICON[it[0]]||"◆"}</span>${it[0]}${it[1]>1?`<span class="n">${it[1]}</span>`:""}`:""; g.appendChild(c); }
+  $("jList").innerHTML=journal.length?journal.map(j=>`<li>${j}</li>`).join(""):"<li>Nothing yet.</li>";
+  $("invWin").classList.add("on");
+}
+$("packBtn").onclick=openPack; $("helpBtn").onclick=()=>$("helpWin").classList.toggle("on");
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>b.closest(".win").classList.remove("on"));
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") document.querySelectorAll(".win.on").forEach(w=>w.classList.remove("on")); });
 
 
 document.addEventListener("keydown",e=>{
   if(!$("box").classList.contains("on")) return; const n=parseInt(e.key,10); const bs=$("choices").querySelectorAll("button"); if(n>=1&&n<=bs.length) bs[n-1].click();
 });
-$("selStyle").onchange=e=>STYLE=e.target.value;
-["selLf","selRole"].forEach(id=>$(id).onchange=()=>{ if(hero.el){ hero.el.innerHTML=heroSVG(); placeHero(); } });
+$("selStyle").onchange=e=>{ STYLE=e.target.value; applyRole(); };
+["selLf","selRole"].forEach(id=>$(id).onchange=()=>{ if(hero.el){ hero.el.innerHTML=heroSVG(); placeHero(); } buildBar(); });
 if(HERO&&HERO.role){ $("selLf").value=HERO.lf; $("selRole").value=HERO.role; if(HERO.style){ $("selStyle").value=HERO.style; STYLE=HERO.style; } document.querySelector(".setup").hidden=true; }
 buildBar();
 if(HERO&&HERO.start==="farluck-hearth"&&(HERO.anchors||[]).includes("farluck-hearth")){
