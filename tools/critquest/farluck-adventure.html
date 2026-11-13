@@ -131,7 +131,7 @@ button.slot:hover,button.slot:focus-visible{border-color:var(--gold);outline:non
     <div class="sec"><h4>Actions</h4><div class="verbs" id="verbs"></div></div>
     <div class="sec"><h4>Gear and Ready</h4><div class="slots" id="slots"></div></div>
     <div class="sec"><h4>Pack</h4><button type="button" class="slot pack" id="packBtn" aria-label="Open Pack"></button></div>
-    <div class="sec"><h4>Art</h4><button type="button" class="artbtn" id="artBtn" title="Switch character art">Classic</button></div>
+    <div class="sec"><h4>Art</h4><button type="button" class="artbtn" id="artBtn" title="Switch character art">Classic</button><button type="button" class="artbtn" id="bgBtn" title="Switch scene art" style="margin-top:4px">Painted</button></div>
     <div class="sec"><button type="button" class="help" id="helpBtn" aria-label="How to play" title="How to play">?</button></div>
   </div>
 </div>
@@ -264,7 +264,10 @@ function cecilArt(x,y){ return `<g transform="translate(${x} ${y})"><ellipse cx=
 function gremlinArt(x,y){ return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="10" ry="3" fill="rgba(0,0,0,.3)"/><path d="M-9 0 Q-10 -20 0 -22 Q10 -20 9 0Z" fill="#5f8a2e" stroke="#2f4a14" stroke-width="1.5"/><path d="M-4 -4 Q-4 -16 2 -18" stroke="#8fbf4e" stroke-width="2" fill="none"/><path d="M-8 -18 l-8 -8 M8 -18 l8 -8" stroke="#5f8a2e" stroke-width="4"/><circle cx="-3" cy="-14" r="2" fill="#ffe24a"/><circle cx="3" cy="-14" r="2" fill="#ffe24a"/></g>`; }
 const SCENES={
   clearing:{
-    name:"The old landing stones", bounds:[40,370,920,515], start:[300,460],
+
+    P:{bounds:[40,330,920,520],start:[300,440],
+      over:()=>`<path d="M790 228 q14 -18 30 -4" stroke="#b0201a" stroke-width="5" fill="none" opacity="${flags.thread?0:1}"/>`,
+      hot:{stones:[[320,160,320,140],[480,420]],thread:[[750,180,110,90],[780,400]],east:[[890,260,70,280],[930,420]]}},    name:"The old landing stones", bounds:[40,370,920,515], start:[300,460],
     art:()=>`${defs("clr","#7fb6d6","#e8f2ea")}
       <rect width="960" height="540" fill="url(#sky_clr)"/>
       ${clouds(11)}
@@ -289,7 +292,10 @@ const SCENES={
     ]
   },
   lane:{
-    name:"Farm lane", bounds:[40,380,920,515], start:[70,450],
+
+    P:{bounds:[40,340,920,520],start:[70,440],
+      over:()=>`<g>${[0,1,2,3,4].map(k=>`<path d="M${330+k*40} ${455+(k%2)*10} l-5 -6 m5 6 l0 -8 m0 8 l5 -6" stroke="#4f9a22" stroke-width="3"/>`).join("")}</g>`,
+      hot:{west:[[0,260,50,280],[40,440]],crops:[[0,180,580,70],[300,360]],scare:[[600,95,150,175],[660,370]],prints:[[310,440,220,40],[300,460]],east:[[890,260,70,280],[930,440]]}},    name:"Farm lane", bounds:[40,380,920,515], start:[70,450],
     art:()=>`${defs("lane","#e9a868","#f7dfae")}
       <rect width="960" height="540" fill="url(#sky_lane)"/>
       <circle cx="820" cy="120" r="52" fill="#fff0c0" opacity=".9"/>
@@ -318,7 +324,10 @@ const SCENES={
     ]
   },
   yard:{
-    name:"Farluck Farm", bounds:[40,400,920,515], start:[70,460],
+
+    P:{bounds:[40,420,920,520],start:[70,470],
+      over:()=>`${flags.cleared?'':(ART==="pixel"?gremPix(800,392):gremlinArt(800,392))}${ART==="pixel"?cecilPix(680,450):cecilArt(680,450)}`,
+      hot:{west:[[0,300,50,240],[40,470]],house:[[20,60,330,320],[200,440]],well:[[460,175,170,225],[545,445]],cecil:[[645,330,70,125],[620,465]],shed:[[720,180,240,210],[820,440]]}},    name:"Farluck Farm", bounds:[40,400,920,515], start:[70,460],
     art:()=>`${defs("yard","#f0b878","#fbe2b4")}
       <rect width="960" height="540" fill="url(#sky_yard)"/>
       ${clouds(41)}
@@ -365,7 +374,11 @@ function fern(x,y){ return `<path d="M${x} ${y} q-30 -40 -50 -46 M${x} ${y} q-6 
 /* ---------- scene setup ---------- */
 function load(id,keep){
   scene=SCENES[id]; scene.key=id; $("where").textContent=scene.name;
-  const s=$("svg"); s.innerHTML=scene.art();
+  if(!scene.V) scene.V={bounds:scene.bounds,start:scene.start,hot:Object.fromEntries(scene.hot.map(h=>[h.id,[h.shape,h.stand]]))};
+  const P=BG==="painted"&&scene.P;
+  scene.bounds=P?P.bounds:scene.V.bounds; scene.start=P?P.start:scene.V.start;
+  scene.hot.forEach(h=>{ const q=P&&P.hot[h.id]; if(q){ h.shape=`<rect x="${q[0][0]}" y="${q[0][1]}" width="${q[0][2]}" height="${q[0][3]}" fill="transparent"/>`; h.stand=q[1]; } else { [h.shape,h.stand]=scene.V.hot[h.id]; } });
+  const s=$("svg"); s.innerHTML=P?`<image href="art/farluck-${id}.jpg" x="0" y="0" width="960" height="540" preserveAspectRatio="xMidYMid slice" onerror="bgFail()"/>${P.over()}`:scene.art();
   scene.hot.forEach(h=>{ const g=document.createElementNS(SVGNS,"g"); g.setAttribute("class","hot"); g.setAttribute("tabindex","0"); g.setAttribute("role","button"); g.setAttribute("aria-label",h.name);
     g.innerHTML=h.shape.replace("fill=\"transparent\"","fill=\"transparent\" class=\"hl\" stroke=\"transparent\"");
     g.addEventListener("click",e=>{e.stopPropagation(); act(h);});
@@ -465,6 +478,9 @@ let tt; function toast(t,s){ $("toastT").textContent=t; $("toastS").textContent=
 
 /* ---------- pixel-art option (original sprites drawn on a 16-wide grid) ---------- */
 let ART="classic"; try{ ART=localStorage.getItem("cq-art")||"classic"; }catch(e){}
+let BG="painted"; try{ BG=localStorage.getItem("cq-bg")||"painted"; }catch(e){}
+function setBg(b){ BG=b; try{ localStorage.setItem("cq-bg",b); }catch(e){} const k=$("bgBtn"); if(k) k.textContent=BG==="painted"?"Painted":"Drawn"; if(scene){ const keep=[hero.x,hero.y]; load(scene.key,true); hero.x=hero.tx=Math.max(scene.bounds[0],Math.min(scene.bounds[2],keep[0])); hero.y=hero.ty=Math.max(scene.bounds[1],Math.min(scene.bounds[3],keep[1])); placeHero(); } }
+function bgFail(){ if(BG==="painted"){ BG="drawn"; const k=$("bgBtn"); if(k) k.textContent="Drawn"; if(scene) load(scene.key,true); } }
 const PX=5;
 const HERO_PIX=[
 "......oooo......",
@@ -710,7 +726,7 @@ function openPack(){
   $("jList").innerHTML=journal.length?journal.map(j=>`<li>${j}</li>`).join(""):"<li>Nothing yet.</li>";
   $("invWin").classList.add("on");
 }
-$("packBtn").onclick=openPack; $("artBtn").onclick=()=>setArt(ART==="pixel"?"classic":"pixel"); $("helpBtn").onclick=()=>$("helpWin").classList.toggle("on");
+$("packBtn").onclick=openPack; $("artBtn").onclick=()=>setArt(ART==="pixel"?"classic":"pixel"); $("bgBtn").onclick=()=>setBg(BG==="painted"?"drawn":"painted"); $("helpBtn").onclick=()=>$("helpWin").classList.toggle("on");
 document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>b.closest(".win").classList.remove("on"));
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") document.querySelectorAll(".win.on").forEach(w=>w.classList.remove("on")); });
 
@@ -721,7 +737,7 @@ document.addEventListener("keydown",e=>{
 $("selStyle").onchange=e=>{ STYLE=e.target.value; applyRole(); };
 ["selLf","selRole"].forEach(id=>$(id).onchange=()=>{ if(hero.el){ hero.el.innerHTML=ART==="pixel"?heroPixSVG():heroSVG(); placeHero(); } buildBar(); });
 if(HERO&&HERO.role){ $("selLf").value=HERO.lf; $("selRole").value=HERO.role; if(HERO.style){ $("selStyle").value=HERO.style; STYLE=HERO.style; } document.querySelector(".setup").hidden=true; }
-buildBar(); $("artBtn").textContent=ART==="pixel"?"Pixel":"Classic";
+buildBar(); $("artBtn").textContent=ART==="pixel"?"Pixel":"Classic"; $("bgBtn").textContent=BG==="painted"?"Painted":"Drawn";
 if(HERO&&HERO.start==="farluck-hearth"&&(HERO.anchors||[]).includes("farluck-hearth")){
   // a return trip: land at Cecil's hearth, the farm already helped
   Object.assign(flags,{met:1,cleared:1,gifts:1,hearth:1,thread:1});
