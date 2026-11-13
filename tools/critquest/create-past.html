@@ -190,12 +190,12 @@ let CFG={}; try{ CFG=JSON.parse(decodeURIComponent(location.hash.slice(1)))||{};
 
 /* ---------- people of Talus (same lines as the castle's Create Your Past) */
 const LIFEFORMS={
-  Sapien:{t:"Steady and adaptable.",b:"Power +1, Charm +1",line:"You keep your footing while everyone else stumbles."},
-  Lizerus:{t:"Big, tough-skinned and passionate.",b:"Defense +1, Power +1",line:"You feel the heat in the stone before anyone else does."},
-  Leyf:{t:"Quick and light on their feet.",b:"Energy +1, Speed +1",line:"You hop up onto a ledge for a better look."},
-  Dimoneesh:{t:"Calm, thoughtful, hard to knock over.",b:"Defense +1, Energy +1",line:"You sense the calm drain out of the air."},
-  Melkin:{t:"Small, cheery and clever with their hands.",b:"Speed +1, Charm +1",line:"You squeeze through a gap no one else could fit through."}};
-const ROLES={Brawler:{t:"Up close, with fists and grit.",life:40},Champion:{t:"Sword, shield and a promise kept.",life:33},Maverick:{t:"Stringbow and sharp eyes.",life:30},"Soul Seer":{t:"Staff, song and healing.",life:27},Whisper:{t:"Quiet steps and quick knives.",life:30}};
+  Sapien:{t:"The largest folk, covered in fur. Strong warriors and hard-working farmers.",b:"Power +1, Charm +1",line:"You keep your footing while everyone else stumbles."},
+  Lizerus:{t:"Strong, proud and fierce. Warriors, spiritual leaders and keen shopkeepers.",b:"Defense +1, Power +1",line:"You feel the heat in the stone before anyone else does."},
+  Leyf:{t:"Big tree dwellers who care for and protect the land. Great survivors and cooks.",b:"Energy +1, Speed +1",line:"You hop up onto a ledge for a better look."},
+  Dimoneesh:{t:"Horned, hooved scholars and teachers, devoted to protecting others.",b:"Defense +1, Energy +1",line:"You sense the calm drain out of the air."},
+  Melkin:{t:"The smallest folk. Friendly crafters and artists, the first to make music.",b:"Speed +1, Charm +1",line:"You squeeze through a gap no one else could fit through."}};
+const ROLES={Brawler:{t:"Masters of balance and energy who subdue rivals with Que Bao.",life:40},Champion:{t:"Honor and faith, protecting others with tactics, skill and weapons.",life:33},Maverick:{t:"Sharp eyes and sharp wit, with breathtaking aim from afar.",life:30},"Soul Seer":{t:"Connected to the energies of Icosa, bending reality and guiding nature.",life:27},Whisper:{t:"Masters of stealth who move through shadows unseen.",life:30}};
 const look=(lf,role)=>({lf,role,skin:SKIN[lf],cloak:ROLE_LOOK[role],size:1});
 function headShot(lf,role,bust){ const vb=bust?"-42 -128 84 84":"-26 -124 52 52"; return `<svg viewBox="${vb}" aria-hidden="true">${heroSVG(look(lf,role))}</svg>`; }
 
