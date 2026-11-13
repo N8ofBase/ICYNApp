@@ -842,9 +842,10 @@ function showCourtyard() {
   $("#view").innerHTML = `<div class="panel"><div class="eyebrow">The heart of the castle</div>
     <div class="room">${portrait("wexler", 120)}<div style="display:grid;gap:10px;min-width:0"><h2>Courtyard</h2>
       <p>An open courtyard on the pale gray rock of the comet, with the Nebrom system hanging overhead. In the middle, a circle of blue crystals hums: the Teleportation Station.</p>
-      <div class="btns"><button class="btn primary" type="button" id="tb">Talk to Bruxanna</button><button class="btn" type="button" id="tw">Talk to Wexler</button><button class="btn primary" type="button" id="tdown">${S.trip ? "Back down to " + S.trip.where : S.farluckDone ? "Go back down to Talus" : "Begin the Farluck Farm mission"}</button><button class="btn" type="button" id="back">Back to the castle</button></div>
+      <div class="btns"><button class="btn primary" type="button" id="tb">Talk to Bruxanna</button><button class="btn" type="button" id="tw">Talk to Wexler</button><button class="btn primary" type="button" id="tdown">${S.trip ? "Back down to " + S.trip.where : S.farluckDone ? "Go back down to Talus" : "Begin the Farluck Farm mission"}</button>${!S.trip && (S.anchors || []).includes("farluck-hearth") ? `<button class="btn" type="button" id="thearth">To Cecil's hearth</button>` : ""}<button class="btn" type="button" id="back">Back to the castle</button></div>
     </div></div></div>`;
-  $("#tb").onclick = () => openTalk("bruxanna"); $("#tw").onclick = () => openTalk("wexler"); if ($("#tdown")) $("#tdown").onclick = () => S.trip ? showTrip() : openTalk("wexler", "mission"); $("#back").onclick = showHub;
+  $("#tb").onclick = () => openTalk("bruxanna"); $("#tw").onclick = () => openTalk("wexler"); if ($("#thearth")) $("#thearth").onclick = () => { S.mission = "Farluck Farm"; save(); showFarluck("farluck-hearth"); };
+  if ($("#tdown")) $("#tdown").onclick = () => S.trip ? showTrip() : openTalk("wexler", "mission"); $("#back").onclick = showHub;
 }
 
 /* ---------- inventory (N8 2026-11-12): loadout = 1 Weapon, 1 Armor, 2 Ready slots (stacks of up to 3).
@@ -1404,10 +1405,10 @@ function heroCfg() {
 }
 /* Farluck Farm: the painted-screen adventure (farluck-adventure.html, from the Crit Quest thread) with its hex battle.
    Your Hero and Ready items go in through the URL hash; your Pack, Cecil's gifts and what's left of your Ready items come back by postMessage. */
-function showFarluck() {
+function showFarluck(start) {
   stopGame();
   if (!(S.returnShards > 0)) { S.returnShards = 1; save(); toast("Wexler presses a Return Shard into your hand."); }
-  const cfg = { ...heroCfg(), style: S.hero.style || S.style, ready: S.loadout.ready, returnShards: S.returnShards, anchors: S.anchors || [] };
+  const cfg = { ...heroCfg(), style: S.hero.style || S.style, ready: S.loadout.ready, returnShards: S.returnShards, anchors: S.anchors || [], ...(start ? { start } : {}) };
   $("#view").innerHTML = `<div class="panel game"><div class="head"><div><div class="eyebrow">Mission</div><h2>Farluck Farm</h2></div>
 </div>
     <iframe class="arena" src="farluck-adventure.html#${encodeURIComponent(JSON.stringify(cfg))}" title="Farluck Farm"></iframe></div>`;
