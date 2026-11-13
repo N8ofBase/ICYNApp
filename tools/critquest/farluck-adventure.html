@@ -367,8 +367,16 @@ document.addEventListener("keydown",e=>{
 $("selStyle").onchange=e=>STYLE=e.target.value;
 ["selLf","selRole"].forEach(id=>$(id).onchange=()=>{ if(hero.el){ hero.el.innerHTML=heroSVG(); placeHero(); } });
 if(HERO&&HERO.role){ $("selLf").value=HERO.lf; $("selRole").value=HERO.role; if(HERO.style){ $("selStyle").value=HERO.style; STYLE=HERO.style; } document.querySelector(".setup").hidden=true; }
-buildBar(); load("clearing");
+buildBar();
+if(HERO&&HERO.start==="farluck-hearth"&&(HERO.anchors||[]).includes("farluck-hearth")){
+  // a return trip: land at Cecil's hearth, the farm already helped
+  Object.assign(flags,{met:1,cleared:1,gifts:1,hearth:1,thread:1});
+  load("yard"); hero.x=hero.tx=230; hero.y=hero.ty=450; placeHero();
+  say("<em>Back at Farluck.</em> You step out of the light by Cecil's warm hearth. He looks up from his soup. \"Back already? That well's still dry, friend.\"");
+} else {
+  load("clearing");
 say("<em>Chapter 1.</em> Wexler's beam sets you down on a ring of old landing stones. Somewhere east, a chimney is smoking. Look around, then follow the path. Your Return Shard can take you home any time.");
+}
 </script>
 </body>
 </html>
