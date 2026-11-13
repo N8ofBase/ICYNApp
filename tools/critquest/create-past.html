@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Create Your Past</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;900&family=Alegreya+SC:wght@500;700&family=Alegreya:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* Same world as the explore screens (drawn scene, parchment window), with a thin gold border and a small bar */
+:root{
+  --bg:#0c0a0a; --parch:#f3e6c8; --parch2:#e6d3a8; --ink:#2b1d10; --ink2:#5a4630; --edge:#8a6a3a; --gold:#c99a3c; --gold2:#e8c260;
+  --hover:#fff4d8; --accent:#7a2e1c; --stone1:#2a231d; --stone2:#17120e; --barInk:#f3e6c8;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;overflow:hidden}
+.game{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) 0 env(safe-area-inset-left,0px);background:var(--bg)}
+.frame{position:relative;flex:1;min-height:0;margin:8px 8px 0;border:2px solid var(--gold2);border-radius:6px;box-shadow:0 0 0 1px #000,inset 0 0 30px rgba(0,0,0,.5);overflow:hidden;background:#000}
+.stage{position:absolute;inset:0}
+.scene{position:absolute;inset:0;opacity:0;transition:opacity .9s}
+.scene.on{opacity:1}
+.scene svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.drift{animation:drift 22s ease-in-out infinite alternate}
+@keyframes drift{from{transform:scale(1)}to{transform:scale(1.04) translate(-8px,-4px)}}
+.flick{animation:flick 1.6s ease-in-out infinite}
+@keyframes flick{0%,100%{opacity:.65}50%{opacity:1}}
+.sway{animation:sway 3.4s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes sway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+.rise{animation:rise .9s ease-out both}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}}
+@media (prefers-reduced-motion:reduce){.drift,.flick,.sway,.rise{animation:none}.scene{transition:none}}
+.plateTop{position:absolute;left:12px;top:10px;z-index:5;background:rgba(15,10,6,.72);border:1px solid var(--gold);border-radius:8px;padding:4px 12px;color:#f3e6c8;font-family:"Alegreya SC",serif;pointer-events:none}
+.plateTop b{display:block;font-size:16px}.plateTop span{font-size:13px;opacity:.85}
+.plateTop:empty{display:none}
+/* parchment window */
+.box{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:min(860px,94%);z-index:7;background:linear-gradient(var(--parch),var(--parch2));border:3px solid var(--edge);border-radius:12px;padding:12px 14px;box-shadow:0 0 0 2px #000,0 10px 30px rgba(0,0,0,.6);max-height:calc(100% - 70px);overflow:auto}
+.box[hidden]{display:none}
+.head{display:flex;gap:12px;align-items:flex-start}
+.portrait{flex:0 0 auto;width:64px;height:64px;border-radius:10px;border:2px solid var(--gold);background:radial-gradient(circle at 50% 40%,#3a3046,#14101a);overflow:hidden}
+.portrait svg{width:100%;height:100%;display:block}
+.plate{font-family:"Alegreya SC",serif;font-weight:700;font-size:17px;color:var(--accent);margin:0 0 2px}
+.say{margin:0;font-size:16px;line-height:1.45}
+.choices{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:3px}
+@media (min-width:760px){.choices{grid-template-columns:1fr 1fr;gap:4px 8px}.choices li:only-child{grid-column:1/-1}}
+.choices button{width:100%;text-align:left;font:inherit;font-size:16px;color:var(--ink);background:transparent;border:1px solid transparent;border-radius:8px;padding:6px 10px;cursor:pointer;display:flex;gap:8px}
+.choices button:hover,.choices button:focus-visible{background:var(--hover);border-color:var(--edge);outline:none}
+.k{font-family:"Alegreya SC",serif;color:var(--ink2)}
+.clue{margin:8px 0 0;font-style:italic;color:var(--ink2);border-top:1px dashed var(--edge);padding-top:6px}
+/* picker */
+.pick h2{font-family:"Cinzel",serif;font-weight:900;margin:0;font-size:24px;color:var(--accent);letter-spacing:.03em}
+.pick .lead{margin:2px 0 10px;font-size:15px;color:var(--ink2)}
+.pick h3{font-family:"Alegreya SC",serif;font-size:14px;letter-spacing:.08em;margin:8px 0 6px;color:var(--ink2)}
+.cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.card{font:inherit;color:var(--ink);background:rgba(255,255,255,.25);border:2px solid var(--edge);border-radius:10px;padding:6px 4px 7px;cursor:pointer;display:grid;justify-items:center;gap:3px;text-align:center;min-width:0}
+.card:hover,.card:focus-visible{background:var(--hover);outline:none}
+.card[aria-pressed="true"]{border-color:var(--accent);background:var(--hover);box-shadow:0 0 0 2px var(--gold2)}
+.card .hs{width:58px;height:58px;border-radius:50%;border:2px solid var(--gold);background:radial-gradient(circle at 50% 38%,#4a3c55,#16121c);overflow:hidden}
+.card .hs svg{width:100%;height:100%;display:block}
+.card b{font-family:"Alegreya SC",serif;font-size:15px;line-height:1.1}
+.card small{font-size:12px;line-height:1.2;color:var(--ink2)}
+.go{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn{font:inherit;font-family:"Alegreya SC",serif;font-size:15px;border-radius:8px;padding:6px 14px;cursor:pointer;border:1px solid #8a6416;background:var(--gold2);color:#22170d}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* small bar */
+.bar{flex:0 0 auto;height:50px;margin:0 8px;display:flex;align-items:center;gap:12px;padding:0 10px max(0px,env(safe-area-inset-bottom,0px));color:var(--barInk);font-family:"Alegreya SC",serif}
+.bar .me{display:flex;align-items:center;gap:8px;min-width:0}
+.bar .mini{width:34px;height:34px;border-radius:50%;border:1px solid var(--gold);overflow:hidden;background:#1a1420;flex:0 0 auto}
+.bar .mini svg{width:100%;height:100%;display:block}
+.bar .me span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:15px}
+.bar .me small{display:block;font-size:11px;color:#bfa77a;font-family:Alegreya,serif}
+.pips{display:flex;gap:6px;margin:0 auto}
+.pips i{width:9px;height:9px;border-radius:50%;border:1px solid #bfa77a}
+.pips i.on{background:var(--gold2);border-color:#ffe2a0}
+.bar button{font:inherit;font-size:14px;color:var(--barInk);background:transparent;border:1px solid #6b5537;border-radius:6px;padding:4px 10px;cursor:pointer}
+.bar button:hover,.bar button:focus-visible{border-color:var(--gold2);outline:none}
+.fade{position:absolute;inset:0;background:#fff7dc;opacity:0;pointer-events:none;transition:opacity 2.2s;z-index:8}
+.fade.on{opacity:1}
+@media (max-width:700px){.cards{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}.card small{display:none}.card .hs{width:44px;height:44px}.card b{font-size:12px}}
+@media (max-height:520px){
+  .frame{margin:4px 4px 0}.bar{height:38px}.bar .mini{width:26px;height:26px}
+  .box{padding:8px 10px;bottom:6px;max-height:calc(100% - 46px)}.portrait{width:46px;height:46px}.say{font-size:14.5px}.choices button{font-size:14.5px;padding:3px 8px}.choices{margin-top:6px;gap:0}
+  .pick h2{font-size:18px}.pick .lead{display:none}.pick h3{margin:4px 0 4px}.card small{display:none}.card .hs{width:40px;height:40px}.card{padding:4px 2px}.go{margin-top:6px}
+  .plateTop{display:none}.choices{grid-template-columns:1fr 1fr;gap:0 6px}.portrait{display:none}.plate{font-size:14px}.box{width:min(860px,97%)}
+  .pick h2{display:none}.pick h3{font-size:12px;margin:2px 0}.card .hs{width:34px;height:34px}.card b{font-size:12px}.cards{gap:4px}.go .btn{padding:4px 12px;font-size:14px}
+}
+</style>
+</head>
+<body>
+<div class="game">
+  <div class="frame">
+    <div class="stage" id="stage"></div>
+    <div class="plateTop" id="plate"></div>
+    <div class="box" id="box" role="dialog" aria-live="polite"></div>
+    <div class="fade" id="fade"></div>
+  </div>
+  <div class="bar">
+    <div class="me"><span class="mini" id="mini"></span><span><span id="who">Create Your Past</span><small id="where">Who were you?</small></span></div>
+    <div class="pips" id="pips" aria-hidden="true"></div>
+    <button type="button" id="skip">Skip</button>
+  </div>
+</div>
+<script>
+/* art helpers shared with world-intro.html / farluck-adventure.html */
+const SKIN={Leyf:"#7fa36a",Sapien:"#8a5e3c",Lizerus:"#8fae5a",Melkin:"#c9a0d8",Dimoneesh:"#8fa8d0"};
+const ROLE_LOOK={Maverick:"#3f6b45",Brawler:"#8a4a2a",Champion:"#b08a2a","Soul Seer":"#5a4a8a",Whisper:"#2f3a4a"};
+function shade(c,f){ const n=parseInt(c.slice(1),16); let r=n>>16,g=n>>8&255,b=n&255; r=Math.min(255,Math.round(r*f)); g=Math.min(255,Math.round(g*f)); b=Math.min(255,Math.round(b*f)); return "#"+((1<<24)|(r<<16)|(g<<8)|b).toString(16).slice(1); }
+const OL="#1d140c";
+function heroSVG(L){
+  const lf=L.lf, role=L.role, sk=L.skin, skD=shade(sk,.72), skL=shade(sk,1.18);
+  const cl=L.cloak, clD=shade(cl,.62), clL=shade(cl,1.3);
+  const robe=role==="Soul Seer", hooded=role==="Whisper"||role==="Soul Seer", armored=role==="Champion", brawl=role==="Brawler";
+  const tun=armored?"#b9bcc6":brawl?"#6a4a2c":role==="Maverick"?"#7a5634":shade(cl,.8), tunD=shade(tun,.7);
+  const hoof=lf==="Dimoneesh";
+  const sw=`stroke="${OL}" stroke-width="1.6" stroke-linejoin="round"`;
+  const leg=(id,x,dark)=>`<g id="${id}"><path d="M${x-4} -36 L${x+4} -36 L${x+4} -8 L${x-4} -8Z" fill="${dark?shade("#4a3a28",.75):"#4a3a28"}" ${sw}/>${hoof?`<path d="M${x-5} -9 h10 l1 9 h-12z" fill="#2a2420" ${sw}/><path d="M${x} -6 v6" stroke="#5a5048" stroke-width="1"/>`:`<path d="M${x-5} -12 h9 q6 0 7 8 v4 h-16z" fill="${dark?"#3a2616":"#5a3a1e"}" ${sw}/><path d="M${x-4} -10 h8" stroke="#8a6a3a" stroke-width="1.4"/>`}</g>`;
+  // head per Lifeform (faces right)
+  let head;
+  if(lf==="Leyf") head=`<path d="M-8 -84 Q-12 -104 4 -106 Q20 -106 22 -92 Q24 -84 16 -80 L-4 -78Z" fill="${sk}" ${sw}/>
+    <path d="M10 -86 Q20 -86 22 -90" stroke="${skD}" stroke-width="1.6" fill="none"/>
+    <path d="M-4 -102 q6 -3 12 0 M-6 -96 q6 -3 12 0" stroke="${skD}" stroke-width="1.2" fill="none" opacity=".7"/>
+    <ellipse cx="11" cy="-95" rx="4.2" ry="4.6" fill="#fff" ${sw}/><circle cx="12.5" cy="-95" r="2.4" fill="#1b140c"/><circle cx="13.3" cy="-96" r=".8" fill="#fff"/>
+    <path d="M5 -101 Q12 -104 16 -99" fill="none" stroke="${skL}" stroke-width="2" opacity=".7"/>`;
+  else if(lf==="Lizerus") head=`<path d="M-8 -82 Q-10 -102 4 -104 Q14 -104 18 -96 L30 -92 Q32 -86 26 -84 L6 -80Z" fill="${sk}" ${sw}/>
+    <path d="M10 -103 Q4 -116 -6 -118 L-4 -110 Q-12 -114 -18 -108 L-13 -103 Q-20 -102 -22 -94 L-14 -93 Q-12 -100 -4 -104 Q2 -106 10 -103Z" fill="${shade(sk,.78)}" ${sw}/>
+    <path d="M6 -105 L-4 -116 M0 -106 L-15 -109 M-6 -103 L-20 -96" stroke="${shade(sk,.5)}" stroke-width="1.3"/>
+    <path d="M14 -86 L28 -87" stroke="${OL}" stroke-width="1.2"/><circle cx="27" cy="-91" r=".9" fill="${OL}"/>
+    <ellipse cx="10" cy="-96" rx="3.4" ry="3" fill="#f2d23a" ${sw}/><rect x="9.6" y="-98.4" width="1.2" height="4.8" fill="#1b140c"/>
+    ${[0,1,2].map(k=>`<circle cx="${-2+k*5}" cy="${-90+k%2*3}" r="1.3" fill="${skD}"/>`).join("")}`;
+  else if(lf==="Sapien"){
+    const locks=(ox,oy,sc)=>{ let d=`M${ox+11*sc} ${oy-13*sc}`; const pts=[[16,-6],[14,4],[17,12],[10,10],[11,20],[4,14],[2,24],[-4,16],[-8,24],[-11,14],[-17,18],[-16,6],[-20,2],[-16,-6],[-18,-14],[-12,-14],[-12,-22],[-4,-18],[-2,-26],[4,-18],[10,-22],[10,-14]];
+      pts.forEach(([x,y])=>{ const a=Math.atan2(y,x), bx=Math.cos(a)*15, by=Math.sin(a)*17; x=bx+(x-bx)*.45; y=by+(y-by)*.45; d+=` L${(ox+x*sc).toFixed(1)} ${(oy+y*sc).toFixed(1)}`; }); return d+"Z"; };
+    head=`<path d="${locks(1,-92,1.05)}" fill="${skD}" ${sw}/><path d="${locks(1.5,-93,.9)}" fill="${sk}"/>
+    <path d="M5 -96 Q15 -98 19 -90 Q20 -82 12 -81 Q4 -82 5 -96Z" fill="${skL}" ${sw}/>
+    <path d="M5 -100 q7 -4 13 -1" stroke="${skD}" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <circle cx="12" cy="-95" r="2" fill="#1b140c"/><circle cx="12.6" cy="-95.6" r=".7" fill="#fff"/>
+    <ellipse cx="18" cy="-89" rx="2.4" ry="1.8" fill="#2a1a10"/><path d="M11 -84 q4 2 7 0" stroke="${OL}" stroke-width="1.3" fill="none"/>
+    ${[[-10,-98],[-6,-104],[0,-108],[-12,-88],[-6,-86],[-2,-100],[2,-78],[-4,-76]].map(([x,y])=>`<path d="M${x} ${y} q2 5 0 10" stroke="${skL}" stroke-width="1.3" fill="none" opacity=".75"/>`).join("")}`; }
+  else if(lf==="Melkin") head=`<path d="M-10 -86 Q-12 -106 4 -108 Q20 -106 20 -90 Q18 -78 4 -78 Q-8 -78 -10 -86Z" fill="${sk}" ${sw}/>
+    <path d="M-6 -100 L-20 -112 L-4 -94Z" fill="${sk}" ${sw}/><path d="M-8 -100 L-16 -108" stroke="${skD}" stroke-width="2"/>
+    <ellipse cx="11" cy="-94" rx="4.6" ry="5.4" fill="#fff" ${sw}/><circle cx="12.4" cy="-93.4" r="3" fill="#3a2a5a"/><circle cx="13.4" cy="-95" r="1" fill="#fff"/>
+    <path d="M12 -84 q3 1 5 -1" stroke="${OL}" stroke-width="1.2" fill="none"/><circle cx="6" cy="-86" r="2.4" fill="#e88aa8" opacity=".5"/>`;
+  else head=`<path d="M-10 -82 Q-12 -104 4 -106 Q20 -104 20 -90 Q20 -78 6 -77 Q-6 -76 -10 -82Z" fill="${sk}" ${sw}/>
+    <path d="M-4 -102 Q-14 -114 -4 -120 Q-8 -112 2 -104Z" fill="#e8e0d0" ${sw}/><path d="M6 -105 Q4 -118 14 -120 Q8 -112 12 -104Z" fill="#e8e0d0" ${sw}/>
+    <ellipse cx="12" cy="-93" rx="3.6" ry="3.2" fill="#e8f4ff" ${sw}/><circle cx="13" cy="-93" r="1.8" fill="#4a6aa8"/>
+    <path d="M12 -84 q4 1 6 -1" stroke="${OL}" stroke-width="1.2" fill="none"/><path d="M-2 -98 q4 4 2 10" stroke="${skL}" stroke-width="2" fill="none" opacity=".6"/>`;
+  const hood="";
+  const mask="";
+  const tail="";
+  // body
+  const cape=`<path d="M-12 -76 Q-30 -56 -30 -22 Q-22 -16 -14 -22 Q-10 -18 -4 -24 L4 -74Z" fill="${cl}" ${sw}/>
+    <path d="M-20 -60 Q-24 -40 -22 -22 M-12 -58 Q-14 -40 -12 -24" stroke="${clD}" stroke-width="2" fill="none" opacity=".8"/>
+    <path d="M-10 -74 Q-22 -60 -26 -40" stroke="${clL}" stroke-width="2" fill="none" opacity=".6"/>`;
+  const torso=robe?`<path d="M-12 -76 L14 -76 Q18 -40 20 -6 Q2 0 -16 -6 Q-16 -40 -12 -76Z" fill="${cl}" ${sw}/><path d="M2 -74 L4 -6" stroke="${clL}" stroke-width="2.5"/><path d="M-6 -60 Q-8 -30 -10 -8" stroke="${clD}" stroke-width="2" fill="none"/>`
+    :`<path d="M-12 -76 L13 -76 Q16 -56 14 -32 L15 -26 Q0 -22 -14 -26 L-13 -32 Q-15 -56 -12 -76Z" fill="${tun}" ${sw}/>
+    <path d="M6 -74 Q10 -54 9 -34" stroke="${shade(tun,1.3)}" stroke-width="3" fill="none" opacity=".6"/><path d="M-8 -72 Q-10 -52 -9 -34" stroke="${tunD}" stroke-width="3" fill="none" opacity=".6"/>
+    ${armored?`<path d="M-11 -74 Q2 -66 13 -74 L12 -50 Q0 -44 -11 -50Z" fill="#d8dae2" ${sw}/><circle cx="1" cy="-60" r="4" fill="#e8b83a" ${sw}/>`:""}
+    ${brawl?`<path d="M-14 -78 Q0 -70 16 -78 L14 -68 Q0 -62 -14 -68Z" fill="#8a6a3a" ${sw}/>${[-10,-4,2,8].map(x=>`<path d="M${x} -66 l2 6 l2 -6" fill="#8a6a3a" ${sw}/>`).join("")}`:""}
+    <rect x="-14" y="-38" width="29" height="6" fill="#3a2414" ${sw}/><rect x="-1" y="-39" width="7" height="8" rx="1" fill="#d8b04a" ${sw}/>`;
+  const furMantle=lf==="Sapien"?`<path d="M-15 -80 L-15 -70 L-12 -72 L-10 -67 L-6 -71 L-3 -66 L0 -71 L3 -67 L6 -72 L9 -68 L12 -73 L15 -70 L16 -80 Q0 -86 -15 -80Z" fill="${sk}" ${sw}/>`:"";
+  const collar=lf==="Sapien"?furMantle:`<path d="M-13 -78 Q0 -70 15 -78 Q12 -84 0 -82 Q-10 -84 -13 -78Z" fill="${clD}" ${sw}/>`;
+  const armBack=`<path d="M8 -72 Q14 -60 16 -48" stroke="${OL}" stroke-width="8.5" stroke-linecap="round" fill="none"/><path d="M8 -72 Q14 -60 16 -48" stroke="${shade(robe?cl:tun,.7)}" stroke-width="6" stroke-linecap="round" fill="none"/><circle cx="16.5" cy="-46" r="3.6" fill="${skD}" ${sw}/>`;
+  const armFront=`<path d="M-2 -72 Q2 -56 12 -50" stroke="${OL}" stroke-width="9.5" stroke-linecap="round" fill="none"/><path d="M-2 -72 Q2 -56 12 -50" stroke="${robe?cl:brawl?sk:tun}" stroke-width="7" stroke-linecap="round" fill="none"/>${brawl?`<path d="M6 -54 l6 3" stroke="#e8e0cc" stroke-width="5"/>`:""}<circle cx="14" cy="-49" r="4.2" fill="${sk}" ${sw}/>${lf==="Sapien"?`<path d="M6 -56 l3 4 l1 -5 l3 5 l1 -4" stroke="${skD}" stroke-width="2" fill="none" stroke-linejoin="round"/>`:""}`;
+  // role props, drawn in hand at (14,-49)
+  let back="", front="";
+  if(role==="Maverick"){ back=`<rect x="-16" y="-80" width="8" height="30" rx="2" fill="#6a4426" ${sw} transform="rotate(-18 -12 -65)"/>${[0,1,2].map(k=>`<path d="M${-16+k*3} -82 l-2 -9 M${-16+k*3} -91 l-2 3 m2 -3 l2 3" stroke="#e8e0cc" stroke-width="1.4" transform="rotate(-18 -12 -65)"/>`).join("")}`;
+    front=`<path d="M22 -90 Q36 -50 22 -10" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/><path d="M22 -90 Q36 -50 22 -10" fill="none" stroke="#9a6a34" stroke-width="3" stroke-linecap="round"/><line x1="22" y1="-90" x2="22" y2="-10" stroke="#efe6cc" stroke-width="1"/><path d="M28 -52 h6" stroke="#5a3a1e" stroke-width="4"/>`; }
+  else if(role==="Champion"){ back=`<path d="M19 -50 L44 -86 L47 -84 L22 -47Z" fill="#e6e8f0" ${sw}/><path d="M21 -51 L45 -85" stroke="#fff" stroke-width="1"/><path d="M13 -52 L25 -42" stroke="#7a5a2a" stroke-width="4" stroke-linecap="round"/><circle cx="16" cy="-48" r="3" fill="${skD}" ${sw}/><circle cx="12" cy="-53" r="2.2" fill="#d8b04a" ${sw}/>`;
+    front=`<path d="M8 -70 h22 v20 q-11 18 -22 0z" fill="#c9a03c" ${sw}/><circle cx="19" cy="-58" r="5.5" fill="#f2d86a" ${sw}/>${[0,45,90,135,180,225,270,315].map(a=>`<path d="M${(19+Math.cos(a*Math.PI/180)*6).toFixed(1)} ${(-58+Math.sin(a*Math.PI/180)*6).toFixed(1)} l${(Math.cos(a*Math.PI/180)*4).toFixed(1)} ${(Math.sin(a*Math.PI/180)*4).toFixed(1)}" stroke="#7a5a22" stroke-width="1.3"/>`).join("")}<path d="M10 -68 v14" stroke="#e8c868" stroke-width="1.5" opacity=".7"/>`; }
+  else if(role==="Soul Seer"){ front=`<rect x="22" y="-82" width="4" height="82" rx="2" fill="#6b4a2a" ${sw}/><path d="M20 -82 q4 -6 8 0" fill="none" stroke="#6b4a2a" stroke-width="2.5"/><path d="M24 -94 l4.5 7 l-4.5 6 l-4.5 -6z" fill="#bfe4ff" ${sw}/><circle cx="24" cy="-87" r="9" fill="#bfe4ff" opacity=".25"/><circle cx="33" cy="-78" r="2.4" fill="#e8f6ff" opacity=".8"/><path d="M14 -49 L22 -50" stroke="${OL}" stroke-width="1"/>`; }
+  else if(role==="Whisper"){ back=`<path d="M-14 -40 q-6 -6 0 -12 q6 -6 12 0" fill="none" stroke="#a88a5a" stroke-width="3"/>`;
+    front=`<path d="M16 -52 L32 -66 L34 -63 L19 -49Z" fill="#d8dae4" ${sw}/><path d="M12 -52 l6 4" stroke="#3a2414" stroke-width="4"/><path d="M14 -42 L22 -26 L19 -25 L12 -40Z" fill="#c8cad4" ${sw}/>`; }
+  else { front=`<circle cx="14" cy="-49" r="6" fill="${sk}" ${sw}/><path d="M9 -52 h10 M9 -48 h10" stroke="#e8e0cc" stroke-width="2"/>${[0,1,2].map(k=>`<path d="M${11+k*3} -55 l1 -4 l1 4" fill="#c8c8d0" ${sw}/>`).join("")}`; }
+  return `<g id="heroInner"><g transform="scale(${L.size})">
+   <ellipse cx="0" cy="0" rx="24" ry="6.5" fill="rgba(0,0,0,.35)"/>
+   ${cape}${tail}${back}${armBack}
+   <g id="legs">${leg("legR",4,true)}${leg("legL",-5,false)}</g>
+   ${torso}${collar}${hood}${head}${mask}${armFront}${front}
+  </g></g>`;
+}
+function rnd(seed){ let a=seed>>>0; return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function stars(seed,n,y1){ const r=rnd(seed); let g=""; for(let i=0;i<n;i++){ const x=r()*960,y=r()*(y1||540),s=r()*1.6+.4; g+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${s.toFixed(2)}" fill="#fff" ${r()<.3?`class="tw" style="animation-delay:${(r()*3).toFixed(2)}s"`:""} opacity="${(.4+r()*.6).toFixed(2)}"/>`; } return g; }
+function hillsP(y,amp,seed){ const r=rnd(seed); let d=`M0 ${y}`; for(let x=0;x<=960;x+=120) d+=` Q${x+60} ${y-amp*r()} ${x+120} ${y-amp*.3*r()}`; return d+" V540 H0Z"; }
+function redCloak(x,y,s,face){ return `<g transform="translate(${x} ${y}) scale(${face*s} ${s})"><ellipse cx="0" cy="0" rx="20" ry="5" fill="#000" opacity=".35"/><path d="M-16 0 Q-20 -60 -4 -96 Q8 -104 16 -92 Q22 -60 18 0Z" fill="#7a1410" stroke="#1d0806" stroke-width="2"/><path d="M-4 -96 Q8 -104 16 -92 Q14 -80 4 -80 Q-4 -82 -4 -96Z" fill="#1a0a08"/><circle cx="9" cy="-88" r="1.6" fill="#ff5a3a" class="flick"/><path d="M-10 -60 Q-12 -30 -10 0 M6 -70 Q8 -36 8 0" stroke="#4a0c08" stroke-width="2" fill="none"/></g>`; }
+const $=id=>document.getElementById(id);
+const EMBED=parent!==window;
+let CFG={}; try{ CFG=JSON.parse(decodeURIComponent(location.hash.slice(1)))||{}; }catch(e){}
+
+/* ---------- people of Talus (same lines as the castle's Create Your Past) */
+const LIFEFORMS={
+  Sapien:{t:"Steady and adaptable.",b:"Power +1, Charm +1",line:"You keep your footing while everyone else stumbles."},
+  Lizerus:{t:"Big, tough-skinned and passionate.",b:"Defense +1, Power +1",line:"You feel the heat in the stone before anyone else does."},
+  Leyf:{t:"Quick and light on their feet.",b:"Energy +1, Speed +1",line:"You hop up onto a ledge for a better look."},
+  Dimoneesh:{t:"Calm, thoughtful, hard to knock over.",b:"Defense +1, Energy +1",line:"You sense the calm drain out of the air."},
+  Melkin:{t:"Small, cheery and clever with their hands.",b:"Speed +1, Charm +1",line:"You squeeze through a gap no one else could fit through."}};
+const ROLES={Brawler:{t:"Up close, with fists and grit.",life:40},Champion:{t:"Sword, shield and a promise kept.",life:33},Maverick:{t:"Stringbow and sharp eyes.",life:30},"Soul Seer":{t:"Staff, song and healing.",life:27},Whisper:{t:"Quiet steps and quick knives.",life:30}};
+const look=(lf,role)=>({lf,role,skin:SKIN[lf],cloak:ROLE_LOOK[role],size:1});
+function headShot(lf,role,bust){ const vb=bust?"-42 -128 84 84":"-26 -124 52 52"; return `<svg viewBox="${vb}" aria-hidden="true">${heroSVG(look(lf,role))}</svg>`; }
+
+/* ---------- Role intros (copied from the castle, design doc tab "Role intros") */
+const V=(a,b,c,d,go)=>[{t:a,vote:"Serious",go},{t:b,vote:"Silly",go},{t:c,vote:"Shy",go},{t:d,vote:"Smug",go}];
+const PAST={
+  Brawler1:{t:"The Hinon harvest festival. You close out a friendly bout in the ring, and the crowd roars as your rival lies flat on the straw.",c:V("Help them up and shake their hand.","Flop down beside them and wave to the crowd.","Offer a hand, then slip out of the spotlight.","Flex once for the crowd, then help them up.","Brawler2")},
+  Brawler2:{t:"Later, carrying a basket of jeewa past the riverside grain store, you see its stone wall glow red and melt away. {LF} A small child stands frozen beside it, and a cold wave of Fear rolls out toward them.",c:V("Step between the child and the wave. \"Stay behind me.\"","Scoop the child up. \"Up you go! Wheee!\"","Take the child's hand and lead them away without a word.","Step in front. \"Fear? Please. I've seen scarier pies.\"","Brawler3")},
+  Brawler3:{t:"The shadow pours out of the wall and the wave rises higher. The child is still too close.",c:V("Brace and hold your ground.","Roar like a festival bear to scatter it.","Shield the child and keep perfectly still.","Roar. Loudly. Magnificently.","BrawlerEnd")},
+  BrawlerEnd:{t:"The child gets clear and runs into their parent's arms. The Fear wave reaches you instead, and the noise of the festival fades into a warm hush. A light grows..."},
+  Champion1:{t:"Night watch at the mayor's hall in Hinon. Your post, your promise. Then you hear a soft metallic hammering somewhere below.",c:V("Check every door, one by one.","Knock on the floor. \"Hello? Wrong address?\"","Follow the sound quietly.","Draw your blade. Whoever it is picked the wrong hall.","Champion2")},
+  Champion2:{t:"Behind a moved bookshelf, a hidden stair leads down to an empty lectern, as if a book was just taken. {LF} Three figures in dark red cloaks are leaving through a wall that glows like lava.",c:V("\"Stop. In the name of the mayor.\"","\"Excuse me, you forgot to sign the book out!\"","Stay in the shadows and follow them.","\"Leaving so soon? I was just getting started.\"","Champion3")},
+  Champion3:{t:"The wall begins to close on the mayor's frightened clerk, who followed you down.",c:V("Hold it open with your shield.","Wedge the lectern in the gap. Lecterns are strong, right?","Pull the clerk free and push them behind you.","Hold it open one-handed. Easy.","ChampionEnd")},
+  ChampionEnd:{t:"The clerk tumbles to safety, clutching a torn page with a symbol of five crystals in a ring. The glowing wall closes around you, and its heat turns to a soft golden light...",clue:"From your past life: a torn page with five crystals in a ring."},
+  Maverick1:{t:"The edge of the forest above Farluck Farm. You track a deerlike geev for the evening meal, stringbow ready. The trees here are wilting, and the ground smells of rot.",c:V("Kneel and study the rot.","Sniff the air. \"Phew. Somebody forgot to bathe.\"","Slow your breathing and keep tracking.","\"Rot or no rot, I never miss.\"","Maverick2")},
+  Maverick2:{t:"As you line up your shot, a rock face turns red and melts away. {LF} The frightened geev bolts straight into an old snare.",c:V("Free the geev, fast and careful.","\"Easy, buddy. Who put a snare in a scary forest?\"","Calm it first with a slow, low voice.","\"Hold still. I'm the best rescue you'll get.\"","Maverick3")},
+  Maverick3:{t:"Cloaked figures step out of the glow, right toward the geev.",c:V("Loose a shot into the stone above them to cover its escape.","Make the loudest bird call you know.","Hide in the ferns and draw them away with a thrown stone.","One shot, perfectly placed. Watch this.","MaverickEnd")},
+  MaverickEnd:{t:"The geev leaps away free. The rock face crumbles in a rush of red dust, and the forest goes quiet and golden around you..."},
+  "Soul Seer1":{t:"You rest in the sun beside the creek that runs down to Farluck Farm, singing along with the water the way you always do.",c:V("Listen closely to the water's song.","Sing louder. The creek likes harmonies.","Hum softly with your eyes closed.","Sing your best song. The creek is lucky to hear it.","Soul Seer2")},
+  "Soul Seer2":{t:"Mid-song, the creek goes quiet. Upstream, the water is sinking into stones that glow red. {LF} A family of creek voles is trapped on a drying rock.",c:V("Carry the voles to safe water.","\"Who wants a ride? Everybody in!\"","Hum to calm them so they come to you.","\"Don't worry. You've got me.\"","Soul Seer3")},
+  "Soul Seer3":{t:"The stones grow hotter. Something is hammering deep under the hill.",c:V("Place your hand on the stones and pour your calm into them.","Tell the stones a joke to cool them down.","Listen closely to learn where the water is going.","Lay both hands on the stones. They'll listen to you.","Soul SeerEnd")},
+  "Soul SeerEnd":{t:"The voles reach the water. You give the stones all the calm you have, and you hear the hammering under the hill as your own song fades into light...",clue:"From your past life: something hammering deep under the hill by Farluck Farm."},
+  Whisper1:{t:"Late in the lantern alleys of Umatu. You walk home lightly and quietly, as always, and spot a coin purse dropped by a sleepy traveler.",c:V("Pick it up to return it.","Juggle it once, then go to return it.","Tuck it away safely and look for the owner.","Pocket it. For safekeeping. Probably.","Whisper2")},
+  Whisper2:{t:"Deeper in the alley, a group in dark red cloaks faces a charred rock wall. {LF} One lays a hand on it, and it glows and melts away.",c:V("Return the purse to the traveler first.","Hand the traveler their purse with a bow. \"You dropped your jingle.\"","Slip the purse back into the traveler's bag unseen.","Keep the purse for now and follow the cloaks.","Whisper3")},
+  Whisper3:{t:"The cloaks spot the traveler.",c:V("Draw them away down the alley.","Knock over a stack of pots and run, yelling.","Slip the traveler out the back way.","\"Over here, slowpokes!\"","WhisperEnd")},
+  WhisperEnd:{t:"The traveler escapes, calling back that they must warn a farm upriver. The cloaks close in, the lanterns blur, and a soft wind carries you away...",clue:"From your past life: the traveler you saved went to warn a farm upriver."}
+};
+const INTRO_TITLE={Brawler:["The Harvest Bout","Hinon"],Champion:["The Empty Lectern","Hinon"],Maverick:["The Edge of the Wood","The forest above Farluck Farm"],"Soul Seer":["The Quiet Creek","The forest above Farluck Farm"],Whisper:["The Quiet Alley","Umatu"]};
+
+/* ---------- drawn scenery */
+function sky(id,a,b,c){ return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset=".65" stop-color="${b}"/><stop offset="1" stop-color="${c}"/></linearGradient>
+  <radialGradient id="lava" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="#ffd26a"/><stop offset=".45" stop-color="#ff5a1a"/><stop offset="1" stop-color="#7a1008" stop-opacity="0"/></radialGradient>
+  <radialGradient id="gold" cx=".35" cy=".55" r=".8"><stop offset="0" stop-color="#fffbe8"/><stop offset=".4" stop-color="#ffe6a0" stop-opacity=".85"/><stop offset="1" stop-color="#e8b85a" stop-opacity="0"/></radialGradient></defs><rect width="960" height="540" fill="url(#${id})"/>`; }
+function tree(x,y,s,c,wilt){ return `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cx="6" cy="2" rx="40" ry="8" fill="#000" opacity=".22"/><path d="M-7 0 Q-5 -50 -9 -80 L9 -80 Q5 -50 7 0Z" fill="#5b4026" stroke="${OL}" stroke-width="2"/>
+  <g ${wilt?'transform="rotate(8)"':''}><circle cx="0" cy="-110" r="44" fill="${c}" stroke="${OL}" stroke-width="2"/><circle cx="-30" cy="-88" r="28" fill="${shade(c,.85)}" stroke="${OL}" stroke-width="2"/><circle cx="30" cy="-90" r="30" fill="${shade(c,1.1)}" stroke="${OL}" stroke-width="2"/></g></g>`; }
+function redWall(x,y,w,h,heat){ return `<g><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="#5a4a44" stroke="${OL}" stroke-width="2"/>
+  ${[0,1,2].map(i=>`<path d="M${x+6} ${y+18+i*h/3} h${w-12}" stroke="#3a2e2a" stroke-width="2"/>`).join("")}
+  <ellipse cx="${x+w/2}" cy="${y+h/2}" rx="${w*.42*heat}" ry="${h*.46*heat}" fill="url(#lava)" class="flick"/>
+  ${heat>.6?`<path d="M${x+w*.3} ${y+h} q4 16 0 26 M${x+w*.6} ${y+h} q-4 12 0 20" stroke="#ff6a2a" stroke-width="4" stroke-linecap="round" class="flick"/>`:""}</g>`; }
+function fearWave(x,y,s){ return `<g transform="translate(${x} ${y}) scale(${s})"><g class="sway"><path d="M0 0 Q30 -90 120 -120 Q90 -70 140 -50 Q100 -40 120 0Z" fill="#2a1a3a" opacity=".82"/><path d="M20 -10 Q50 -80 110 -105" stroke="#7a5aa8" stroke-width="3" fill="none" opacity=".7"/></g></g>`; }
+function geev(x,y,f,caught){ return `<g transform="translate(${x} ${y}) scale(${f} 1)"><ellipse cx="0" cy="2" rx="26" ry="5" fill="#000" opacity=".25"/>
+  <path d="M-24 -30 Q-26 -46 -6 -46 L18 -46 Q30 -48 30 -34 L28 -26 Q10 -22 -20 -24Z" fill="#a8764a" stroke="${OL}" stroke-width="2"/>
+  <path d="M-18 -26 L-20 0 M-10 -24 L-8 0 M14 -26 L12 0 M22 -28 L24 0" stroke="${OL}" stroke-width="3.5"/><path d="M24 -44 Q34 -66 42 -60 L38 -48Z" fill="#a8764a" stroke="${OL}" stroke-width="2"/>
+  <path d="M36 -62 l-4 -12 m4 12 l6 -10" stroke="#e8dcc0" stroke-width="2.5"/><circle cx="37" cy="-54" r="1.6" fill="${OL}"/><path d="M-24 -34 q-8 -4 -6 -12" stroke="#e8dcc0" stroke-width="4" stroke-linecap="round"/>
+  ${caught?`<path d="M-24 -4 Q-40 6 -56 -2" stroke="#c9b48a" stroke-width="2.5" fill="none"/><circle cx="-20" cy="-3" r="5" fill="none" stroke="#c9b48a" stroke-width="2.5"/>`:""}</g>`; }
+function vole(x,y){ return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="-6" rx="10" ry="7" fill="#7a5a3a" stroke="${OL}" stroke-width="1.5"/><circle cx="7" cy="-9" r="1.2" fill="${OL}"/><path d="M-9 -4 q-8 2 -10 -2" stroke="${OL}" stroke-width="1.5" fill="none"/></g>`; }
+function lantern(x,y){ return `<g transform="translate(${x} ${y})"><path d="M0 -30 V-8" stroke="#2a1a10" stroke-width="2"/><circle cx="0" cy="8" r="26" fill="#ffb84a" opacity=".18" class="flick"/><rect x="-9" y="-8" width="18" height="24" rx="6" fill="#e8742a" stroke="#3a1a0a" stroke-width="2"/><rect x="-5" y="-3" width="10" height="14" rx="3" fill="#ffd27a" class="flick"/></g>`; }
+function building(x,y,w,h,c,roof){ return `<g><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}" stroke="${OL}" stroke-width="2"/><path d="M${x-10} ${y} L${x+w/2} ${y-roof} L${x+w+10} ${y}Z" fill="${shade(c,.6)}" stroke="${OL}" stroke-width="2"/>
+  ${[0,1].map(i=>`<rect x="${x+16+i*(w-48)}" y="${y+18}" width="16" height="20" fill="#ffd27a" stroke="${OL}" stroke-width="1.5" opacity=".85"/>`).join("")}</g>`; }
+function bunting(y){ let g=`<path d="M0 ${y} Q240 ${y+30} 480 ${y} T960 ${y}" stroke="#5a3a1e" stroke-width="2" fill="none"/>`; const cs=["#c9473a","#e8b84a","#3f7a8a","#7a9a3a"]; for(let i=0;i<20;i++){ const x=i*50+20, yy=y+Math.sin(i*.65)*11+10; g+=`<path d="M${x-9} ${yy-8} L${x+9} ${yy-8} L${x} ${yy+10}Z" fill="${cs[i%4]}" stroke="${OL}" stroke-width="1"/>`; } return g; }
+function crowd(y,seed){ const r=rnd(seed); let g=""; for(let i=0;i<26;i++){ const x=i*38+r()*12, h=26+r()*16; g+=`<path d="M${x-10} ${y} Q${x-11} ${y-h} ${x} ${y-h-4} Q${x+11} ${y-h} ${x+10} ${y}Z" fill="#3a2a22" opacity=".85"/><circle cx="${x}" cy="${y-h-10}" r="8" fill="#3a2a22" opacity=".85"/>`; } return g; }
+const HERO_AT=[250,452];
+function hero(face=1,s=1.55){ const [x,y]=HERO_AT; return `<g class="rise"><g transform="translate(${x} ${y}) scale(${face*s*(LK.lf==="Melkin"?.7:1)} ${s*(LK.lf==="Melkin"?.7:1)})">${heroSVG(look(LK.lf,LK.role))}</g></g>`; }
+function npc(lf,role,x,y,s,face,extra){ return `<g transform="translate(${x} ${y}) scale(${face*s} ${s})" ${extra||""}>${heroSVG(look(lf,role))}</g>`; }
+function goldEnd(){ return `<rect width="960" height="540" fill="url(#gold)" class="flick"/>${[0,1,2,3,4,5].map(i=>`<circle cx="${180+i*120}" cy="${120+(i%3)*90}" r="3" fill="#fff" class="flick" style="animation-delay:${i*.3}s"/>`).join("")}`; }
+
+/* each Role: background by step (1, 2, 3, End) */
+const ART={
+  Brawler:k=>{ if(k===1) return sky("s","#f2a65a","#ffd9a0","#fbe7c0")+`<g class="drift"><path d="${hillsP(330,40,4)}" fill="#c99a6a" opacity=".6"/>${bunting(70)}${crowd(360,3)}
+      <path d="M0 360 H960 V700 H0Z" fill="#d8b46a"/><ellipse cx="560" cy="440" rx="330" ry="70" fill="#e6c87a" stroke="#8a6a3a" stroke-width="3"/>
+      ${[260,860].map(x=>`<rect x="${x-4}" y="360" width="8" height="90" fill="#6a4a2a" stroke="${OL}" stroke-width="2"/>`).join("")}<path d="M260 380 Q560 400 860 380 M260 405 Q560 425 860 405" stroke="#c9473a" stroke-width="4" fill="none"/>
+      <g transform="translate(560 436) rotate(-84)"><g transform="scale(1.25)">${heroSVG(look("Lizerus","Brawler"))}</g></g>}</g>`+hero(1);
+    const heat=k===2?.7:k===3?1:1.2; return sky("s","#5a3a4a","#c06a4a","#e8a060")+`<g class="drift"><path d="${hillsP(320,40,9)}" fill="#6a4a3a"/><path d="M0 390 Q480 370 960 390 V700 H0Z" fill="#7a6a4a"/>
+      <path d="M0 470 Q480 450 960 480 V700 H0Z" fill="#4f7a9a" opacity=".85"/>
+      ${building(600,250,240,150,"#a88a6a",70)}${redWall(640,270,150,130,heat)}
+      ${fearWave(560,410,k===2?.9:1.4)}${npc("Melkin","Whisper",520,420,.62,-1)}
+      <ellipse cx="345" cy="446" rx="22" ry="8" fill="#000" opacity=".2"/><path d="M330 432 h30 l-4 14 h-22z" fill="#8a5a2a" stroke="${OL}" stroke-width="2"/><circle cx="340" cy="430" r="4" fill="#e85a3a"/><circle cx="350" cy="430" r="4" fill="#f2a63a"/></g>`+hero(1); },
+  Champion:k=>{ if(k===1) return sky("s","#10142a","#1f2a4a","#2a2a3a")+`${stars(12,80,260)}<g class="drift">
+      <rect x="380" y="150" width="520" height="290" fill="#6a6070" stroke="${OL}" stroke-width="3"/><path d="M360 150 L640 70 L920 150Z" fill="#3a3448" stroke="${OL}" stroke-width="3"/>
+      ${[420,520,720,820].map(x=>`<rect x="${x}" y="200" width="36" height="240" fill="#8a8094" stroke="${OL}" stroke-width="2"/>`).join("")}<rect x="610" y="300" width="60" height="140" rx="30" fill="#2a2230" stroke="${OL}" stroke-width="2"/>
+      ${lantern(600,250)}${lantern(680,250)}<path d="M0 440 H960 V700 H0Z" fill="#3a3640"/><path d="M0 440 H960" stroke="#5a5660" stroke-width="3"/></g>`+hero(1);
+    return sky("s","#1a1214","#2a1c1c","#3a2620")+`<g class="drift"><rect x="0" y="0" width="960" height="540" fill="#2a2024"/>
+      ${[0,1,2,3,4].map(i=>`<path d="M0 ${80+i*80} H960" stroke="#3a2e30" stroke-width="3"/>`).join("")}
+      <path d="M40 440 L40 200 L120 200 L120 250 L180 250 L180 300 L240 300 L240 440Z" fill="#3a2e2c" stroke="${OL}" stroke-width="2"/>
+      <g transform="translate(440 440)"><path d="M-22 0 L-14 -70 L14 -70 L22 0Z" fill="#6a4a2a" stroke="${OL}" stroke-width="2"/><path d="M-30 -70 L30 -70 L24 -86 L-24 -86Z" fill="#8a6a3a" stroke="${OL}" stroke-width="2"/></g>
+      ${redWall(640,200,200,240,k===2?.8:1.1)}${k===2?redCloak(700,440,1.1,1)+redCloak(760,440,1.05,1)+redCloak(820,440,1.1,1):npc("Dimoneesh","Soul Seer",760,440,1,-1)}
+      <path d="M0 440 H960 V700 H0Z" fill="#241a1a"/></g>`+hero(1); },
+  Maverick:k=>{ const base=sky("s","#e8b878","#f2d2a0","#d8c08a")+`<g class="drift"><path d="${hillsP(300,50,6)}" fill="#8a9a5a" opacity=".7"/>
+      ${tree(90,420,1.2,"#6f8a3a")}${tree(860,420,1.25,"#7a7a3a",true)}${tree(720,400,.9,"#8a7a3a",true)}${tree(460,380,.8,"#6f8a3a")}
+      <path d="M0 410 Q480 390 960 410 V700 H0Z" fill="#7a8a3a"/><path d="M380 470 q30 -10 60 0 q20 8 50 0" stroke="#5a4a2a" stroke-width="5" fill="none" opacity=".6"/>
+      ${[[150,500],[640,505],[820,495]].map(([x,y])=>`<path d="M${x} ${y} q-14 -24 -30 -28 M${x} ${y} q-4 -30 4 -44 M${x} ${y} q16 -22 30 -26" stroke="#4f6b2a" stroke-width="4" fill="none"/>`).join("")}`;
+    if(k===1) return base+geev(700,450,-1)+`</g>`+hero(1);
+    return base+`<path d="M560 420 L590 250 L700 230 L760 300 L770 420Z" fill="#7a6a5a" stroke="${OL}" stroke-width="2"/><ellipse cx="672" cy="330" rx="${k===2?60:90}" ry="${k===2?70:100}" fill="url(#lava)" class="flick"/>
+      ${geev(560,460,-1,true)}${k===3?redCloak(690,430,1.1,-1)+redCloak(760,430,1,-1):""}</g>`+hero(1); },
+  "Soul Seer":k=>{ const dry=k>1; return sky("s","#8ac8e8","#cfe8f0","#e8f0d8")+`<g class="drift"><path d="${hillsP(300,60,8)}" fill="#7aa05a"/>${tree(80,400,1.1,"#5f8a3a")}${tree(880,390,1.2,"#6f9a3a")}
+      <path d="M0 400 Q480 380 960 400 V700 H0Z" fill="#8aaa4a"/>
+      <path d="M960 400 Q700 410 600 440 Q520 470 380 480 L380 700 L960 700Z" fill="${dry?"#8a7a5a":"#5fa0c8"}" ${dry?"":'class="flick"'}/>
+      ${dry?`<path d="M960 420 Q800 436 720 452" stroke="#5fa0c8" stroke-width="10" fill="none" opacity=".7"/>${redWall(760,380,120,60,k===2?.8:1.15)}`:""}
+      ${dry?`<ellipse cx="500" cy="410" rx="46" ry="14" fill="#9a8a6a" stroke="${OL}" stroke-width="2"/>${vole(480,404)}${vole(500,400)}${vole(520,406)}`:`<path d="M320 470 q20 -6 40 0 M420 480 q20 -6 40 0" stroke="#fff" stroke-width="2" opacity=".6"/>`}
+      ${k===3?`<path d="M820 360 l6 -14 l6 14 M850 352 l6 -14 l6 14" stroke="#ff8a3a" stroke-width="3" fill="none" class="flick"/>`:""}</g>`+hero(1); },
+  Whisper:k=>sky("s","#0a0a1a","#1a1a3a","#2a2238")+`${stars(31,60,140)}<g class="drift">
+      <path d="M0 120 L120 120 L120 440 L0 440Z M840 100 L960 100 L960 440 L840 440Z" fill="#2a2430" stroke="${OL}" stroke-width="2"/>
+      <path d="M120 160 L360 200 L360 430 L120 440Z M840 140 L600 200 L600 430 L840 440Z" fill="#3a3040" stroke="${OL}" stroke-width="2"/>
+      ${lantern(200,180)}${lantern(330,215)}${lantern(760,170)}${lantern(630,215)}<path d="M120 160 Q480 230 840 140" stroke="#2a1a10" stroke-width="1.5" fill="none"/>
+      <path d="M0 440 H960 V700 H0Z" fill="#3a3436"/>${[0,1,2,3,4,5,6,7].map(i=>`<path d="M${i*130} 470 h90 M${i*130+60} 505 h90" stroke="#2a2426" stroke-width="3"/>`).join("")}
+      ${k===1?`<g transform="translate(420 458)"><ellipse cx="0" cy="0" rx="10" ry="7" fill="#8a5a2a" stroke="${OL}" stroke-width="2"/><path d="M-4 -6 l4 -5 l4 5" stroke="#e8c260" stroke-width="2" fill="none"/></g>${npc("Sapien","Maverick",700,450,1.2,-1)}`:""}
+      ${k>1?`${redWall(470,250,170,190,k===2?.8:1.1)}${redCloak(560,445,1.1,-1)}${redCloak(620,445,1.05,-1)}${redCloak(500,445,1,k===3?-1:1)}${npc("Sapien","Maverick",k===3?330:760,450,1.2,k===3?1:-1)}`:""}</g>`+hero(1)
+};
+
+/* ---------- state */
+const LKS={lf:CFG.lf||"Sapien",role:CFG.role||"Brawler"};
+let LK=LKS, votes=[], step=0, clue=null, phase="pick";
+function setBar(){ $("mini").innerHTML=headShot(LK.lf,LK.role); if(phase==="pick"){ $("who").textContent="Create Your Past"; $("where").textContent="Who were you?"; } else { $("who").textContent=`${LK.lf} ${LK.role}`; $("where").textContent="Your last day on Talus"; }
+  $("pips").innerHTML=phase==="pick"?"":[1,2,3,4].map(i=>`<i class="${i<=step?"on":""}"></i>`).join(""); $("skip").textContent=phase==="pick"?"Skip":"Skip intro"; }
+let cur=null;
+function show(svg){ const d=document.createElement("div"); d.className="scene"; d.innerHTML=`<svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g transform="translate(0 ${phase==="pick"?0:-80})">${svg}</g></svg>`; $("stage").appendChild(d); void d.offsetWidth; d.classList.add("on"); const old=cur; cur=d; if(old) setTimeout(()=>old.remove(),950); }
+
+/* ---------- step 1: pick a Lifeform and Role */
+function pickArt(){ return sky("s","#2a2440","#7a4a5a","#c06a4a")+`${stars(5,90,200)}<g class="drift"><path d="${hillsP(300,60,3)}" fill="#4a3a48"/><path d="M0 380 Q480 350 960 380 V540 H0Z" fill="#3a2e34"/>
+  ${Object.keys(LIFEFORMS).map((lf,i)=>npc(lf,Object.keys(ROLES)[i],200+i*140,400,lf===LK.lf?1.25:1.05,1,`opacity="${lf===LK.lf?1:.55}"`)).join("")}</g>`; }
+function renderPick(){
+  phase="pick"; setBar(); show(pickArt()); $("plate").innerHTML="";
+  const card=(kind,name,info,on,hs)=>`<button type="button" class="card" data-${kind}="${name}" aria-pressed="${on}"><span class="hs">${hs}</span><b>${name}</b><small>${info}</small></button>`;
+  $("box").hidden=false;
+  $("box").innerHTML=`<div class="pick"><h2>Create Your Past</h2><p class="lead">Before the Comet, you lived on Talus. Choose who you were, then live the last day of that life. How you answer shapes your Style.</p>
+    <h3>Lifeform</h3><div class="cards">${Object.entries(LIFEFORMS).map(([n,L])=>card("lf",n,`${L.t}<br>${L.b}`,n===LK.lf,headShot(n,LK.role))).join("")}</div>
+    <h3>Role</h3><div class="cards">${Object.entries(ROLES).map(([n,R])=>card("role",n,`${R.t}<br>Life ${R.life}`,n===LK.role,headShot(LK.lf,n,true))).join("")}</div>
+    <div class="go"><button type="button" class="btn" id="live">Live your last day as a ${LK.lf} ${LK.role} ▸</button></div></div>`;
+  $("box").querySelectorAll("[data-lf]").forEach(b=>b.onclick=()=>{ LK={...LK,lf:b.dataset.lf}; renderPick(); $("box").querySelector(`[data-lf="${LK.lf}"]`).focus(); });
+  $("box").querySelectorAll("[data-role]").forEach(b=>b.onclick=()=>{ LK={...LK,role:b.dataset.role}; renderPick(); $("box").querySelector(`[data-role="${LK.role}"]`).focus(); });
+  $("live").onclick=startIntro;
+}
+
+/* ---------- step 2: the Role intro */
+function startIntro(){ phase="intro"; votes=[]; step=0; const [n,p]=INTRO_TITLE[LK.role]; $("plate").innerHTML=`<b>${n}</b><span>${p}</span>`; node(LK.role+"1"); }
+function node(id){
+  const nd=PAST[id]; step=id.endsWith("End")?4:+id.slice(-1); setBar();
+  show(ART[LK.role](step===4?3:step)+(step===4?goldEnd():""));
+  const text=nd.t.replace("{LF}",LIFEFORMS[LK.lf].line);
+  $("box").hidden=false;
+  $("box").innerHTML=`<div class="head"><div class="portrait">${headShot(LK.lf,LK.role)}</div><div><p class="plate">${INTRO_TITLE[LK.role][0]}</p><p class="say">${text}</p>
+    ${nd.clue?`<p class="clue">Journal: ${nd.clue.replace("From your past life: ","")}</p>`:""}</div></div>
+    <ul class="choices">${nd.c?nd.c.map((o,i)=>`<li><button type="button" data-i="${i}"><span class="k">${i+1}.</span><span>${o.t}</span></button></li>`).join(""):`<li><button type="button" data-end="1"><span class="k">▸</span><span>Let go</span></button></li>`}</ul>`;
+  if(nd.clue) clue=nd.clue;
+  $("box").querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{ const o=nd.c[+b.dataset.i]; votes.push(o.vote); node(o.go); });
+  const e=$("box").querySelector("[data-end]"); if(e) e.onclick=finish;
+  const f=$("box").querySelector("button"); if(f) f.focus({preventScroll:true});
+}
+function styleFromVotes(){ const count={},last={}; votes.forEach((v,i)=>{ count[v]=(count[v]||0)+1; last[v]=i; }); return Object.keys(count).sort((a,b)=>count[b]-count[a]||last[b]-last[a])[0]||"Serious"; }
+function finish(){ $("box").hidden=true; $("fade").classList.add("on");
+  setTimeout(()=>{ const msg={type:"cq-past-done",lf:LK.lf,role:LK.role,votes,style:styleFromVotes(),clue}; if(EMBED) parent.postMessage(msg,"*"); else { $("fade").classList.remove("on"); renderPick(); } },2300); }
+$("skip").onclick=()=>{ if(phase==="pick"){ votes=[]; const msg={type:"cq-past-done",lf:LK.lf,role:LK.role,votes,style:"Serious",clue:null,skipped:true}; if(EMBED) parent.postMessage(msg,"*"); else startIntro(); } else { phase="pick"; finish(); } };
+addEventListener("keydown",e=>{ if(phase!=="intro") return; const n=+e.key; if(n>=1&&n<=4){ const b=$("box").querySelector(`[data-i="${n-1}"]`); if(b){ e.preventDefault(); b.click(); } } });
+renderPick();
+</script>
+</body>
+</html>
