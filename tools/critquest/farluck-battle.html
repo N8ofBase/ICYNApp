@@ -1337,7 +1337,7 @@ function drawUnit(u, x, y, targetable) {
   el('rect', { x: x - w / 2, y: top, width: w, height: 5, rx: 2, fill: '#2c241699' });
   el('rect', { x: x - w / 2, y: top, width: w * u.life / u.max, height: 5, rx: 2, fill: teamCol });
 }
-function unitLook(u) { return { lf: u.lf, role: u.role, skin: SKIN[u.lf] || '#8a5e3c', cloak: (u.sp && u.sp.color) || ROLE_LOOK[u.role] || '#3f6b45', size: u.lf === 'Melkin' ? .62 : u.lf === 'Dimoneesh' ? .9 : 1 }; }
+function unitLook(u) { return { lf: u.lf, role: u.role, skin: (u.sp && u.sp.skin) || SKIN[u.lf] || '#8a5e3c', cloak: (u.sp && u.sp.color) || ROLE_LOOK[u.role] || '#3f6b45', size: u.lf === 'Melkin' ? .62 : u.lf === 'Dimoneesh' ? .9 : 1 }; }
 function readout() {
   const u = cur(); if (!myTurn() || !hoverHex || !G.mode) return;
   const [c, r] = hoverHex, t = occupied(c, r), m = G.mode;
@@ -1689,7 +1689,7 @@ addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelecto
     $('newBtn').onclick = () => { if (parent !== window) parent.postMessage({ type: 'cq-battle-close', won }, '*'); else { b.remove(); startBout(); } };
     parent.postMessage({ type: 'cq-battle', won }, '*');
   };
-  const me = { ...defaultSpec(cfg.lf, cfg.role, cfg.focus || ROLES[cfg.role].branches[0], cfg.ab || 0, 0), weapon: cfg.weapon, wRange: cfg.wRange, def: cfg.def || 0, color: cfg.color };
+  const me = { ...defaultSpec(cfg.lf, cfg.role, cfg.focus || ROLES[cfg.role].branches[0], cfg.ab || 0, 0), weapon: cfg.weapon, wRange: cfg.wRange, def: cfg.def || 0, color: cfg.color, skin: cfg.skin };
   const grem = () => defaultSpec('Melkin', 'Whisper', ROLES.Whisper.branches[0], 0, 0);
   talkTargets = () => [];
   G.team = [me]; G.rivals = [grem(), grem(), grem()];
