@@ -77,6 +77,7 @@ body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;ov
 button.slot:hover,button.slot:focus-visible{border-color:var(--gold);outline:none}
 .pack{width:74px;height:74px}
 .pack svg{width:44px;height:44px}
+.artbtn{font-size:13px;background:#3a2e24;border:1px solid #6b5537;border-radius:6px;padding:6px 10px}
 .help{width:44px;height:44px;border-radius:50%;border:2px solid var(--gold);background:#3a2e24;font-size:20px}
 /* windows */
 .win{display:none;position:fixed;z-index:15;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,94vw);max-height:80vh;overflow:auto;background:linear-gradient(var(--parch),var(--parch2));border:3px solid var(--edge);border-radius:12px;box-shadow:0 0 0 2px #000,0 20px 50px rgba(0,0,0,.7);padding:14px 16px;color:var(--ink)}
@@ -130,6 +131,7 @@ button.slot:hover,button.slot:focus-visible{border-color:var(--gold);outline:non
     <div class="sec"><h4>Actions</h4><div class="verbs" id="verbs"></div></div>
     <div class="sec"><h4>Gear and Ready</h4><div class="slots" id="slots"></div></div>
     <div class="sec"><h4>Pack</h4><button type="button" class="slot pack" id="packBtn" aria-label="Open Pack"></button></div>
+    <div class="sec"><h4>Art</h4><button type="button" class="artbtn" id="artBtn" title="Switch character art">Classic</button><button type="button" class="artbtn" id="bgBtn" title="Switch scene art" style="margin-top:4px">Painted</button></div>
     <div class="sec"><button type="button" class="help" id="helpBtn" aria-label="How to play" title="How to play">?</button></div>
   </div>
 </div>
@@ -262,7 +264,10 @@ function cecilArt(x,y){ return `<g transform="translate(${x} ${y})"><ellipse cx=
 function gremlinArt(x,y){ return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="10" ry="3" fill="rgba(0,0,0,.3)"/><path d="M-9 0 Q-10 -20 0 -22 Q10 -20 9 0Z" fill="#5f8a2e" stroke="#2f4a14" stroke-width="1.5"/><path d="M-4 -4 Q-4 -16 2 -18" stroke="#8fbf4e" stroke-width="2" fill="none"/><path d="M-8 -18 l-8 -8 M8 -18 l8 -8" stroke="#5f8a2e" stroke-width="4"/><circle cx="-3" cy="-14" r="2" fill="#ffe24a"/><circle cx="3" cy="-14" r="2" fill="#ffe24a"/></g>`; }
 const SCENES={
   clearing:{
-    name:"The old landing stones", bounds:[40,370,920,515], start:[300,460],
+
+    P:{bounds:[40,330,920,520],start:[300,440],
+      over:()=>`<path d="M790 228 q14 -18 30 -4" stroke="#b0201a" stroke-width="5" fill="none" opacity="${flags.thread?0:1}"/>`,
+      hot:{stones:[[320,160,320,140],[480,420]],thread:[[750,180,110,90],[780,400]],east:[[890,260,70,280],[930,420]]}},    name:"The old landing stones", bounds:[40,370,920,515], start:[300,460],
     art:()=>`${defs("clr","#7fb6d6","#e8f2ea")}
       <rect width="960" height="540" fill="url(#sky_clr)"/>
       ${clouds(11)}
@@ -287,7 +292,10 @@ const SCENES={
     ]
   },
   lane:{
-    name:"Farm lane", bounds:[40,380,920,515], start:[70,450],
+
+    P:{bounds:[40,340,920,520],start:[70,440],
+      over:()=>`<g>${[0,1,2,3,4].map(k=>`<path d="M${330+k*40} ${455+(k%2)*10} l-5 -6 m5 6 l0 -8 m0 8 l5 -6" stroke="#4f9a22" stroke-width="3"/>`).join("")}</g>`,
+      hot:{west:[[0,260,50,280],[40,440]],crops:[[0,180,580,70],[300,360]],scare:[[600,95,150,175],[660,370]],prints:[[310,440,220,40],[300,460]],east:[[890,260,70,280],[930,440]]}},    name:"Farm lane", bounds:[40,380,920,515], start:[70,450],
     art:()=>`${defs("lane","#e9a868","#f7dfae")}
       <rect width="960" height="540" fill="url(#sky_lane)"/>
       <circle cx="820" cy="120" r="52" fill="#fff0c0" opacity=".9"/>
@@ -316,7 +324,10 @@ const SCENES={
     ]
   },
   yard:{
-    name:"Farluck Farm", bounds:[40,400,920,515], start:[70,460],
+
+    P:{bounds:[40,420,920,520],start:[70,470],
+      over:()=>`${flags.cleared?'':(ART==="pixel"?gremPix(800,392):gremlinArt(800,392))}${ART==="pixel"?cecilPix(680,450):cecilArt(680,450)}`,
+      hot:{west:[[0,300,50,240],[40,470]],house:[[20,60,330,320],[200,440]],well:[[460,175,170,225],[545,445]],cecil:[[645,330,70,125],[620,465]],shed:[[720,180,240,210],[820,440]]}},    name:"Farluck Farm", bounds:[40,400,920,515], start:[70,460],
     art:()=>`${defs("yard","#f0b878","#fbe2b4")}
       <rect width="960" height="540" fill="url(#sky_yard)"/>
       ${clouds(41)}
@@ -325,11 +336,11 @@ const SCENES={
       ${house()}
       <path d="M290 150 q-8 -20 6 -36 q-10 -18 2 -32" fill="none" stroke="#f6efe2" stroke-width="7" opacity=".55" stroke-linecap="round"/>
       ${shed()}
-      ${flags.cleared?'':`${gremlinArt(735,372)}`}
+      ${flags.cleared?'':(ART==="pixel"?gremPix(735,372):gremlinArt(735,372))}
       <path d="M0 400 Q480 385 960 400 V540 H0Z" fill="url(#gB_yard)"/>
       ${tufts(47,0,960,405,530,40,"#6e6036","#a8935a")}
       ${well(480,400)}
-      ${cecilArt(600,470)}
+      ${ART==="pixel"?cecilPix(600,470):cecilArt(600,470)}
       ${light("yard",300,60,"#ffe6b0",.4)}`,
     hot:[
       {id:"west",name:"Back to the lane",shape:`<rect x="0" y="300" width="50" height="230" fill="transparent"/>`,stand:[40,460],exit:"lane"},
@@ -362,15 +373,19 @@ function tree(x,y,c,wilt,sc){ sc=sc||1; const T=`<ellipse cx="${x+10}" cy="${y+2
 function fern(x,y){ return `<path d="M${x} ${y} q-30 -40 -50 -46 M${x} ${y} q-6 -50 4 -70 M${x} ${y} q30 -36 50 -40" stroke="#3f6b2f" stroke-width="7" fill="none" stroke-linecap="round"/>`; }
 /* ---------- scene setup ---------- */
 function load(id,keep){
-  scene=SCENES[id]; $("where").textContent=scene.name;
-  const s=$("svg"); s.innerHTML=scene.art();
+  scene=SCENES[id]; scene.key=id; $("where").textContent=scene.name;
+  if(!scene.V) scene.V={bounds:scene.bounds,start:scene.start,hot:Object.fromEntries(scene.hot.map(h=>[h.id,[h.shape,h.stand]]))};
+  const P=BG==="painted"&&scene.P;
+  scene.bounds=P?P.bounds:scene.V.bounds; scene.start=P?P.start:scene.V.start;
+  scene.hot.forEach(h=>{ const q=P&&P.hot[h.id]; if(q){ h.shape=`<rect x="${q[0][0]}" y="${q[0][1]}" width="${q[0][2]}" height="${q[0][3]}" fill="transparent"/>`; h.stand=q[1]; } else { [h.shape,h.stand]=scene.V.hot[h.id]; } });
+  const s=$("svg"); s.innerHTML=P?`<image href="art/farluck-${id}.jpg" x="0" y="0" width="960" height="540" preserveAspectRatio="xMidYMid slice" onerror="bgFail()"/>${P.over()}`:scene.art();
   scene.hot.forEach(h=>{ const g=document.createElementNS(SVGNS,"g"); g.setAttribute("class","hot"); g.setAttribute("tabindex","0"); g.setAttribute("role","button"); g.setAttribute("aria-label",h.name);
     g.innerHTML=h.shape.replace("fill=\"transparent\"","fill=\"transparent\" class=\"hl\" stroke=\"transparent\"");
     g.addEventListener("click",e=>{e.stopPropagation(); act(h);});
     g.addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();act(h);} });
     g.addEventListener("mouseenter",()=>showLabel(h)); g.addEventListener("mouseleave",()=>$("label").hidden=true);
     s.appendChild(g); });
-  const hg=document.createElementNS(SVGNS,"g"); hg.innerHTML=heroSVG(); s.appendChild(hg); hero.el=hg;
+  const hg=document.createElementNS(SVGNS,"g"); hg.innerHTML=ART==="pixel"?heroPixSVG():heroSVG(); s.appendChild(hg); hero.el=hg;
   if(!keep){ hero.x=hero.tx=scene.start[0]; hero.y=hero.ty=scene.start[1]; } hero.face=1; hero.cb=null; placeHero();
   if(scene.enter) scene.enter();
 }
@@ -459,6 +474,194 @@ function note(t){ if(!journal.includes(t)) journal.push(t); }
 let tt; function toast(t,s){ $("toastT").textContent=t; $("toastS").textContent=s; const el=$("toast"); el.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>el.classList.remove("show"),3000); }
 
 
+
+
+/* ---------- pixel-art option (original sprites drawn on a 16-wide grid) ---------- */
+let ART="classic"; try{ ART=localStorage.getItem("cq-art")||"classic"; }catch(e){}
+let BG="painted"; try{ BG=localStorage.getItem("cq-bg")||"painted"; }catch(e){}
+function setBg(b){ BG=b; try{ localStorage.setItem("cq-bg",b); }catch(e){} const k=$("bgBtn"); if(k) k.textContent=BG==="painted"?"Painted":"Drawn"; if(scene){ const keep=[hero.x,hero.y]; load(scene.key,true); hero.x=hero.tx=Math.max(scene.bounds[0],Math.min(scene.bounds[2],keep[0])); hero.y=hero.ty=Math.max(scene.bounds[1],Math.min(scene.bounds[3],keep[1])); placeHero(); } }
+function bgFail(){ if(BG==="painted"){ BG="drawn"; const k=$("bgBtn"); if(k) k.textContent="Drawn"; if(scene) load(scene.key,true); } }
+const PX=5;
+const HERO_PIX=[
+"......oooo......",
+".....ohhhho.....",
+"....ohhhhhho....",
+"....ohsssseo....",
+"....osssssso....",
+".....osssso.....",
+"....occcccco....",
+"...occCcccCco...",
+"..osccCccCccso..",
+"..osccCccCccso..",
+"...occcbbccco...",
+"...occCcccCco...",
+"...occCcccCco...",
+"...oCCCCCCCCo...",
+"....ollo.ollo...",
+"....ollo.ollo...",
+"....ollo.ollo...",
+"....oddo.oddo...",
+"....oooo.oooo..."];
+const CECIL_PIX=[
+"....oooooooo....",
+"...oyyyyyyyyo...",
+"..oyyyyyyyyyyo..",
+".....osssseo....",
+".....osssssso...",
+".....owwwwwo....",
+"......owwwo.....",
+"....oBBBBBBo....",
+"...osBbbbbBso...",
+"...osBbbbbBso...",
+"....oBbbbbBo....",
+"....oBbbbbBo....",
+"....oBBBBBBo....",
+"....ollo.ollo...",
+"....ollo.ollo...",
+"....ollo.ollo...",
+"....oddo.oddo...",
+"....oooo.oooo..."];
+const GREM_PIX=[
+"o......o",
+"go....go",
+".oggggo.",
+"oggyygo.",
+"oggggggo",
+".oggggo.",
+".og..go.",
+".oo..oo."];
+function pixRows(rows,pal,legs){
+  let a="",L="",R="";
+  rows.forEach((row,y)=>{ for(let x=0;x<row.length;x++){ const ch=row[x], col=pal[ch]; if(!col) continue;
+    const r=`<rect x="${x*PX}" y="${y*PX}" width="${PX}" height="${PX}" fill="${col}"/>`;
+    if(legs&&y>=legs){ if(x<8) L+=r; else R+=r; } else a+=r; } });
+  return legs?a+`<g id="legL">${L}</g><g id="legR">${R}</g>`:a;
+}
+function pixPoints(pts,col){ return pts.map(([x,y])=>`<rect x="${x*PX}" y="${y*PX}" width="${PX}" height="${PX}" fill="${col}"/>`).join(""); }
+function pixProp(role,skin){
+  if(role==="Maverick") return pixPoints([[13,2],[14,3],[14,4],[15,5],[15,6],[15,7],[15,8],[15,9],[14,10],[14,11],[13,12]],"#8a5a2a")+pixPoints([[13,3],[13,4],[13,5],[13,6],[13,7],[13,8],[13,9],[13,10],[13,11]],"#e8dcc0");
+  if(role==="Champion") return pixPoints([[15,1],[15,2],[15,3],[15,4],[15,5],[15,6],[15,7]],"#e0e0ea")+pixPoints([[14,8],[15,8],[16,8]],"#c99a3c")+pixPoints([[15,9]],"#5a3a22")
+    +pixPoints([[0,7],[1,7],[2,7],[0,8],[1,8],[2,8],[0,9],[1,9],[2,9],[1,10]],"#c9a03c")+pixPoints([[1,8]],"#7a5a22");
+  if(role==="Soul Seer") return pixPoints([...Array(18)].map((_,i)=>[15,i+1]),"#6b4a2a")+pixPoints([[14,-1],[15,-1],[16,-1],[15,-2],[15,0]],"#bfe4ff");
+  if(role==="Whisper") return pixPoints([[14,9],[15,8],[16,7]],"#e0e0ea")+pixPoints([[13,10]],"#5a3a22")+pixPoints([[1,9]],"#e0e0ea");
+  return pixPoints([[1,9],[2,9],[1,10],[2,10],[13,9],[14,9],[13,10],[14,10]],skin); // Brawler fists
+}
+function heroPixSVG(){
+  const L=heroLook(); const hood=L.role==="Maverick"||L.role==="Whisper"?shade(L.cloak,.7):(L.lf==="Lizerus"?shade(L.skin,.8):"#4a2e1a");
+  const pal={o:"#1a120c",h:hood,s:L.skin,e:"#1b140c",c:L.cloak,C:shade(L.cloak,.7),b:"#c99a3c",l:"#4a3a26",d:"#2a1c10"};
+  return `<g id="heroInner"><g transform="scale(${L.size})"><ellipse cx="0" cy="0" rx="24" ry="7" fill="rgba(0,0,0,.35)"/>
+    <g transform="translate(-40 -95)" shape-rendering="crispEdges">${pixRows(HERO_PIX,pal,14)}${pixProp(L.role,L.skin)}</g></g></g>`;
+}
+function cecilPix(x,y){ const pal={o:"#1a120c",y:"#d8b65a",s:"#d9a57c",e:"#1b140c",w:"#efe6d6",B:"#3f5f7f",b:"#6f8fae",l:"#4a3a2a",d:"#2a1c10"};
+  return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="24" ry="7" fill="rgba(0,0,0,.3)"/><g transform="translate(-40 -90)" shape-rendering="crispEdges">${pixRows(CECIL_PIX,pal)}</g></g>`; }
+function gremPix(x,y){ const pal={o:"#1a120c",g:"#5f8a2e",y:"#ffe24a"};
+  return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="12" ry="3" fill="rgba(0,0,0,.3)"/><g transform="translate(-16 -32) scale(.8)" shape-rendering="crispEdges">${pixRows(GREM_PIX,pal)}</g></g>`; }
+function setArt(a){ ART=a; try{ localStorage.setItem("cq-art",a); }catch(e){} if(scene){ load(scene.key,true); } const b=$("artBtn"); if(b) b.textContent=ART==="pixel"?"Pixel":"Classic"; }
+/* ---------- idle thoughts (by Style, plus some by place) ---------- */
+const THOUGHTS={
+ Serious:[
+  "Check the ground first. Then the sky. Then the ground again.",
+  "Every place has a story. This one is waiting to tell it.",
+  "I said I'd help. That's the whole plan.",
+  "Rest is part of the work. Short rest. Very short.",
+  "Something changed here. Find out what, then fix it.",
+  "Keep the Pack light and the promise heavy.",
+  "One step, then the next. That's how mountains move.",
+  "If I'm standing still, I'd better be thinking.",
+  "The Legion took one life from me. It won't take this one easily.",
+  "Bruxanna trusted me with this. I won't waste it.",
+  "Count the exits. Count the friends. Then begin.",
+  "A dry field is a hungry family. That matters.",
+  "Listen more than you speak. The land talks quietly.",
+  "No hurry, no waste. Just the next good thing to do.",
+  "Kindness brought me back. I should keep using it.",
+  "Being reborn doesn't mean being careless.",
+  "Somewhere, someone needs this done today.",
+  "I don't need to be fearless. I need to keep going.",
+  "My hands remember what my head forgets: work.",
+  "Stand still too long and the trail goes cold."],
+ Silly:[
+  "If I stand here long enough, do I count as a statue?",
+  "I wonder if clouds ever get tired of being fluffy.",
+  "Note to self: invent pockets inside pockets.",
+  "I've been reborn and I STILL forgot to bring a snack.",
+  "Is it 'Light Keeper' or 'Keeper of Lights'? Asking for me.",
+  "That rock looks like it's judging me. Rude, rock.",
+  "Wexler said 'calibrating' eleven times. I counted.",
+  "Gremlins. Why is it always gremlins? Never cupcakes.",
+  "If I hum loudly enough, maybe the adventure comes to me.",
+  "Dear Diary: still awesome. Still slightly lost.",
+  "I could do a little dance. Nobody's watching. Probably.",
+  "Do Return Shards come in flavors? Asking for science.",
+  "My boots have walked across a comet. They deserve a medal.",
+  "Somebody should write a song about me. I'd buy it.",
+  "Bet I could juggle three turnips. Bet.",
+  "This is my thinking face. It's mostly my waiting face.",
+  "A bird just looked at me like I owe it money.",
+  "Second life, first rule: never trust a quiet goose.",
+  "If adventure is calling, I hope it leaves a message.",
+  "I wonder if the gremlins have tiny hats. I hope so."],
+ Shy:[
+  "(Maybe if I'm very quiet, the world will tell me something.)",
+  "(I hope I'm doing this right.)",
+  "(That flower is brave, growing all alone out here.)",
+  "(Nobody's looking. I can just... breathe.)",
+  "(I could ask for help. Later. Maybe.)",
+  "(The wind sounds like someone humming.)",
+  "(I'll notice the small things. Somebody has to.)",
+  "(Bruxanna smiled at me. I keep thinking about that.)",
+  "(I'm braver than I was. A little. That counts.)",
+  "(If I help quietly, it still helps.)",
+  "(Leaves make the softest sound when they fall.)",
+  "(I should say hello first next time. Should.)",
+  "(Being reborn is a lot of feelings.)",
+  "(I'll practice what to say. 'Hi. I'm here to help.' Okay.)",
+  "(Stones, sky, grass. It's peaceful here.)",
+  "(I wonder if anyone else feels a bit lost.)",
+  "(I can do this. One small thing at a time.)",
+  "(Maybe the gremlins are just scared too.)",
+  "(It's nice to be needed. It's scary too.)",
+  "(Quiet isn't the same as weak. I'm learning that.)"],
+ Smug:[
+  "Honestly, Talus is lucky I came back.",
+  "Waiting for the world to catch up with me. As usual.",
+  "Second life, same flawless instincts.",
+  "If there were a prize for heroic standing, I'd win it.",
+  "They'll write songs about this. Mostly about my hair.",
+  "Gremlins? Please. I've fought worse before breakfast.",
+  "Not to brag, but the Comet picked me for a reason.",
+  "I make standing still look like a strategy.",
+  "Somebody take notes. This is how a Light Keeper waits.",
+  "I don't get lost. I take scenic routes on purpose.",
+  "My Return Shard is just for show. Obviously.",
+  "Wexler's notes should have a chapter on me.",
+  "Danger, if you're listening: I'm right here.",
+  "I'd help myself first, but I'm already perfect.",
+  "This is the part where the hero looks dramatic. Done.",
+  "Cool, calm, and clearly the best one here.",
+  "I've had a whole extra life to get this good.",
+  "Fun fact: I'm the main character. You're welcome.",
+  "Some keep lights. I keep standards.",
+  "Bruxanna said I was 'something else.' I agree."]
+};
+const PLACE_THOUGHTS={
+  clearing:["The stones still hum a little. Like they remember the light.","Beam down, walk out. Wexler made it sound easy.","That red thread bothers me. Who wears cloaks out here?"],
+  lane:["These fields used to be green. You can tell by the fence posts.","Little green prints everywhere. Something's been feasting.","The scarecrow has bite marks. That's not a good sign."],
+  yard:["That well is too quiet.","Smells like bean soup. My stomach has opinions.","Something is chewing in that shed."]
+};
+let lastInput=Date.now(), lastThought=0, usedThoughts=new Set();
+["pointerdown","keydown","wheel"].forEach(ev=>addEventListener(ev,()=>{ lastInput=Date.now(); },{passive:true}));
+function idleThought(){
+  const pool=[...(THOUGHTS[STYLE]||THOUGHTS.Serious)], place=(PLACE_THOUGHTS[scene&&scene.key]||[]);
+  let list=(Math.random()<.35&&place.length)?place:pool;
+  let fresh=list.filter(t=>!usedThoughts.has(t)); if(!fresh.length){ list.forEach(t=>usedThoughts.delete(t)); fresh=list; }
+  const t=fresh[Math.floor(Math.random()*fresh.length)]; usedThoughts.add(t); say(`<em>${t}</em>`);
+}
+setInterval(()=>{
+  const quiet=!busy&&!$("box").classList.contains("on")&&!document.querySelector(".win.on")&&!$("ov").classList.contains("on");
+  const now=Date.now();
+  if(quiet&&now-lastInput>12000&&now-lastThought>16000){ lastThought=now; idleThought(); }
+},1000);
 /* ---------- ui ---------- */
 let bubT=null, bubOn=false;
 function say(t){
@@ -523,7 +726,7 @@ function openPack(){
   $("jList").innerHTML=journal.length?journal.map(j=>`<li>${j}</li>`).join(""):"<li>Nothing yet.</li>";
   $("invWin").classList.add("on");
 }
-$("packBtn").onclick=openPack; $("helpBtn").onclick=()=>$("helpWin").classList.toggle("on");
+$("packBtn").onclick=openPack; $("artBtn").onclick=()=>setArt(ART==="pixel"?"classic":"pixel"); $("bgBtn").onclick=()=>setBg(BG==="painted"?"drawn":"painted"); $("helpBtn").onclick=()=>$("helpWin").classList.toggle("on");
 document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>b.closest(".win").classList.remove("on"));
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") document.querySelectorAll(".win.on").forEach(w=>w.classList.remove("on")); });
 
@@ -532,9 +735,9 @@ document.addEventListener("keydown",e=>{
   if(!$("box").classList.contains("on")) return; const n=parseInt(e.key,10); const bs=$("choices").querySelectorAll("button"); if(n>=1&&n<=bs.length) bs[n-1].click();
 });
 $("selStyle").onchange=e=>{ STYLE=e.target.value; applyRole(); };
-["selLf","selRole"].forEach(id=>$(id).onchange=()=>{ if(hero.el){ hero.el.innerHTML=heroSVG(); placeHero(); } buildBar(); });
+["selLf","selRole"].forEach(id=>$(id).onchange=()=>{ if(hero.el){ hero.el.innerHTML=ART==="pixel"?heroPixSVG():heroSVG(); placeHero(); } buildBar(); });
 if(HERO&&HERO.role){ $("selLf").value=HERO.lf; $("selRole").value=HERO.role; if(HERO.style){ $("selStyle").value=HERO.style; STYLE=HERO.style; } document.querySelector(".setup").hidden=true; }
-buildBar();
+buildBar(); $("artBtn").textContent=ART==="pixel"?"Pixel":"Classic"; $("bgBtn").textContent=BG==="painted"?"Painted":"Drawn";
 if(HERO&&HERO.start==="farluck-hearth"&&(HERO.anchors||[]).includes("farluck-hearth")){
   // a return trip: land at Cecil's hearth, the farm already helped
   Object.assign(flags,{met:1,cleared:1,gifts:1,hearth:1,thread:1});
