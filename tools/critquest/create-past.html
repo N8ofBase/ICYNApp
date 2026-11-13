@@ -58,7 +58,7 @@ body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;ov
 .card[aria-pressed="true"]{border-color:var(--accent);background:var(--hover);box-shadow:0 0 0 2px var(--gold2)}
 .card .hs{width:58px;height:58px;border-radius:50%;border:2px solid var(--gold);background:radial-gradient(circle at 50% 38%,#4a3c55,#16121c);overflow:hidden}
 .card .hs svg{width:100%;height:100%;display:block}
-.card .fig{width:64px;height:96px;border-radius:10px;border:2px solid var(--gold);background:radial-gradient(ellipse at 50% 30%,#4a3c55,#16121c);overflow:hidden}
+.card .fig{width:56px;height:84px;border-radius:10px;border:2px solid var(--gold);background:radial-gradient(ellipse at 50% 30%,#4a3c55,#16121c);overflow:hidden}
 .card .fig svg{width:100%;height:100%;display:block}
 .swatches{display:flex;align-items:center;gap:8px;margin:8px 0 0}
 .swatches span{font-family:"Alegreya SC",serif;font-size:14px;color:var(--ink2);letter-spacing:.08em}
@@ -67,6 +67,14 @@ body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;ov
 .sw:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .card b{font-family:"Alegreya SC",serif;font-size:15px;line-height:1.1}
 .card small{font-size:12px;line-height:1.2;color:var(--ink2)}
+.card .bn{font-style:normal;font-family:"Alegreya SC",serif;font-size:12.5px;line-height:1.2;color:var(--accent);font-weight:700;margin-top:auto}
+.card{align-content:start}
+@media (max-height:800px) and (min-height:521px){.card .fig{width:46px;height:68px}.pick .lead{margin-bottom:4px}.pick h3{margin:6px 0 4px}}
+.pick .go{position:sticky;bottom:-12px;background:linear-gradient(transparent,var(--parch2) 30%);padding:8px 0 4px;margin:4px 0 0}
+.nameRow{display:flex;gap:8px;align-items:center;margin:10px 0 0}
+.nameRow input{flex:1;min-width:0;font:inherit;font-family:"Alegreya SC",serif;font-size:18px;color:var(--ink);background:rgba(255,255,255,.55);border:2px solid var(--edge);border-radius:8px;padding:6px 10px}
+.nameRow input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.nameNote{margin:6px 0 0;font-size:14px;color:var(--ink2)}.nameNote.warn{color:var(--accent);font-weight:700}
 .go{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .btn{font:inherit;font-family:"Alegreya SC",serif;font-size:15px;border-radius:8px;padding:6px 14px;cursor:pointer;border:1px solid #8a6416;background:var(--gold2);color:#22170d}
 .btn.ghost{background:transparent;color:var(--ink)}
@@ -85,7 +93,7 @@ body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;ov
 .bar button:hover,.bar button:focus-visible{border-color:var(--gold2);outline:none}
 .fade{position:absolute;inset:0;background:#fff7dc;opacity:0;pointer-events:none;transition:opacity 2.2s;z-index:8}
 .fade.on{opacity:1}
-@media (max-width:700px){.cards{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}.card small{display:none}.card .fig{width:48px;height:72px}.card b{font-size:12px}}
+@media (max-width:700px){.cards{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}.card small{display:none}.card .fig{width:48px;height:72px}.card b{font-size:11px;letter-spacing:0;overflow-wrap:anywhere}.card .bn{font-size:10.5px}}
 @media (max-height:520px){
   .frame{margin:4px 4px 0}.bar{height:38px}.bar .mini{width:26px;height:26px}
   .box{padding:8px 10px;bottom:6px;max-height:calc(100% - 46px)}.portrait{width:46px;height:46px}.say{font-size:14.5px}.choices button{font-size:14.5px;padding:3px 8px}.choices{margin-top:6px;gap:0}
@@ -205,7 +213,9 @@ const LIFEFORMS={
   Leyf:{t:"Big tree dwellers who care for and protect the land. Great survivors and cooks.",b:"Energy +1, Speed +1",line:"You hop up onto a ledge for a better look."},
   Dimoneesh:{t:"Horned, hooved scholars and teachers, devoted to protecting others.",b:"Defense +1, Energy +1",line:"You sense the calm drain out of the air."},
   Melkin:{t:"The smallest folk. Friendly crafters and artists, the first to make music.",b:"Speed +1, Charm +1",line:"You squeeze through a gap no one else could fit through."}};
-const ROLES={Brawler:{t:"Masters of balance and energy who subdue rivals with Que Bao.",life:40},Champion:{t:"Honor and faith, protecting others with tactics, skill and weapons.",life:33},Maverick:{t:"Sharp eyes and sharp wit, with breathtaking aim from afar.",life:30},"Soul Seer":{t:"Connected to the energies of Icosa, bending reality and guiding nature.",life:27},Whisper:{t:"Masters of stealth who move through shadows unseen.",life:30}};
+const ROLES={Brawler:{t:"Masters of balance and energy who subdue rivals with Que Bao.",life:40},Champion:{t:"Honor and faith, protecting others with tactics, skill and weapons.",life:33},Maverick:{t:"Sharp eyes and sharp wit, with breathtaking aim from afar.",life:30},"Soul Seer":{t:"Connected to the energies of Icosa, bending reality and guiding nature.",life:30},Whisper:{t:"Masters of stealth who move through shadows unseen.",life:30}};
+/* Role bonuses, same numbers as the battle pages (farluck-battle ROLES) */
+const ROLE_BONUS={"Brawler": "Power +1, Speed +1", "Champion": "Defense +1, Power +2, Energy +1", "Maverick": "Speed +1, Charm +2", "Soul Seer": "Energy +2, Speed +1", "Whisper": "Speed +1, Charm +1, Damage +1"};
 /* everyday look per Lifeform (N8 2026-11-13): 4 pigmented colors each, plus regular clothes */
 const LF_COLORS={Sapien:["#8a5e3c","#5e3f2a","#a2703f","#5a5a7a"],Lizerus:["#8fae5a","#5f8a4a","#b0884a","#7a6aa8"],Leyf:["#7fa36a","#5f7f4a","#8a7a4a","#4f8a7a"],Dimoneesh:["#8fa8d0","#5a6a8a","#4a7a6a","#3e3a4e"],Melkin:["#c9a0d8","#c9a04a","#8a6a4a","#5a3e4a"]};
 const FOLK_CLOTH={Sapien:"#7a8a5a",Lizerus:"#5a6a8a",Leyf:"#8a6a3a",Dimoneesh:"#3f5a7a",Melkin:"#6a8a9a"};
@@ -312,8 +322,8 @@ const ART={
 /* ---------- state */
 const LKS={lf:CFG.lf||"Sapien",role:CFG.role||"Brawler",skin:CFG.skin||null};
 let LK=LKS, votes=[], step=0, clue=null, phase="pick";
-function setBar(){ $("mini").innerHTML=headShot(LK.lf,phase==="pick"?"Folk":LK.role,false,LK.skin); if(phase==="pick"){ $("who").textContent="Create Your Past"; $("where").textContent="Who were you?"; } else { $("who").textContent=`${LK.lf} ${LK.role}`; $("where").textContent="Your last day on Talus"; }
-  $("pips").innerHTML=phase==="pick"?"":[1,2,3,4].map(i=>`<i class="${i<=step?"on":""}"></i>`).join(""); $("skip").textContent=phase==="pick"?"Skip":"Skip intro"; }
+function setBar(){ $("mini").innerHTML=headShot(LK.lf,phase==="pick"?"Folk":LK.role,false,LK.skin); if(phase==="pick"){ $("who").textContent="Create Your Past"; $("where").textContent="Who were you?"; } else { $("who").textContent=LK.name&&phase!=="intro"?LK.name:`${LK.lf} ${LK.role}`; $("where").textContent=phase==="name"?"A new name":"Your last day on Talus"; }
+  $("pips").innerHTML=phase==="pick"?"":[1,2,3,4].map(i=>`<i class="${i<=step?"on":""}"></i>`).join(""); $("skip").textContent=phase==="pick"?"Skip":"Skip intro"; $("skip").hidden=phase==="name"; }
 let cur=null;
 function show(svg){ const d=document.createElement("div"); d.className="scene"; d.innerHTML=`<svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g transform="translate(0 ${phase==="pick"?0:-80})">${svg}</g></svg>`; $("stage").appendChild(d); void d.offsetWidth; d.classList.add("on"); const old=cur; cur=d; if(old) setTimeout(()=>old.remove(),950); }
 
@@ -322,12 +332,12 @@ function pickArt(){ return sky("s","#2a2440","#7a4a5a","#c06a4a")+`${stars(5,90,
   ${Object.keys(LIFEFORMS).map((lf,i)=>`<g transform="translate(${200+i*140} 400) scale(${lf===LK.lf?1.25:1.05})" opacity="${lf===LK.lf?1:.55}">${heroSVG(look(lf,"Folk",lf===LK.lf?LK.skin:null))}</g>`).join("")}</g>`; }
 function renderPick(){
   phase="pick"; setBar(); show(pickArt()); $("plate").innerHTML="";
-  const card=(kind,name,info,on,hs)=>`<button type="button" class="card" data-${kind}="${name}" aria-pressed="${on}"><span class="fig">${hs}</span><b>${name}</b><small>${info}</small></button>`;
+  const card=(kind,name,info,bn,on,hs)=>`<button type="button" class="card" data-${kind}="${name}" aria-pressed="${on}"><span class="fig">${hs}</span><b>${name}</b><small>${info}</small><em class="bn">${bn}</em></button>`;
   $("box").hidden=false;
   $("box").innerHTML=`<div class="pick"><h2>Create Your Past</h2><p class="lead">Before the Comet, you lived on Talus. Choose who you were, then live the last day of that life. How you answer shapes your Style.</p>
-    <h3>Lifeform</h3><div class="cards">${Object.entries(LIFEFORMS).map(([n,L])=>card("lf",n,`${L.t}<br>${L.b}`,n===LK.lf,figure(n,"Folk",n===LK.lf?LK.skin:null))).join("")}</div>
+    <h3>Lifeform</h3><div class="cards">${Object.entries(LIFEFORMS).map(([n,L])=>card("lf",n,L.t,L.b,n===LK.lf,figure(n,"Folk",n===LK.lf?LK.skin:null))).join("")}</div>
     <div class="swatches" role="group" aria-label="${LK.lf} color"><span>Color</span>${LF_COLORS[LK.lf].map((c,i)=>`<button type="button" class="sw" data-skin="${c}" style="--c:${c}" aria-pressed="${(LK.skin||LF_COLORS[LK.lf][0])===c}" aria-label="${LK.lf} color ${i+1}"></button>`).join("")}</div>
-    <h3>Role</h3><div class="cards">${Object.entries(ROLES).map(([n,R])=>card("role",n,`${R.t}<br>Life ${R.life}`,n===LK.role,figure(LK.lf,n,LK.skin))).join("")}</div>
+    <h3>Role</h3><div class="cards">${Object.entries(ROLES).map(([n,R])=>card("role",n,R.t,`Life ${R.life}, ${ROLE_BONUS[n]}`,n===LK.role,figure(LK.lf,n,LK.skin))).join("")}</div>
     <div class="go"><button type="button" class="btn" id="live">Live your last day as a ${LK.lf} ${LK.role} ▸</button></div></div>`;
   $("box").querySelectorAll("[data-skin]").forEach(b=>b.onclick=()=>{ LK={...LK,skin:b.dataset.skin}; renderPick(); $("box").querySelector(`[data-skin="${LK.skin}"]`).focus(); });
   $("box").querySelectorAll("[data-lf]").forEach(b=>b.onclick=()=>{ LK={...LK,lf:b.dataset.lf,skin:LF_COLORS[b.dataset.lf][0]}; renderPick(); $("box").querySelector(`[data-lf="${LK.lf}"]`).focus(); });
@@ -352,8 +362,30 @@ function node(id){
 }
 function styleFromVotes(){ const count={},last={}; votes.forEach((v,i)=>{ count[v]=(count[v]||0)+1; last[v]=i; }); return Object.keys(count).sort((a,b)=>count[b]-count[a]||last[b]-last[a])[0]||"Serious"; }
 function finish(){ $("box").hidden=true; $("fade").classList.add("on");
-  setTimeout(()=>{ const msg={type:"cq-past-done",lf:LK.lf,role:LK.role,skin:LK.skin||LF_COLORS[LK.lf][0],votes,style:styleFromVotes(),clue}; if(EMBED) parent.postMessage(msg,"*"); else { $("fade").classList.remove("on"); renderPick(); } },2300); }
-$("skip").onclick=()=>{ if(phase==="pick"){ votes=[]; const msg={type:"cq-past-done",lf:LK.lf,role:LK.role,skin:LK.skin||LF_COLORS[LK.lf][0],votes,style:"Serious",clue:null,skipped:true}; if(EMBED) parent.postMessage(msg,"*"); else startIntro(); } else { phase="pick"; finish(); } };
+  setTimeout(()=>{ $("fade").classList.remove("on"); askName(); },2300); }
+/* ---------- step 3: a new name (N8 2026-11-13). Starts as the account name when the castle sends one in the hash. */
+const NAME_IDEAS=["Tavi","Orren","Mirelle","Bosk","Fenna","Dorrin","Kesh","Lio","Marrow","Juno","Ashby","Pell","Ysolde","Tamsin","Corwen","Nim"];
+const cleanName=v=>v.replace(/[^\p{L}\p{N} '\-.]/gu,"").replace(/\s+/g," ").trim().slice(0,18);
+function askName(){
+  phase="name"; step=4; setBar(); $("plate").innerHTML="";
+  show(sky("nm","#3a2a4a","#c98a5a","#ffe6a0")+stars(5,90,201)+goldEnd()+`<g transform="translate(480 400) scale(1.5)" opacity=".9" class="rise">${heroSVG(look(LK.lf,LK.role,LK.skin))}</g>`);
+  const start=cleanName(LK.name||CFG.name||"");
+  $("box").hidden=false;
+  $("box").innerHTML=`<div class="head"><div class="portrait">${headShot(LK.lf,LK.role,false,LK.skin)}</div><div style="flex:1;min-width:0"><p class="plate">A new name</p>
+    <p class="say">Warm light gathers you up. A kind voice, far above: "Rest now, little light. When you wake, what will they call you?"</p>
+    <form id="nameForm" class="nameRow"><label for="lkName" class="k">Name</label><input id="lkName" maxlength="18" autocomplete="off" spellcheck="false" value="${start.replace(/"/g,"&quot;")}" placeholder="Your Light Keeper's name">
+    <button type="button" class="btn ghost" id="nameDie" aria-label="Suggest a name" title="Suggest a name">🎲</button></form>
+    <p class="nameNote" id="nameNote">${CFG.name?"This starts as your account name. Keep it, or choose a new one.":"Two to eighteen letters. You can change it later in the castle."}</p></div></div>
+    <div class="go"><button type="submit" form="nameForm" class="btn" id="wake">Wake on the Comet ▸</button></div>`;
+  const inp=$("lkName"); inp.focus({preventScroll:true});
+  $("nameDie").onclick=()=>{ let n; do n=NAME_IDEAS[Math.floor(Math.random()*NAME_IDEAS.length)]; while(n===inp.value&&NAME_IDEAS.length>1); inp.value=n; inp.focus(); };
+  $("nameForm").onsubmit=e=>{ e.preventDefault(); const n=cleanName(inp.value);
+    if(n.length<2){ $("nameNote").textContent="Please choose a name of at least two letters."; $("nameNote").classList.add("warn"); inp.focus(); return; }
+    LK={...LK,name:n}; done(); };
+}
+function done(){ $("box").hidden=true; $("fade").classList.add("on");
+  setTimeout(()=>{ const msg={type:"cq-past-done",lf:LK.lf,role:LK.role,skin:LK.skin||LF_COLORS[LK.lf][0],name:LK.name,votes,style:styleFromVotes(),clue}; if(EMBED) parent.postMessage(msg,"*"); else { $("fade").classList.remove("on"); renderPick(); } },1200); }
+$("skip").onclick=()=>{ if(phase==="pick"){ votes=[]; const msg={type:"cq-past-done",lf:LK.lf,role:LK.role,skin:LK.skin||LF_COLORS[LK.lf][0],name:cleanName(CFG.name||"")||null,votes,style:"Serious",clue:null,skipped:true}; if(EMBED) parent.postMessage(msg,"*"); else startIntro(); } else if(phase==="intro"){ phase="pick"; finish(); }  };
 addEventListener("keydown",e=>{ if(phase!=="intro") return; const n=+e.key; if(n>=1&&n<=4){ const b=$("box").querySelector(`[data-i="${n-1}"]`); if(b){ e.preventDefault(); b.click(); } } });
 renderPick();
 </script>
