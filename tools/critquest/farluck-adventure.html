@@ -61,6 +61,13 @@ body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;ov
 .hud{flex:0 0 auto;min-height:var(--hudH);display:flex;align-items:stretch;gap:0;background:linear-gradient(180deg,var(--stone1),var(--stone2));border-top:3px solid var(--role);box-shadow:inset 0 2px 0 var(--gold);color:var(--barInk);font-family:"Alegreya SC",serif;overflow-x:auto}
 .sec{display:flex;flex-direction:column;justify-content:center;gap:6px;padding:8px 12px;border-right:2px solid #000;box-shadow:1px 0 0 #3a2f25}
 .sec:last-child{border-right:0;box-shadow:none}
+.hud{justify-content:safe center}.sec:first-child{border-left:2px solid #000}
+.stats{min-width:170px}.lifebar{position:relative;height:16px;border:1px solid #000;border-radius:8px;background:#2a1612;overflow:hidden;box-shadow:inset 0 1px 2px #000}
+.lifebar i{position:absolute;inset:0;background:linear-gradient(#e0584a,#8a1e18);border-radius:8px}
+.lifebar span{position:relative;display:block;text-align:center;font:11px/16px Alegreya,serif;color:#fff;text-shadow:0 1px 1px #000}
+.stg{display:grid;grid-template-columns:repeat(5,auto);gap:4px}
+.stg div{display:flex;flex-direction:column;align-items:center;min-width:28px;padding:2px 3px;border:1px solid #6b5537;border-radius:5px;background:#2a221a;font-size:9px;color:#bfa77a;line-height:1.1}
+.stg div b{font:600 15px/1.1 Alegreya,serif;color:var(--barInk)}.stg div.main{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
 .sec h4{margin:0;font-size:11px;letter-spacing:.08em;color:#bfa77a;font-weight:500}
 .who{min-width:150px}
 .who b{font-size:15px}.who small{font-size:12px;color:#cdb98e;font-family:Alegreya,serif}
@@ -96,6 +103,7 @@ button.slot:hover,button.slot:focus-visible{border-color:var(--gold);outline:non
   .hud{flex-wrap:wrap}
   .sec{padding:6px 8px;border-right:0;box-shadow:none}
   .who{display:none}
+  .hud{justify-content:center}.sec:first-child{border-left:0}
   .verbs button{font-size:13px;padding:5px 8px}
   .slot{width:50px;height:50px}.pack{width:56px;height:56px}
   .frame{border-width:6px}.corner{width:30px;height:30px}.c-tl,.c-tr,.c-bl,.c-br{margin:7px}
@@ -128,6 +136,7 @@ button.slot:hover,button.slot:focus-visible{border-color:var(--gold);outline:non
   </div>
   <div class="hud" id="hud">
     <div class="sec who"><h4>Light Keeper</h4><b id="whoName"></b><small id="whoSub"></small></div>
+    <div class="sec stats" id="statSec"><h4>Stats · Level 1</h4><div class="lifebar" title="Life"><i id="lifeFill"></i><span id="lifeTxt"></span></div><div class="stg" id="statGrid"></div></div>
     <div class="sec"><h4>Actions</h4><div class="verbs" id="verbs"></div></div>
     <div class="sec"><h4>Gear and Ready</h4><div class="slots" id="slots"></div></div>
     <div class="sec"><h4>Pack</h4><button type="button" class="slot pack" id="packBtn" aria-label="Open Pack"></button></div>
@@ -194,18 +203,22 @@ function heroSVG(){
     <path d="M10 -86 Q20 -86 22 -90" stroke="${skD}" stroke-width="1.6" fill="none"/>
     <path d="M-4 -102 q6 -3 12 0 M-6 -96 q6 -3 12 0" stroke="${skD}" stroke-width="1.2" fill="none" opacity=".7"/>
     <ellipse cx="11" cy="-95" rx="4.2" ry="4.6" fill="#fff" ${sw}/><circle cx="12.5" cy="-95" r="2.4" fill="#1b140c"/><circle cx="13.3" cy="-96" r=".8" fill="#fff"/>
-    <path d="M4 -104 Q12 -108 18 -101" fill="none" stroke="${skL}" stroke-width="2" opacity=".7"/>`;
+    <path d="M5 -101 Q12 -104 16 -99" fill="none" stroke="${skL}" stroke-width="2" opacity=".7"/>`;
   else if(lf==="Lizerus") head=`<path d="M-8 -82 Q-10 -102 4 -104 Q14 -104 18 -96 L30 -92 Q32 -86 26 -84 L6 -80Z" fill="${sk}" ${sw}/>
-    <path d="M-6 -100 l-6 -8 l7 2 l-2 -9 l7 6 l1 -9 l5 8" fill="#c8583a" ${sw}/>
+    <path d="M10 -103 Q4 -116 -6 -118 L-4 -110 Q-12 -114 -18 -108 L-13 -103 Q-20 -102 -22 -94 L-14 -93 Q-12 -100 -4 -104 Q2 -106 10 -103Z" fill="${shade(sk,.78)}" ${sw}/>
+    <path d="M6 -105 L-4 -116 M0 -106 L-15 -109 M-6 -103 L-20 -96" stroke="${shade(sk,.5)}" stroke-width="1.3"/>
     <path d="M14 -86 L28 -87" stroke="${OL}" stroke-width="1.2"/><circle cx="27" cy="-91" r=".9" fill="${OL}"/>
     <ellipse cx="10" cy="-96" rx="3.4" ry="3" fill="#f2d23a" ${sw}/><rect x="9.6" y="-98.4" width="1.2" height="4.8" fill="#1b140c"/>
     ${[0,1,2].map(k=>`<circle cx="${-2+k*5}" cy="${-90+k%2*3}" r="1.3" fill="${skD}"/>`).join("")}`;
-  else if(lf==="Sapien") head=`<path d="M-12 -80 Q-16 -96 -8 -106 Q4 -114 14 -104 Q22 -96 18 -84 Q16 -76 6 -76 Q-6 -74 -12 -80Z" fill="${sk}" ${sw}/>
-    ${[[-12,-96],[-14,-86],[-8,-106],[2,-110],[12,-106]].map(([x,y])=>`<path d="M${x} ${y} l-5 -2 l3 5" fill="${sk}" ${sw}/>`).join("")}
-    <path d="M4 -96 Q14 -98 18 -92 Q20 -84 12 -82 Q4 -84 4 -96Z" fill="${skL}"/>
-    <circle cx="12" cy="-94" r="2.2" fill="#1b140c"/><circle cx="12.6" cy="-94.6" r=".7" fill="#fff"/><path d="M8 -98 q4 -2 8 0" stroke="${skD}" stroke-width="2" fill="none"/>
-    <path d="M12 -86 q4 2 7 0" stroke="${OL}" stroke-width="1.3" fill="none"/>
-    ${[0,1,2,3].map(k=>`<path d="M${-8+k*4} ${-104+k*2} q2 6 -1 12" stroke="${skD}" stroke-width="1.2" fill="none" opacity=".7"/>`).join("")}`;
+  else if(lf==="Sapien"){
+    const locks=(ox,oy,sc)=>{ let d=`M${ox+11*sc} ${oy-13*sc}`; const pts=[[16,-6],[14,4],[17,12],[10,10],[11,20],[4,14],[2,24],[-4,16],[-8,24],[-11,14],[-17,18],[-16,6],[-20,2],[-16,-6],[-18,-14],[-12,-14],[-12,-22],[-4,-18],[-2,-26],[4,-18],[10,-22],[10,-14]];
+      pts.forEach(([x,y])=>{ const a=Math.atan2(y,x), bx=Math.cos(a)*15, by=Math.sin(a)*17; x=bx+(x-bx)*.45; y=by+(y-by)*.45; d+=` L${(ox+x*sc).toFixed(1)} ${(oy+y*sc).toFixed(1)}`; }); return d+"Z"; };
+    head=`<path d="${locks(1,-92,1.05)}" fill="${skD}" ${sw}/><path d="${locks(1.5,-93,.9)}" fill="${sk}"/>
+    <path d="M5 -96 Q15 -98 19 -90 Q20 -82 12 -81 Q4 -82 5 -96Z" fill="${skL}" ${sw}/>
+    <path d="M5 -100 q7 -4 13 -1" stroke="${skD}" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <circle cx="12" cy="-95" r="2" fill="#1b140c"/><circle cx="12.6" cy="-95.6" r=".7" fill="#fff"/>
+    <ellipse cx="18" cy="-89" rx="2.4" ry="1.8" fill="#2a1a10"/><path d="M11 -84 q4 2 7 0" stroke="${OL}" stroke-width="1.3" fill="none"/>
+    ${[[-10,-98],[-6,-104],[0,-108],[-12,-88],[-6,-86],[-2,-100],[2,-78],[-4,-76]].map(([x,y])=>`<path d="M${x} ${y} q2 5 0 10" stroke="${skL}" stroke-width="1.3" fill="none" opacity=".75"/>`).join("")}`; }
   else if(lf==="Melkin") head=`<path d="M-10 -86 Q-12 -106 4 -108 Q20 -106 20 -90 Q18 -78 4 -78 Q-8 -78 -10 -86Z" fill="${sk}" ${sw}/>
     <path d="M-6 -100 L-20 -112 L-4 -94Z" fill="${sk}" ${sw}/><path d="M-8 -100 L-16 -108" stroke="${skD}" stroke-width="2"/>
     <ellipse cx="11" cy="-94" rx="4.6" ry="5.4" fill="#fff" ${sw}/><circle cx="12.4" cy="-93.4" r="3" fill="#3a2a5a"/><circle cx="13.4" cy="-95" r="1" fill="#fff"/>
@@ -214,9 +227,9 @@ function heroSVG(){
     <path d="M-4 -102 Q-14 -114 -4 -120 Q-8 -112 2 -104Z" fill="#e8e0d0" ${sw}/><path d="M6 -105 Q4 -118 14 -120 Q8 -112 12 -104Z" fill="#e8e0d0" ${sw}/>
     <ellipse cx="12" cy="-93" rx="3.6" ry="3.2" fill="#e8f4ff" ${sw}/><circle cx="13" cy="-93" r="1.8" fill="#4a6aa8"/>
     <path d="M12 -84 q4 1 6 -1" stroke="${OL}" stroke-width="1.2" fill="none"/><path d="M-2 -98 q4 4 2 10" stroke="${skL}" stroke-width="2" fill="none" opacity=".6"/>`;
-  const hood=hooded?`<path d="M-14 -80 Q-18 -108 4 -112 Q22 -110 22 -96 Q16 -104 4 -104 Q-6 -102 -6 -84Z" fill="${role==="Whisper"?"#22262e":cl}" ${sw}/><path d="M-12 -84 Q-14 -100 -2 -108" stroke="${role==="Whisper"?"#3a404c":clL}" stroke-width="2" fill="none"/>`:"";
-  const mask=role==="Whisper"?`<path d="M4 -88 Q14 -90 22 -86 Q20 -79 8 -79 Q2 -80 4 -88Z" fill="#2c3038" ${sw}/>`:"";
-  const tail=lf==="Lizerus"?`<path d="M-10 -34 Q-34 -30 -44 -10 Q-46 -4 -40 -6 Q-30 -22 -8 -26Z" fill="${sk}" ${sw}/>`:"";
+  const hood="";
+  const mask="";
+  const tail="";
   // body
   const cape=`<path d="M-12 -76 Q-30 -56 -30 -22 Q-22 -16 -14 -22 Q-10 -18 -4 -24 L4 -74Z" fill="${cl}" ${sw}/>
     <path d="M-20 -60 Q-24 -40 -22 -22 M-12 -58 Q-14 -40 -12 -24" stroke="${clD}" stroke-width="2" fill="none" opacity=".8"/>
@@ -227,16 +240,17 @@ function heroSVG(){
     ${armored?`<path d="M-11 -74 Q2 -66 13 -74 L12 -50 Q0 -44 -11 -50Z" fill="#d8dae2" ${sw}/><circle cx="1" cy="-60" r="4" fill="#e8b83a" ${sw}/>`:""}
     ${brawl?`<path d="M-14 -78 Q0 -70 16 -78 L14 -68 Q0 -62 -14 -68Z" fill="#8a6a3a" ${sw}/>${[-10,-4,2,8].map(x=>`<path d="M${x} -66 l2 6 l2 -6" fill="#8a6a3a" ${sw}/>`).join("")}`:""}
     <rect x="-14" y="-38" width="29" height="6" fill="#3a2414" ${sw}/><rect x="-1" y="-39" width="7" height="8" rx="1" fill="#d8b04a" ${sw}/>`;
-  const collar=`<path d="M-13 -78 Q0 -70 15 -78 Q12 -84 0 -82 Q-10 -84 -13 -78Z" fill="${clD}" ${sw}/>`;
+  const furMantle=lf==="Sapien"?`<path d="M-15 -80 L-15 -70 L-12 -72 L-10 -67 L-6 -71 L-3 -66 L0 -71 L3 -67 L6 -72 L9 -68 L12 -73 L15 -70 L16 -80 Q0 -86 -15 -80Z" fill="${sk}" ${sw}/>`:"";
+  const collar=lf==="Sapien"?furMantle:`<path d="M-13 -78 Q0 -70 15 -78 Q12 -84 0 -82 Q-10 -84 -13 -78Z" fill="${clD}" ${sw}/>`;
   const armBack=`<path d="M8 -72 Q14 -60 16 -48" stroke="${OL}" stroke-width="8.5" stroke-linecap="round" fill="none"/><path d="M8 -72 Q14 -60 16 -48" stroke="${shade(robe?cl:tun,.7)}" stroke-width="6" stroke-linecap="round" fill="none"/><circle cx="16.5" cy="-46" r="3.6" fill="${skD}" ${sw}/>`;
-  const armFront=`<path d="M-2 -72 Q2 -56 12 -50" stroke="${OL}" stroke-width="9.5" stroke-linecap="round" fill="none"/><path d="M-2 -72 Q2 -56 12 -50" stroke="${robe?cl:brawl?sk:tun}" stroke-width="7" stroke-linecap="round" fill="none"/>${brawl?`<path d="M6 -54 l6 3" stroke="#e8e0cc" stroke-width="5"/>`:""}<circle cx="14" cy="-49" r="4.2" fill="${sk}" ${sw}/>`;
+  const armFront=`<path d="M-2 -72 Q2 -56 12 -50" stroke="${OL}" stroke-width="9.5" stroke-linecap="round" fill="none"/><path d="M-2 -72 Q2 -56 12 -50" stroke="${robe?cl:brawl?sk:tun}" stroke-width="7" stroke-linecap="round" fill="none"/>${brawl?`<path d="M6 -54 l6 3" stroke="#e8e0cc" stroke-width="5"/>`:""}<circle cx="14" cy="-49" r="4.2" fill="${sk}" ${sw}/>${lf==="Sapien"?`<path d="M6 -56 l3 4 l1 -5 l3 5 l1 -4" stroke="${skD}" stroke-width="2" fill="none" stroke-linejoin="round"/>`:""}`;
   // role props, drawn in hand at (14,-49)
   let back="", front="";
   if(role==="Maverick"){ back=`<rect x="-16" y="-80" width="8" height="30" rx="2" fill="#6a4426" ${sw} transform="rotate(-18 -12 -65)"/>${[0,1,2].map(k=>`<path d="M${-16+k*3} -82 l-2 -9 M${-16+k*3} -91 l-2 3 m2 -3 l2 3" stroke="#e8e0cc" stroke-width="1.4" transform="rotate(-18 -12 -65)"/>`).join("")}`;
     front=`<path d="M22 -90 Q36 -50 22 -10" fill="none" stroke="${OL}" stroke-width="5" stroke-linecap="round"/><path d="M22 -90 Q36 -50 22 -10" fill="none" stroke="#9a6a34" stroke-width="3" stroke-linecap="round"/><line x1="22" y1="-90" x2="22" y2="-10" stroke="#efe6cc" stroke-width="1"/><path d="M28 -52 h6" stroke="#5a3a1e" stroke-width="4"/>`; }
-  else if(role==="Champion"){ back=`<path d="M-26 -70 h22 v22 q-11 16 -22 0z" fill="#c9a03c" ${sw}/><circle cx="-15" cy="-58" r="6" fill="#f2d86a" ${sw}/>${[0,45,90,135,180,225,270,315].map(a=>`<path d="M-15 -58 l${(Math.cos(a*Math.PI/180)*9).toFixed(1)} ${(Math.sin(a*Math.PI/180)*9).toFixed(1)}" stroke="#7a5a22" stroke-width="1.2"/>`).join("")}`;
-    front=`<path d="M16 -52 L34 -100 L37 -98 L20 -50Z" fill="#e6e8f0" ${sw}/><path d="M18 -56 L34 -99" stroke="#fff" stroke-width="1"/><path d="M9 -56 L24 -48" stroke="#7a5a2a" stroke-width="4" stroke-linecap="round"/><circle cx="13" cy="-47" r="2.4" fill="#d8b04a" ${sw}/>`; }
-  else if(role==="Soul Seer"){ front=`<rect x="12" y="-112" width="4.5" height="112" rx="2" fill="#6b4a2a" ${sw}/><path d="M10 -112 q4 -8 8 0" fill="none" stroke="#6b4a2a" stroke-width="3"/><path d="M14 -128 l6 10 l-6 8 l-6 -8z" fill="#bfe4ff" ${sw}/><circle cx="14" cy="-118" r="12" fill="#bfe4ff" opacity=".25"/><circle cx="26" cy="-104" r="3" fill="#e8f6ff" opacity=".8"/>`; }
+  else if(role==="Champion"){ back=`<path d="M19 -50 L44 -86 L47 -84 L22 -47Z" fill="#e6e8f0" ${sw}/><path d="M21 -51 L45 -85" stroke="#fff" stroke-width="1"/><path d="M13 -52 L25 -42" stroke="#7a5a2a" stroke-width="4" stroke-linecap="round"/><circle cx="16" cy="-48" r="3" fill="${skD}" ${sw}/><circle cx="12" cy="-53" r="2.2" fill="#d8b04a" ${sw}/>`;
+    front=`<path d="M8 -70 h22 v20 q-11 18 -22 0z" fill="#c9a03c" ${sw}/><circle cx="19" cy="-58" r="5.5" fill="#f2d86a" ${sw}/>${[0,45,90,135,180,225,270,315].map(a=>`<path d="M${(19+Math.cos(a*Math.PI/180)*6).toFixed(1)} ${(-58+Math.sin(a*Math.PI/180)*6).toFixed(1)} l${(Math.cos(a*Math.PI/180)*4).toFixed(1)} ${(Math.sin(a*Math.PI/180)*4).toFixed(1)}" stroke="#7a5a22" stroke-width="1.3"/>`).join("")}<path d="M10 -68 v14" stroke="#e8c868" stroke-width="1.5" opacity=".7"/>`; }
+  else if(role==="Soul Seer"){ front=`<rect x="22" y="-82" width="4" height="82" rx="2" fill="#6b4a2a" ${sw}/><path d="M20 -82 q4 -6 8 0" fill="none" stroke="#6b4a2a" stroke-width="2.5"/><path d="M24 -94 l4.5 7 l-4.5 6 l-4.5 -6z" fill="#bfe4ff" ${sw}/><circle cx="24" cy="-87" r="9" fill="#bfe4ff" opacity=".25"/><circle cx="33" cy="-78" r="2.4" fill="#e8f6ff" opacity=".8"/><path d="M14 -49 L22 -50" stroke="${OL}" stroke-width="1"/>`; }
   else if(role==="Whisper"){ back=`<path d="M-14 -40 q-6 -6 0 -12 q6 -6 12 0" fill="none" stroke="#a88a5a" stroke-width="3"/>`;
     front=`<path d="M16 -52 L32 -66 L34 -63 L19 -49Z" fill="#d8dae4" ${sw}/><path d="M12 -52 l6 4" stroke="#3a2414" stroke-width="4"/><path d="M14 -42 L22 -26 L19 -25 L12 -40Z" fill="#c8cad4" ${sw}/>`; }
   else { front=`<circle cx="14" cy="-49" r="6" fill="${sk}" ${sw}/><path d="M9 -52 h10 M9 -48 h10" stroke="#e8e0cc" stroke-width="2"/>${[0,1,2].map(k=>`<path d="M${11+k*3} -55 l1 -4 l1 4" fill="#c8c8d0" ${sw}/>`).join("")}`; }
@@ -773,7 +787,16 @@ function applyRole(){
   const L=heroLook(); document.documentElement.style.setProperty("--role",ROLE_FRAME[L.role]||"#3f6b45");
   document.querySelectorAll(".corner").forEach(c=>c.innerHTML=cornerSVG(L.role));
   $("whoName").textContent=`${L.lf} ${L.role}`; $("whoSub").textContent=`Style: ${STYLE}`;
+  renderStats();
 }
+/* Level 1 stats, same tables as the hex battle (farluck-battle.html) */
+const ROLE_ST={Brawler:{life:40,P:1,S:1,main:"P"},Champion:{life:33,def:1,P:2,E:1,main:"P"},Maverick:{life:30,S:1,C:2,main:"C"},"Soul Seer":{life:30,E:2,S:1,main:"E"},Whisper:{life:30,S:1,C:1,main:"S"}};
+const LF_ST={Dimoneesh:{def:1,E:1},Leyf:{E:1,S:1},Lizerus:{def:1,P:1},Melkin:{S:1,C:1},Sapien:{P:1,C:1}};
+const STATN={P:"Power",E:"Energy",S:"Speed",C:"Charm"};
+function heroStats(){ const L=heroLook(), R=ROLE_ST[L.role]||ROLE_ST.Maverick, F=LF_ST[L.lf]||{}; const st={}; for(const k of "PESC") st[k]=(R[k]||0)+(F[k]||0);
+  const max=R.life; return {st,main:R.main,max,life:(HERO&&HERO.life!=null)?Math.min(max,HERO.life):max,def:10+(R.def||0)+(F.def||0)+((HERO&&HERO.def)||0)}; }
+function renderStats(){ const S=heroStats(); $("lifeFill").style.width=(100*S.life/S.max)+"%"; $("lifeTxt").textContent=`Life ${S.life} / ${S.max}`;
+  $("statGrid").innerHTML=`<div title="Defense: rolls must meet this to hit you"><b>${S.def}</b>Def</div>`+[..."PESC"].map(k=>`<div class="${k===S.main?"main":""}" title="${STATN[k]}${k===S.main?" (main stat)":""}"><b>${S.st[k]>=0?"+":""}${S.st[k]}</b>${STATN[k].slice(0,3)}</div>`).join(""); }
 function slotHTML(name,n,label){ return name?`<span class="ic">${ICON[name]||"◆"}</span>${label||name}${n>1?`<span class="n">${n}</span>`:""}`:`<span class="ic">·</span>${label||"Empty"}`; }
 function buildBar(){
   const bar=$("verbs"); bar.innerHTML="";
