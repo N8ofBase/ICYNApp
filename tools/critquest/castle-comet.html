@@ -1387,14 +1387,13 @@ function showPast(lf = S.hero.lf || "Sapien", role = S.hero.role || "Brawler") {
 const V = (Serious, Silly, Shy, Smug, go) => [
   { t: Serious, vote: "Serious", go }, { t: Silly, vote: "Silly", go }, { t: Shy, vote: "Shy", go }, { t: Smug, vote: "Smug", go }];
 TALK.past = {
-  Brawler1: { t: "The Hinon harvest festival. You close out a friendly bout in the ring, and the crowd roars as your rival lies flat on the straw.", c: V(
-    "Help them up and shake their hand.", "Flop down beside them and wave to the crowd.", "Offer a hand, then slip out of the spotlight.", "Flex once for the crowd, then help them up.", "Brawler2") },
-  Brawler2: { t: "Later, carrying a basket of jeewa past the riverside grain store, you see its stone wall glow red and melt away. {LF} A small child stands frozen beside it, and a cold wave of Fear rolls out toward them.", c: V(
-    "Step between the child and the wave. \"Stay behind me.\"", "Scoop the child up. \"Up you go! Wheee!\"", "Take the child's hand and lead them away without a word.", "Step in front. \"Fear? Please. I've seen scarier pies.\"", "Brawler3") },
-  Brawler3: { t: "The shadow pours out of the wall and the wave rises higher. The child is still too close.", c: V(
-    "Brace and hold your ground.", "Roar like a festival bear to scatter it.", "Shield the child and keep perfectly still.", "Roar. Loudly. Magnificently.", "BrawlerEnd") },
-  BrawlerEnd: { t: "The child gets clear and runs into their parent's arms. The Fear wave reaches you instead, and the noise of the festival fades into a warm hush. A light grows...", next: "future" },
-
+  Brawler1: { t: "Dawn in the Hinon training yard. You teach a row of children the first Que Bao stance: soft knees, open hands, steady breath.", c: V(
+    "Show the stance slowly, one part at a time.", "Wobble on purpose until they giggle.", "Show it without words and let them copy.", "\u201cWatch the master.\u201d", "Brawler2") },
+  Brawler2: { t: "Three figures in dark red cloaks cross the yard toward the old well. As they pass, its stones glow and a cold fog spills out. {LF} The children freeze.", c: V(
+    "\u201cBehind me, everyone. Stay together.\u201d", "\u201cNew lesson! It's called Running Away!\u201d", "Gather them close and walk them to the gate.", "\u201cClass, watch how a master handles fog.\u201d", "Brawler3") },
+  Brawler3: { t: "One of the cloaks turns back. It raises a hand toward the children, and the well's glow surges across the yard.", c: V(
+    "Take the stance you just taught them, right between the cloak and the children.", "\u201cLesson two: the Big Bear Block!\u201d Spread your arms wide.", "Step in front without a word, palms open.", "\u201cYou want them? Go through the teacher.\u201d", "BrawlerEnd") },
+  BrawlerEnd: { t: "The children slip out the gate. The glow washes over you, and your stance holds until the cold turns to warmth and the dawn fills everything with gold...", clue: "From your past life: red cloaks went to the old well at dawn.", next: "future" },
   Champion1: { t: "Night watch at the mayor's hall in Hinon. Your post, your promise. Then you hear a soft metallic hammering somewhere below.", c: V(
     "Check every door, one by one.", "Knock on the floor. \"Hello? Wrong address?\"", "Follow the sound quietly.", "Draw your blade. Whoever it is picked the wrong hall.", "Champion2") },
   Champion2: { t: "Behind a moved bookshelf, a hidden stair leads down to an empty lectern, as if a book was just taken. {LF} Three figures in dark red cloaks are leaving through a wall that glows like lava.", c: V(
@@ -1428,7 +1427,7 @@ TALK.past = {
   WhisperEnd: { t: "The traveler escapes, calling back that they must warn a farm upriver. The cloaks close in, the lanterns blur, and a soft wind carries you away...", clue: "From your past life: the traveler you saved went to warn a farm upriver.", next: "future" }
 };
 PEOPLE.past = { name: "", role: "", hue: "#82cbd9", letter: "" };
-const INTRO_TITLE = { Brawler: ["The Harvest Bout", "Hinon"], Champion: ["The Empty Lectern", "Hinon"], Maverick: ["The Edge of the Wood", "The forest above Farluck Farm"], "Soul Seer": ["The Quiet Creek", "The forest above Farluck Farm"], Whisper: ["The Quiet Alley", "Umatu"] };
+const INTRO_TITLE = { Brawler: ["Dawn Lessons", "Hinon"], Champion: ["The Empty Lectern", "Hinon"], Maverick: ["The Edge of the Wood", "The forest above Farluck Farm"], "Soul Seer": ["The Quiet Creek", "The forest above Farluck Farm"], Whisper: ["The Quiet Alley", "Umatu"] };
 function styleFromVotes() {
   const count = {}, last = {}; votes.forEach((v, i) => { count[v] = (count[v] || 0) + 1; last[v] = i; });
   return Object.keys(count).sort((a, b) => count[b] - count[a] || last[b] - last[a])[0] || "Serious";
