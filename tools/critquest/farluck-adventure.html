@@ -50,7 +50,7 @@ body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;ov
 .notes{margin-top:14px;color:#cdbb95;font-size:14px;line-height:1.45}
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;z-index:20;padding:10px}.ov.on{display:block}.ov iframe{width:100%;height:100%;border:3px solid var(--gold);border-radius:10px;background:#efe3c6}
 .toast{position:fixed;left:50%;top:16px;transform:translate(-50%,-20px);opacity:0;transition:.4s;background:linear-gradient(var(--parch),var(--parch2));border:2px solid var(--gold);border-radius:10px;padding:8px 16px;text-align:center;z-index:30;max-width:calc(100% - 32px);color:var(--ink)}.toast.show{opacity:1;transform:translate(-50%,0)}.toast b{font-family:"Alegreya SC",serif;color:var(--accent);display:block}
-.setup{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:#efe1bf;font-size:14px;margin:6px 0}.setup select{font:inherit;background:var(--bar);color:var(--barInk);border:1px solid var(--gold);border-radius:6px;padding:2px 6px}
+.setup{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:#efe1bf;font-size:14px;margin:6px 0}.setup[hidden]{display:none}.setup select{font:inherit;background:var(--bar);color:var(--barInk);border:1px solid var(--gold);border-radius:6px;padding:2px 6px}
 .tag{font-family:"Alegreya SC",serif;font-size:12px;border:1px solid currentColor;border-radius:999px;padding:0 7px;margin-left:6px;color:var(--accent)}
 .notes b{font-family:"Alegreya SC",serif;color:#f3e6c8}
 @media (max-width:560px){ .portrait{width:54px;height:54px} .bar button,.inv button{font-size:14px;padding:5px 9px} .label{font-size:13px} }
@@ -101,18 +101,29 @@ function packOut(){ return Object.entries(pack).filter(([k])=>PACK_KEYS[k]===und
 
 /* ---------- hero ---------- */
 const hero={x:150,y:430,tx:150,ty:430,face:1,step:0,el:null,cb:null};
+const SKIN={Leyf:"#7fa36a",Sapien:"#d9a57c",Lizerus:"#8fae5a",Melkin:"#c9a0d8",Dimoneesh:"#8fa8d0"};
+const ROLE_LOOK={Maverick:"#3f6b45",Brawler:"#8a4a2a",Champion:"#b08a2a","Soul Seer":"#5a4a8a",Whisper:"#2f3a4a"};
+function heroLook(){ const lf=(HERO&&HERO.lf)||$("selLf").value, role=(HERO&&HERO.role)||$("selRole").value;
+  return {lf,role,skin:SKIN[lf]||"#d9a57c",cloak:(HERO&&HERO.color)||ROLE_LOOK[role]||"#3f6b45",size:lf==="Melkin"?.62:lf==="Dimoneesh"?.9:1}; }
+function rolePropSVG(role){
+  if(role==="Maverick") return `<path d="M18 -86 Q34 -56 18 -24" fill="none" stroke="#8a5a2a" stroke-width="3"/><line x1="18" y1="-86" x2="18" y2="-24" stroke="#e8dcc0" stroke-width="1"/>`;
+  if(role==="Champion") return `<rect x="20" y="-90" width="4" height="52" fill="#d8d8e0"/><rect x="14" y="-42" width="16" height="4" fill="#8a6a3a"/><path d="M-30 -66 h20 v20 q-10 14 -20 0z" fill="#c9a03c" stroke="#7a5a22" stroke-width="2"/>`;
+  if(role==="Soul Seer") return `<rect x="18" y="-104" width="4" height="104" fill="#6b4a2a"/><circle cx="20" cy="-108" r="7" fill="#bfe4ff" stroke="#fff"/>`;
+  if(role==="Whisper") return `<path d="M16 -50 l12 -14 l3 3 l-12 14z" fill="#d8d8e0"/><rect x="13" y="-48" width="6" height="4" fill="#5a3a22" transform="rotate(-45 16 -46)"/>`;
+  return `<circle cx="18" cy="-46" r="7" fill="${heroLook().skin}" stroke="#5a3a22" stroke-width="2"/><circle cx="-18" cy="-46" r="7" fill="${heroLook().skin}" stroke="#5a3a22" stroke-width="2"/>`; // Brawler: fists
+}
 function heroSVG(){
-  return `<g id="heroInner">
+  const L=heroLook();
+  return `<g id="heroInner"><g transform="scale(${L.size})">
    <ellipse cx="0" cy="0" rx="22" ry="7" fill="rgba(0,0,0,.35)"/>
    <g id="legs"><rect id="legL" x="-9" y="-30" width="7" height="30" rx="3" fill="#4a3a26"/><rect id="legR" x="2" y="-30" width="7" height="30" rx="3" fill="#4a3a26"/></g>
-   <path d="M-16 -30 Q-18 -68 0 -74 Q18 -68 16 -30 Z" fill="#3f6b45"/>
-   <path d="M-16 -30 L-20 -12 L-4 -24 Z" fill="#335a3a"/>
-   <circle cx="0" cy="-84" r="12" fill="#7fa36a"/>
-   <path d="M-12 -86 Q0 -104 12 -86 Q6 -92 0 -92 Q-6 -92 -12 -86Z" fill="#2f4d32"/>
+   <path d="M-16 -30 Q-18 -68 0 -74 Q18 -68 16 -30 Z" fill="${L.cloak}"/>
+   <path d="M-16 -30 L-20 -12 L-4 -24 Z" fill="${L.cloak}" opacity=".8"/>
+   <circle cx="0" cy="-84" r="12" fill="${L.skin}"/>
+   ${L.lf==="Lizerus"?`<path d="M-4 -96 l4 -8 l4 8 M4 -94 l5 -6 l2 7" fill="${L.skin}" stroke="#5a7a3a"/>`:`<path d="M-12 -86 Q0 -104 12 -86 Q6 -92 0 -92 Q-6 -92 -12 -86Z" fill="rgba(0,0,0,.35)"/>`}
    <circle cx="5" cy="-85" r="2" fill="#1b140c"/>
-   <path d="M18 -86 Q34 -56 18 -24" fill="none" stroke="#8a5a2a" stroke-width="3"/>
-   <line x1="18" y1="-86" x2="18" y2="-24" stroke="#e8dcc0" stroke-width="1"/>
-  </g>`;
+   ${rolePropSVG(L.role)}
+  </g></g>`;
 }
 function placeHero(){
   const s=0.75+(hero.y-330)/190*0.45;
@@ -343,6 +354,7 @@ document.addEventListener("keydown",e=>{
   if(!$("box").classList.contains("on")) return; const n=parseInt(e.key,10); const bs=$("choices").querySelectorAll("button"); if(n>=1&&n<=bs.length) bs[n-1].click();
 });
 $("selStyle").onchange=e=>STYLE=e.target.value;
+["selLf","selRole"].forEach(id=>$(id).onchange=()=>{ if(hero.el){ hero.el.innerHTML=heroSVG(); placeHero(); } });
 if(HERO&&HERO.role){ $("selLf").value=HERO.lf; $("selRole").value=HERO.role; if(HERO.style){ $("selStyle").value=HERO.style; STYLE=HERO.style; } document.querySelector(".setup").hidden=true; }
 buildBar(); load("clearing");
 say("<em>Chapter 1.</em> The Icosa Crystal sets you down in a quiet clearing. Somewhere east, a chimney is smoking. Look around, then follow the path.");
