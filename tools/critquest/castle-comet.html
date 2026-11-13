@@ -1553,7 +1553,7 @@ function dig() {
       else if (total >= 11) { addM("wood", 2); addM("stone", 1); get = "<b>2 Wood</b> and <b>1 Stone</b>"; }
       else if (total >= 6) { addM("stone", 2); addM("wood", 1); get = "<b>2 Stone</b> and <b>1 Wood</b>"; }
       else { addM("stone", 2); get = "<b>2 Stone</b>"; }
-      if (total >= 18) { S.coins += 3; get += ", and <b>3 Icosa Coins</b> in an old purse"; }
+      if (total >= 18) { S.coins += 1; get += ", and <b>1 Icosa Coin</b>"; }
       if (found && (roll === 20 || total < 15 || total >= 18)) { const sp = pick(Object.keys(CROP).filter(known)); S.seeds[sp] = SD(sp) + 2; get += `, plus an old seed pouch with <b>2 ${CROP[sp].name} seeds</b>`; }
       save();
       $("#out").innerHTML = `You rolled ${roll}${bonus ? ` + ${bonus} = ${total}` : ""}. You get ${get}.<br><span class="btns" style="margin-top:8px"><button class="btn" type="button" id="again">Dig again</button><button class="btn" type="button" id="home">Back to the castle</button></span>`;
