@@ -29,7 +29,8 @@ body{background:var(--bg);color:var(--ink);font-family:Alegreya,Georgia,serif;ov
 .stage{position:absolute;inset:0;overflow:hidden}
 #svg{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer}
 .hot{cursor:pointer}
-.hot:hover .hl,.hot:focus .hl{stroke:#ffe9a8;stroke-width:2.5;fill:rgba(255,233,168,.10);rx:14px;filter:drop-shadow(0 0 6px #ffd76a)}
+.hl{transition:opacity .25s;opacity:0}
+.hot:hover .hl,.hot:focus .hl{fill:url(#auraG);stroke:none;opacity:1}
 .hl{rx:14px}
 .glint{animation:twinkle 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 @keyframes twinkle{0%,100%{opacity:.25;scale:.6}45%{opacity:1;scale:1.1}60%{opacity:.85;scale:.9}}
@@ -362,19 +363,20 @@ const SCENES={
       ${clouds(11)}
       ${hills(260,"#86a6a8",.55,3)}${hills(300,"#6f9468",.85,7)}
       <path d="M0 330 Q480 292 960 330 V540 H0Z" fill="url(#gA_clr)"/>
-      ${tree(60,385,"#2f5a2c",false,1.15)}${tree(180,362,"#35632f",false,.95)}${tree(800,368,"#7a6a3a",true,1)}
+      ${tree(60,385,"#2f5a2c",false,1.15)}${tree(180,362,"#35632f",false,.95)}
       <path d="M0 395 Q480 372 960 398 V540 H0Z" fill="url(#gB_clr)"/>
       ${tufts(21,0,960,400,530,70,"#3f6a2c","#7fa05a")}${flowers(5,380,520,24)}
-      <path d="M840 400 Q900 380 960 384 V540 H880 Q860 470 840 400Z" fill="#b8a46a" opacity=".55"/>
+      <path d="M600 470 Q760 470 860 440 Q920 424 960 420 L960 452 Q900 460 860 470 Q760 500 610 492Z" fill="#b8a46a" opacity=".7"/>${signpost(915,452,"Farluck Farm",1)}
       ${stones(480,440)}
-      ${flags.thread?'':`<g transform="translate(700 404)"><path d="M-14 6 Q0 -6 20 2" stroke="#4a3018" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M2 0 Q8 10 4 22 L8 20 L9 28 L13 21 L16 25 Q16 12 12 0Z" fill="#a8241c" stroke="#3a0c08" stroke-width="1.4" stroke-linejoin="round"><animateTransform attributeName="transform" type="rotate" values="-6 8 0;8 8 0;-6 8 0" dur="2.6s" repeatCount="indefinite"/></path><path d="M6 4 Q9 12 7 18" stroke="#d8483a" stroke-width="1.5" fill="none" opacity=".8"/></g>`}
+      ${tree(770,470,"#7a6a3a",true,1.3)}
+      ${flags.thread?'':`<g transform="translate(800 306)"><path d="M-14 6 Q0 -6 20 2" stroke="#4a3018" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M2 0 Q8 10 4 22 L8 20 L9 28 L13 21 L16 25 Q16 12 12 0Z" fill="#a8241c" stroke="#3a0c08" stroke-width="1.4" stroke-linejoin="round"><animateTransform attributeName="transform" type="rotate" values="-6 8 0;8 8 0;-6 8 0" dur="2.6s" repeatCount="indefinite"/></path><path d="M6 4 Q9 12 7 18" stroke="#d8483a" stroke-width="1.5" fill="none" opacity=".8"/></g>`}
       ${light("clr",780,90,"#fff2c8",.45)}`,
     hot:[
       {id:"stones",name:"Old landing stones",shape:`<rect x="360" y="380" width="240" height="90" fill="transparent"/>`,stand:[330,470],
         Look:()=>say("A ring of old standing stones, still faintly glowing where Wexler's beam set you down. The beam only works one way. To go home, break your Return Shard, or find an Icosa Crystal in a town."),
         Use:()=>say("You stand in the middle and wait. Nothing. The stones are for landing, not leaving."),
         Talk:()=>say("\"Wexler? Can you hear me?\" A pebble falls off one stone. Probably not an answer.")},
-      {id:"thread",clue:true,show:()=>!flags.thread,name:"Something red on a branch",shape:`<rect x="670" y="390" width="70" height="50" fill="transparent"/>`,stand:[680,470],
+      {id:"thread",clue:true,show:()=>!flags.thread,name:"Something red on a branch",shape:`<rect x="770" y="285" width="80" height="80" fill="transparent"/>`,stand:[790,485],
         Look:()=>say(flags.thread?"Just a branch now.":"A thread of dark red cloth, snagged on a twig. Someone in a red cloak passed this way."),
         Take:()=>{ if(flags.thread) return say("You already have it."); flags.thread=1; addPack("Red cloak thread",1); note("A red cloak thread, snagged near the landing stones."); load("clearing",true); say("You tuck the red thread into your Pack."); }},
       {id:"east",name:"Path to the farm",shape:`<rect x="880" y="300" width="80" height="230" fill="transparent"/>`,stand:[930,450],exit:"lane"}
@@ -384,7 +386,7 @@ const SCENES={
 
     P:{bounds:[40,340,920,520],start:[70,440],
       over:()=>`<g>${[0,1,2,3,4].map(k=>`<path d="M${330+k*40} ${455+(k%2)*10} l-5 -6 m5 6 l0 -8 m0 8 l5 -6" stroke="#4f9a22" stroke-width="3"/>`).join("")}</g>`,
-      hot:{west:[[0,260,50,280],[40,440]],crops:[[0,180,580,70],[300,360]],scare:[[600,95,150,175],[660,370]],prints:[[310,440,220,40],[300,460]],east:[[890,260,70,280],[930,440]]}},    name:"Farm lane", bounds:[40,380,920,515], start:[70,450],
+      hot:{west:[[0,260,50,280],[40,440]],crops:[[0,180,580,70],[300,360]],scare:[[600,95,150,175],[660,370]],prints:[[310,440,220,40],[300,460]],east:[[890,260,70,280],[930,440]]}},    name:"Farm lane", bounds:[40,380,920,515], start:[140,470],
     art:()=>`${defs("lane","#e9a868","#f7dfae")}
       <rect width="960" height="540" fill="url(#sky_lane)"/>
       <circle cx="820" cy="120" r="52" fill="#fff0c0" opacity=".9"/>
@@ -398,6 +400,7 @@ const SCENES={
       ${tufts(31,0,960,405,530,45,"#7a6a3a","#b8a066")}
       <g transform="translate(640 300)"><rect x="-3" y="0" width="6" height="70" fill="#5a3a1e"/><rect x="-28" y="12" width="56" height="6" fill="#5a3a1e"/><circle cx="0" cy="-6" r="12" fill="#e2c26a"/><ellipse cx="0" cy="-14" rx="20" ry="5" fill="#c9a24a"/><path d="M-14 18 L14 18 L19 50 L-19 50Z" fill="#8a5a2a"/><path d="M-26 14 l-6 8 M26 14 l6 8" stroke="#e2c26a" stroke-width="3"/></g>
       <g>${[0,1,2,3,4].map(k=>{ const x=330+k*42, y=470+(k%2)*12; return `<g transform="translate(${x} ${y}) rotate(${80+k*3}) scale(1.1)"><ellipse cx="0" cy="2" rx="9" ry="6" fill="#8fcf3a" opacity=".25"/><ellipse cx="0" cy="2" rx="4.5" ry="3.4" fill="#3f6a1a" stroke="#22380c" stroke-width="1"/>${[-35,0,35].map(a=>`<path d="M0 0 L0 -9" transform="rotate(${a})" stroke="#3f6a1a" stroke-width="2.4" stroke-linecap="round"/><circle cx="0" cy="-10" r="1.3" transform="rotate(${a})" fill="#b8ef5a"/>`).join("")}</g>`; }).join("")}</g>
+      ${signpost(48,452,"Landing stones",-1)}${signpost(912,452,"Farmyard",1)}
       ${light("lane",820,120,"#ffe0a0",.5)}`,
     hot:[
       {id:"west",name:"Back to the clearing",shape:`<rect x="0" y="300" width="50" height="230" fill="transparent"/>`,stand:[40,450],exit:"clearing"},
@@ -416,7 +419,7 @@ const SCENES={
 
     P:{bounds:[40,420,920,520],start:[70,470],
       over:()=>`${flags.cleared?'':(ART==="pixel"?gremPix(800,392):gremlinArt(800,392))}${ART==="pixel"?cecilPix(680,450):cecilArt(680,450)}`,
-      hot:{west:[[0,300,50,240],[40,470]],house:[[20,60,330,320],[200,440]],well:[[460,175,170,225],[545,445]],cecil:[[645,330,70,125],[620,465]],shed:[[720,180,240,210],[820,440]]}},    name:"Farluck Farm", bounds:[40,400,920,515], start:[70,460],
+      hot:{west:[[0,300,50,240],[40,470]],house:[[20,60,330,320],[200,440]],well:[[460,175,170,225],[545,445]],cecil:[[645,330,70,125],[620,465]],shed:[[720,180,240,210],[820,440]]}},    name:"Farluck Farm", bounds:[40,400,920,515], start:[140,480],
     art:()=>`${defs("yard","#f0b878","#fbe2b4")}
       <rect width="960" height="540" fill="url(#sky_yard)"/>
       ${clouds(41)}
@@ -430,6 +433,7 @@ const SCENES={
       ${tufts(47,0,960,405,530,40,"#6e6036","#a8935a")}
       ${well(480,400)}
       ${ART==="pixel"?cecilPix(600,470):cecilArt(600,470)}
+      ${signpost(48,470,"Farm lane",-1)}
       ${light("yard",300,60,"#ffe6b0",.4)}`,
     hot:[
       {id:"west",name:"Back to the lane",shape:`<rect x="0" y="300" width="50" height="230" fill="transparent"/>`,stand:[40,460],exit:"lane"},
@@ -459,6 +463,13 @@ function tree(x,y,c,wilt,sc){ sc=sc||1; const T=`<ellipse cx="${x+10}" cy="${y+2
   return T+`<g><circle cx="${x}" cy="${y-150*sc}" r="${48*sc}" fill="${D}"/><circle cx="${x-32*sc}" cy="${y-120*sc}" r="${34*sc}" fill="${D}"/><circle cx="${x+32*sc}" cy="${y-118*sc}" r="${36*sc}" fill="${D}"/>
   <circle cx="${x-6*sc}" cy="${y-160*sc}" r="${40*sc}" fill="${c}"/><circle cx="${x-34*sc}" cy="${y-128*sc}" r="${26*sc}" fill="${c}"/><circle cx="${x+28*sc}" cy="${y-128*sc}" r="${28*sc}" fill="${c}"/>
   <circle cx="${x-14*sc}" cy="${y-172*sc}" r="${20*sc}" fill="${L}" opacity=".7"/><circle cx="${x+18*sc}" cy="${y-142*sc}" r="${12*sc}" fill="${L}" opacity=".5"/></g>`; }
+function signpost(x,y,label,dir){ const w=Math.max(84,label.length*8.4+30);
+  // board reaches inward from the post; its point aims off-screen toward the next place
+  const pts=dir>0?[[-w+12,-74],[6,-74],[18,-62],[6,-50],[-w+12,-50]]:[[w-12,-74],[-6,-74],[-18,-62],[-6,-50],[w-12,-50]];
+  const tx=dir>0?(-w+12+6)/2:(w-12-6)/2;
+  return `<g transform="translate(${x} ${y})" pointer-events="none"><ellipse cx="0" cy="2" rx="16" ry="4" fill="#000" opacity=".25"/><rect x="-3.5" y="-78" width="7" height="80" fill="#6a4426" stroke="#1d140c" stroke-width="1.5"/>
+  <polygon points="${pts.map(p=>p.join(",")).join(" ")}" fill="#b8844a" stroke="#1d140c" stroke-width="1.6" stroke-linejoin="round"/>
+  <text x="${tx}" y="-57" text-anchor="middle" font-family="Alegreya SC,serif" font-size="13" fill="#2b1d10">${label}</text></g>`; }
 function fern(x,y){ return `<path d="M${x} ${y} q-30 -40 -50 -46 M${x} ${y} q-6 -50 4 -70 M${x} ${y} q30 -36 50 -40" stroke="#3f6b2f" stroke-width="7" fill="none" stroke-linecap="round"/>`; }
 /* ---------- scene setup ---------- */
 function load(id,keep){
@@ -474,7 +485,7 @@ function load(id,keep){
     g.addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();act(h);} });
     g.addEventListener("mouseenter",()=>showLabel(h)); g.addEventListener("mouseleave",()=>$("label").hidden=true);
     s.appendChild(g); });
-  const gl=document.createElementNS(SVGNS,"g"); gl.innerHTML=`<defs><radialGradient id="glintG"><stop offset="0" stop-color="#ffe9a0" stop-opacity=".9"/><stop offset="1" stop-color="#ffe9a0" stop-opacity="0"/></radialGradient></defs>`+scene.hot.filter(h=>h.clue&&!SEEN[h.id]&&(!h.show||h.show())).map(glintSVG).join(""); s.appendChild(gl);
+  const gl=document.createElementNS(SVGNS,"g"); gl.innerHTML=`<defs><radialGradient id="glintG"><stop offset="0" stop-color="#ffe9a0" stop-opacity=".9"/><stop offset="1" stop-color="#ffe9a0" stop-opacity="0"/></radialGradient></defs>`+`<defs><radialGradient id="auraG"><stop offset="0" stop-color="#fff4c8" stop-opacity=".38"/><stop offset=".6" stop-color="#ffe9a0" stop-opacity=".16"/><stop offset="1" stop-color="#ffe9a0" stop-opacity="0"/></radialGradient></defs>`; s.appendChild(gl);
   const hg=document.createElementNS(SVGNS,"g"); hg.innerHTML=ART==="pixel"?heroPixSVG():heroSVG(); s.appendChild(hg); hero.el=hg;
   if(!keep){ hero.x=hero.tx=scene.start[0]; hero.y=hero.ty=scene.start[1]; } hero.face=1; hero.cb=null; placeHero();
   if(scene.enter) scene.enter();
