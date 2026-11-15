@@ -1556,14 +1556,14 @@ function cecilArt(x,y){ const sw=`stroke="${OL}" stroke-width="1.6" stroke-linej
   <circle cx="-3" cy="-94" r="1.6" fill="#1b140c"/><circle cx="8" cy="-94" r="1.6" fill="#1b140c"/><path d="M-6 -98 q3 -2 6 0 M5 -98 q3 -2 6 0" stroke="#eeeae2" stroke-width="1.6" fill="none"/><circle cx="2" cy="-90" r="2.6" fill="#6e4228"/>
   <ellipse cx="2" cy="-102" rx="26" ry="6" fill="#d8b65a" ${sw}/><path d="M-11 -102 Q-10 -120 2 -120 Q14 -120 15 -102Z" fill="#e2c46a" ${sw}/><path d="M-11 -106 h26" stroke="#8a3a2a" stroke-width="3"/>
   <path d="M-20 -101 l4 2 M-10 -98 l2 3 M14 -98 l-1 3 M24 -101 l-4 2" stroke="#a8863a" stroke-width="1.2"/></g>`; }
-function gremlinArt(x,y){ const sw=`stroke="#1e2a0c" stroke-width="1.5" stroke-linejoin="round"`; return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="13" ry="3.5" fill="rgba(0,0,0,.3)"/>
-  <path d="M-6 -2 l-3 2 M-4 -2 l0 2 M5 -2 l3 2 M3 -2 l0 2" stroke="#1e2a0c" stroke-width="1.4"/>
-  <path d="M-10 -1 Q-13 -16 -6 -22 Q0 -26 6 -22 Q13 -16 10 -1Z" fill="#5f8a2e" ${sw}/><path d="M-4 -4 Q-6 -14 0 -18" stroke="#8fbf4e" stroke-width="2" fill="none"/>
-  <circle cx="-5" cy="-10" r="1.6" fill="#a8c84a"/><circle cx="5" cy="-6" r="1.3" fill="#a8c84a"/><circle cx="2" cy="-14" r="1.1" fill="#7a4a8a"/>
-  <path d="M-7 -20 L-20 -30 L-9 -16Z M7 -20 L20 -30 L9 -16Z" fill="#6f9a3a" ${sw}/><path d="M-8 -20 L-16 -26 M8 -20 L16 -26" stroke="#c87a8a" stroke-width="1.5"/>
-  <ellipse cx="-3.5" cy="-17" rx="2.6" ry="3" fill="#ffe24a" ${sw}/><ellipse cx="3.5" cy="-17" rx="2.6" ry="3" fill="#ffe24a" ${sw}/><circle cx="-3" cy="-16.5" r="1" fill="#1e2a0c"/><circle cx="4" cy="-16.5" r="1" fill="#1e2a0c"/>
+function gremlinArt(x,y){ const sw=`stroke="#0c0708" stroke-width="1.5" stroke-linejoin="round"`; return `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="13" ry="3.5" fill="rgba(0,0,0,.3)"/>
+  <path d="M-6 -2 l-3 2 M-4 -2 l0 2 M5 -2 l3 2 M3 -2 l0 2" stroke="#0c0708" stroke-width="1.4"/>
+  <path d="M-10 -1 Q-13 -16 -6 -22 Q0 -26 6 -22 Q13 -16 10 -1Z" fill="#231719" ${sw}/><path d="M-4 -4 Q-6 -14 0 -18" stroke="#c8261e" stroke-width="2" fill="none"/>
+  <circle cx="-5" cy="-10" r="1.6" fill="#e0352b"/><circle cx="5" cy="-6" r="1.3" fill="#e0352b"/><circle cx="2" cy="-14" r="1.1" fill="#e0352b"/>
+  <path d="M-7 -20 L-20 -30 L-9 -16Z M7 -20 L20 -30 L9 -16Z" fill="#8f1a16" ${sw}/><path d="M-8 -20 L-16 -26 M8 -20 L16 -26" stroke="#ff6a4a" stroke-width="1.5"/>
+  <ellipse cx="-3.5" cy="-17" rx="2.6" ry="3" fill="#ff4a30" ${sw}/><ellipse cx="3.5" cy="-17" rx="2.6" ry="3" fill="#ff4a30" ${sw}/><circle cx="-3" cy="-16.5" r="1" fill="#0c0708"/><circle cx="4" cy="-16.5" r="1" fill="#0c0708"/>
   <path d="M-4 -11 Q0 -8 4 -11" fill="#3a1a14" ${sw}/><path d="M-2 -10.5 l1 2 l1 -2 M1 -10.5 l1 2 l1 -2" fill="#fff"/>
-  <path d="M-10 -10 l-6 4 l2 -1 l-1 3 M10 -10 l6 4 l-2 -1 l1 3" stroke="#5f8a2e" stroke-width="3" fill="none" stroke-linecap="round"/></g>`; }
+  <path d="M-10 -10 l-6 4 l2 -1 l-1 3 M10 -10 l6 4 l-2 -1 l1 3" stroke="#231719" stroke-width="3" fill="none" stroke-linecap="round"/></g>`; }
 const ROLE_FRAME={Maverick:"#3f6b45",Brawler:"#8a4a2a",Champion:"#a8821f","Soul Seer":"#5a4a8a",Whisper:"#3d4b5c"};
 function cornerSVG(role){
   const c="#e8c260";
@@ -1674,7 +1674,7 @@ addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelecto
       if (sp.weapon) { u.weapon = sp.weapon; u.wRange = sp.wRange || u.wRange; } if (sp.def) u.def += sp.def; if (sp.color) u.color = sp.color; }
     else { // plague gremlin: small, quick, weak
       u.abs = []; u.cd = []; u.life = u.max = 6; u.def = 9; u.st = { P: 0, E: 0, S: 1, C: 0 }; u.main = 'P';
-      u.weapon = 'Claws'; u.wRange = 1; u.roleDmg = 0; u.color = '#5f8a2e'; u.gremlin = true; u.lf = 'Plague'; u.branch = 'gremlin';
+      u.weapon = 'Claws'; u.wRange = 1; u.roleDmg = 0; u.color = '#b3261e'; u.gremlin = true; u.lf = 'Plague'; u.branch = 'gremlin';
     }
     return u;
   };
