@@ -1813,12 +1813,18 @@ function dig() {
   }
   const W = w * (COLS + 0.5) + 12, H = size * 1.5 * (ROWS - 1) + size * 2 + 12;
   gameShell("scrap", "Dig the rubble", `
-    <p class="note">Tap a patch to dig. Shnee calls out how close you are: <b>...</b> is cold, <b>?</b> is warmer, <b>!!!</b> is right next to it. You have ${DIGS} digs. Find the cache and every dig you have left adds to your D20. Coins turn up on 18 to 20.</p>
+    <p class="note">Tap a patch to dig. Shnee calls out how close you are: <b>...</b> is cold, <b>?</b> is warmer, <b>!!!</b> is right next to it. You have ${DIGS} digs. Find the cache to roll for loot: every dig you have left adds to your D20, and coins turn up on 18 to 20. No cache, no loot.</p>
     <div class="stat">Digs left: <b id="left">${left}</b></div>
     <div class="hexWrap"><svg viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}" id="yard" aria-label="Rubble patch">${cells}</svg></div>
     <div class="result" id="res"></div>`);
   const finish = found => {
-    over = true; const bonus = found ? left : 0, roll = d20(), total = Math.min(20, roll + bonus);
+    over = true;
+    if (!found) { // no star, no loot (N8 2026-11-14)
+      const t = target, g = $(`#yard g[data-c="${t[0]}"][data-r="${t[1]}"]`); if (g) { g.querySelector("text").textContent = "★"; }
+      $("#res").innerHTML = `<p id="out">Out of digs, and no cache. Shnee points: "It was right there!" Nothing to haul home this time.<br><span class="btns" style="margin-top:8px"><button class="btn" type="button" id="again">Dig again</button><button class="btn" type="button" id="home">Back to the castle</button></span></p>`;
+      $("#again").onclick = dig; $("#home").onclick = showHub; return;
+    }
+    const bonus = left, roll = d20(), total = Math.min(20, roll + bonus);
     $("#res").innerHTML = `<span id="die"></span><p id="out">${found ? `You found the cache with ${left} dig${left === 1 ? "" : "s"} left! D20 + ${left}` : "Out of digs. You sift what you turned up: D20"}...</p>`;
     rollAnim($("#die"), roll, () => {
       let get;
