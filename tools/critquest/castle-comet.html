@@ -620,8 +620,8 @@ function sceneSVG(id) {
     bg = `<rect width="800" height="300" fill="#121630"/>${Array.from({ length: 30 }, (_, i) => `<circle cx="${(i * 137) % 800}" cy="${(i * 61) % 150}" r="${1 + i % 2}" fill="#fff" opacity=".8"/>`).join("")}` +
       `<circle cx="120" cy="70" r="38" fill="#e88a3a" opacity=".85" ${OLs}/><ellipse cx="120" cy="70" rx="62" ry="10" fill="none" stroke="#e8c260" stroke-width="3"/><circle cx="680" cy="56" r="20" fill="#82cbd9" ${OLs}/>` +
       `<path d="M0 200 Q400 170 800 200 V300 H0Z" fill="#a8a6bd" ${OLs}/><ellipse cx="400" cy="236" rx="170" ry="34" fill="#6c6f8f" ${OLs}/>` +
-      hot("tdown", "The Teleportation Station", [0, 1, 2, 3, 4, 5].map(i => { const a = i * Math.PI / 3, x = 400 + 150 * Math.cos(a), y = 232 + 28 * Math.sin(a); return `<path d="M${x.toFixed(0)} ${(y - 50).toFixed(0)} l12 30 l-12 22 l-12 -22z" fill="#82cbd9" ${OLs}/>`; }).join(""));
-    folk = hot("tw", "Talk to Wexler", charAt("wexler", 300, 262, 1.1)) + hot("tb", "Talk to Bruxanna", charAt("bruxanna", 520, 262, 1.2, true));
+      hot("tdown", "The Teleportation Station", [0, 1, 2, 3, 4, 5, 6, 7].map(i => { const a = i * Math.PI / 4 - Math.PI / 2, x = 400 + 92 * Math.cos(a), y = 236 + 17 * Math.sin(a); return [y, `<path d="M${x.toFixed(0)} ${(y - 44).toFixed(0)} l10 26 l-10 20 l-10 -20z" fill="#82cbd9" ${OLs}/>`]; }).sort((p, q) => p[0] - q[0]).map(p => p[1]).join("") + `<ellipse cx="400" cy="236" rx="60" ry="11" fill="#82cbd9" opacity=".25"/>`);
+    folk = hot("tw", "Talk to Wexler", charAt("wexler", 225, 262, 1.1)) + hot("tb", "Talk to Bruxanna", charAt("bruxanna", 580, 262, 1.2, true));
   } else {
     const p = PEOPLE[id] || { hue: "#c99a3c" };
     bg = sceneWall("#4a4060", "#2f2a3c") + floorBand("#3a3326", "#1d1912") + `<path d="M340 30 h120 v120 l-60 -24 l-60 24z" fill="${p.hue}" ${OLs}/>` + torchAt(200, 110) + torchAt(600, 110);
