@@ -987,7 +987,7 @@ body.arena-full .logo .mark{width:38px}body.arena-full .logo{font-size:1.2rem}
 .cl-mine p{margin:0}.cl-mine .ul-k{font-family:var(--f-title);color:var(--gold);font-size:1.15rem}
 .cl-mine .row,.cl-card .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center}
 .cl-due{color:var(--muted);font-size:.9rem}
-.cl-roster .pick img{max-height:64px}
+.cl-roster .pick img{height:calc(72px * var(--sc,1));margin-top:calc(72px * (1 - var(--sc,1)))} /* one shared base so Heroes stand on the same line (was max-height, which staggered them) */
 .cl-live{color:#7ee08f;font-weight:700}
 .cl-list{display:grid;gap:10px}
 .cl-h{margin:6px 0 0;font-family:var(--f-title);color:var(--gold);font-size:1rem}
