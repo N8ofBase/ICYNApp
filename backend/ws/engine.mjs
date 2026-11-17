@@ -1,7 +1,10 @@
 // Headless I Crit You Not! duel engine for server-refereed online play.
 // Mirrors the rules in the game page (src.html): revised tables, Speed every
 // round, nat 1 on Speed = Calamity + lost turn, nat 20 = Enhancement first,
-// Weapon Broken through the next round, Weapon Increase repairs and adds a die.
+// Weapon Broken for one round (setup.wb1, N8 2026-11-17: it spoils only the Hero's next
+// turn of attacks, older games keep 'through the next round'), Weapon Increase repairs and adds a die.
+// Crit Climb (setup.carry, N8 2026-11-17): a Hero who climbs on keeps its Life, stats, Weapon dice and
+// leveled Ability dice for the next match; cooldowns reset and the weapon starts whole.
 //
 // The engine is a generator. It yields a prompt ({kind, p}) whenever a player
 // must act, and receives that player's input ({choice} for 'ability').
@@ -45,10 +48,23 @@ export function rngFrom(seedHex) {
   return (sides) => 1 + Math.floor(next() * sides);
 }
 
-function makeFighter(id, life, p) {
+const num = (v, lo, hi, d) => (Number.isInteger(v) && v >= lo && v <= hi ? v : d);
+function makeFighter(id, life, p, carry) {
   const h = HEROES[id];
-  return { p, id, name: h.name, main: h.main, ...h.stats, life, maxLife: life, peakMax: life, weaponDice: 1, broken: false, brokenUntil: 0,
+  const f = { p, id, name: h.name, main: h.main, ...h.stats, life, maxLife: life, peakMax: life, weaponDice: 1, broken: false, brokenUntil: 0, swing: 0,
     abilities: h.abilities.map((a) => ({ ...a, cd: false })) };
+  if (carry && typeof carry === 'object') {
+    for (const s of STATS) f[s] = num(carry[s], 0, 99, f[s]);
+    f.maxLife = num(carry.maxLife, 1, 999, f.maxLife); f.life = num(carry.life, 1, f.maxLife, f.life); f.peakMax = f.maxLife;
+    f.weaponDice = num(carry.weaponDice, 1, 20, 1);
+    if (Array.isArray(carry.dice)) f.abilities.forEach((a, k) => { a.dice = num(carry.dice[k], a.dice, 20, a.dice); });
+  }
+  return f;
+}
+// What a Crit Climb Hero takes into its next match (cooldowns and a broken weapon are left behind).
+export function carryOf(f) {
+  return { life: Math.max(1, f.life), maxLife: f.maxLife, def: f.def, power: f.power, energy: f.energy, speed: f.speed, charm: f.charm,
+    weaponDice: f.weaponDice, dice: f.abilities.map((a) => a.dice) };
 }
 
 // Public view of both fighters, sent with every update.
@@ -59,7 +75,8 @@ export function snapshot(F) {
 
 // setup = {heroes: [id0, id1], life: 50|100, easy?: true} (Easy = 50 Life, Calamities only on natural 1s). Events are plain objects the client animates in order.
 export function* duel(setup, rnd, ev) {
-  const F = [makeFighter(setup.heroes[0], setup.life, 0), makeFighter(setup.heroes[1], setup.life, 1)];
+  const carry = Array.isArray(setup.carry) ? setup.carry : [];
+  const F = [makeFighter(setup.heroes[0], setup.life, 0, carry[0]), makeFighter(setup.heroes[1], setup.life, 1, carry[1])];
   const S = { round: 0, F };
   const over = () => F.some((f) => f.life <= 0);
   const emit = (e) => ev.push({ round: S.round, ...e });
@@ -74,7 +91,8 @@ export function* duel(setup, rnd, ev) {
         case 'all': for (const s of STATS) f[s] = Math.max(0, f[s] + e[1]); break;
         case 'main': f[f.main] = Math.max(0, f[f.main] + e[1]); break;
         case 'stat': f[e[1]] = Math.max(0, f[e[1]] + e[2]); break;
-        case 'broken': f.broken = true; f.brokenUntil = S.round + 1; break;
+        // One round (wb1): broken before this round's swing, it spoils this round; after it, the next one.
+        case 'broken': f.broken = true; f.brokenUntil = setup.wb1 && f.swing !== S.round ? S.round : S.round + 1; break;
         case 'rcd': { const i = rnd(4) - 1; emit({ t: 'randomAbility', p, i }); f.abilities[i].cd = true; break; }
         case 'maxlife': f.maxLife += e[1]; f.life += e[1]; break;
         case 'life': f.life = Math.min(f.maxLife, f.life + e[1]); break;
@@ -106,6 +124,7 @@ export function* duel(setup, rnd, ev) {
 
   function* weaponAttack(p, second) {
     const f = F[p], q = 1 - p, r = F[q];
+    f.swing = S.round;
     yield { kind: 'attack', p, second: !!second };
     const d = rnd(20);
     if (d === 1) {
@@ -200,7 +219,11 @@ export function* duel(setup, rnd, ev) {
       if (over()) break;
     }
     if (over()) { lastRound = S.round; break; }
-    for (const f of F) if (f.broken && S.round >= f.brokenUntil) { f.broken = false; emit({ t: 'repaired', p: f.p }); }
+    for (const f of F) {
+      if (!f.broken || S.round < f.brokenUntil) continue;
+      if (setup.wb1 && f.swing !== S.round) { f.brokenUntil = S.round + 1; continue; } // sat out: it waits for the Hero's next turn
+      f.broken = false; emit({ t: 'repaired', p: f.p });
+    }
     if (S.round < 8) for (const p of [first, 1 - first]) yield* tableRoll(p, 'enh');
   }
   let w;
@@ -208,7 +231,7 @@ export function* duel(setup, rnd, ev) {
   if (ko) w = F[0].life > 0 ? 0 : 1;
   else if (F[0].life !== F[1].life) w = F[0].life > F[1].life ? 0 : 1;
   else { S.round = 8; w = yield* luckOff('final'); }
-  const result = { winner: w, ko, rounds: ko ? lastRound : 8, life: F.map((f) => f.life), peakMax: F.map((f) => f.peakMax) };
+  const result = { winner: w, ko, rounds: ko ? lastRound : 8, life: F.map((f) => f.life), peakMax: F.map((f) => f.peakMax), ...(setup.climb || setup.carry ? { carry: F.map(carryOf) } : {}) };
   emit({ t: 'end', ...result, F: snapshot(F) });
   return result;
 }

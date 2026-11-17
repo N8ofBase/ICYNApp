@@ -6,7 +6,9 @@
 // with the code, or from the public list if the host made it public. The host presses Begin (2 or more players):
 // the Computer takes every open seat and the bracket is drawn at random. Computer vs Computer matches are played
 // by the arena at once; against a player, the referee answers the Computer's prompts (random ready ability).
-// Every match is a Standard online duel (100 Life, Calamities on); each player picks any Hero per match.
+// Every match is a Standard online duel (100 Life, Calamities on). Carryover (N8 2026-11-17): a player picks a Hero for
+// their first match; whoever wins keeps that Hero and carries its Life, stats, Weapon dice and Ability dice into the next
+// match (entrant.hero, entrant.carry); cooldowns reset and the weapon starts whole. A bye, walkover or no-show carries as is.
 // Once both rivals of a match are known they have 10 minutes to meet in the arena: if one waits and the other
 // never comes, the one who waited climbs on; if neither comes, the higher seed does (the Computer always comes). A lobby that never begins
 // closes after a day. Rewards: the winner earns the gold "Crit Climb Conqueror" ring around their profile
@@ -15,11 +17,11 @@
 //
 // Item in table icyn-climbs (key id = the join code; ttl removes it 30 days later):
 //   {id, name, size, public, host: userId, status: open|live|done|cancelled, createdAt, version, ttl,
-//    entrants: [{u: userId, n: name, av: avatar, ring, at}] (entrant 0 is the host), seeds: [seed per entrant] (once live),
+//    entrants: [{u: userId, n: name, av: avatar, ring, at, hero?, carry?}] (entrant 0 is the host), seeds: [seed per entrant] (once live),
 //    rounds: [[{a, b, w, how, due, state, gameId, code, host}]] (a/b = entrant index; w = 0 for a, 1 for b),
 //    champion, runnerUp, endedAt, awarded}
 import crypto from 'node:crypto';
-import { replay, HEROES } from './engine.mjs';
+import { replay, HEROES, carryOf } from './engine.mjs';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, PutCommand, ScanCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 
@@ -78,8 +80,10 @@ export function settle(t, now) {
     if (m.w === null && m.a !== null && m.b !== null) {
       const ca = !!t.entrants[m.a].cpu, cb = !!t.entrants[m.b].cpu;
       if (ca && cb) { // two Computers: the arena plays their duel at once
-        const heroes = [pickHero(), pickHero()];
-        m.w = cpuDuel(heroes).winner; m.how = 'cpu'; m.heroes = heroes; m.state = 'done'; changed = true;
+        const A = t.entrants[m.a], Bn = t.entrants[m.b], heroes = [A.hero || pickHero(), Bn.hero || pickHero()];
+        const res = cpuDuel(heroes, [A.carry || null, Bn.carry || null]);
+        m.w = res.winner; m.how = 'cpu'; m.heroes = heroes; m.state = 'done'; changed = true;
+        keepHero(t.entrants[winnerOf(m)], heroes[m.w], res.carry && res.carry[m.w]);
       } else if (!m.due) { m.due = now + MATCH_MS; changed = true; }
       if (m.w === null && now > m.due && m.state !== 'active') {
         if (m.state === 'waiting' && (m.host === 0 || m.host === 1)) { m.w = m.host; m.how = 'walkover'; }
@@ -118,13 +122,21 @@ export function currentMatch(t, e) {
   return null;
 }
 
-// Record a played duel. winnerUser is the winner's userId.
-export function applyResult(t, r, i, gameId, winnerUser, forfeit, now) {
+// The winner of a played duel keeps its Hero and carries its state into the next match.
+function keepHero(e, hero, carry) {
+  if (!e || !HEROES[hero]) return;
+  e.hero = hero;
+  if (carry) e.carry = carry;
+}
+
+// Record a played duel. winnerUser is the winner's userId; hero/carry are the winner's Hero and its state at the end.
+export function applyResult(t, r, i, gameId, winnerUser, forfeit, now, hero, carry) {
   const m = t.rounds?.[r]?.[i];
   if (!m || m.w !== null || m.gameId !== gameId) return false;
   const side = t.entrants[m.a]?.u === winnerUser ? 0 : t.entrants[m.b]?.u === winnerUser ? 1 : null;
   if (side === null) return false;
   m.w = side; m.how = forfeit ? 'forfeit' : 'duel'; m.state = 'done';
+  keepHero(t.entrants[side ? m.b : m.a], hero, carry);
   settle(t, now);
   return true;
 }
@@ -142,8 +154,8 @@ export function cpuInput(pending, p) {
   return { kind: pending.kind, p, ...(pending.kind === 'ability' ? { choice: pending.options[crypto.randomInt(pending.options.length)] } : {}) };
 }
 // A whole Standard duel between two Computers.
-export function cpuDuel(heroes) {
-  const seed = crypto.randomBytes(16).toString('hex'), setup = { heroes, life: 100 }, inputs = [];
+export function cpuDuel(heroes, carry) {
+  const seed = crypto.randomBytes(16).toString('hex'), setup = { heroes, life: 100, wb1: true, carry: carry || [null, null] }, inputs = [];
   for (let n = 0; n < 3000; n++) {
     const r = replay(seed, setup, inputs);
     if (r.result) return r.result;
@@ -175,7 +187,7 @@ export function view(t) {
   return {
     id: t.id, code: t.id, name: t.name, size: t.size, public: !!t.public, bracketSize: t.bracketSize || null,
     status: t.status, note: t.note || null, createdAt: t.createdAt, endedAt: t.endedAt || null, matchMinutes: MATCH_MS / MIN,
-    entrants: t.entrants.map((e, k) => ({ n: e.n, av: e.av || '', ring: e.ring || '', k: e.cpu ? `cpu${k}` : entrantKey(e.u), cpu: !!e.cpu, seed: t.seeds ? t.seeds[k] : null })),
+    entrants: t.entrants.map((e, k) => ({ n: e.n, av: e.av || '', ring: e.ring || '', k: e.cpu ? `cpu${k}` : entrantKey(e.u), cpu: !!e.cpu, seed: t.seeds ? t.seeds[k] : null, hero: e.hero || null, carry: e.carry || null })),
     rounds: (t.rounds || []).map((round) => round.map((m) => ({
       a: m.a, b: m.b, w: m.w, how: m.how || null, due: m.due || null, state: m.state || null, host: m.host ?? null, heroes: m.heroes || null,
     }))),
@@ -238,8 +250,14 @@ export async function markMatch(id, r, i, gameId, patch) {
   });
 }
 export async function climbResult(game, result) {
-  const c = game.setup.climb;
-  return withClimb(c.id, (t) => (applyResult(t, c.r, c.i, game.gameId, game.players[result.winner], !!result.forfeit, Date.now()) ? null : 'gone'));
+  const c = game.setup.climb, w = result.winner;
+  // a forfeit ends the duel early: the winner carries its state as it stood
+  let carry = result.carry && result.carry[w];
+  if (!carry) {
+    const snap = replay(game.seed, game.setup, game.inputs || []).events.reduce((x, e) => e.F || x, null);
+    if (snap && snap[w]) carry = carryOf({ ...snap[w], abilities: snap[w].abilities });
+  }
+  return withClimb(c.id, (t) => (applyResult(t, c.r, c.i, game.gameId, game.players[w], !!result.forfeit, Date.now(), game.setup.heroes[w], carry) ? null : 'gone'));
 }
 
 // ---------- icyn-api routes ----------

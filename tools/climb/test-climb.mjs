@@ -182,6 +182,12 @@ for (const m of t.rounds[0]) {
 t = T['icyn-climbs'].get(id);
 assert.ok(t.rounds[0].every((m) => m.how === 'duel'));
 const fin = t.rounds[1][0]; assert.ok(fin.a !== null && fin.b !== null, 'finalists set');
+// carryover (N8 2026-11-17): each semifinal winner keeps its Hero and carries its Life, stats, Weapon and Ability dice
+for (const x of [fin.a, fin.b]) {
+  const e = t.entrants[x];
+  assert.ok(['brawler', 'soulseer'].includes(e.hero), 'winner keeps the Hero it won with');
+  assert.ok(e.carry && e.carry.life >= 1 && e.carry.life <= e.carry.maxLife && e.carry.weaponDice >= 1 && e.carry.dice.length === 4, 'winner carries its state');
+}
 // a semifinal loser cannot enter again
 const loser = t.rounds[0][0].w === 0 ? t.rounds[0][0].b : t.rounds[0][0].a;
 await wsSend(entrantNo(t, loser), { action: 'climb', climbId: id, hero: 'brawler' });
@@ -190,9 +196,18 @@ assert.match(errOf(entrantNo(t, loser)), /climb is over/);
 const fa = entrantNo(t, fin.a), fb = entrantNo(t, fin.b);
 await wsSend(fa, { action: 'climb', climbId: id, hero: 'maverick' });
 await wsSend(fb, { action: 'climb', climbId: id, hero: 'champion' });
+{ // the final uses the locked Heroes (the picks sent are ignored) and starts from the carried state
+  const g = T['icyn-games'].get(last(fb).gameId);
+  assert.deepEqual(g.setup.heroes, [t.entrants[fin.a].hero, t.entrants[fin.b].hero], 'Heroes are locked after a win');
+  assert.deepEqual(g.setup.carry, [t.entrants[fin.a].carry, t.entrants[fin.b].carry]);
+  const start = last(fb).events.find((e) => e.t === 'start');
+  assert.equal(start.F[0].life, t.entrants[fin.a].carry.life); assert.equal(start.F[1].maxLife, t.entrants[fin.b].carry.maxLife);
+  assert.ok(start.F.every((f) => f.abilities.every((a) => !a.cd) && !f.broken), 'cooldowns reset, weapon whole');
+}
 await wsSend(fb, { action: 'forfeit', gameId: last(fb).gameId });
 t = T['icyn-climbs'].get(id);
 assert.equal(t.status, 'done'); assert.equal(t.champion, fin.a); assert.equal(t.rounds[1][0].how, 'forfeit');
+assert.ok(t.entrants[fin.a].carry.life >= 1, 'a forfeit win still carries');
 const champ = T['icyn-players'].get('p' + fa);
 assert.equal(champ.climbWins, 1); assert.equal(champ.badges[0].k, 'conqueror');
 assert.equal(T['icyn-players'].get('p' + fb).badges[0].k, 'competitor');
@@ -257,6 +272,7 @@ r = await call('POST /climbs/{id}/start', P(3), {}, id3);
 assert.equal(r.body.entrants.filter((e) => e.cpu).length, 6);
 const cpuMs = r.body.rounds[0].filter((m) => r.body.entrants[m.a].cpu && r.body.entrants[m.b].cpu);
 assert.ok(cpuMs.length >= 2 && cpuMs.every((m) => m.how === 'cpu' && m.w !== null && m.heroes.length === 2), 'Computer duels resolve at once');
+{ const t3 = T['icyn-climbs'].get(id3); for (const m of t3.rounds[0].filter((m) => m.how === 'cpu')) { const e = t3.entrants[m.w ? m.b : m.a]; assert.equal(e.hero, m.heroes[m.w]); assert.ok(e.carry && e.carry.life >= 1, 'Computer winners carry too'); } }
 T['icyn-climbs'].get(id3).rounds[0].forEach((m) => { if (m.due && m.w === null) m.due = Date.now() - 1; });
 r = await call('GET /climbs/{id}', null, null, id3);
 const ns = r.body.rounds[0].filter((m) => m.how === 'noshow' && (r.body.entrants[m.a].cpu || r.body.entrants[m.b].cpu));

@@ -43,7 +43,7 @@ export function* catastrophe(setup, rnd, ev) {
   const L = F.length * STARVOS.lifePerHero;
   const B = { life: L, maxLife: L, ...STARVOS.stats };
   // Rules v3 (N8, 2026-10-30): Defense 13; once below half Life, Starvos is Enraged from the start of the next round (its attacks roll one extra die)
-  const v3 = (setup.v || 1) >= 3;
+  const v3 = (setup.v || 1) >= 3, v4 = (setup.v || 1) >= 4;
   if (v3) B.def = 13;
   const S = { round: 0 };
   const emit = (e) => ev.push({ round: S.round, ...e });
@@ -63,7 +63,8 @@ export function* catastrophe(setup, rnd, ev) {
         case 'all': for (const s of STATS) f[s] = Math.max(0, f[s] + e[1]); break;
         case 'main': f[f.main] = Math.max(0, f[f.main] + e[1]); break;
         case 'stat': f[e[1]] = Math.max(0, f[e[1]] + e[2]); break;
-        case 'broken': f.broken = true; f.brokenUntil = S.round + 1; break;
+        // Rules v4 (N8 2026-11-17): broken for one round, the Hero's next turn of attacks only
+        case 'broken': f.broken = true; f.brokenUntil = v4 && f.swing !== S.round ? S.round : S.round + 1; break;
         case 'rcd': { const i = rnd(4) - 1; emit({ t: 'randomAbility', p, i }); f.abilities[i].cd = true; break; }
         case 'maxlife': f.maxLife += e[1]; f.life += e[1]; break;
         case 'life': f.life = Math.min(f.maxLife, f.life + e[1]); break;
@@ -162,6 +163,7 @@ export function* catastrophe(setup, rnd, ev) {
 
   function* weapon(p, second) {
     const f = F[p];
+    f.swing = S.round;
     yield { kind: 'attack', p, second: !!second };
     const d = rnd(20);
     if (d === 1) { emit({ t: 'attack', p, d, result: 'fumble' }); yield* tableRoll(p, 'cal'); return 'end'; }
@@ -242,7 +244,11 @@ export function* catastrophe(setup, rnd, ev) {
     const sp = yield* speed();
     for (const p of sp.order) { if (F[p].life <= 0) continue; yield* turn(p); if (bossDown()) break; }
     if (bossDown()) break;
-    for (const f of F) if (f.broken && S.round >= f.brokenUntil) { f.broken = false; emit({ t: 'repaired', p: f.p }); }
+    for (const f of F) {
+      if (!f.broken || S.round < f.brokenUntil) continue;
+      if (v4 && f.swing !== S.round && f.life > 0) { f.brokenUntil = S.round + 1; continue; } // no turn this round: it waits for the next
+      f.broken = false; emit({ t: 'repaired', p: f.p });
+    }
     if (S.round < STARVOS.rounds) yield* enhancements(sp.acted.filter((p) => F[p].life > 0));
   }
   const rounds = Math.min(STARVOS.rounds, S.round);

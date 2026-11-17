@@ -217,7 +217,7 @@ export async function handler(event) {
     const heroes = [...new Set([].concat(msg.heroes || msg.hero || []))].filter((h) => HEROES[h]);
     const game = {
       gameId: crypto.randomUUID(), code: newCode(), status: 'waiting', seed: crypto.randomBytes(16).toString('hex'),
-      setup: { mode: 'boss', v: 3, heroes, owners: heroes.map(() => 0) }, players: [conn.userId], names: [conn.name],
+      setup: { mode: 'boss', v: 4, heroes, owners: heroes.map(() => 0) }, players: [conn.userId], names: [conn.name],
       conns: [connectionId], inputs: [], version: 0, createdAt: new Date().toISOString(),
       ttl: Math.floor(Date.now() / 1000) + DAY, public: msg.public === true,
     };
@@ -233,7 +233,7 @@ export async function handler(event) {
     const easy = msg.easy === true;
     const game = {
       gameId: crypto.randomUUID(), code: newCode(), status: 'waiting', seed: crypto.randomBytes(16).toString('hex'),
-      setup: easy ? { heroes: [msg.hero, null], life: 50, easy: true } : { heroes: [msg.hero, null], life: Number(msg.life) }, players: [conn.userId, null], names: [conn.name, null],
+      setup: easy ? { heroes: [msg.hero, null], life: 50, easy: true, wb1: true } : { heroes: [msg.hero, null], life: Number(msg.life), wb1: true }, players: [conn.userId, null], names: [conn.name, null],
       conns: [connectionId, null], inputs: [], version: 0, createdAt: new Date().toISOString(),
       ttl: Math.floor(Date.now() / 1000) + DAY, public: msg.public === true,
     };
@@ -398,11 +398,13 @@ async function climbDuel(api, conn, connectionId, msg, fail) {
     if (!cur.ready) return fail('Your next rival is still being decided');
     const m = t.rounds[cur.r][cur.i];
     const rival = t.entrants[cur.side ? m.a : m.b];
+    // N8 2026-11-17: after your first win your Hero is set for the Climb and carries its Life, stats, Weapon and Ability dice
+    const mine = t.entrants[me], hero = mine.hero || msg.hero;
     if (rival.cpu && !m.gameId) {
       // against the Computer the duel starts at once
       const game = {
         gameId: crypto.randomUUID(), code: newCode(), status: 'active', seed: crypto.randomBytes(16).toString('hex'),
-        setup: { heroes: [msg.hero, pickHero()], life: 100, climb: { id, r: cur.r, i: cur.i, name: t.name, rounds: t.rounds.length } },
+        setup: { heroes: [hero, rival.hero || pickHero()], life: 100, wb1: true, carry: [mine.carry || null, rival.carry || null], climb: { id, r: cur.r, i: cur.i, name: t.name, rounds: t.rounds.length } },
         players: [conn.userId, rival.u], names: [conn.name, rival.n], conns: [connectionId, null], cpuSeat: 1, pendingSince: Date.now(),
         inputs: [], version: 0, createdAt: new Date().toISOString(), ttl: Math.floor(Date.now() / 1000) + 7 * DAY,
       };
@@ -434,7 +436,8 @@ async function climbDuel(api, conn, connectionId, msg, fail) {
       }
       if (game && game.status === 'waiting') {
         const prev = game.version;
-        game.players[1] = conn.userId; game.names[1] = conn.name; game.setup.heroes[1] = msg.hero;
+        game.players[1] = conn.userId; game.names[1] = conn.name; game.setup.heroes[1] = hero;
+        game.setup.carry = [(game.setup.carry || [])[0] || null, mine.carry || null];
         game.conns[1] = connectionId; game.status = 'active'; game.pendingSince = Date.now();
         try { await saveGame(game, prev); } catch (e) { if (e.name === 'ConditionalCheckFailedException') continue; throw e; }
         await markMatch(id, cur.r, cur.i, game.gameId, { state: 'active' });
@@ -448,7 +451,7 @@ async function climbDuel(api, conn, connectionId, msg, fail) {
 
     const game = {
       gameId: crypto.randomUUID(), code: newCode(), status: 'waiting', seed: crypto.randomBytes(16).toString('hex'),
-      setup: { heroes: [msg.hero, null], life: 100, climb: { id, r: cur.r, i: cur.i, name: t.name, rounds: t.rounds.length } },
+      setup: { heroes: [hero, null], life: 100, wb1: true, carry: [mine.carry || null, null], climb: { id, r: cur.r, i: cur.i, name: t.name, rounds: t.rounds.length } },
       players: [conn.userId, null], names: [conn.name, null], conns: [connectionId, null], climbRival: rival.u,
       inputs: [], version: 0, createdAt: new Date().toISOString(), ttl: Math.floor(Date.now() / 1000) + 7 * DAY,
     };
