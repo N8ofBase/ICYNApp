@@ -221,7 +221,7 @@ r = await call('GET /climbs/{id}', null, null, id); assert.equal(r.body.status, 
 async function playCpu(k, cid) {
   await wsSend(k, { action: 'climb', climbId: cid, hero: 'champion' });
   let st = last(k); assert.equal(st.type, 'state', 'vs the Computer the duel starts at once'); assert.equal(st.status, 'active');
-  assert.match(st.players[1].name, /^Computer/);
+  assert.match(st.players[1].name, /^(Brawler|Champion|Maverick|Soul Seer|Whisper) \(COMP\)$/);
   for (let n = 0; n < 2000; n++) {
     st = last(k);
     if (st.status === 'done') return st;

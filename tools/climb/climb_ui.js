@@ -24,7 +24,9 @@ const meIn=t=>{const k=myKey();return k?t.entrants.findIndex(x=>x.k===k):-1};
 function climbMine(t){const e=meIn(t);if(e<0||t.status!=='live')return null;
   for(let r=0;r<t.rounds.length;r++){const i=t.rounds[r].findIndex(m=>m.w===null&&(m.a===e||m.b===e));if(i>=0){const m=t.rounds[r][i];return {t,r,i,m,e,side:m.a===e?0:1,ready:m.a!==null&&m.b!==null}}}
   return null}
-const entrantName=(t,x)=>x===null||x===undefined?'':esc(t.entrants[x]?.n||'Hero');
+// N8 2026-11-18: a Computer shows as its Hero with (COMP) after it
+const cpuName=e=>!e?'':e.cpu&&!/\(COMP\)$/.test(e.n||'')&&HEROES[e.hero]?HEROES[e.hero].name+' (COMP)':e.n||'Hero';
+const entrantName=(t,x)=>x===null||x===undefined?'':esc(cpuName(t.entrants[x]));
 
 function renderClimbSetup(){SFX.music('menu');document.body.classList.remove('arena-full');
   const b=document.querySelector('.hero-intro .brand');if(b)CLIMB.brand=b.getAttribute('src');
@@ -128,7 +130,7 @@ function renderClimbRoom(el,t){const me=meIn(t),isHost=me===0,n=t.entrants.lengt
 function climbMatchHTML(t){const W=CLIMB.waiting&&CLIMB.waiting.climb.id===t.code?CLIMB.waiting:null,mine=climbMine(t),err=CLIMB.err?`<p class="nb-err" role="alert">${esc(CLIMB.err)}</p>`:'';
   if(!mine){const me=meIn(t);return me>=0&&t.status==='live'?'<p class="cl-out">Your climb is over. Watch the bracket to see who takes the crown!</p>':''}
   const {r,m,side,ready}=mine,rival=side?m.a:m.b,label=`${esc(t.name)} · ${climbRound(r,t.rounds.length)}`,me=t.entrants[mine.e],lock=me&&HEROES[me.hero]?me.hero:null,c=me&&me.carry,re=t.entrants[rival];
-  const rivalHero=re&&HEROES[re.hero]?` <small>(${esc(HEROES[re.hero].name)}${re.carry?` · ${re.carry.life}/${re.carry.maxLife} Life`:''})</small>`:'';
+  const rivalHero=re&&HEROES[re.hero]?(re.cpu?(re.carry?` <small>(${re.carry.life}/${re.carry.maxLife} Life)</small>`:''):` <small>(${esc(HEROES[re.hero].name)}${re.carry?` · ${re.carry.life}/${re.carry.maxLife} Life`:''})</small>`):'';
   const clock=m.due?`<p class="cl-due">Enter by <b>${climbClock(m.due)}</b> · <span id="cl-clock" data-due="${m.due}">${climbLeft(m.due)}</span> left</p>`:'';
   if(W)return `<div class="cl-mine"><p class="ul-k">${label}</p><p>You’re in the arena. The duel begins the moment <b>${entrantName(t,rival)}</b> enters. If they don’t come in time, you climb on.</p>${clock}<p class="nb-wait">Waiting for your rival…</p>${err}</div>`;
   if(!ready)return `<div class="cl-mine"><p class="ul-k">${label}</p><p>You’re through! Your next rival is still being decided.</p></div>`;
@@ -147,9 +149,9 @@ function wireClimbMatch(el,t){
     const mm=climbMine(t),lk=mm&&t.entrants[mm.e]&&HEROES[t.entrants[mm.e].hero]?t.entrants[mm.e].hero:S.picks[0];Promise.resolve().then(()=>ICYNOnline.climb(t.code,lk)).catch(e=>{CLIMB.err=(e&&e.message)||'Could not reach the arena'}).finally(()=>{setTimeout(()=>{CLIMB.busy=false;if(S.screen==='setup'&&S.mode==='climb')renderClimb()},1500)})}}
 function climbBracket(t,me){const R=t.rounds.length,HOW={bye:'Bye',walkover:'Walkover',noshow:'No-show',forfeit:'Forfeit',duel:'',cpu:'Computer duel'};
   const side=(m,s,r)=>{const x=s?m.b:m.a,e=x===null?null:t.entrants[x],won=m.w===s,lost=m.w!==null&&m.w!==s;
-    return `<div class="cl-p${won?' won':''}${lost?' lost':''}${x===me&&me>=0?' me':''}">${e?ringAv(e.av,20,e.n,e.ring):''}<span>${e?esc(e.n):r===0?'Bye':'…'}</span>${e&&e.cpu?'<small class="cl-cpu">CPU</small>':e&&e.seed?`<small>${e.seed}</small>`:''}</div>`};
+    return `<div class="cl-p${won?' won':''}${lost?' lost':''}${x===me&&me>=0?' me':''}">${e?ringAv(e.av,20,cpuName(e),e.ring):''}<span>${e?esc(cpuName(e)):r===0?'Bye':'…'}</span>${e&&e.cpu?(/\(COMP\)$/.test(cpuName(e))?'':'<small class="cl-cpu">CPU</small>'):e&&e.seed?`<small>${e.seed}</small>`:''}</div>`};
   return `<div class="cl-bracket" style="--cols:${R}">${t.rounds.map((round,r)=>`<div class="cl-col"><h5>${climbRound(r,R)}</h5>${round.map(m=>{
-    const foot=m.w!==null?(m.how==='cpu'&&m.heroes?'Computer duel · '+m.heroes.map(h=>HEROES[h]?HEROES[h].name:h).join(' vs '):HOW[m.how]||''):m.state==='active'?'<span class="cl-live">Playing now</span>':m.state==='waiting'?'One rival is waiting':m.due?'Enter by '+climbClock(m.due):'';
+    const foot=m.w!==null?(HOW[m.how]||''):m.state==='active'?'<span class="cl-live">Playing now</span>':m.state==='waiting'?'One rival is waiting':m.due?'Enter by '+climbClock(m.due):'';
     return `<div class="cl-m">${side(m,0,r)}${side(m,1,r)}${foot?`<small class="cl-f">${foot}</small>`:''}</div>`}).join('')}</div>`).join('')}</div>`}
 function climbRingsHTML(bs,ring){if(!bs||!bs.length)return '';const w=bs.filter(b=>b.k==='conqueror').length,p=bs.length;
   return `<h3>Crit Climb</h3><p>${w?`<b class="cl-gold">Crit Climb Conqueror</b> · ${w} crown${w>1?'s':''} in ${p} Climb${p>1?'s':''}`:`<b class="cl-silver">Crit Climb Competitor</b> · ${p} Climb${p>1?'s':''}`}</p>
@@ -163,8 +165,9 @@ addEventListener('load',()=>{const c=new URLSearchParams(location.search).get('c
 // Rings are only won online; solo duels count like any Vs Computer duel.
 const randHero=()=>ORDER[Math.floor(Math.random()*ORDER.length)];
 function soloStart(){const you=(S.me&&S.me.name)||'You';
-  S.solo={prevNoCal:S.noCal,prevLife:S.life,stage:'semi',e:[you,'Computer 1','Computer 2','Computer 3'],
-    r:[[{a:0,b:1,w:null},{a:2,b:3,w:null,how:'cpu',heroes:[randHero(),randHero()]}],[{a:0,b:null,w:null}]],carry:[null,null],fin:null};
+  const ch=[randHero(),randHero(),randHero()];
+  S.solo={prevNoCal:S.noCal,prevLife:S.life,stage:'semi',e:[you,...ch.map(h=>HEROES[h].name+' (COMP)')],semiHero:ch[0],
+    r:[[{a:0,b:1,w:null},{a:2,b:3,w:null,how:'cpu',heroes:[ch[1],ch[2]]}],[{a:0,b:null,w:null}]],carry:[null,null],fin:null};
   // the other semifinal is played out by the arena's engine, so its winner carries its wounds into the Final
   const cs=S.solo.r[0][1],res=soloCpuDuel(cs.heroes);cs.w=res.winner;S.solo.fin={hero:cs.heroes[res.winner],carry:res.carry?res.carry[res.winner]:null};
   S.solo.r[1][0].b=cs.w===0?2:3;
@@ -172,7 +175,7 @@ function soloStart(){const you=(S.me&&S.me.name)||'You';
 function soloCpuDuel(heroes){try{const E=ICYNEngine,seed=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join(''),setup={heroes,life:100,wb1:true,climb:true},inputs=[];
   for(let n=0;n<3000;n++){const r=E.replay(seed,setup,inputs);if(r.result)return r.result;const q=r.pending;inputs.push({kind:q.kind,p:q.p??0,...(q.kind==='ability'?{choice:q.options[Math.floor(Math.random()*q.options.length)]}:{})})}}catch(e){console.error(e)}
   return {winner:Math.random()<.5?0:1}}
-function soloDuel(){const Q=S.solo,fin=Q.stage==='final'&&Q.fin;S.mode='cpu';S.noCal=false;S.life=100;S.picks=[S.picks[0],fin?fin.hero:randHero()];
+function soloDuel(){const Q=S.solo,fin=Q.stage==='final'&&Q.fin;S.mode='cpu';S.noCal=false;S.life=100;S.picks=[S.picks[0],fin?fin.hero:Q.semiHero||randHero()];
   startDuel();if(Q.stage==='final'){applyCarry([Q.carry[0],fin&&fin.carry]);renderAll()}}
 function soloQuit(){if(!S.solo)return;S.noCal=S.solo.prevNoCal;S.life=S.solo.prevLife;S.solo=null}
 function soloBracketHTML(){const Q=S.solo,row=(m,s)=>{const x=s?m.b:m.a;return `<div class="cl-p${m.w===s?' won':m.w!==null?' lost':''}${x===0?' me':''}"><span>${x===null?'…':esc(Q.e[x])}</span></div>`};
@@ -180,7 +183,7 @@ function soloBracketHTML(){const Q=S.solo,row=(m,s)=>{const x=s?m.b:m.a;return `
 function soloEnd(o,w){const Q=S.solo,won=w===0,m=Q.stage==='semi'?Q.r[0][0]:Q.r[1][0];m.w=won?0:1;
   const card=o.querySelector('.card'),btn=o.querySelector('#rematch'),nd=o.querySelector('#newd');
   let msg;
-  if(won&&Q.stage==='semi'){Q.carry[0]=carryOfF(S.F[0]);Q.stage='final';msg=`<p class="cl-soloend">Semifinal won! <b>${esc(Q.e[Q.r[1][0].b])}</b>${Q.fin&&HEROES[Q.fin.hero]?` (${esc(HEROES[Q.fin.hero].name)}${Q.fin.carry?`, ${Q.fin.carry.life}/${Q.fin.carry.maxLife} Life`:''})`:''} waits in the Final. Your ${esc(S.F[0].h.name)} climbs on with ${Q.carry[0].life}/${Q.carry[0].maxLife} Life, stats, Weapon and Ability dice; every cooldown resets.</p>`;btn.textContent='On to the Final';btn.onclick=()=>{o.remove();soloDuel()}}
+  if(won&&Q.stage==='semi'){Q.carry[0]=carryOfF(S.F[0]);Q.stage='final';msg=`<p class="cl-soloend">Semifinal won! <b>${esc(Q.e[Q.r[1][0].b])}</b>${Q.fin&&Q.fin.carry?` (${Q.fin.carry.life}/${Q.fin.carry.maxLife} Life)`:''} waits in the Final. Your ${esc(S.F[0].h.name)} climbs on with ${Q.carry[0].life}/${Q.carry[0].maxLife} Life, stats, Weapon and Ability dice; every cooldown resets.</p>`;btn.textContent='On to the Final';btn.onclick=()=>{o.remove();soloDuel()}}
   else{Q.stage='done';msg=won?'<p class="cl-soloend">You conquered the Solo Climb! Take on real rivals online to earn the gold ring.</p>':'<p class="cl-soloend">Your Solo Climb ends here. Climb again?</p>';
     btn.textContent='Back to Crit Climb';btn.onclick=()=>{o.remove();soloQuit();S.token++;S.screen='setup';S.mode='climb';CLIMB.cur=null;renderSetup()}}
   nd.onclick=()=>{o.remove();soloQuit();S.token++;S.screen='setup';NETUI.phase='idle';renderSetup()};
