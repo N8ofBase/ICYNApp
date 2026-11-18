@@ -5,9 +5,8 @@ param([Parameter(Mandatory)][int]$Step)
 #   .\deploy-comp.ps1 -Step 1   (then 2, then 3)
 #
 # Step 1  backups of today's icyn-api and icyn-ws code (backup-before-comp\)
-# Step 2  icyn-api: climb.mjs + engine.mjs (Computer vs Computer Climb duels carry their Heroes on)
-# Step 3  icyn-ws: engine.mjs (setup.wb1), boss.mjs (rules v4), climb.mjs, ws.mjs (new games use the new rules; games already
-#         under way keep the old Weapon Broken rule because their setup has no wb1 / v4)
+# Step 2  icyn-api: new climb.mjs (Computers get their Hero when the host presses Begin; Climbs already under way keep their names)
+# Step 3  icyn-ws: the same climb.mjs
 # Rollback: aws lambda update-function-code --function-name icyn-api --zip-file fileb://backup-before-comp\icyn-api.zip (same for icyn-ws)
 $ErrorActionPreference = 'Stop'
 $P = @('--profile', 'prismcortex', '--region', 'us-east-1')
@@ -26,7 +25,7 @@ if ($Step -eq 1) {
     Write-Host "$fn live CodeSha256 $sha"
     # the files this deploy does NOT change must match the live ones, or the deploy would undo someone's server change
     $x = Join-Path $bk $fn; Expand-Archive -Path $f -DestinationPath $x -Force
-    $same = if ($fn -eq 'icyn-api') { @('api\index.mjs', 'api\record.mjs', 'api\unlock.mjs', 'api\lobby.mjs') } else { @('ws\record.mjs') }
+    $same = if ($fn -eq 'icyn-api') { @('api\index.mjs', 'api\record.mjs', 'api\unlock.mjs', 'api\lobby.mjs', 'ws\engine.mjs') } else { @('ws\record.mjs', 'ws\ws.mjs', 'ws\engine.mjs', 'ws\boss.mjs') }
     foreach ($rel in $same) {
       $live = Join-Path $x (Split-Path $rel -Leaf)
       if (-not (Test-Path $live)) { Write-Warning "$fn has no $(Split-Path $rel -Leaf)"; continue }
