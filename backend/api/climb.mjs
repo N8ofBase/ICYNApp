@@ -50,7 +50,14 @@ export const HERO_IDS = Object.keys(HEROES);
 export function begin(t, now, rand = Math.random) {
   if (t.entrants.length < 2) { t.status = 'cancelled'; t.note = 'Not enough Heroes joined'; t.endedAt = now; return; }
   // N8 2026-11-10: the Computer takes every open seat, so a Climb always fills its bracket
-  for (let c = 1; t.entrants.length < t.size; c++) t.entrants.push({ u: `cpu:${c}`, n: `Computer ${c}`, cpu: true, av: '', ring: '', at: now });
+  // N8 2026-11-18: each Computer gets its Hero at Begin and is shown as that Hero with (COMP) after it.
+  // Heroes are dealt from a shuffled deck so a bracket spreads them out before any repeats.
+  const deck = [];
+  for (let c = 1; t.entrants.length < t.size; c++) {
+    if (!deck.length) { deck.push(...HERO_IDS); for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; } }
+    const hero = deck.pop();
+    t.entrants.push({ u: `cpu:${c}`, n: `${HEROES[hero].name} (COMP)`, cpu: true, hero, av: '', ring: '', at: now });
+  }
   const n = t.entrants.length;
   let size = 2;
   while (size < n) size *= 2;
