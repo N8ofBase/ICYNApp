@@ -3,7 +3,7 @@
 // Stats logic lives in record.mjs, shared with the online-duel WebSocket Lambda.
 import { QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { db, PLAYERS, MATCHES, RecordError, cleanName, defaultName, stats, loadPlayer, recordMatch } from './record.mjs';
-import { hasUnlock, isDeveloper, checkout, confirm, webhook, pnp, gifts, redeem, promo } from './unlock.mjs';
+import { hasUnlock, isDeveloper, checkout, confirm, webhook, pnp, book, gifts, redeem, promo } from './unlock.mjs';
 import { listClimbs, getClimb, createClimb, joinClimb, leaveClimb, startClimb, ringOf, isProfane } from './climb.mjs';
 // Names other players see are kept friendly (N8 2026-11-10): new ones are refused, old ones are hidden.
 import { openGames } from './lobby.mjs';
@@ -139,6 +139,7 @@ export const handler = async (event) => {
     if (route === 'GET /me') return await getMe(userId, claims);
     if (route === 'GET /matches') return await getMatches(userId);
     if (route === 'GET /pnp') return pnp(claims, await loadPlayer(userId, claims));
+    if (route === 'GET /book') return await book(claims, await loadPlayer(userId, claims));
     if (route === 'GET /gifts') return await gifts(await loadPlayer(userId, claims));
 
     const body = parseBody(event);

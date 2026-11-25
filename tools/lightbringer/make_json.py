@@ -1,3 +1,4 @@
+# After making the book, run split_paid.py on it (2026-11-25) so the Crit Pass chapters are served only by GET /book.
 # Builds lightbringer.json for the in-game reader from two plain-text Google Drive exports
 # (one paragraph per non-empty line):
 #   mission1.txt = "Project Lightbringer Edit"  (Prologue, Terror on Talus, Mission 1 up to Castle Comet)

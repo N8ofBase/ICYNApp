@@ -2142,7 +2142,7 @@ function wirePromo(o,reload){const go=o.querySelector('#promo-go');if(!go)return
       <div class="row"><button class="ghost" data-copy="${esc(list.map(g=>giftLink(g.code)).join('\n'))}">Copy all links</button><button class="ghost" id="promo-csv-new">Download these (CSV)</button></div>`;
     wireCopy(out);out.querySelector('#promo-csv-new').onclick=()=>saveCsv(`crit-pass-codes-${(r.note||'promo').replace(/[^\w-]+/g,'-')}.csv`,codesCsv(list));reload()};
   o.querySelector('#promo-csv').onclick=async()=>{const r=await ICYNStats.gifts();saveCsv('crit-pass-codes-all.csv',codesCsv((r&&r.gifts)||[]))}}
-function giftRow(g){return `<li class="gift-row${g.redeemed?' used':''}"><code>${esc(g.code)}</code><span>${g.redeemed?'Redeemed':'Not used yet'}${g.via&&g.via!=='square'?` · <em>${esc(g.note||'Promo')}</em>`:''}</span>${g.redeemed?'':`<button class="ghost" data-copy="${esc(giftLink(g.code))}">Copy link</button>`}</li>`}
+function giftRow(g){return `<li class="gift-row${g.redeemed||g.cancelled?' used':''}"><code>${esc(g.code)}</code><span>${g.cancelled?'Cancelled (refunded)':g.redeemed?'Redeemed':'Not used yet'}${g.via&&g.via!=='square'?` · <em>${esc(g.note||'Promo')}</em>`:''}</span>${g.redeemed?'':`<button class="ghost" data-copy="${esc(giftLink(g.code))}">Copy link</button>`}</li>`}
 function wireCopy(root){root.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>copyText(b.dataset.copy,b))}
 async function giftPanel(){const s=signedIn();
   const o=arenaPanel('Gift a Crit Pass',`<div class="unlock"><p class="ul-k">Give a friend the Crit Pass</p>
@@ -2208,7 +2208,7 @@ async function lbReader(at){document.querySelector('.lbr')?.remove();
     <div class="lbr-scroll"><article class="lbr-page"><p class="lbr-msg">Opening the book…</p></article></div><div class="lbr-toc" hidden></div><div class="lbr-gl" hidden></div>`;
   document.body.append(o);document.body.style.overflow='hidden';document.body.classList.add('lb-open');
   const gl=o.querySelector('.lbr-gl'),gb=o.querySelector('.lbr-gb'),sc=o.querySelector('.lbr-scroll'),pg=o.querySelector('.lbr-page'),toc=o.querySelector('.lbr-toc'),tb=o.querySelector('.lbr-tb');
-  let cur=-1,saveT=0;
+  let cur=-1,saveT=0,paidTried=false;
   const setFs=()=>{const f=lbState().fs??1;o.style.setProperty('--lbfs',LB_FS[f]||LB_FS[1])};setFs();
   const close=()=>{if(cur>=0)lbSave({c:cur,y:sc.scrollTop/Math.max(1,sc.scrollHeight-sc.clientHeight)});o.remove();document.body.style.overflow='';document.body.classList.remove('lb-open');removeEventListener('keydown',key)};
   const key=e=>{if(e.key==='Escape'&&!document.querySelector('.over')){if(!toc.hidden)showToc(false);else if(!gl.hidden)showGl(false);else close()}};
@@ -2234,11 +2234,16 @@ async function lbReader(at){document.querySelector('.lbr')?.remove();
       <div class="lbr-go">${go?`<button data-go="${st.c}">Continue: ${esc(C[st.c].title)}</button><button class="alt" data-go="0">Start at the Prologue</button>`:'<button data-go="0">Begin with the Prologue</button>'}</div>
       <small>${PAYWALL()&&!hasArena()?`The first ${LB_FREE} chapters are free. The rest open with the Crit Pass.`:'New chapters arrive as N8 writes them.'}</small></div>`;
     pg.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(+b.dataset.go,b.dataset.go==st.c?st.y:0));sc.scrollTop=0}
-  function show(i,y){cur=i;const c=C[i],open=lbOpenCh(i);lbSave({c:i,y:y||0});
+  function show(i,y){cur=i;const c=C[i];
+    // Crit Pass chapters (2026-11-25): the full text is fetched from the server, which checks the pass itself
+    if(lbOpenCh(i)&&c.locked&&!paidTried){paidTried=true;pg.innerHTML='<p class="lbr-msg">Opening the chapter…</p>';
+      (window.ICYNStats&&ICYNStats.book?ICYNStats.book():Promise.resolve(null)).catch(()=>null).then(r=>{if(r&&r.chapters){for(const k in r.chapters){if(C[k]){C[k].html=r.chapters[k];C[k].locked=false}}}
+        else if(signedIn())refreshMe();if(o.isConnected&&cur===i)show(i,y)});return}
+    const open=lbOpenCh(i)&&!c.locked;lbSave({c:i,y:y||0});
     const nav=`<nav class="lbr-nav"><button data-n="-1"${i?'':' disabled'}>‹ Back</button><span>${i+1} / ${C.length}</span><button data-n="1"${i<C.length-1?'':' disabled'}>Next ›</button></nav>`;
     pg.innerHTML=`<p class="lbr-part">${esc(c.part)}</p><h2>${esc(c.title)}</h2><svg class="lbr-orn" viewBox="0 0 160 14" aria-hidden="true"><path d="M4 7h58M98 7h58" stroke="currentColor" stroke-width="1.2"/><path d="M80 1l6 6-6 6-6-6z" fill="currentColor"/><circle cx="68" cy="7" r="2" fill="currentColor"/><circle cx="92" cy="7" r="2" fill="currentColor"/></svg>`+(open?`<div class="lbr-text">${c.html}</div>${nav}`
-      :`<div class="lbr-text lbr-lockfade">${c.html.split('\n').slice(0,2).join('')}</div><div class="lbr-lockbox"><p class="ul-story">The story continues with the Crit Pass</p>${unlockCard('read')}</div>${nav}`);
-    if(!open)wireUnlock(pg);
+      :`<div class="lbr-text lbr-lockfade">${c.html.split('\n').slice(0,2).join('')}</div><div class="lbr-lockbox">${lbOpenCh(i)?'<p class="ul-story">This chapter could not be opened right now. Check your connection and try again.</p>':`<p class="ul-story">The story continues with the Crit Pass</p>${unlockCard('read')}`}</div>${nav}`);
+    if(!open){wireUnlock(pg);paidTried=false}
     pg.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>show(cur+ +b.dataset.n));
     requestAnimationFrame(()=>{sc.scrollTop=y?y*(sc.scrollHeight-sc.clientHeight):0});o.querySelector('.lbr-t').textContent=c.title}
   // Glossary: free reference built from what the book has told the reader so far (the print edition's glossary + Terror on Talus)
@@ -3390,7 +3395,10 @@ function radiantPick(p){const f=S.F[p],a=f.abilities.find(x=>x.name==='Radiant S
     <div class="rs-heroes">${standing().map(q=>{const g=S.F[q];return `<button class="rs-h" data-t="${q}" style="--c:${g.color}"><img src="${IMG[g.id]}" alt=""><span class="rs-t"><em>Heal</em><span>${g.h.name}</span><small>${g.life} / ${g.maxLife}</small></span></button>`}).join('')}</div></div>`;
   document.body.append(ov);ov.querySelector('[data-t="-1"]').focus({preventScroll:true});
   return new Promise(res=>ov.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ov.remove();const v=+b.dataset.t;res(v<0?null:v)}))}
-function startCatastrophe(){if(!hasArena())return unlockPanel('starvos');S.net=false;S.v2=true;S.v3=true;
+// Crit Pass check for Solo Starvos (2026-11-25): an unlock remembered in this browser is trusted only when the
+// server can't be reached (offline play); otherwise the server has to confirm the pass first.
+async function arenaCheck(){if(!PAYWALL()||S.unlocked||!hasArena())return hasArena();const r=await ICYNStats.me().catch(()=>null);if(r)setUnlocked(!!r.unlocked);return hasArena()}
+function startCatastrophe(ok){if(!hasArena())return unlockPanel('starvos');if(ok!==true&&PAYWALL()&&!S.unlocked){arenaCheck().then(y=>y?startCatastrophe(true):(renderSetup(),unlockPanel('starvos')));return}S.net=false;S.v2=true;S.v3=true;
   S.token++;const t=S.token;
   document.querySelectorAll('.over,.scroll-ov').forEach(o=>o.remove());
   // makeFighter reads skins from S.picks and Life from S.life (the duel settings); the party never repeats a Hero, so each keeps its own colors

@@ -22,6 +22,12 @@
 //   GET  /gifts              (JWT)    -> {gifts:[{code, createdAt, redeemed}]} codes this player bought
 //   POST /gift/redeem        (JWT)    {code} -> {unlocked:true}; one use per code
 //   POST /gifts/promo        (JWT, developers) {count 1-50, note?, via?} -> {codes} free promo codes for the owner to hand out
+//   GET  /book               (JWT)    -> {chapters:{index: html}} the Crit Pass chapters of Project Lightbringer
+//
+// Refunds and lost chargebacks (2026-11-25): when Square reports a payment fully refunded (refund.* events) or a
+// dispute lost (dispute.* events), the Crit Pass bought with it is taken back. For a gift, the code is cancelled,
+// and if someone already used it, their pass is taken back too. A partial refund keeps the pass.
+// The Square webhook subscription must include refund.created, refund.updated and the dispute events.
 // Gift codes live in the icyn-gifts table (key `code`). Box codes and giveaways are the same items
 // with via:'box' or via:'giveaway' and no order.
 import crypto from 'node:crypto';
@@ -98,14 +104,17 @@ async function grant(userId, orderId, payment) {
   await update(userId, sets, names, vals);
 }
 
-// An order is paid when one of its tenders is a COMPLETED payment. Returns {userId, payment} or null.
+// Money that came back to the buyer: a full refund, or a chargeback the seller lost.
+const fullyRefunded = (p) => (p?.refunded_money?.amount || 0) >= (p?.amount_money?.amount || 1);
+
+// An order is paid when one of its tenders is a COMPLETED payment that was not refunded. Returns {userId, payment} or null.
 async function paidOrder(orderId) {
   const { order } = await square('GET', '/v2/orders/' + encodeURIComponent(orderId));
   const userId = order?.metadata?.userId;
   if (!userId || order?.metadata?.product !== 'full-arena') return null;
   for (const t of order.tenders || []) {
     const { payment } = await square('GET', '/v2/payments/' + encodeURIComponent(t.payment_id || t.id));
-    if (payment && payment.status === 'COMPLETED') return { userId, payment, gift: order.metadata.kind === 'gift' };
+    if (payment && payment.status === 'COMPLETED' && !fullyRefunded(payment)) return { userId, payment, gift: order.metadata.kind === 'gift' };
   }
   return null;
 }
@@ -199,7 +208,7 @@ export async function gifts(player) {
     }
   }
   return json(200, { gifts: codes.map((code) => byCode.get(code)).filter(Boolean).reverse()
-    .map((g) => ({ code: g.code, createdAt: g.createdAt, redeemed: !!g.redeemedBy, via: g.via || 'square', note: g.note || null })) });
+    .map((g) => ({ code: g.code, createdAt: g.createdAt, redeemed: !!g.redeemedBy, cancelled: !!g.revokedAt, via: g.via || 'square', note: g.note || null })) });
 }
 
 // Owner promo codes: free one-use codes for giveaways, events and game boxes (developers group only).
@@ -233,11 +242,12 @@ export async function redeem(userId, claims, player, body) {
   const g = (await db.send(new GetCommand({ TableName: GIFTS, Key: { code } }))).Item;
   if (!g) return json(404, { error: 'That code isn’t valid. Check the letters and try again.' });
   if (g.redeemedBy === userId) return json(200, { unlocked: true });
+  if (g.revokedAt) return json(410, { error: 'That code was cancelled because its payment was refunded.' });
   if (g.redeemedBy) return json(409, { error: 'That code has already been used.' });
   if (hasUnlock(player, claims)) return json(409, { error: 'You already have the Crit Pass, so this code is still unused. Pass it on to a friend!' });
   try {
     await db.send(new UpdateCommand({
-      TableName: GIFTS, Key: { code }, ConditionExpression: 'attribute_exists(code) AND attribute_not_exists(redeemedBy)',
+      TableName: GIFTS, Key: { code }, ConditionExpression: 'attribute_exists(code) AND attribute_not_exists(redeemedBy) AND attribute_not_exists(revokedAt)',
       UpdateExpression: 'SET redeemedBy = :u, redeemedAt = :t', ExpressionAttributeValues: { ':u': userId, ':t': new Date().toISOString() },
     }));
   } catch (e) {
@@ -260,11 +270,63 @@ export function verifySquare(raw, header, key, url) {
   return got.length === want.length && crypto.timingSafeEqual(got, want);
 }
 
+// ---------- Refunds and lost chargebacks ----------
+// Take a pass back from one player, but only the pass that matches (same payment, or same gift code),
+// so a pass they got another way (a second purchase, the early-supporter grant) is never touched.
+async function takeBack(userId, field, value, reason) {
+  try {
+    await db.send(new UpdateCommand({
+      TableName: PLAYERS, Key: { userId },
+      ConditionExpression: `#u.#f = :v`,
+      UpdateExpression: 'SET unlockRevoked = list_append(if_not_exists(unlockRevoked, :e), :r) REMOVE #u',
+      ExpressionAttributeNames: { '#u': 'unlock', '#f': field },
+      ExpressionAttributeValues: { ':v': value, ':e': [], ':r': [{ field, value, reason, at: new Date().toISOString() }] },
+    }));
+    return true;
+  } catch (e) {
+    if (e.name === 'ConditionalCheckFailedException') return false; // no matching pass: nothing to take back
+    throw e;
+  }
+}
+
+// reason 'refund': only when the whole payment came back. reason 'chargeback': the dispute was lost.
+export async function revokePayment(paymentId, reason) {
+  const { payment } = await square('GET', '/v2/payments/' + encodeURIComponent(paymentId));
+  if (!payment?.order_id) return null;
+  if (reason === 'refund' && !fullyRefunded(payment)) return null; // partial refund: keep the pass
+  const { order } = await square('GET', '/v2/orders/' + encodeURIComponent(payment.order_id));
+  const userId = order?.metadata?.userId;
+  if (!userId || order?.metadata?.product !== 'full-arena') return null;
+  if (order.metadata.kind !== 'gift') return { self: await takeBack(userId, 'payment', payment.id, reason) };
+  // Gift: cancel the code (made now if it was never minted, so it can't be minted later), then undo any redeem.
+  const code = orderCode(payment.order_id), at = new Date().toISOString();
+  const r = await db.send(new UpdateCommand({
+    TableName: GIFTS, Key: { code },
+    UpdateExpression: 'SET revokedAt = if_not_exists(revokedAt, :t), revokeReason = :why, buyer = if_not_exists(buyer, :b), #o = if_not_exists(#o, :o), via = if_not_exists(via, :sq), createdAt = if_not_exists(createdAt, :t)',
+    ExpressionAttributeNames: { '#o': 'order' },
+    ExpressionAttributeValues: { ':t': at, ':why': reason, ':b': userId, ':o': payment.order_id, ':sq': 'square' },
+    ReturnValues: 'ALL_NEW',
+  }));
+  const used = r.Attributes?.redeemedBy;
+  return { gift: code, redeemer: used ? await takeBack(used, 'code', code, reason) : false };
+}
+
 export async function webhook(event) {
   const raw = event.isBase64Encoded ? Buffer.from(event.body || '', 'base64').toString('utf8') : event.body || '';
   const sig = event.headers?.['x-square-hmacsha256-signature'];
   if (!verifySquare(raw, sig, process.env.SQUARE_WEBHOOK_SIGNATURE_KEY, process.env.SQUARE_WEBHOOK_URL)) return json(403, { error: 'bad signature' });
   const evt = JSON.parse(raw);
+  const refund = evt?.data?.object?.refund;
+  if (['refund.created', 'refund.updated'].includes(evt.type) && refund?.status === 'COMPLETED' && refund.payment_id) {
+    console.log('refund', refund.payment_id, JSON.stringify(await revokePayment(refund.payment_id, 'refund')));
+    return json(200, { received: true });
+  }
+  const dispute = evt?.data?.object?.dispute;
+  const disputed = dispute?.disputed_payment?.payment_id || dispute?.payment_id;
+  if (String(evt.type || '').startsWith('dispute.') && dispute?.state === 'LOST' && disputed) {
+    console.log('chargeback', disputed, JSON.stringify(await revokePayment(disputed, 'chargeback')));
+    return json(200, { received: true });
+  }
   const payment = evt?.data?.object?.payment;
   if (['payment.created', 'payment.updated'].includes(evt.type) && payment?.status === 'COMPLETED' && payment.order_id) {
     const paid = await paidOrder(payment.order_id);
@@ -272,6 +334,21 @@ export async function webhook(event) {
     else if (paid) await grant(paid.userId, payment.order_id, paid.payment);
   }
   return json(200, { received: true });
+}
+
+// ---------- Project Lightbringer: the Crit Pass chapters ----------
+// lightbringer.json on the site carries only a short teaser of these chapters; the full text sits in the
+// private bucket (book/lightbringer-paid.json, made by tools/lightbringer/split_paid.py) and is handed
+// only to players who have the pass. Kept warm in memory for 10 minutes.
+let bookCache = null;
+export async function book(claims, player) {
+  if (!hasUnlock(player, claims)) return json(403, { error: 'unlock required' });
+  if (!bookCache || Date.now() - bookCache.at > 600000) {
+    const res = await fetch(presign({ bucket: BUCKET, key: 'book/lightbringer-paid.json', region: REGION, expires: 60, creds: lambdaCreds() }));
+    if (!res.ok) throw new Error('book fetch ' + res.status);
+    bookCache = { at: Date.now(), data: await res.json() };
+  }
+  return json(200, bookCache.data);
 }
 
 // ---------- Print & Play downloads (S3 presigned GET, SigV4 by hand: no extra packages) ----------
@@ -298,12 +375,14 @@ export function presign({ bucket, key, region, expires = 900, query = {}, creds,
   return `https://${host}${path}?${qs}&X-Amz-Signature=${hmac(k, toSign).toString('hex')}`;
 }
 
+const lambdaCreds = () => ({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID, secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  sessionToken: process.env.AWS_SESSION_TOKEN,
+});
+
 export function pnp(claims, player) {
   if (!hasUnlock(player, claims)) return json(403, { error: 'unlock required' });
-  const creds = {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID, secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    sessionToken: process.env.AWS_SESSION_TOKEN,
-  };
+  const creds = lambdaCreds();
   const files = PNP_FILES.map((f) => ({
     name: f.name,
     url: presign({

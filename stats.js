@@ -1,6 +1,6 @@
 // Saves, streaks and leaderboards for I Crit You Not! (needs auth.js loaded first).
 // Exposes window.ICYNStats: recordMatch(m), me(), setProfile(p), history(), leaderboard(by),
-// feedback(f), feedbackList(status), feedbackSet(id, status), checkout(gift), confirmCheckout(), pnpFiles(), gifts(), redeemGift(code),
+// feedback(f), feedbackList(status), feedbackSet(id, status), checkout(gift), confirmCheckout(), pnpFiles(), book(), gifts(), redeemGift(code),
 // climbs(), climb(code), climbCreate(c), climbJoin(code), climbLeave(code), climbStart(code).
 // Every call resolves to null instead of throwing when the player is offline
 // or signed out, so guest play never breaks.
@@ -55,7 +55,8 @@
     redeemGift: (code) => callErr('POST', '/gift/redeem', { code }),  // -> {unlocked:true} or {error}
     promoCodes: (count, note) => callErr('POST', '/gifts/promo', { count, note }), // owner only -> {codes, note} or {error}
     confirmCheckout: () => call('POST', '/checkout/confirm', {}, true), // -> {unlocked}; checks the player's last Square order
-    pnpFiles: () => call('GET', '/pnp', null, true),                 // -> {files:[{name, url}]}
+    pnpFiles: () => call('GET', '/pnp', null, true),
+    book: () => call('GET', '/book', null, true),                    // -> {chapters:{index: html}} Crit Pass chapters of Project Lightbringer                 // -> {files:[{name, url}]}
     // Crit Climb lobbies: anyone can look; hosting and joining need the Crit Pass; the host begins.
     openGames: (mode) => call('GET', '/games/open?mode=' + (mode === 'boss' ? 'boss' : 'duel'), null, false), // public games still waiting
     climbs: () => call('GET', '/climbs', null, false),               // -> public open lobbies [{code, name, size, public, status, entrants, rounds, ...}]
