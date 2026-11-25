@@ -4,7 +4,7 @@
 // browser can fake a roll.
 //
 // Client -> server                         Server -> client
-//   {action:'create', hero, life, easy?, public?} {type:'created', gameId, code} (easy: 50 Life, no Calamity before each turn;
+//   {action:'create', hero, life, easy?, public?} {type:'created', gameId, code} (easy: 75 Life, no Calamity before each turn;
 //                                            public: listed by GET /games/open until someone joins)
 //   {action:'cancel', gameId}                host takes down a duel nobody joined -> {type:'cancelled'}
 //   {action:'join', code, hero}              {type:'state', ...} to both players
@@ -233,7 +233,7 @@ export async function handler(event) {
     const easy = msg.easy === true;
     const game = {
       gameId: crypto.randomUUID(), code: newCode(), status: 'waiting', seed: crypto.randomBytes(16).toString('hex'),
-      setup: easy ? { heroes: [msg.hero, null], life: 50, easy: true, wb1: true } : { heroes: [msg.hero, null], life: Number(msg.life), wb1: true }, players: [conn.userId, null], names: [conn.name, null],
+      setup: easy ? { heroes: [msg.hero, null], life: 75, easy: true, wb1: true, enh2: true } : { heroes: [msg.hero, null], life: Number(msg.life), wb1: true, enh2: true }, players: [conn.userId, null], names: [conn.name, null],
       conns: [connectionId, null], inputs: [], version: 0, createdAt: new Date().toISOString(),
       ttl: Math.floor(Date.now() / 1000) + DAY, public: msg.public === true,
     };
@@ -404,7 +404,7 @@ async function climbDuel(api, conn, connectionId, msg, fail) {
       // against the Computer the duel starts at once
       const game = {
         gameId: crypto.randomUUID(), code: newCode(), status: 'active', seed: crypto.randomBytes(16).toString('hex'),
-        setup: { heroes: [hero, rival.hero || pickHero()], life: 100, wb1: true, carry: [mine.carry || null, rival.carry || null], climb: { id, r: cur.r, i: cur.i, name: t.name, rounds: t.rounds.length } },
+        setup: { heroes: [hero, rival.hero || pickHero()], life: 100, wb1: true, enh2: true, carry: [mine.carry || null, rival.carry || null], climb: { id, r: cur.r, i: cur.i, name: t.name, rounds: t.rounds.length } },
         players: [conn.userId, rival.u], names: [conn.name, rival.n], conns: [connectionId, null], cpuSeat: 1, pendingSince: Date.now(),
         inputs: [], version: 0, createdAt: new Date().toISOString(), ttl: Math.floor(Date.now() / 1000) + 7 * DAY,
       };
@@ -451,7 +451,7 @@ async function climbDuel(api, conn, connectionId, msg, fail) {
 
     const game = {
       gameId: crypto.randomUUID(), code: newCode(), status: 'waiting', seed: crypto.randomBytes(16).toString('hex'),
-      setup: { heroes: [hero, null], life: 100, wb1: true, carry: [mine.carry || null, null], climb: { id, r: cur.r, i: cur.i, name: t.name, rounds: t.rounds.length } },
+      setup: { heroes: [hero, null], life: 100, wb1: true, enh2: true, carry: [mine.carry || null, null], climb: { id, r: cur.r, i: cur.i, name: t.name, rounds: t.rounds.length } },
       players: [conn.userId, null], names: [conn.name, null], conns: [connectionId, null], climbRival: rival.u,
       inputs: [], version: 0, createdAt: new Date().toISOString(), ttl: Math.floor(Date.now() / 1000) + 7 * DAY,
     };

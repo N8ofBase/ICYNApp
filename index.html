@@ -1280,13 +1280,15 @@ const ENH_CLASSIC = {1:[],2:[['maxlife',5]],3:[['maxlife',5]],4:[['stat','power'
 const CAL_REVISED = {...CAL_CLASSIC,1:[['lifeloss',10],['all',-1]],4:[['main',-2],['lifeloss',3]],5:[['stat','def',-1],['lifeloss',10]],
   10:[['main',-1],['lifeloss',3]],11:[['broken'],['lifeloss',3]],12:[['rcd'],['lifeloss',3]],13:[['broken'],['lifeloss',3]],14:[['rcd'],['lifeloss',3]]};
 const ENH_REVISED = {...ENH_CLASSIC,4:[['stat','power',1],['maxlife',3]],5:[['stat','energy',1],['maxlife',3]],6:[['stat','speed',1],['maxlife',3]],7:[['stat','charm',1],['maxlife',3]],20:[['weapon'],['rai'],['main',2]]};
-const tables = () => ({CAL:CAL_REVISED,ENH:ENH_REVISED}); // Classic tables kept above for reference; the table choice was retired (archived build in archive/)
+// Enhancement table v2 (N8 2026-11-25): 4-7 stat only; 10-12 +3 Max & Life with their bonus; 15 Main +1 & Weapon; 16 Random Stat & Ability; 17 no Life
+const ENH_V2 = {...ENH_CLASSIC,10:[['maxlife',3],['main',1],['clear']],11:[['maxlife',3],['stat','charm',1]],12:[['maxlife',3],['stat','speed',1]],15:[['main',1],['weapon']],16:[['rstat'],['rai']],17:[['main',2],['clear']],20:[['weapon'],['rai'],['main',2]]};
+const tables = () => ({CAL:CAL_REVISED,ENH:S.mode==='boss'?ENH_REVISED:ENH_V2}); // Starvos keeps the old Enhancements for now // Classic tables kept above for reference; the table choice was retired (archived build in archive/)
 function effText(e,f){
   switch(e[0]){
     case 'half':return 'Half current Life';case 'lifeloss':return '-'+e[1]+' Life';case 'all':return 'All Stats '+(e[1]>0?'+':'')+e[1];case 'rcd':return 'Random Ability Cooldown';
     case 'broken':return 'Weapon Broken';case 'main':return cap(f.h.main)+' (Main) '+(e[1]>0?'+':'')+e[1];case 'stat':return cap(e[1])+' '+(e[2]>0?'+':'')+e[2];
     case 'maxlife':return '+'+e[1]+' Max & current Life';case 'life':return '+'+e[1]+' Life';case 'weapon':return 'Weapon Increase';case 'rai':return 'Random Ability Increase + clear all cooldowns';
-    case 'clear':return 'Clear Cooldowns';case 'full':return 'Full Life';
+    case 'clear':return 'Clear Cooldowns';case 'full':return 'Full Life';case 'rstat':return 'Random Stat +1';
   }
 }
 
@@ -1333,7 +1335,7 @@ function dieEl(id,sides,v,cls=''){const el=document.createElement('div');el.clas
 
 // ---------- State ----------
 const EASY0=(()=>{try{return localStorage.getItem('icyn.easy')==='1'}catch(e){return false}})();
-const S = {screen:'setup', mode:'cpu', life:EASY0?50:100, noCal:EASY0, picks:['brawler','soulseer'], F:[], round:0, active:null, view:0, token:0, choosing:false, log:[]};
+const S = {screen:'setup', mode:'cpu', life:EASY0?75:100, noCal:EASY0, picks:['brawler','soulseer'], F:[], round:0, active:null, view:0, token:0, choosing:false, log:[]};
 const ABORT={};
 const rnd=n=>1+Math.floor(Math.random()*n);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -1490,7 +1492,7 @@ function renderSetup(){SFX.music('menu');soloQuit();
    <div class="mode" role="group" aria-label="Opponent">
      <button id="m-cpu" aria-pressed="${S.mode==='cpu'}">Vs Computer</button><button id="m-pvp" aria-pressed="${S.mode==='pvp'}">Pass &amp; Play</button>${window.ICYNOnline?`<button id="m-net" aria-pressed="${S.mode==='online'}">Online${lockTag()}</button>`:''}</div>
    <div class="opts">
-     ${`<div class="opt"><span>Game Mode</span><div class="mode" role="group" aria-label="Game Mode"><button id="g-easy" aria-pressed="${!!S.noCal}">Easy</button><button id="g-std" aria-pressed="${!S.noCal}">Standard</button></div><small class="opt-note">${S.noCal?'50 Life · Calamities only on a natural 1':'100 Life · a Calamity before every turn'}</small></div>`}
+     ${`<div class="opt"><span>Game Mode</span><div class="mode" role="group" aria-label="Game Mode"><button id="g-easy" aria-pressed="${!!S.noCal}">Easy</button><button id="g-std" aria-pressed="${!S.noCal}">Standard</button></div><small class="opt-note">${S.noCal?'75 Life · Calamities only on a natural 1':'100 Life · a Calamity before every turn'}</small></div>`}
    </div>
    <div class="pickers${S.mode==='online'?' solo':''}">${(S.mode==='online'?[0]:[0,1]).map(p=>`<div class="side" data-side="${p}"><h3>${S.mode==='online'?'Your Hero':p===0?'Player 1':(S.mode==='cpu'?'Computer':'Player 2')}<span>${S.mode==='online'?'Corner set by the duel':p===0?'Left corner':'Right corner'}</span></h3>
      <div class="roster">${ORDER.map(id=>`<button class="pick" data-p="${p}" data-id="${id}" style="--c:${HEROES[id].color}" aria-pressed="${S.picks[p]===id}"><img src="${SEL[id]}" alt="" style="--sc:${HEROES[id].scale}"><span>${HEROES[id].name}</span><small class="race">${HEROES[id].race}</small></button>`).join('')}</div>
@@ -1517,7 +1519,7 @@ function renderSetup(){SFX.music('menu');soloQuit();
     t.innerHTML=`<b>${h.race} ${h.name}</b><div>${h.lore}</div><div>Main: ${cap(h.main)} · Dice: ${esc(SKIN[sk].dice.name)}${sk.endsWith('_alt')?' (mirror match)':''}</div>`;c.append(t);}
   app.querySelectorAll('.pick').forEach(b=>b.onclick=()=>{S.picks[+b.dataset.p]=b.dataset.id;renderSetup()});
   if($('#l-50')){$('#l-50').onclick=()=>{S.life=50;renderSetup()};$('#l-100').onclick=()=>{S.life=100;renderSetup()}}
-  const setEasy=v=>{S.noCal=v;S.life=v?50:100;try{localStorage.setItem('icyn.easy',v?'1':'0')}catch(e){}renderSetup()};
+  const setEasy=v=>{S.noCal=v;S.life=v?75:100;try{localStorage.setItem('icyn.easy',v?'1':'0')}catch(e){}renderSetup()};
   if($('#g-easy')){$('#g-easy').onclick=()=>setEasy(true);$('#g-std').onclick=()=>setEasy(false)}
 
   $('#m-cpu').onclick=()=>{S.mode='cpu';renderSetup()};$('#m-pvp').onclick=()=>{S.mode='pvp';renderSetup()};
@@ -1847,6 +1849,7 @@ async function applyEffects(p,list,t){
       case 'full':{const g=heal(p,f.maxLife);notes.push(`Full Life (+${g})`);break}
       case 'clear':f.abilities.forEach(a=>a.cd=false);notes.push('Cooldowns cleared');break;
       case 'weapon':{const fixed=f.broken;f.broken=false;f.weaponDice++;notes.push(`${fixed?'Weapon repaired and ':'Weapon '}now ${f.weaponDice}D6`);break}
+      case 'rstat':{const k=NETON()?(await netNext('randomStat',t)).s:STATS[rnd(5)-1];changeStat(p,k,1);notes.push(`${SN[k]} +1`);break}
       case 'rai':{const hadCd=f.abilities.some(a=>a.cd);f.abilities.forEach(a=>a.cd=false);renderAll();const i=await randomAbility(p,t);const a=f.abilities[i];a.dice++;notes.push(`${a.name} now ${a.dice}D6`+(hadCd?', all cooldowns cleared':''));break}
     }
     renderAll();
@@ -2597,6 +2600,10 @@ const CAL = { ...CAL_CLASSIC, 1: [['lifeloss', 10], ['all', -1]], 4: [['main', -
   10: [['main', -1], ['lifeloss', 3]], 11: [['broken'], ['lifeloss', 3]], 12: [['rcd'], ['lifeloss', 3]], 13: [['broken'], ['lifeloss', 3]], 14: [['rcd'], ['lifeloss', 3]] };
 const ENH = { ...ENH_CLASSIC, 4: [['stat', 'power', 1], ['maxlife', 3]], 5: [['stat', 'energy', 1], ['maxlife', 3]], 6: [['stat', 'speed', 1], ['maxlife', 3]], 7: [['stat', 'charm', 1], ['maxlife', 3]], 20: [['weapon'], ['rai'], ['main', 2]] };
 
+// Enhancement table v2 (N8 2026-11-25): fewer big heals. 4-7 stat only; 10-12 +3 Max & Life; 15 Main +1 & Weapon; 16 Random Stat & Ability; 17 no Life
+const ENH2 = { ...ENH_CLASSIC, 10: [['maxlife', 3], ['main', 1], ['clear']], 11: [['maxlife', 3], ['stat', 'charm', 1]], 12: [['maxlife', 3], ['stat', 'speed', 1]],
+  15: [['main', 1], ['weapon']], 16: [['rstat'], ['rai']], 17: [['main', 2], ['clear']], 20: [['weapon'], ['rai'], ['main', 2]] };
+
 // sfc32 seeded from a 128-bit hex seed; the server keeps the seed secret.
 function rngFrom(seedHex) {
   let [a, b, c, d] = [0, 8, 16, 24].map((i) => parseInt(seedHex.slice(i, i + 8), 16) >>> 0);
@@ -2635,7 +2642,7 @@ function snapshot(F) {
     weaponDice: f.weaponDice, broken: f.broken, brokenUntil: f.brokenUntil, abilities: f.abilities.map((a) => ({ dice: a.dice, cd: a.cd })) }));
 }
 
-// setup = {heroes: [id0, id1], life: 50|100, easy?: true} (Easy = 50 Life, Calamities only on natural 1s). Events are plain objects the client animates in order.
+// setup = {heroes: [id0, id1], life: 75|100, easy?: true, enh2?: true} (Easy = 75 Life since 2026-11-25 (was 50); enh2 = Enhancement table v2; Calamities only on natural 1s). Events are plain objects the client animates in order.
 function* duel(setup, rnd, ev) {
   const carry = Array.isArray(setup.carry) ? setup.carry : [];
   const F = [makeFighter(setup.heroes[0], setup.life, 0, carry[0]), makeFighter(setup.heroes[1], setup.life, 1, carry[1])];
@@ -2662,6 +2669,7 @@ function* duel(setup, rnd, ev) {
         case 'clear': f.abilities.forEach((a) => { a.cd = false; }); break;
         case 'weapon': f.broken = false; f.weaponDice++; break;
         case 'rai': { f.abilities.forEach((a) => { a.cd = false; }); const i = rnd(4) - 1; emit({ t: 'randomAbility', p, i }); f.abilities[i].dice++; break; }
+        case 'rstat': { const s = STATS[rnd(5) - 1]; emit({ t: 'randomStat', p, s }); f[s]++; break; }
       }
     }
     peak();
@@ -2670,7 +2678,7 @@ function* duel(setup, rnd, ev) {
   function* tableRoll(p, kind) {
     yield { kind: 'scroll', p, table: kind };
     const v = rnd(20);
-    applyEffects(p, (kind === 'cal' ? CAL : ENH)[v]);
+    applyEffects(p, (kind === 'cal' ? CAL : setup.enh2 ? ENH2 : ENH)[v]);
     emit({ t: 'table', p, table: kind, v, F: snapshot(F) });
     return v;
   }
@@ -2836,7 +2844,7 @@ function soloStart(){const you=(S.me&&S.me.name)||'You';
   const cs=S.solo.r[0][1],res=soloCpuDuel(cs.heroes);cs.w=res.winner;S.solo.fin={hero:cs.heroes[res.winner],carry:res.carry?res.carry[res.winner]:null};
   S.solo.r[1][0].b=cs.w===0?2:3;
   soloDuel()}
-function soloCpuDuel(heroes){try{const E=ICYNEngine,seed=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join(''),setup={heroes,life:100,wb1:true,climb:true},inputs=[];
+function soloCpuDuel(heroes){try{const E=ICYNEngine,seed=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join(''),setup={heroes,life:100,wb1:true,enh2:true,climb:true},inputs=[];
   for(let n=0;n<3000;n++){const r=E.replay(seed,setup,inputs);if(r.result)return r.result;const q=r.pending;inputs.push({kind:q.kind,p:q.p??0,...(q.kind==='ability'?{choice:q.options[Math.floor(Math.random()*q.options.length)]}:{})})}}catch(e){console.error(e)}
   return {winner:Math.random()<.5?0:1}}
 function soloDuel(){const Q=S.solo,fin=Q.stage==='final'&&Q.fin;S.mode='cpu';S.noCal=false;S.life=100;S.picks=[S.picks[0],fin?fin.hero:Q.semiHero||randHero()];
@@ -2860,7 +2868,7 @@ function wirePub(el,rerender){el.querySelectorAll('[data-pub]').forEach(b=>b.onc
 try{NETUI.pub=localStorage.getItem('icyn.pub')==='1'}catch(e){}
 function ogHTML(mode){const L=OG[mode];
   return `<div class="og" id="og-${mode}"><h4>Open ${mode==='boss'?'battles':'duels'}<button class="linkish" data-ogr>Refresh</button></h4>${!L?'<p class="og-empty">Looking for open games…</p>':!L.length?`<p class="og-empty">No open ${mode==='boss'?'battles':'duels'} right now. Make yours Public and others can find it here.</p>`
-    :`<ul>${L.map(g=>`<li><span class="og-who"><b>${esc(g.host)}</b><small>${mode==='boss'?`${g.players} of ${g.seats} players${g.heroes.length?' · '+esc(g.heroes.join(', ')):''}`:`${esc(g.hero||'')} · ${g.easy?'Easy · 50 Life':'Standard · 100 Life'}`}</small></span><button class="ghost og-join" data-ogj="${esc(g.code)}" ${NETUI.busy?'disabled':''}>Join</button></li>`).join('')}</ul>`}</div>`}
+    :`<ul>${L.map(g=>`<li><span class="og-who"><b>${esc(g.host)}</b><small>${mode==='boss'?`${g.players} of ${g.seats} players${g.heroes.length?' · '+esc(g.heroes.join(', ')):''}`:`${esc(g.hero||'')} · ${g.easy?'Easy · '+(g.life||75)+' Life':'Standard · 100 Life'}`}</small></span><button class="ghost og-join" data-ogj="${esc(g.code)}" ${NETUI.busy?'disabled':''}>Join</button></li>`).join('')}</ul>`}</div>`}
 function wireOG(el,mode){const O=window.ICYNOnline;
   el.querySelectorAll('[data-ogr]').forEach(b=>b.onclick=()=>ogLoad(mode));
   el.querySelectorAll('[data-ogj]').forEach(b=>b.onclick=()=>{const c=b.dataset.ogj;netCall(()=>mode==='boss'?O.joinBoss(c):O.join(c,S.picks[0]))})}
@@ -2887,7 +2895,7 @@ function renderNetBox(){const el=$('#netbox');if(!el)return;const O=window.ICYNO
     ${pubToggle()}<button class="act begin" id="nb-create" ${NETUI.busy?'disabled':''}><span class="who">${esc(HEROES[S.picks[0]].name)} · ${S.noCal?'Easy':'Standard'} · ${NETUI.pub?'Public':'Private'}</span>Create online duel</button>
     <div class="nb-join"><label for="nb-code">Or join a friend’s duel</label><div class="row"><input id="nb-code" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CODE"><button class="ghost" id="nb-join" ${NETUI.busy?'disabled':''}>Join</button></div><small>The duel’s creator sets the Game Mode.</small></div>${err}${ogHTML('duel')}`;wirePub(el,renderNetBox);wireOG(el,'duel');if(!OG.duel||Date.now()-OG.t>4000){OG.t=Date.now();ogLoad('duel')}
   if(saved)el.querySelector('#nb-re').onclick=()=>netCall(()=>O.resume(saved));
-  el.querySelector('#nb-create').onclick=()=>netCall(()=>O.create(S.picks[0],S.noCal?50:100,!!S.noCal,!!NETUI.pub));
+  el.querySelector('#nb-create').onclick=()=>netCall(()=>O.create(S.picks[0],S.noCal?75:100,!!S.noCal,!!NETUI.pub));
   const join=()=>{const c=el.querySelector('#nb-code').value.trim().toUpperCase();if(c.length<5){NETUI.err='Enter the 5 letter code';renderNetBox();return}netCall(()=>O.join(c,S.picks[0]))};
   el.querySelector('#nb-join').onclick=join;el.querySelector('#nb-code').onkeydown=e=>{if(e.key==='Enter')join()};
 }

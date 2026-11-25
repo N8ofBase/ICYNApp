@@ -35,6 +35,10 @@ export const CAL = { ...CAL_CLASSIC, 1: [['lifeloss', 10], ['all', -1]], 4: [['m
   10: [['main', -1], ['lifeloss', 3]], 11: [['broken'], ['lifeloss', 3]], 12: [['rcd'], ['lifeloss', 3]], 13: [['broken'], ['lifeloss', 3]], 14: [['rcd'], ['lifeloss', 3]] };
 export const ENH = { ...ENH_CLASSIC, 4: [['stat', 'power', 1], ['maxlife', 3]], 5: [['stat', 'energy', 1], ['maxlife', 3]], 6: [['stat', 'speed', 1], ['maxlife', 3]], 7: [['stat', 'charm', 1], ['maxlife', 3]], 20: [['weapon'], ['rai'], ['main', 2]] };
 
+// Enhancement table v2 (N8 2026-11-25): fewer big heals. 4-7 stat only; 10-12 +3 Max & Life; 15 Main +1 & Weapon; 16 Random Stat & Ability; 17 no Life
+export const ENH2 = { ...ENH_CLASSIC, 10: [['maxlife', 3], ['main', 1], ['clear']], 11: [['maxlife', 3], ['stat', 'charm', 1]], 12: [['maxlife', 3], ['stat', 'speed', 1]],
+  15: [['main', 1], ['weapon']], 16: [['rstat'], ['rai']], 17: [['main', 2], ['clear']], 20: [['weapon'], ['rai'], ['main', 2]] };
+
 // sfc32 seeded from a 128-bit hex seed; the server keeps the seed secret.
 export function rngFrom(seedHex) {
   let [a, b, c, d] = [0, 8, 16, 24].map((i) => parseInt(seedHex.slice(i, i + 8), 16) >>> 0);
@@ -73,7 +77,7 @@ export function snapshot(F) {
     weaponDice: f.weaponDice, broken: f.broken, brokenUntil: f.brokenUntil, abilities: f.abilities.map((a) => ({ dice: a.dice, cd: a.cd })) }));
 }
 
-// setup = {heroes: [id0, id1], life: 50|100, easy?: true} (Easy = 50 Life, Calamities only on natural 1s). Events are plain objects the client animates in order.
+// setup = {heroes: [id0, id1], life: 75|100, easy?: true, enh2?: true} (Easy = 75 Life since 2026-11-25 (was 50); enh2 = Enhancement table v2; Calamities only on natural 1s). Events are plain objects the client animates in order.
 export function* duel(setup, rnd, ev) {
   const carry = Array.isArray(setup.carry) ? setup.carry : [];
   const F = [makeFighter(setup.heroes[0], setup.life, 0, carry[0]), makeFighter(setup.heroes[1], setup.life, 1, carry[1])];
@@ -100,6 +104,7 @@ export function* duel(setup, rnd, ev) {
         case 'clear': f.abilities.forEach((a) => { a.cd = false; }); break;
         case 'weapon': f.broken = false; f.weaponDice++; break;
         case 'rai': { f.abilities.forEach((a) => { a.cd = false; }); const i = rnd(4) - 1; emit({ t: 'randomAbility', p, i }); f.abilities[i].dice++; break; }
+        case 'rstat': { const s = STATS[rnd(5) - 1]; emit({ t: 'randomStat', p, s }); f[s]++; break; }
       }
     }
     peak();
@@ -108,7 +113,7 @@ export function* duel(setup, rnd, ev) {
   function* tableRoll(p, kind) {
     yield { kind: 'scroll', p, table: kind };
     const v = rnd(20);
-    applyEffects(p, (kind === 'cal' ? CAL : ENH)[v]);
+    applyEffects(p, (kind === 'cal' ? CAL : setup.enh2 ? ENH2 : ENH)[v]);
     emit({ t: 'table', p, table: kind, v, F: snapshot(F) });
     return v;
   }
