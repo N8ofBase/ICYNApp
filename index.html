@@ -2195,6 +2195,11 @@ document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[da
 addEventListener('load',()=>{const q=new URLSearchParams(location.search);if(!q.has('devnote'))return;q.delete('devnote');history.replaceState(null,'',location.pathname+(q.toString()?'?'+q:'')+location.hash);devNote()});
 // Read Project Lightbringer (user 2026-11-10): N8's novel in a book reader. Text loads from lightbringer.json on first open.
 // The first LB_FREE chapters are free; the rest need the Crit Pass on the live site (hasArena()).
+// The installed app is held sideways (manifest orientation: landscape). While the book is open, let the phone
+// turn upright to read (N8 2026-11-25); closing the book puts the sideways hold back. Works where the browser
+// allows orientation locks (Android app/fullscreen); elsewhere it does nothing and the page already turns freely.
+function lbTurn(open){try{const so=screen.orientation;if(!so||!so.lock)return;const held=matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches||!!document.fullscreenElement;if(!held)return;
+  so.lock(open?'any':'landscape').catch(()=>{if(open&&so.unlock)try{so.unlock()}catch(e){}})}catch(e){}}
 const LB_FREE=3,LB_KEY='icyn.lb',LB_FS=['.98rem','1.08rem','1.2rem','1.34rem'];
 let LB=null;
 const lbState=()=>{try{return JSON.parse(localStorage.getItem(LB_KEY))||{}}catch(e){return{}}};
@@ -2206,11 +2211,11 @@ async function lbReader(at){document.querySelector('.lbr')?.remove();
   const o=document.createElement('div');o.className='lbr';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');o.setAttribute('aria-label','Project Lightbringer');
   o.innerHTML=`<div class="lbr-bar"><button class="lbr-tb" aria-label="Chapters" aria-expanded="false">☰ <span class="lbr-tbl">Chapters</span></button><b class="lbr-t">Project Lightbringer</b><button class="lbr-gb" aria-label="Glossary" aria-expanded="false">📜 <span class="lbr-tbl">Glossary</span></button><button class="lbr-aa" aria-label="Text size">Aa</button><button class="lbr-x" aria-label="Close">✕</button></div>
     <div class="lbr-scroll"><article class="lbr-page"><p class="lbr-msg">Opening the book…</p></article></div><div class="lbr-toc" hidden></div><div class="lbr-gl" hidden></div>`;
-  document.body.append(o);document.body.style.overflow='hidden';document.body.classList.add('lb-open');
+  document.body.append(o);document.body.style.overflow='hidden';document.body.classList.add('lb-open');lbTurn(true);
   const gl=o.querySelector('.lbr-gl'),gb=o.querySelector('.lbr-gb'),sc=o.querySelector('.lbr-scroll'),pg=o.querySelector('.lbr-page'),toc=o.querySelector('.lbr-toc'),tb=o.querySelector('.lbr-tb');
   let cur=-1,saveT=0,paidTried=false;
   const setFs=()=>{const f=lbState().fs??1;o.style.setProperty('--lbfs',LB_FS[f]||LB_FS[1])};setFs();
-  const close=()=>{if(cur>=0)lbSave({c:cur,y:sc.scrollTop/Math.max(1,sc.scrollHeight-sc.clientHeight)});o.remove();document.body.style.overflow='';document.body.classList.remove('lb-open');removeEventListener('keydown',key)};
+  const close=()=>{if(cur>=0)lbSave({c:cur,y:sc.scrollTop/Math.max(1,sc.scrollHeight-sc.clientHeight)});o.remove();document.body.style.overflow='';document.body.classList.remove('lb-open');lbTurn(false);removeEventListener('keydown',key)};
   const key=e=>{if(e.key==='Escape'&&!document.querySelector('.over')){if(!toc.hidden)showToc(false);else if(!gl.hidden)showGl(false);else close()}};
   addEventListener('keydown',key);
   o.querySelector('.lbr-x').onclick=close;
