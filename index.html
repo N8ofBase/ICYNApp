@@ -1282,7 +1282,7 @@ const CAL_REVISED = {...CAL_CLASSIC,1:[['lifeloss',10],['all',-1]],4:[['main',-2
 const ENH_REVISED = {...ENH_CLASSIC,4:[['stat','power',1],['maxlife',3]],5:[['stat','energy',1],['maxlife',3]],6:[['stat','speed',1],['maxlife',3]],7:[['stat','charm',1],['maxlife',3]],20:[['weapon'],['rai'],['main',2]]};
 // Enhancement table v2 (N8 2026-11-25): 4-7 stat only; 10-12 +3 Max & Life with their bonus; 15 Main +1 & Weapon; 16 Random Stat & Ability; 17 no Life
 const ENH_V2 = {...ENH_CLASSIC,10:[['maxlife',3],['main',1],['clear']],11:[['maxlife',3],['stat','charm',1]],12:[['maxlife',3],['stat','speed',1]],15:[['main',1],['weapon']],16:[['rstat'],['rai']],17:[['main',2],['clear']],20:[['weapon'],['rai'],['main',2]]};
-const tables = () => ({CAL:CAL_REVISED,ENH:S.mode==='boss'?ENH_REVISED:ENH_V2}); // Starvos keeps the old Enhancements for now // Classic tables kept above for reference; the table choice was retired (archived build in archive/)
+const tables = () => ({CAL:CAL_REVISED,ENH:ENH_V2}); // Classic tables kept above for reference; the table choice was retired (archived build in archive/)
 function effText(e,f){
   switch(e[0]){
     case 'half':return 'Half current Life';case 'lifeloss':return '-'+e[1]+' Life';case 'all':return 'All Stats '+(e[1]>0?'+':'')+e[1];case 'rcd':return 'Random Ability Cooldown';

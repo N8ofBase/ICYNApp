@@ -9,7 +9,7 @@
 // (seat) who controls Hero h. A prompt's `p` is a Hero index. Group prompts
 // (fear, speed, dodge, enh) list the Heroes rolling in `ps` and the seats
 // still to press in `wait`; the dice roll once every seat has pressed.
-import { HEROES, CAL, ENH, rngFrom } from './engine.mjs';
+import { HEROES, CAL, ENH, ENH2, rngFrom } from './engine.mjs';
 
 export const STARVOS = { lifePerHero: 80, heroLife: 50, fear: 5, rounds: 8,
   stats: { def: 12, power: 5, energy: 4, speed: 6, charm: 4 },
@@ -72,6 +72,7 @@ export function* catastrophe(setup, rnd, ev) {
         case 'clear': f.abilities.forEach((a) => { a.cd = false; }); break;
         case 'weapon': f.broken = false; f.weaponDice++; break;
         case 'rai': { f.abilities.forEach((a) => { a.cd = false; }); const i = rnd(4) - 1; emit({ t: 'randomAbility', p, i }); f.abilities[i].dice++; break; }
+        case 'rstat': { const s = STATS[rnd(5) - 1]; emit({ t: 'randomStat', p, s }); f[s]++; break; }
       }
     }
   }
@@ -81,7 +82,7 @@ export function* catastrophe(setup, rnd, ev) {
   function* tableRoll(p, table, prompt = true) {
     if (prompt) yield { kind: 'scroll', p, table };
     const v = rnd(20);
-    applyEffects(p, (table === 'cal' ? CAL : ENH)[v]);
+    applyEffects(p, (table === 'cal' ? CAL : (setup.v || 1) >= 5 ? ENH2 : ENH)[v]); // rules v5 (N8 2026-11-25): Enhancement table v2
     emit({ t: 'table', p, table, v, F: snap() });
     return v;
   }

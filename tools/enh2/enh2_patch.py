@@ -1,7 +1,7 @@
 """Enhancement table v2 + Easy at 75 Life (N8 2026-11-25). Run from anywhere: python3 tools/enh2/enh2_patch.py  (idempotent)
 Enhancements: 4-7 stat +1 only (no +3 Max & Life); 10-12 +3 Max & Life with their bonus; 15 Main +1 + Weapon Increase;
 16 Random Stat +1 + Random Ability Increase; 17 Main +2 + Clear Cooldowns (no Life). Easy duels start at 75 Life (was 50).
-Duels only: Starvos keeps the old Enhancement table. Server: new duels carry setup.enh2; older games in flight keep the old table on replay.
+Starvos too (server rules v5). Server: new duels carry setup.enh2, new Starvos games v5; older games in flight keep the old table on replay.
 Sim: /mnt/project-files/icyn-app/sim/enh-life-2026-11-25/ (Standard KO 33% -> 65%; Easy 75 ends ~round 6)."""
 import pathlib, subprocess, sys
 root = pathlib.Path(__file__).resolve().parents[2]
@@ -28,9 +28,17 @@ patch('backend/ws/engine.mjs', [
   ("    applyEffects(p, (kind === 'cal' ? CAL : ENH)[v]);", "    applyEffects(p, (kind === 'cal' ? CAL : setup.enh2 ? ENH2 : ENH)[v]);"),
   ("// setup = {heroes: [id0, id1], life: 50|100, easy?: true} (Easy = 50 Life,", "// setup = {heroes: [id0, id1], life: 75|100, easy?: true, enh2?: true} (Easy = 75 Life since 2026-11-25 (was 50); enh2 = Enhancement table v2;"),
 ])
-# Starvos keeps the old table for now (rules v4): the new one made the boss much harder in a check run (3 Heroes win 32% -> 13%).
+# ---- server Starvos engine (rules v5 = Enhancement table v2; N8 2026-11-25: small parties are looking for a challenge) ----
+patch('backend/ws/boss.mjs', [
+  ("import { HEROES, CAL, ENH, rngFrom } from './engine.mjs';", "import { HEROES, CAL, ENH, ENH2, rngFrom } from './engine.mjs';"),
+  ("        case 'rai': { f.abilities.forEach((a) => { a.cd = false; }); const i = rnd(4) - 1; emit({ t: 'randomAbility', p, i }); f.abilities[i].dice++; break; }\n      }\n    }\n  }",
+   "        case 'rai': { f.abilities.forEach((a) => { a.cd = false; }); const i = rnd(4) - 1; emit({ t: 'randomAbility', p, i }); f.abilities[i].dice++; break; }\n"
+   "        case 'rstat': { const s = STATS[rnd(5) - 1]; emit({ t: 'randomStat', p, s }); f[s]++; break; }\n      }\n    }\n  }"),
+  ("    applyEffects(p, (table === 'cal' ? CAL : ENH)[v]);", "    applyEffects(p, (table === 'cal' ? CAL : (setup.v || 1) >= 5 ? ENH2 : ENH)[v]); // rules v5 (N8 2026-11-25): Enhancement table v2"),
+])
 # ---- server lobby: new games get the new table; Easy starts at 75 Life ----
 patch('backend/ws/ws.mjs', [
+  ("setup: { mode: 'boss', v: 4, heroes,", "setup: { mode: 'boss', v: 5, heroes,"),
   ("setup: easy ? { heroes: [msg.hero, null], life: 50, easy: true, wb1: true } : { heroes: [msg.hero, null], life: Number(msg.life), wb1: true },",
    "setup: easy ? { heroes: [msg.hero, null], life: 75, easy: true, wb1: true, enh2: true } : { heroes: [msg.hero, null], life: Number(msg.life), wb1: true, enh2: true },"),
   ("life: 100, wb1: true, carry: [mine.carry || null, rival.carry || null],", "life: 100, wb1: true, enh2: true, carry: [mine.carry || null, rival.carry || null],"),
@@ -42,7 +50,7 @@ patch('index.html', [
   ("const tables = () => ({CAL:CAL_REVISED,ENH:ENH_REVISED});",
    "// Enhancement table v2 (N8 2026-11-25): 4-7 stat only; 10-12 +3 Max & Life with their bonus; 15 Main +1 & Weapon; 16 Random Stat & Ability; 17 no Life\n"
    "const ENH_V2 = {...ENH_CLASSIC,10:[['maxlife',3],['main',1],['clear']],11:[['maxlife',3],['stat','charm',1]],12:[['maxlife',3],['stat','speed',1]],15:[['main',1],['weapon']],16:[['rstat'],['rai']],17:[['main',2],['clear']],20:[['weapon'],['rai'],['main',2]]};\n"
-   "const tables = () => ({CAL:CAL_REVISED,ENH:S.mode==='boss'?ENH_REVISED:ENH_V2}); // Starvos keeps the old Enhancements for now"),
+   "const tables = () => ({CAL:CAL_REVISED,ENH:ENH_V2});"),
   ("case 'clear':return 'Clear Cooldowns';case 'full':return 'Full Life';", "case 'clear':return 'Clear Cooldowns';case 'full':return 'Full Life';case 'rstat':return 'Random Stat +1';"),
   ("      case 'rai':{const hadCd=f.abilities.some(a=>a.cd);",
    "      case 'rstat':{const k=NETON()?(await netNext('randomStat',t)).s:STATS[rnd(5)-1];changeStat(p,k,1);notes.push(`${SN[k]} +1`);break}\n      case 'rai':{const hadCd=f.abilities.some(a=>a.cd);"),

@@ -217,7 +217,7 @@ export async function handler(event) {
     const heroes = [...new Set([].concat(msg.heroes || msg.hero || []))].filter((h) => HEROES[h]);
     const game = {
       gameId: crypto.randomUUID(), code: newCode(), status: 'waiting', seed: crypto.randomBytes(16).toString('hex'),
-      setup: { mode: 'boss', v: 4, heroes, owners: heroes.map(() => 0) }, players: [conn.userId], names: [conn.name],
+      setup: { mode: 'boss', v: 5, heroes, owners: heroes.map(() => 0) }, players: [conn.userId], names: [conn.name],
       conns: [connectionId], inputs: [], version: 0, createdAt: new Date().toISOString(),
       ttl: Math.floor(Date.now() / 1000) + DAY, public: msg.public === true,
     };
