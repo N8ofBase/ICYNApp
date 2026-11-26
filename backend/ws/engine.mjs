@@ -21,7 +21,7 @@ export const HEROES = {
   soulseer: { name: 'Soul Seer', main: 'energy', stats: { def: 10, power: 0, energy: 3, speed: 1, charm: 2 },
     abilities: [{ name: 'Explosion', dice: 2, stat: 'power' }, { name: 'Soul Syphon', dice: 1, stat: 'energy', heal: 1 }, { name: 'Mind-Spike', dice: 1, stat: 'speed' }, { name: 'Psylance', dice: 1, stat: 'charm' }] },
   whisper: { name: 'Whisper', main: 'speed', stats: { def: 11, power: 2, energy: 0, speed: 3, charm: 1 },
-    abilities: [{ name: 'Death-Strike', dice: 1, stat: 'power' }, { name: 'Darkness', dice: 1, stat: 'energy', debuff: 'power' }, { name: 'Double-Strike', dice: 2, stat: 'speed' }, { name: 'Shadow-Strike', dice: 1, stat: 'charm' }] },
+    abilities: [{ name: 'Death-Strike', dice: 1, stat: 'power' }, { name: 'Darkness', dice: 1, stat: 'energy', debuff: 'power' }, { name: 'Double-Strike', dice: 2, stat: 'speed' }, { name: 'Soul Strike', dice: 1, stat: 'charm' }] },
 };
 const STATS = ['def', 'power', 'energy', 'speed', 'charm'];
 

@@ -1219,7 +1219,7 @@ const HEROES = {
   whisper:{name:'Whisper',wicon:'daggers',race:'Melkin',size:'Smallest of Talus',scale:0.5,lore:"A quick shadow who strikes first, slips away, and wears the rival down unseen.",main:'speed',face:'right',color:'#4a4a63',ink:'#fff',
     blurb:'Stealth and shadow; strikes unseen.',
     stats:{def:11,power:2,energy:0,speed:3,charm:1},
-    abilities:[{name:'Death-Strike',dice:1,stat:'power',icon:'skull'},{name:'Darkness',dice:1,stat:'energy',debuff:'power',icon:'moon'},{name:'Double-Strike',dice:2,stat:'speed',icon:'double'},{name:'Shadow-Strike',dice:1,stat:'charm',icon:'shadow'}],
+    abilities:[{name:'Death-Strike',dice:1,stat:'power',icon:'skull'},{name:'Darkness',dice:1,stat:'energy',debuff:'power',icon:'moon'},{name:'Double-Strike',dice:2,stat:'speed',icon:'double'},{name:'Soul Strike',dice:1,stat:'charm',icon:'shadow'}],
     dice:{name:'Nightglass',a:'#5a5b75',b:'#0b0b10',ink:'#d6d9f2',edge:'#8a8cab',glow:'rgba(160,160,220,.35)',tex:'smoke'}},
 };
 // Action icons (24px line glyphs) for the weapon and ability buttons around each Hero
@@ -1282,7 +1282,7 @@ const CAL_REVISED = {...CAL_CLASSIC,1:[['lifeloss',10],['all',-1]],4:[['main',-2
 const ENH_REVISED = {...ENH_CLASSIC,4:[['stat','power',1],['maxlife',3]],5:[['stat','energy',1],['maxlife',3]],6:[['stat','speed',1],['maxlife',3]],7:[['stat','charm',1],['maxlife',3]],20:[['weapon'],['rai'],['main',2]]};
 // Enhancement table v2 (N8 2026-11-25): 4-7 stat only; 10-12 +3 Max & Life with their bonus; 15 Main +1 & Weapon; 16 Random Stat & Ability; 17 no Life
 const ENH_V2 = {...ENH_CLASSIC,10:[['maxlife',3],['main',1],['clear']],11:[['maxlife',3],['stat','charm',1]],12:[['maxlife',3],['stat','speed',1]],15:[['main',1],['weapon']],16:[['rstat'],['rai']],17:[['main',2],['clear']],20:[['weapon'],['rai'],['main',2]]};
-const tables = () => ({CAL:CAL_REVISED,ENH:ENH_V2}); // Classic tables kept above for reference; the table choice was retired (archived build in archive/)
+const tables = () => ({CAL:CAL_REVISED,ENH:S.mode==='boss'&&!S.v5?ENH_REVISED:ENH_V2}); // Starvos rules v4 games keep the old table // Classic tables kept above for reference; the table choice was retired (archived build in archive/)
 function effText(e,f){
   switch(e[0]){
     case 'half':return 'Half current Life';case 'lifeloss':return '-'+e[1]+' Life';case 'all':return 'All Stats '+(e[1]>0?'+':'')+e[1];case 'rcd':return 'Random Ability Cooldown';
@@ -1611,7 +1611,7 @@ function ringTip(p,k){const f=S.F[p],h=f.h,r=S.mode==='boss'?S.boss:S.F[1-p];
   if(k==='w'){const b=f.broken?0:f[h.main];
     return `<b>Weapon Strike</b><span class="tp-d">${f.weaponDice}D6 + ${f.broken?'0':cap(h.main)+' ('+b+')'} damage</span><span>To hit: D20 + ${f.broken?'0':cap(h.main)} vs ${S.mode==='boss'?'Starvos':'rival'} Defense ${r.def}</span>${f.broken?`<span class="tp-bad">Broken for R${f.brokenUntil}</span>`:''}`}
   const a=f.abilities[k];
-  return `<b>${a.name}</b> <em class="${a.cd?'tp-bad':'tp-ok'}">${a.cd?'Cooldown':'Ready'}</em><span class="tp-d">${a.dice}D6 + ${cap(a.stat)} (${f[a.stat]>=0?'+':''}${f[a.stat]}) damage</span>${a.debuff?`<span>${S.mode==='boss'?'Starvos':'Rival'} ${cap(a.debuff)} −1</span>`:''}${a.heal?`<span>${S.mode==='boss'&&S.v2?'Every standing Hero heals 1D6 Life':'You heal '+a.heal+'D6 Life'}</span>`:''}${S.mode==='boss'&&S.v2&&a.name==='Radiant Strike'?'<span>Or heal one Hero with the roll instead</span>':''}<span>Auto-hits, then goes on cooldown</span>`}
+  return `<b>${a.name}</b> <em class="${a.cd?'tp-bad':'tp-ok'}">${a.cd?'Cooldown':'Ready'}</em><span class="tp-d">${a.dice}D6 + ${cap(a.stat)} (${f[a.stat]>=0?'+':''}${f[a.stat]}) damage</span>${a.debuff?`<span>${S.mode==='boss'?'Starvos':'Rival'} ${cap(a.debuff)} −1</span>`:''}${a.heal?`<span>${S.mode==='boss'&&S.v2?'Every standing Hero heals 1D6 Life':'You heal '+a.heal+'D6 Life'}</span>`:''}${S.mode==='boss'&&S.v5&&(a.name==='Radiant Strike'||a.name==='Soul Strike')?'<span>Also heals the Hero with the least Life by the same total</span>':S.mode==='boss'&&S.v2&&a.name==='Radiant Strike'?'<span>Or heal one Hero with the roll instead</span>':''}<span>Auto-hits, then goes on cooldown</span>`}
 // as in Starvos, only the Hero on turn shows its action icons (user 2026-10-27)
 function renderRings(){if(S.mode==='boss')return renderBossBar();S.F.forEach((f,p)=>{if(S.active===p&&f.life>0)fillRing(p,!isCPU(p));else{const r=$(`.ring[data-p="${p}"]`);if(r)r.innerHTML=''}})}
 function fillRing(p,mine){const f=S.F[p],el=$(`.ring[data-p="${p}"]`);if(!el)return;
@@ -1694,7 +1694,7 @@ function sheetHTML(p){
      <div><p class="sec">Weapon Attack</p><div class="weapon"><div class="f">${f.weaponDice}D6 + ${f.broken?'0':'Main'}</div><div class="n">D20 + ${f.broken?'0':cap(h.main)+' ('+f[h.main]+')'} to hit vs ${S.mode==='boss'?"Starvos'":"rival's"} Defense (${S.mode==='boss'?S.boss.def:S.F[1-p].def})</div>${f.broken?`<span class="broken">Broken for R${f.brokenUntil}</span>`:''}</div></div>
      <div><p class="sec">Abilities · once per duel${pick?' · tap one to use it':''}</p><div class="abil">${f.abilities.map((a,i)=>`<button class="ab ${a.cd?'cd':''} ${pick&&!a.cd?'pickable':''}" data-i="${i}" ${pick&&!a.cd?'':'tabindex="-1"'}>
         <span class="st">${a.cd?'Cooldown':'Ready'}</span><b>${a.name}</b><span class="d">${a.dice}D6 + ${cap(a.stat)} (${f[a.stat]>=0?'+':''}${f[a.stat]})</span>
-        <div class="e">${a.debuff?(S.mode==='boss'?'Starvos':'Rival')+' −1 '+cap(a.debuff):a.heal?(S.mode==='boss'&&S.v2?'All Heroes: Life + 1D6':'You: Life + '+a.heal+'D6'):S.mode==='boss'&&S.v2&&a.name==='Radiant Strike'?'Or heal one Hero':'&nbsp;'}</div></button>`).join('')}</div></div>
+        <div class="e">${a.debuff?(S.mode==='boss'?'Starvos':'Rival')+' −1 '+cap(a.debuff):a.heal?(S.mode==='boss'&&S.v2?'All Heroes: Life + 1D6':'You: Life + '+a.heal+'D6'):S.mode==='boss'&&S.v5&&(a.name==='Radiant Strike'||a.name==='Soul Strike')?'+ heals weakest Hero':S.mode==='boss'&&S.v2&&a.name==='Radiant Strike'?'Or heal one Hero':'&nbsp;'}</div></button>`).join('')}</div></div>
      <p class="lore">${h.lore}</p>
    </div></div>`;
 }
@@ -1775,7 +1775,7 @@ function chooseAbility(p,t){
     if(netFresh())return fromServer();
     setAct(p,'Your '+f.h.name,'Choose an Ability',false);S.view=p;S.choosing=true;renderSheet();
     return Promise.race([new Promise(res=>{S._pickResolve=async i=>{let tg=null;
-        if(S.mode==='boss'&&S.v2&&f.abilities[i].name==='Radiant Strike'){S.choosing=false;S._pickResolve=null;renderAll();tg=await radiantPick(p)}
+        if(S.mode==='boss'&&S.v2&&!S.v5&&f.abilities[i].name==='Radiant Strike'){S.choosing=false;S._pickResolve=null;renderAll();tg=await radiantPick(p)}
         netAct('ability',i,tg);res(i)}}),fromServer()])
       .then(i=>{S.choosing=false;S._pickResolve=null;document.querySelector('.rs-ov')?.remove();chk(t);renderSheet();return i});}
   const f=S.F[p];const btn=$('#act');setHero(btn,f.skin);
@@ -2586,7 +2586,7 @@ const HEROES = {
   soulseer: { name: 'Soul Seer', main: 'energy', stats: { def: 10, power: 0, energy: 3, speed: 1, charm: 2 },
     abilities: [{ name: 'Explosion', dice: 2, stat: 'power' }, { name: 'Soul Syphon', dice: 1, stat: 'energy', heal: 1 }, { name: 'Mind-Spike', dice: 1, stat: 'speed' }, { name: 'Psylance', dice: 1, stat: 'charm' }] },
   whisper: { name: 'Whisper', main: 'speed', stats: { def: 11, power: 2, energy: 0, speed: 3, charm: 1 },
-    abilities: [{ name: 'Death-Strike', dice: 1, stat: 'power' }, { name: 'Darkness', dice: 1, stat: 'energy', debuff: 'power' }, { name: 'Double-Strike', dice: 2, stat: 'speed' }, { name: 'Shadow-Strike', dice: 1, stat: 'charm' }] },
+    abilities: [{ name: 'Death-Strike', dice: 1, stat: 'power' }, { name: 'Darkness', dice: 1, stat: 'energy', debuff: 'power' }, { name: 'Double-Strike', dice: 2, stat: 'speed' }, { name: 'Soul Strike', dice: 1, stat: 'charm' }] },
 };
 const STATS = ['def', 'power', 'energy', 'speed', 'charm'];
 
@@ -3028,7 +3028,7 @@ function renderBossSetup(){
      <li><b>“Brace yourselves, it strikes!”</b> Next, Starvos unleashes the round’s Ability, and it never misses. Claw Strike and Bite catch a single Hero: everyone rolls a plain D20, and the lowest roll takes the blow. Fire Blast and Devastate engulf you all, and each Hero rolls their own damage. Wound it below half its Life and Starvos becomes <b>Enraged</b> at the start of the next round: from then on, every attack rolls one extra die!</li>
      <li><b>“To arms!”</b> The Heroes still standing roll a D20 plus Speed. Fastest strikes first.</li>
      <li><b>“Strike the beast!”</b> On your turn, roll the D20 plus your Main stat against Starvos’ Defense of 13. Match it and you still land the blow, for the brave win every tie! Then unleash one Ability. Out of Abilities? Swing again!</li>
-     <li><b>“Mend your wounds!”</b> The Soul Seer’s Soul Syphon strikes Starvos and heals every standing Hero 1D6. The Champion may turn Radiant Strike into a blessing: roll it as usual and give the whole total to one standing Hero as Life, instead of striking Starvos.</li>
+     <li><b>“Mend your wounds!”</b> The Soul Seer’s Soul Syphon strikes Starvos and heals every standing Hero 1D6. The Champion’s Radiant Strike and the Whisper’s Soul Strike hit Starvos and heal the standing Hero with the least Life by the same total.</li>
      <li><b>“The D20 is watching!”</b> A natural 1 brings a Calamity and ends your turn. A natural 20 brings an Enhancement and, on an attack, maximum damage.</li>
      <li><b>“Catch your breath!”</b> When the round ends, every Hero who stood firm against the fear gains an Enhancement. After round eight, there is no rest.</li>
      <li><b>“Do not fall!”</b> A Hero at 0 Life has fallen and fights no more. If every Hero falls, or Starvos still lives when round eight ends, it unleashes Annihilate and the world is lost.</li>
@@ -3229,10 +3229,11 @@ async function bossWeapon(p,label,t){
 async function bossAbility(p,i,t){
   const f=S.F[p],a=f.abilities[i],B=S.boss;
   // Starvos rules v2 (N8 2026-10-30): Radiant Strike may heal one Hero instead; Soul Syphon heals every standing Hero 1D6
-  let tg=null;if(S.v2&&a.name==='Radiant Strike'&&!S.net)tg=await radiantPick(p);
+  const both=S.v5&&(a.name==='Radiant Strike'||a.name==='Soul Strike'); // rules v5 (N8 2026-11-26): strike Starvos AND heal the Hero with the least Life
+  let tg=null;if(S.v2&&!both&&a.name==='Radiant Strike'&&!S.net)tg=await radiantPick(p);
   flashRing(p,i);a.cd=true;renderSheet();SFX.play('ability',{name:a.name});anim(p,'lunge');
   const ae=S.net?await netNext('damage',t):null;
-  if(ae)tg=ae.mend?ae.mend.p:null;
+  if(ae)tg=ae.mend&&!both?ae.mend.p:null;
   const vs=await roll(p,Array(a.dice).fill(6),t,ae&&ae.dice);
   const total=Math.max(0,vs.reduce((x,y)=>x+y,0)+f[a.stat]);
   const dmg=ae?ae.dmg:tg!==null?0:total;
@@ -3243,6 +3244,7 @@ async function bossAbility(p,i,t){
     if(ae)netSnap(ae.F);renderAll();await sleep(REDUCED?100:800);chk(t);return}
   readout(`${f.h.name} · ${a.name}`,`${a.dice}D6 + ${cap(a.stat)} ${f[a.stat]} = <em>${dmg}</em>${a.debuff?` · Starvos ${cap(a.debuff)} −1`:''}`);
   bossHit(dmg,p);
+  if(both){const low=ae&&ae.mend?ae.mend.p:standing().reduce((x,y)=>S.F[y].life<S.F[x].life?y:x),g=heal(low,ae&&ae.mend?ae.mend.amount:dmg);extra.push(`heals ${S.F[low].h.name} +${g}`)}
   if(a.debuff&&B[a.debuff]>0){B[a.debuff]--;floatText('boss',`${SN[a.debuff]} −1`,'stat');extra.push(`Starvos ${cap(a.debuff)} −1`)}
   if(a.heal&&S.v2){const list=ae?(ae.healAll||[]):standing().map(q=>({p:q,d:rnd(6)}));
     extra.push('heals every Hero: '+list.map(x=>`${S.F[x.p].h.name} +${heal(x.p,x.d)}`).join(', '))}
@@ -3377,7 +3379,7 @@ function startOnlineBoss(game){
   document.querySelectorAll('.over,.scroll-ov').forEach(o=>o.remove());
   Object.assign(NET,{you:game.you,gameId:game.gameId,owners:game.owners.slice(),used:new Set(),waiters:[],ended:false,fastUntil:0});
   netFeed(game);SVNET.lobby=null;S.mode='boss';S.net=true;S.svOnline=true;
-  {const st=NET.events.find(e=>e.t==='start'),v=(st&&st.setup&&st.setup.v)||1;S.v2=v>=2;S.v3=v>=3}
+  {const st=NET.events.find(e=>e.t==='start'),v=(st&&st.setup&&st.setup.v)||1;S.v2=v>=2;S.v3=v>=3;S.v5=v>=5}
   // back mid-battle (reload or a second device): replay what already happened at speed
   let last=-1;NET.events.forEach((e,i)=>{if(!BOSS_INFO.has(e.t))last=i});
   if(last>=0){NET.fastUntil=last+1;REDUCED=true}
@@ -3411,7 +3413,7 @@ function radiantPick(p){const f=S.F[p],a=f.abilities.find(x=>x.name==='Radiant S
 // Crit Pass check for Solo Starvos (2026-11-25): an unlock remembered in this browser is trusted only when the
 // server can't be reached (offline play); otherwise the server has to confirm the pass first.
 async function arenaCheck(){if(!PAYWALL()||S.unlocked||!hasArena())return hasArena();const r=await ICYNStats.me().catch(()=>null);if(r)setUnlocked(!!r.unlocked);return hasArena()}
-function startCatastrophe(ok){if(!hasArena())return unlockPanel('starvos');if(ok!==true&&PAYWALL()&&!S.unlocked){arenaCheck().then(y=>y?startCatastrophe(true):(renderSetup(),unlockPanel('starvos')));return}S.net=false;S.v2=true;S.v3=true;
+function startCatastrophe(ok){if(!hasArena())return unlockPanel('starvos');if(ok!==true&&PAYWALL()&&!S.unlocked){arenaCheck().then(y=>y?startCatastrophe(true):(renderSetup(),unlockPanel('starvos')));return}S.net=false;S.v2=true;S.v3=true;S.v5=true;
   S.token++;const t=S.token;
   document.querySelectorAll('.over,.scroll-ov').forEach(o=>o.remove());
   // makeFighter reads skins from S.picks and Life from S.life (the duel settings); the party never repeats a Hero, so each keeps its own colors
@@ -3516,7 +3518,7 @@ const SFX=(()=>{
     'Death-Strike':()=>{Y.slash(0,.4);tone(55,{at:.05,a:.05,dur:.9,vol:.4,type:'sawtooth',to:40});Y.hit(.6,.12)},
     'Darkness':()=>[55,58,82,87].forEach(f=>tone(f,{type:'sawtooth',a:.6,dur:.8,vol:.08})),
     'Double-Strike':()=>{Y.slash(0);Y.hit(.35,.08);Y.slash(.22);Y.hit(.35,.3)},
-    'Shadow-Strike':()=>{noise({a:.15,dur:.15,vol:.12,ft:'bandpass',f:600,to:2000});Y.hit(.45,.3)},
+    'Soul Strike':()=>{noise({a:.15,dur:.15,vol:.12,ft:'bandpass',f:600,to:2000});Y.hit(.45,.3)},
     'Bite':()=>{Y.hit(.6);noise({at:.05,dur:.2,vol:.4,ft:'bandpass',f:1300,q:.7});Y.hit(.5,.18)},
     'Claw Strike':()=>{for(let i=0;i<3;i++)Y.slash(i*.09,.35);Y.hit(.5,.3)},
     'Fire Blast':()=>{Y.roar(0,.7,1.2);Y.fire(.3,1.4)},
@@ -3544,7 +3546,7 @@ const SFX=(()=>{
     'Death-Strike':[[['death-strike',0]]],
     'Darkness':[[['darkness',0]]],
     'Double-Strike':[[['double-strike',0],['double-strike',.25,{rate:1.08}]]],
-    'Shadow-Strike':[[['cloth',0],['dagger-stab',.22]]],
+    'Soul Strike':[[['cloth',0],['dagger-stab',.22]]],
     'Bite':[[['bite',0,{rate:.72}],['bone-crunch',.08,{rate:.8}],['clash',.12,{rate:.55,vol:.5}]],[['bite',0]]],
     'Claw Strike':[[['claw-slice',0]],[['claw',0],['thud-heavy',.05]]],
     'Fire Blast':[[['fire-crackle',0],['explosion-fire',.35]]],

@@ -201,7 +201,12 @@ export function* catastrophe(setup, rnd, ev) {
     const v2 = (setup.v || 1) >= 2;
     const tg = input && Number.isInteger(input.target) ? input.target : null;
     let mend = null;
-    if (v2 && a.name === 'Radiant Strike' && tg !== null && F[tg] && F[tg].life > 0) {
+    // Rules v5 (N8 2026-11-26): Radiant Strike and Soul Strike hit Starvos AND heal the standing Hero with the least Life by the same total.
+    if ((setup.v || 1) >= 5 && (a.name === 'Radiant Strike' || a.name === 'Soul Strike')) {
+      const low = standing().reduce((x, y) => (F[y].life < F[x].life ? y : x));
+      const b = F[low].life; F[low].life = Math.min(F[low].maxLife, F[low].life + dmg);
+      mend = { p: low, amount: dmg, healed: F[low].life - b, both: true };
+    } else if (v2 && a.name === 'Radiant Strike' && tg !== null && F[tg] && F[tg].life > 0) {
       const b = F[tg].life; F[tg].life = Math.min(F[tg].maxLife, F[tg].life + dmg);
       mend = { p: tg, amount: dmg, healed: F[tg].life - b }; dmg = 0;
     }
