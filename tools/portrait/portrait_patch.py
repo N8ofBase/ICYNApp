@@ -21,8 +21,11 @@ rep("$('#tolayout').textContent=full?'Show tables beside the arena':'Full-screen
     "$('#tolayout').textContent=full?'Show tables beside the arena':'Full-screen arena';$('#tolayout').hidden=!BIG.matches;\n"
     "  const tall=tallView();d.classList.toggle('tall',tall);if(!tall&&!full)d.classList.remove('sheets-open');\n"
     "  const rtc=d.querySelector('.rtcard'),act=$('#act');if(tall&&rtc)d.querySelector('.sidecol').append(rtc);\n"
-    "  let bar=d.querySelector('.actbar');if(tall&&!bar){bar=document.createElement('div');bar.className='actbar';d.querySelector('.log').after(bar)}\n"
-    "  if(act){if(tall)bar.append(act);else{const ro=$('#readout');ro&&ro.before(act)}}if(!tall&&bar)bar.remove()}")
+    "  let bar=d.querySelector('.actbar');if(tall&&!bar){bar=document.createElement('div');bar.className='actbar';d.querySelector('.arena').after(bar)}\n"
+    "  if(act){if(tall)bar.append(act);else{const ro=$('#readout');ro&&ro.before(act)}}\n"
+    "  // the acting Hero's Weapon Strike + Ability buttons sit in the bar too (N8 2026-11-26)\n"
+    "  d.querySelectorAll('.ring').forEach(r=>{const q=+r.dataset.p;if(tall){if(S.F&&S.F[q])r.style.setProperty('--c',S.F[q].color);bar.prepend(r)}else{const fi=d.querySelector(`.fighter[data-p=\"${q}\"]`);if(fi&&r.parentNode!==fi)fi.append(r)}});\n"
+    "  if(!tall&&bar)bar.remove()}")
 # 3) the Tables button opens the popup in tall view too
 rep("function openSheets(p,what){if(!fullView())return;",
     "function openSheets(p,what){if(!fullView()&&!tallView())return;")
@@ -56,16 +59,22 @@ body:has(.duel.tall) .top .acct{display:none}
 body:has(.duel.tall) .top-actions #chron{display:none}
 .duel.tall .arena{aspect-ratio:1/1.08;max-height:58vh}
 .duel.tall .log ol{margin-bottom:0}
-.duel.tall .actbar{order:3;position:sticky;bottom:0;z-index:20;display:flex;justify-content:center;padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));margin:0 -4px;background:linear-gradient(rgba(12,10,15,0),rgba(12,10,15,.92) 30%)}
+.duel.tall .actbar{order:1;display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 8px 12px;background:var(--stone);border:1px solid var(--line);border-radius:12px}
 .duel.tall .actbar .act-d20{position:static;translate:none;flex-direction:row;gap:12px;width:auto;max-width:100%;pointer-events:auto}
 .duel.tall .actbar .act-d20:disabled{display:flex}
 .duel.tall .actbar .act-d20 .d20b{width:56px;height:56px}
 .duel.tall .actbar .act-d20 .lbl{font-size:.95rem;padding:6px 12px;text-align:left}
 .duel.tall .actbar .act-d20 .who{display:block;font-size:.58rem}
+.duel.tall .actbar .ring{position:static;display:flex;flex-wrap:wrap;justify-content:center;gap:10px 12px;width:auto;height:auto;--bs:46px;pointer-events:auto}
+.duel.tall .actbar .ring:empty{display:none}
+.duel.tall .actbar .rb{position:relative;top:auto;left:auto;right:auto;transform:none;flex:none}
+.duel.tall .actbar .rb small{font-size:.58rem;bottom:-8px}
+.duel.tall .log{order:2}
 .setup-acct{align-items:center;gap:8px}
-.setup-acct .inst-top{margin-right:auto;padding:5px 12px;font-size:.85rem}
+.setup-acct .inst-top{margin-right:auto;padding:5px 12px;font-size:.8rem;line-height:inherit;border-color:var(--gold);background:linear-gradient(#e7c56f,#b98a2c);color:#1a1208;font-weight:800;box-shadow:0 0 12px rgba(224,184,98,.45)}
 .setup-acct button{white-space:nowrap}
-@media (max-width:480px){.setup-acct{flex-wrap:wrap;row-gap:6px}.setup-acct button{padding:5px 10px;font-size:.8rem}}
+@media (max-width:480px){.setup-acct{gap:5px}.setup-acct .acct{gap:5px}.setup-acct button,.setup-acct .acct .ghost{padding:4px 8px;font-size:.74rem}}
+@media (max-width:370px){.setup-acct{flex-wrap:wrap;row-gap:6px}}
 @media (orientation:portrait) and (max-width:640px){
 .scroll .faces li{font-size:clamp(.74rem,1.85vh,.92rem);line-height:1.15;padding:2px 7px}
 .scroll .sc-head h2{font-size:1.25rem}
