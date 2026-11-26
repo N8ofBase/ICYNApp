@@ -23,8 +23,8 @@ rep("$('#tolayout').textContent=full?'Show tables beside the arena':'Full-screen
     "  const rtc=d.querySelector('.rtcard'),act=$('#act');if(tall&&rtc)d.querySelector('.sidecol').append(rtc);\n"
     "  let bar=d.querySelector('.actbar');if(tall&&!bar){bar=document.createElement('div');bar.className='actbar';d.querySelector('.arena').after(bar)}\n"
     "  if(act){if(tall)bar.append(act);else{const ro=$('#readout');ro&&ro.before(act)}}\n"
-    "  // the acting Hero's Weapon Strike + Ability buttons sit in the bar too (N8 2026-11-26)\n"
-    "  d.querySelectorAll('.ring').forEach(r=>{const q=+r.dataset.p;if(tall){if(S.F&&S.F[q])r.style.setProperty('--c',S.F[q].color);bar.prepend(r)}else{const fi=d.querySelector(`.fighter[data-p=\"${q}\"]`);if(fi&&r.parentNode!==fi)fi.append(r)}});\n"
+    "  // your Hero's Weapon Strike + Ability buttons sit in the bar; the Computer's or rival's stay in the arena (N8 2026-11-26)\n"
+    "  d.querySelectorAll('.ring').forEach(r=>{const q=+r.dataset.p;if(tall&&!isCPU(q)){if(S.F&&S.F[q])r.style.setProperty('--c',S.F[q].color);bar.prepend(r)}else{const fi=d.querySelector(`.fighter[data-p=\"${q}\"]`);if(fi&&r.parentNode!==fi)fi.append(r)}});\n"
     "  if(!tall&&bar)bar.remove()}")
 # 3) the Tables button opens the popup in tall view too
 rep("function openSheets(p,what){if(!fullView())return;",

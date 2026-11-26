@@ -1663,8 +1663,8 @@ function applyLayout(){const d=$('.duel');if(!d)return;const full=fullView();
   const rtc=d.querySelector('.rtcard'),act=$('#act');if(tall&&rtc)d.querySelector('.sidecol').append(rtc);
   let bar=d.querySelector('.actbar');if(tall&&!bar){bar=document.createElement('div');bar.className='actbar';d.querySelector('.arena').after(bar)}
   if(act){if(tall)bar.append(act);else{const ro=$('#readout');ro&&ro.before(act)}}
-  // the acting Hero's Weapon Strike + Ability buttons sit in the bar too (N8 2026-11-26)
-  d.querySelectorAll('.ring').forEach(r=>{const q=+r.dataset.p;if(tall){if(S.F&&S.F[q])r.style.setProperty('--c',S.F[q].color);bar.prepend(r)}else{const fi=d.querySelector(`.fighter[data-p="${q}"]`);if(fi&&r.parentNode!==fi)fi.append(r)}});
+  // your Hero's Weapon Strike + Ability buttons sit in the bar; the Computer's or rival's stay in the arena (N8 2026-11-26)
+  d.querySelectorAll('.ring').forEach(r=>{const q=+r.dataset.p;if(tall&&!isCPU(q)){if(S.F&&S.F[q])r.style.setProperty('--c',S.F[q].color);bar.prepend(r)}else{const fi=d.querySelector(`.fighter[data-p="${q}"]`);if(fi&&r.parentNode!==fi)fi.append(r)}});
   if(!tall&&bar)bar.remove()}
 BIG.addEventListener?.('change',()=>{if(S.screen==='duel')applyLayout()});
 function openSheets(p,what){if(!fullView()&&!tallView())return;if(p!==undefined){S.view=p;renderSheet()}const d=$('.duel'),log=what==='log';
