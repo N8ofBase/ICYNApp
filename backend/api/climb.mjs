@@ -162,7 +162,7 @@ export function cpuInput(pending, p) {
 }
 // A whole Standard duel between two Computers.
 export function cpuDuel(heroes, carry) {
-  const seed = crypto.randomBytes(16).toString('hex'), setup = { heroes, life: 100, wb1: true, carry: carry || [null, null] }, inputs = [];
+  const seed = crypto.randomBytes(16).toString('hex'), setup = { heroes, life: 100, wb1: true, enh2: true, carry: carry || [null, null] }, inputs = [];
   for (let n = 0; n < 3000; n++) {
     const r = replay(seed, setup, inputs);
     if (r.result) return r.result;

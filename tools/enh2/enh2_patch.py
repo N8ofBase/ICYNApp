@@ -8,7 +8,7 @@ root = pathlib.Path(__file__).resolve().parents[2]
 def patch(rel, pairs):
     p = root / rel; s = p.read_text(encoding='utf-8'); crlf = b'\r\n' in p.read_bytes()
     for a, b in pairs:
-        if b in s: continue
+        if b in s or (a not in s and b.split('\n')[0] in s): continue  # applied (later patches may have changed the rest)
         assert s.count(a) == 1, f'{rel}: expected 1 of {a[:90]!r}, found {s.count(a)}'
         s = s.replace(a, b)
     p.write_text(s, encoding='utf-8', newline='\r\n' if crlf else '\n'); print('patched', rel)
@@ -45,6 +45,9 @@ patch('backend/ws/ws.mjs', [
   ("setup: { heroes: [hero, null], life: 100, wb1: true, carry: [mine.carry || null, null],", "setup: { heroes: [hero, null], life: 100, wb1: true, enh2: true, carry: [mine.carry || null, null],"),
   ("(easy: 50 Life,", "(easy: 75 Life,"),
 ])
+# ---- Computer vs Computer Crit Climb duels (icyn-api and icyn-ws copies) ----
+for rel in ('backend/api/climb.mjs', 'backend/ws/climb.mjs'):
+    patch(rel, [("setup = { heroes, life: 100, wb1: true, carry:", "setup = { heroes, life: 100, wb1: true, enh2: true, carry:")])
 # ---- game page ----
 patch('index.html', [
   ("const tables = () => ({CAL:CAL_REVISED,ENH:ENH_REVISED});",
